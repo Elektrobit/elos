@@ -1,0 +1,5 @@
+client_blacklist.h
+==================
+
+.. autocmodule:: elos/client_manager/client_blacklist.h
+    :members:

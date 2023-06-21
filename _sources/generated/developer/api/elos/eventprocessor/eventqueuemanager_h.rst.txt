@@ -1,0 +1,5 @@
+eventqueuemanager.h
+===================
+
+.. autocmodule:: elos/eventprocessor/eventqueuemanager.h
+    :members:

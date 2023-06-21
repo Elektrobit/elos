@@ -1,0 +1,5 @@
+scanner_manager.h
+=================
+
+.. autocmodule:: elos/scanner_manager/scanner_manager.h
+    :members:

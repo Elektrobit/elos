@@ -1,0 +1,5 @@
+idmanager.h
+===========
+
+.. autocmodule:: elos/eventprocessor/idmanager.h
+    :members:

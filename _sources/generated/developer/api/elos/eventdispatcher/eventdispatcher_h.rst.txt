@@ -1,0 +1,5 @@
+eventdispatcher.h
+=================
+
+.. autocmodule:: elos/eventdispatcher/eventdispatcher.h
+    :members:

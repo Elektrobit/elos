@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>elos &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="EventProcessor" href="eventprocessor.html" />
+    <link rel="prev" title="Developer documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="elos">
+<h1>elos<a class="headerlink" href="#elos" title="Permalink to this heading">¶</a></h1>
+<section id="intro">
+<h2>Intro<a class="headerlink" href="#intro" title="Permalink to this heading">¶</a></h2>
+<p>The event logging and management system (elos) is intended to implement
+the System Monitor specification from EB <a class="reference external" href="https://infohub.automotive.elektrobit.com/display/PRJEBLINUX/System+monitoring+requirements+draft">System Monitoring
+DRAFT</a>.
+The main task is to collect various information about the system and
+convert them into a canonical format and therefore annotate the
+information with a specific set of meta data if possible. The thus
+obtained and refined system information are then :</p>
+<ul class="simple">
+<li><p>persistently stored in a canonical format</p></li>
+<li><p>published in a canonical format</p></li>
+</ul>
+<p>The spectrum of system information is wide and ranges from syslog and
+kmsg to core dumps to measurements obtained from proc- and sys-fs like
+for example temperatures. Those system information are meant to obtained
+via so called Scanner which are basically Plugins as shared objects and
+by any other application capable to use the provided socket.</p>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h2>
+<p>For now the requirements are simplified into the following points:</p>
+<ul class="simple">
+<li><p>Scan for different events and store them for later retrieval</p></li>
+<li><p>Deliver list of selected events to one or more applications on
+request</p></li>
+<li><p>Ability to push events to elos from an application</p></li>
+<li><p>Ability to change events, access rights and other parameters via
+configuration files</p></li>
+<li><p>Ability to easily extend elos with new events later in development</p></li>
+<li><p>Ability to easily run in different environments</p></li>
+<li><p>Ability to communicate with elos from different languages (e.g.
+Python)</p></li>
+<li><p>Separate event scanner dependencies from elos itself to prevent
+dependency hell</p></li>
+<li><p>Thread safe library functions</p></li>
+<li><p>Support multiple user, multi processes</p></li>
+<li><p>Be performant and efficient</p></li>
+<li><p>…</p></li>
+</ul>
+</section>
+<section id="the-input-and-output-data-formats">
+<h2>The input and output data formats<a class="headerlink" href="#the-input-and-output-data-formats" title="Permalink to this heading">¶</a></h2>
+<p>The input data processed by elos can divided into two types:</p>
+<ul class="simple">
+<li><p>Non canonical or non normalized Input (Raw Input)</p></li>
+<li><p>Canonical or normalized Input (Canonical Input)</p></li>
+</ul>
+<p>The following diagram shows the flow of canonical and non canonical
+inputs. <img alt="Data Flow Diagram" src="../../_images/data_flow.png" /></p>
+<p>The canonical event entity can then be published and persistently logged
+which means stored on a non volatile storage for later evaluation.</p>
+<p>The event logging and management system daemon has two types of
+interfaces to obtain input:</p>
+<ul class="simple">
+<li><p>Scanner-API</p></li>
+<li><p>Client-API</p></li>
+</ul>
+<p>The Client-API uses a communication protocol where events are encode in
+JSON and therefore the canonical format is already enforced.</p>
+<p>The Scanner-API also enforce the canonical format of an event from a
+scanner implementation for an arbitrary source. The scanner
+implementation itself must contain the functionality to convert input
+data from an arbitrary source into the canonical format of an event.</p>
+<section id="canonical-event-format">
+<h3>canonical event format<a class="headerlink" href="#canonical-event-format" title="Permalink to this heading">¶</a></h3>
+<p>The canonical form for events has the following attributes:</p>
+<ul class="simple">
+<li><p><strong>date</strong> : unix timestamp in nano seconds resolution</p></li>
+<li><p><strong>source</strong> : a string that identifies the origin of this particular
+information</p></li>
+<li><p><strong>severity</strong> : when the message gets classified it is mapped to a
+severity value defined by this project.</p></li>
+<li><p><strong>hardware/hypervisor id</strong> : an unique identifier for the hardware,
+produced this particular information.</p></li>
+<li><p><strong>message code</strong> : used to hide information (from security
+perspective), thus an information has a meaning without providing a
+payload (text)</p></li>
+<li><p><strong>classification</strong> : a set of flags to categorize events.</p></li>
+<li><p><strong>payload</strong>: the actual payload of the information (text, number,
+structs))</p></li>
+</ul>
+<p>The representation of an event look like:</p>
+<p>As internal C-Struct :</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">date</span><span class="p">;</span>
+<span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">source</span><span class="p">;</span>
+<span class="w">  </span><span class="k">enum</span><span class="w"> </span><span class="n">elosSeverityE_t</span><span class="w"> </span><span class="n">severity</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">hardwareid</span><span class="p">;</span>
+<span class="w">  </span><span class="n">u64</span><span class="w"> </span><span class="n">classification</span><span class="p">;</span>
+<span class="w">  </span><span class="k">enum</span><span class="w"> </span><span class="n">elosEventMessageCodeE_t</span><span class="w"> </span><span class="n">messageCode</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">payload</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>As message payload JSON encoded:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">42</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;appname&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;openssh&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/usr/bin/sshd&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">208</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;hardwareid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;817d6b97-75f8-4faf-ba3c-583ae1123558&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;messageCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The JSON representation can omit empty fields.</p>
+</section>
+<section id="date">
+<h3>date<a class="headerlink" href="#date" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>timezone “UTC” is assumed</p></li>
+<li><p>time since epoch in UTC is assumed</p></li>
+<li><p>resolution nanoseconds</p></li>
+<li><p>Format:</p>
+<ul>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">C</span></code> is represented by <code class="docutils literal notranslate"><span class="pre">timespec_t</span></code>.</p></li>
+<li><p>The JSON representation of a date field:</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="nb">int</span><span class="p">,</span><span class="nb">int</span><span class="p">]</span> <span class="p">:</span> <span class="n">seconds</span><span class="o">.</span><span class="n">nanoseconds</span>
+</pre></div>
+</div>
+</section>
+<section id="source">
+<h3>source<a class="headerlink" href="#source" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>defines the origin of an information, the producer the information</p></li>
+<li><p>provide at least one of the following:</p>
+<ul>
+<li><p>free form program name</p></li>
+<li><p>PID</p></li>
+<li><p>file name</p></li>
+</ul>
+</li>
+<li><p>=&gt; a canonical form for a source description is needed</p></li>
+</ul>
+<section id="design-decision-source-description">
+<span id="id1"></span><h4>Design decision – source description<a class="headerlink" href="#design-decision-source-description" title="Permalink to this heading">¶</a></h4>
+<p>It is necessary to define a canonical form for the source meta data
+point to reflect the different nature of information sources (i.e.
+files, applications).</p>
+<section id="a-free-form-string">
+<h5>A) free form string<a class="headerlink" href="#a-free-form-string" title="Permalink to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>simple and no further steps necessary</p></li>
+<li><p>logic to read a source descriptor and extract the meaning (parse the
+string) is necessary every where it is used</p></li>
+</ul>
+</section>
+<section id="b-define-canonical-form">
+<h5>B) define canonical form<a class="headerlink" href="#b-define-canonical-form" title="Permalink to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>The source information is translated into a format easy to process</p></li>
+<li><p>Reading , using a source descriptor is unified</p></li>
+<li><p>The Source descriptor can be defined as follows:</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEventSource_t</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">appName</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">fileName</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">pid_t</span><span class="w"> </span><span class="n">pid</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>A source must have at least one attribute defined</p></li>
+<li><p>A source can have more or all attribute defined</p></li>
+<li><p>This structure can easily serialized in any binary or textual format.
+For example in JSON :</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;openssh&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;fileName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/usr/bin/sshd&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">208</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="conclusion">
+<h5>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h5>
+<p>We use B as it is easy machine process able and we can avoid parsing the
+information multiple times on different locations.</p>
+</section>
+</section>
+<section id="severity">
+<h4>severity<a class="headerlink" href="#severity" title="Permalink to this heading">¶</a></h4>
+<p>The classification of the severity is done by the corresponding scanner.
+To have a common understanding of severity levels these are defined by
+elos as follows:</p>
+<ol class="arabic simple">
+<li><p>ELOS_SEVERITY_OFF = 0x00 No logging.</p></li>
+<li><p>ELOS_SEVERITY_FATAL = 0x01 Fatal error, not recoverable.</p></li>
+<li><p>ELOS_SEVERITY_ERROR = 0x02 Error with impact to correct
+functionality.</p></li>
+<li><p>ELOS_SEVERITY_WARN = 0x03 Warning if correct behavior cannot be
+ensured.</p></li>
+<li><p>ELOS_SEVERITY_INFO = 0x04 Informational, providing high level
+understanding.</p></li>
+<li><p>ELOS_SEVERITY_DEBUG = 0x05 Detailed information for programmers.</p></li>
+<li><p>ELOS_SEVERITY_VERBOSE = 0x06 Extra-verbose debug messages (highest
+grade of information)</p></li>
+</ol>
+<ul class="simple">
+<li><p>Format:</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosSeverityE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_OFF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_FATAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_ERROR</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_WARN</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_INFO</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_DEBUG</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_VERBOSE</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="n">elosSeverityE_t</span>
+</pre></div>
+</div>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;severity&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The actual mapping or the classification if none provided, for
+information coming from an input source to the common severity levels
+have to be done by the scanner.</p>
+</section>
+<section id="hardware-hypervisor-id">
+<span id="id2"></span><h4>hardware- / hypervisor-ID<a class="headerlink" href="#hardware-hypervisor-id" title="Permalink to this heading">¶</a></h4>
+<p>The hardware- or hypervisor-ID is an identifier to assign an event to a
+specific machine. We could use different IDs of the system to create
+this ID either by directly using them, queuing them, or using some kind
+of hash-value, like generating a SHA-256.</p>
+<p><strong>Suggestion 01: Using IDS from DMI</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">class</span><span class="o">/</span><span class="n">dmi</span><span class="o">/</span><span class="nb">id</span><span class="o">/</span><span class="n">board_serial</span>
+<span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">class</span><span class="o">/</span><span class="n">dmi</span><span class="o">/</span><span class="nb">id</span><span class="o">/</span><span class="n">product_uuid</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">DMI provides different IDs like, for example, the board serial number,
+which would</div>
+<div class="line">be unique per manufacturer, or the UUID (Universally Unique
+identifier), which has</div>
+<div class="line">a probability of being duplicated, that is close enough to zero, to be
+negligible.</div>
+</div>
+<div class="line-block">
+<div class="line">Unfortunately DMI does not seem to be available on our S32G target
+board (and on</div>
+<div class="line">non-UEFI systems in general, according to the Kernel build config
+option).</div>
+<div class="line">So this suggestion wont work as our system solution.</div>
+</div>
+<p><strong>Suggestion 02: Using the HostID</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#include &lt;unistd.h&gt;</span>
+<span class="n">long</span> <span class="n">gethostid</span><span class="p">(</span><span class="n">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>From Linux Programmer’s Manual (man gethostid):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gethostid</span><span class="p">()</span> <span class="n">respectively</span> <span class="n">get</span> <span class="n">a</span> <span class="n">unique</span>  <span class="mi">32</span><span class="o">-</span><span class="n">bit</span> <span class="n">identifier</span> <span class="k">for</span> <span class="n">the</span> <span class="n">current</span> <span class="n">machine</span><span class="o">.</span>
+<span class="n">The</span> <span class="mi">32</span><span class="o">-</span><span class="n">bit</span> <span class="n">identifier</span> <span class="ow">is</span> <span class="n">intended</span> <span class="n">to</span> <span class="n">be</span> <span class="n">unique</span> <span class="n">among</span> <span class="nb">all</span> <span class="n">UNIX</span> <span class="n">systems</span> <span class="ow">in</span> <span class="n">existence</span><span class="o">.</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="n">In</span> <span class="n">the</span> <span class="n">glibc</span> <span class="n">implementation</span><span class="p">,</span> <span class="n">the</span> <span class="n">hostid</span> <span class="ow">is</span> <span class="n">stored</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">file</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">hostid</span><span class="o">.</span>
+<span class="p">(</span><span class="n">In</span> <span class="n">glibc</span> <span class="n">versions</span> <span class="n">before</span> <span class="mf">2.2</span><span class="p">,</span> <span class="n">the</span> <span class="n">file</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">adm</span><span class="o">/</span><span class="n">hostid</span> <span class="n">was</span> <span class="n">used</span><span class="o">.</span><span class="p">)</span>
+<span class="n">In</span> <span class="n">the</span> <span class="n">glibc</span> <span class="n">implementation</span><span class="p">,</span> <span class="k">if</span> <span class="n">gethostid</span><span class="p">()</span> <span class="n">cannot</span> <span class="nb">open</span> <span class="n">the</span> <span class="n">file</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">host</span>
+<span class="n">ID</span><span class="p">,</span> <span class="n">then</span> <span class="n">it</span> <span class="n">obtains</span> <span class="n">the</span> <span class="n">hostname</span> <span class="n">using</span> <span class="n">gethostname</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">passes</span> <span class="n">that</span> <span class="n">hostname</span> <span class="n">to</span>
+<span class="n">gethostbyname_r</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="ow">in</span> <span class="n">order</span> <span class="n">to</span> <span class="n">obtain</span> <span class="n">the</span> <span class="n">host</span><span class="s1">&#39;s IPv4 address, and returns a value</span>
+<span class="n">obtained</span> <span class="n">by</span> <span class="n">bit</span><span class="o">-</span><span class="n">twiddling</span> <span class="n">the</span> <span class="n">IPv4</span> <span class="n">address</span><span class="o">.</span> <span class="p">(</span><span class="n">This</span> <span class="n">value</span> <span class="n">may</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">unique</span><span class="o">.</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Suggestion 03: Using the ID of the local system, called “machine id”</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">machine</span><span class="o">-</span><span class="nb">id</span>
+</pre></div>
+</div>
+<ul>
+<li><p>32 symbols from 0-9 and a-f</p></li>
+<li><p>The result differs for the local machine and docker</p></li>
+<li><p>Booting the docker twice on the same machine will have the same
+result</p></li>
+<li><p>Explanation from
+<a class="reference external" href="https://www.man7.org/linux/man-pages/man5/machine-id.5.html">https://www.man7.org/linux/man-pages/man5/machine-id.5.html</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">machine</span><span class="o">-</span><span class="nb">id</span> <span class="n">file</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">unique</span> <span class="n">machine</span> <span class="n">ID</span> <span class="n">of</span> <span class="n">the</span> <span class="n">local</span> <span class="n">system</span> <span class="n">that</span> <span class="ow">is</span> <span class="nb">set</span>
+<span class="n">during</span> <span class="n">installation</span> <span class="ow">or</span> <span class="n">boot</span><span class="o">.</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="n">The</span> <span class="n">machine</span> <span class="n">ID</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">change</span> <span class="n">based</span> <span class="n">on</span> <span class="n">local</span> <span class="ow">or</span> <span class="n">network</span> <span class="n">configuration</span> <span class="ow">or</span> <span class="n">when</span> <span class="n">hardware</span> <span class="ow">is</span>
+<span class="n">replaced</span><span class="o">.</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+
+<span class="n">This</span> <span class="n">ID</span> <span class="n">uniquely</span> <span class="n">identifies</span> <span class="n">the</span> <span class="n">host</span><span class="o">.</span> <span class="n">It</span> <span class="n">should</span> <span class="n">be</span> <span class="n">considered</span> <span class="s2">&quot;confidential&quot;</span><span class="p">,</span> <span class="ow">and</span> <span class="n">must</span> <span class="ow">not</span>
+<span class="n">be</span> <span class="n">exposed</span> <span class="ow">in</span> <span class="n">untrusted</span> <span class="n">environments</span><span class="p">,</span> <span class="ow">in</span> <span class="n">particular</span> <span class="n">on</span> <span class="n">the</span> <span class="n">network</span><span class="o">.</span> <span class="n">If</span> <span class="n">a</span> <span class="n">stable</span> <span class="n">unique</span>
+<span class="n">identifier</span> <span class="n">that</span> <span class="ow">is</span> <span class="n">tied</span> <span class="n">to</span> <span class="n">the</span> <span class="n">machine</span> <span class="ow">is</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">some</span> <span class="n">application</span><span class="p">,</span> <span class="n">the</span> <span class="n">machine</span> <span class="n">ID</span> <span class="ow">or</span>
+<span class="nb">any</span> <span class="n">part</span> <span class="n">of</span> <span class="n">it</span> <span class="n">must</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">used</span> <span class="n">directly</span><span class="o">.</span> <span class="n">Instead</span> <span class="n">the</span> <span class="n">machine</span> <span class="n">ID</span> <span class="n">should</span> <span class="n">be</span> <span class="n">hashed</span> <span class="k">with</span> <span class="n">a</span>
+<span class="n">cryptographic</span><span class="p">,</span> <span class="n">keyed</span> <span class="nb">hash</span> <span class="n">function</span><span class="p">,</span> <span class="n">using</span> <span class="n">a</span> <span class="n">fixed</span><span class="p">,</span> <span class="n">application</span><span class="o">-</span><span class="n">specific</span> <span class="n">key</span><span class="o">.</span> <span class="n">That</span> <span class="n">way</span> <span class="n">the</span>
+<span class="n">ID</span> <span class="n">will</span> <span class="n">be</span> <span class="n">properly</span> <span class="n">unique</span><span class="p">,</span> <span class="ow">and</span> <span class="n">derived</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">constant</span> <span class="n">way</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">machine</span> <span class="n">ID</span> <span class="n">but</span> <span class="n">there</span>
+<span class="n">will</span> <span class="n">be</span> <span class="n">no</span> <span class="n">way</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">the</span> <span class="n">original</span> <span class="n">machine</span> <span class="n">ID</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">application</span><span class="o">-</span><span class="n">specific</span> <span class="n">one</span><span class="o">.</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<div class="line-block">
+<div class="line">So if we want to be able to trace it back to this device, we could
+take it 1:1,</div>
+<div class="line">and if we want to hide the personal data, we can hash it, where the
+manpage mentioned</div>
+<div class="line">above, offers a solution too in the “relation to osf UUIDS” passage.</div>
+</div>
+<p><strong>Decision</strong></p>
+<p>Elos will use the machine-id.</p>
+<ul class="simple">
+<li><p>DMI from suggestion 1 isn’t available on our system.</p></li>
+<li><p>gethostid() from suggestion 2 is only defined for a 32 bit identifier
+in POSIX.1-2001
+and POSIX.1-2008, so the hostid seems a little bit outdated, like
+IPv4</p></li>
+<li><p>we have already defined how the machine-id can be initialized
+(init-system, kernel param, …)
+as described in the initialization part of the manpage</p></li>
+<li><p>passing in the machine-id by kernel argument could be a real serial
+number, obtained somewhere
+in the early boot stage</p></li>
+<li><p>if this works to distinguish between host and docker system, it
+should also work for host and
+guest if it becomes necessary</p></li>
+</ul>
+<div class="line-block">
+<div class="line">Note: If we want to use U-Boot to read and pass it along on S32G, we
+need to investigate how the</div>
+<div class="line">mapping 64-Bit Machine ID to 128-Bit UUID is done right.</div>
+</div>
+</section>
+<section id="classification">
+<h4>classification<a class="headerlink" href="#classification" title="Permalink to this heading">¶</a></h4>
+<p>The classification attribute is used to categorize events to be related
+to a certain context of system information. The classification value is
+a 64 unsigned integer and is splitted into 3 sections.</p>
+<ul class="simple">
+<li><p>bit 1 to 32 (0x00000000FFFFFFFF) reserved by elos (never change their
+meaning)</p></li>
+<li><p>bit 33 to 41 (0x000000FF00000000) can be defined and used by the user
+(something like User_1-User_7)</p></li>
+<li><p>bit 42 to 64 (0xFFFFFF0000000000) reserved for future use</p></li>
+</ul>
+<p>The following table describes the lower 32 bit classification bit mask
+and their meaning:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0x0000000000000000</p></td>
+<td><p>undefined</p></td>
+<td><p>used to indicate not
+available classification
+information</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x0000000000000001</p></td>
+<td><p>Kernel</p></td>
+<td><p>all events which are related
+to some kernel functionality</p></td>
+</tr>
+<tr class="row-even"><td><p>0x0000000000000002</p></td>
+<td><p>Network</p></td>
+<td><p>all network related
+information</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x0000000000000004</p></td>
+<td><p>Security</p></td>
+<td><p>all events that are security
+related</p></td>
+</tr>
+<tr class="row-even"><td><p>0x0000000000000008</p></td>
+<td><p>Power</p></td>
+<td><p>all events that is relevant
+for power management</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x0000000000000010</p></td>
+<td><p>Storage</p></td>
+<td><p>all events which are related
+to filesystem and non
+volatile storage</p></td>
+</tr>
+<tr class="row-even"><td><p>0x0000000000000020</p></td>
+<td><p>Process</p></td>
+<td><p>all events about the
+livecycle of a process</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x0000000000000040</p></td>
+<td><p>IPC</p></td>
+<td><p>all events about IPC</p></td>
+</tr>
+<tr class="row-even"><td><p>0x0000000000000080</p></td>
+<td><p>Hardware</p></td>
+<td><p>all events about hardware</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x0000000000000100</p></td>
+<td><p>elos</p></td>
+<td><p>all events about elos
+internals</p></td>
+</tr>
+<tr class="row-even"><td><p>0x0000000000000200</p></td>
+<td><p>Process Errors</p></td>
+<td><p>all events about faulty or
+misbehaving processes</p></td>
+</tr>
+</tbody>
+</table>
+<p>An event can have multiple classification flags, for example a chassis
+intrusion detection event can be classified as <code class="docutils literal notranslate"><span class="pre">Security|Hardware</span></code>.</p>
+<section id="format">
+<h5>Format:<a class="headerlink" href="#format" title="Permalink to this heading">¶</a></h5>
+<p id="design-decision-format-of-classification">Design Decision – format of classification</p>
+<ol class="upperalpha simple">
+<li><p>As string list combined with enumerations</p></li>
+</ol>
+<ul class="simple">
+<li><p>A <code class="docutils literal notranslate"><span class="pre">NULL</span></code> terminated list of strings with enum values as index.</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span><span class="w"> </span><span class="n">elosClassificationE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">Network</span><span class="w"> </span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="n">Security</span><span class="p">,</span>
+<span class="w">  </span><span class="n">Audit</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">elosClassificationNames</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;Network&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Security&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Audit&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">};</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">elosEvent_t</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">elosClassificationE</span><span class="o">*</span><span class="w"> </span><span class="n">classification</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">Network</span><span class="p">,</span><span class="w"> </span><span class="n">Security</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">};</span>
+<span class="p">}</span>
+<span class="p">...</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">elosClassificationNames</span><span class="p">[</span><span class="n">event</span><span class="p">.</span><span class="n">classification</span><span class="p">[</span><span class="mi">0</span><span class="p">]]);...</span>
+</pre></div>
+</div>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;classification&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">,</span><span class="s2">&quot;Security&quot;</span><span class="p">,</span><span class="s2">&quot;Audit&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="upperalpha simple" start="2">
+<li><p>As flags encoded in uint64</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define NETWORK 1&gt;&gt;0x1ULL</span>
+<span class="cp">#define NETWORK 2&gt;&gt;0x1ULL</span>
+<span class="cp">#define NETWORK 3&gt;&gt;0x1ULL</span>
+<span class="kt">uint64_t</span><span class="w"> </span><span class="n">classification</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NETWORK</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SECURITY</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">AUDIT</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;classification&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">7</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Decision</p>
+<p>Elos uses the approach <code class="docutils literal notranslate"><span class="pre">B)</span></code> and encode the classification in a 64
+unsigned integer.</p>
+</section>
+<section id="messagecode-meaning-and-format">
+<span id="id3"></span><h5>messageCode – Meaning and format<a class="headerlink" href="#messagecode-meaning-and-format" title="Permalink to this heading">¶</a></h5>
+<p>The message code is used to annotate an event with a specific meaning to
+enable a client to understand the event without parsing the original
+input or the payload of the event.</p>
+<p>The following table describes the so far defined message code groups</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Range</p></th>
+<th class="head"><p>Category</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Advised Action</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0000-0999</p></td>
+<td><p>elos events</p></td>
+<td><p>Specific elos
+events</p></td>
+<td><p>can be used as
+check point or
+safely ignored</p></td>
+</tr>
+<tr class="row-odd"><td><p>1000-1999</p></td>
+<td><p>informational</p></td>
+<td><p>general
+information of
+the event
+source</p></td>
+<td><p>can safely
+ignored no
+action required</p></td>
+</tr>
+<tr class="row-even"><td><p>2000-2999</p></td>
+<td><p>Program /
+Service Status</p></td>
+<td><p>Successful
+resource
+acquisition by
+process,
+process
+progress
+information</p></td>
+<td><p>can be used to
+check and
+verify the
+state of a
+process</p></td>
+</tr>
+<tr class="row-odd"><td><p>3000-3999</p></td>
+<td><p>Program /
+Service
+Resource Error</p></td>
+<td><p>reports bad
+input or
+environment
+problems</p></td>
+<td><p>A process is
+probably not
+working
+correctly, due
+to
+m
+isconfiguration
+or unexpected
+resource
+behavior</p></td>
+</tr>
+<tr class="row-even"><td><p>4000-4999</p></td>
+<td><p>Program /
+Service IPC
+Error</p></td>
+<td><p>The process
+failed to
+process an
+external IPC
+request</p></td>
+<td><p>if waiting for
+an IPC response
+from the event
+source proceed
+according to
+the detailed
+message code</p></td>
+</tr>
+<tr class="row-odd"><td><p>5000-5999</p></td>
+<td><p>Program /
+Service
+Execution Error</p></td>
+<td><p>process
+terminated by
+system (mapping
+to Exit_Codes?)</p></td>
+<td><p>The event
+source is
+killed by the
+system or will
+be killed
+anytime soon,
+take necessary
+action
+immediately and
+terminate or
+free all shared
+resources, do
+not expect any
+response from
+this process</p></td>
+</tr>
+<tr class="row-even"><td><p>6000-6999</p></td>
+<td><p>Hardware fault</p></td>
+<td><p>Unrecoverable
+hardware fault</p></td>
+<td><p>the source
+detected a
+hardware fault,
+prepare
+immediately to
+get killed
+without further
+signals or
+warning</p></td>
+</tr>
+<tr class="row-odd"><td><p>7000-7999</p></td>
+<td><p>Hardware status</p></td>
+<td><p>Hardware state
+on/of
+f/plugged/unplu
+ged/initialized</p></td>
+<td><p>the source
+detected a
+hardware status
+change, take
+action if
+responsible or
+interested</p></td>
+</tr>
+<tr class="row-even"><td><p>8000-8999</p></td>
+<td><p>Security Audit</p></td>
+<td><p>Security
+related events
+like login
+attempts or
+permission
+changes of
+resources</p></td>
+<td><p>If in charge to
+maintain
+security, take
+appropriate
+action</p></td>
+</tr>
+</tbody>
+</table>
+<p id="elos-events">0 - 999 elos events</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>200</p></td>
+<td><p>New subscription</p></td>
+</tr>
+<tr class="row-odd"><td><p>202</p></td>
+<td><p>Removed subscription</p></td>
+</tr>
+<tr class="row-even"><td><p>400</p></td>
+<td><p>Failed to create subscription</p></td>
+</tr>
+<tr class="row-odd"><td><p>401</p></td>
+<td><p>Failed to remove subscription</p></td>
+</tr>
+<tr class="row-even"><td><p>501</p></td>
+<td><p>Event Blacklist Failed</p></td>
+</tr>
+</tbody>
+</table>
+<p id="informational">1000 - 1999 Informational</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1000</p></td>
+<td><p>wildcard - subscribe to any 1xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>1101</p></td>
+<td><p>debug log message</p></td>
+</tr>
+<tr class="row-even"><td><p>1102</p></td>
+<td><p>information log message</p></td>
+</tr>
+<tr class="row-odd"><td><p>1103</p></td>
+<td><p>trace log message</p></td>
+</tr>
+<tr class="row-even"><td><p>1111</p></td>
+<td><p>kernel log buffer message</p></td>
+</tr>
+</tbody>
+</table>
+<p id="program-status">2000 - 2999 Program Status</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2000</p></td>
+<td><p>wildcard - subscribe to any 2xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>2001</p></td>
+<td><p>Process created</p></td>
+</tr>
+<tr class="row-even"><td><p>2002</p></td>
+<td><p>Process exited (exit 0)</p></td>
+</tr>
+<tr class="row-odd"><td><p>2003</p></td>
+<td><p>opened file</p></td>
+</tr>
+<tr class="row-even"><td><p>2004</p></td>
+<td><p>closed file</p></td>
+</tr>
+<tr class="row-odd"><td><p>2005</p></td>
+<td><p>acquired a lock</p></td>
+</tr>
+<tr class="row-even"><td><p>2006</p></td>
+<td><p>release a lock</p></td>
+</tr>
+<tr class="row-odd"><td><p>2007</p></td>
+<td><p>socket opened</p></td>
+</tr>
+<tr class="row-even"><td><p>2008</p></td>
+<td><p>socket closed</p></td>
+</tr>
+</tbody>
+</table>
+<p id="program-resource-error">3000 - 3999 Program Resource error</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>3000</p></td>
+<td><p>wildcard - subscribe to any 3xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>3001</p></td>
+<td><p>Not authorized - authorization for some action failed</p></td>
+</tr>
+<tr class="row-even"><td><p>3003</p></td>
+<td><p>forbidden – action valid but insufficient access rights</p></td>
+</tr>
+<tr class="row-odd"><td><p>3004</p></td>
+<td><p>file not found - a path doesn’t exist</p></td>
+</tr>
+<tr class="row-even"><td><p>3005</p></td>
+<td><p>read error - reading from a resource failed</p></td>
+</tr>
+<tr class="row-odd"><td><p>3006</p></td>
+<td><p>write error - writing to a resource failed</p></td>
+</tr>
+<tr class="row-even"><td><p>3023</p></td>
+<td><p>resource is locked</p></td>
+</tr>
+<tr class="row-odd"><td><p>3422</p></td>
+<td><p>message not understood/not parsable</p></td>
+</tr>
+</tbody>
+</table>
+<p id="program-ipc-error">4000 - 4999 Program IPC error</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>4000</p></td>
+<td><p>wildcard - subscribe to any 4xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>4001</p></td>
+<td><p>Not authorized - authorization for some action failed</p></td>
+</tr>
+<tr class="row-even"><td><p>4002</p></td>
+<td><p>Malformed IPC request</p></td>
+</tr>
+<tr class="row-odd"><td><p>4005</p></td>
+<td><p>method/action not allowed</p></td>
+</tr>
+<tr class="row-even"><td><p>4006</p></td>
+<td><p>can not serve request due to resource error</p></td>
+</tr>
+</tbody>
+</table>
+<p id="program-execution-error">5000 - 5999 Program Execution error</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>5000</p></td>
+<td><p>wildcard - subscribe to any 5xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>5001</p></td>
+<td><p>SIGSYS - illegal syscall</p></td>
+</tr>
+<tr class="row-even"><td><p>5002</p></td>
+<td><p>SIGSEGV/BUS - illegal memory access</p></td>
+</tr>
+<tr class="row-odd"><td><p>5003</p></td>
+<td><p>SIGILL - illegal instruction</p></td>
+</tr>
+<tr class="row-even"><td><p>5004</p></td>
+<td><p>SIGFPE - floating point exception</p></td>
+</tr>
+<tr class="row-odd"><td><p>5005</p></td>
+<td><p>Core Dumped</p></td>
+</tr>
+<tr class="row-even"><td><p>5006</p></td>
+<td><p>Process Error Code - exit code != 0 (EXIT_SUCCESS)</p></td>
+</tr>
+</tbody>
+</table>
+<p id="hardware-fault">6000 - 6999 Hardware Fault</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>6000</p></td>
+<td><p>wildcard - subscribe to any 6xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>6001</p></td>
+<td><p>device read error</p></td>
+</tr>
+<tr class="row-even"><td><p>6002</p></td>
+<td><p>device write error</p></td>
+</tr>
+<tr class="row-odd"><td><p>6003</p></td>
+<td><p>device critical temperature</p></td>
+</tr>
+<tr class="row-even"><td><p>6004</p></td>
+<td><p>device critical power supply</p></td>
+</tr>
+<tr class="row-odd"><td><p>6005</p></td>
+<td><p>device setup error</p></td>
+</tr>
+</tbody>
+</table>
+<p id="hardware-status-change">7000 - 7999 Hardware Status Change</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>7000</p></td>
+<td><p>wildcard - subscribe to any 7xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>7001</p></td>
+<td><p>(peripheral) device power on</p></td>
+</tr>
+<tr class="row-even"><td><p>7002</p></td>
+<td><p>(peripheral) device power off</p></td>
+</tr>
+<tr class="row-odd"><td><p>7003</p></td>
+<td><p>device plugged</p></td>
+</tr>
+<tr class="row-even"><td><p>7004</p></td>
+<td><p>device unplugged</p></td>
+</tr>
+<tr class="row-odd"><td><p>7005</p></td>
+<td><p>device ready</p></td>
+</tr>
+</tbody>
+</table>
+<p id="security-audit">8000 - 8999 Security Audit</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>message code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>8000</p></td>
+<td><p>wildcard - subscribe to any 8xxx</p></td>
+</tr>
+<tr class="row-odd"><td><p>8001</p></td>
+<td><p>new user added</p></td>
+</tr>
+<tr class="row-even"><td><p>8002</p></td>
+<td><p>user removed</p></td>
+</tr>
+<tr class="row-odd"><td><p>8003</p></td>
+<td><p>password/key changed</p></td>
+</tr>
+<tr class="row-even"><td><p>8004</p></td>
+<td><p>login fail</p></td>
+</tr>
+<tr class="row-odd"><td><p>8005</p></td>
+<td><p>login ok</p></td>
+</tr>
+<tr class="row-even"><td><p>8006</p></td>
+<td><p>resource permission changed (file permissions, capabilities)</p></td>
+</tr>
+<tr class="row-odd"><td><p>8007</p></td>
+<td><p>unauthorized publishing</p></td>
+</tr>
+</tbody>
+</table>
+<p>The message code shall be maintained in a separate public header file
+event_message_code.h. To be as most possibly type safe the codes shall
+be encode as <code class="docutils literal notranslate"><span class="pre">typedef</span> <span class="pre">enum</span> <span class="pre">elosEventMessageCodeE_t</span></code>.</p>
+</section>
+<section id="payload-original-information">
+<span id="id4"></span><h5>payload – original information<a class="headerlink" href="#payload-original-information" title="Permalink to this heading">¶</a></h5>
+</section>
+<section id="design-decision-content-of-payload">
+<span id="id5"></span><h5>Design Decision – content of payload<a class="headerlink" href="#design-decision-content-of-payload" title="Permalink to this heading">¶</a></h5>
+<ol class="upperalpha simple">
+<li><p>the original non canonical data</p></li>
+</ol>
+<p>The payload contains the original information as it is encoded as base64
+string.</p>
+<ol class="upperalpha simple" start="2">
+<li><p>The extracted payload of an arbitrary non canonical input format</p></li>
+</ol>
+<p>The payload should only the actual data, all meta information already
+covered by the other attributes are stripped from the payload.</p>
+<ol class="upperalpha simple" start="3">
+<li><p>convert payload into variant type</p></li>
+</ol>
+<p>The payload is tried to converted into a variant type, which covers:</p>
+<ul class="simple">
+<li><p>Number</p></li>
+<li><p>String</p></li>
+<li><p>Raw: bytes + length</p></li>
+</ul>
+<ol class="upperalpha simple" start="4">
+<li><p>no convention up to the implementation</p></li>
+</ol>
+<ul class="simple">
+<li><p>Free form payload <code class="docutils literal notranslate"><span class="pre">bytes</span> <span class="pre">+</span> <span class="pre">length</span></code></p></li>
+<li><p>The content is defined by the source or corresponding scanner</p></li>
+<li><p>The subscriber or reader of the event must know how to read the
+actual payload</p></li>
+</ul>
+</section>
+</section>
+<section id="examples-for-converting-non-canonical-into-canonical-input">
+<h4>Examples for converting non canonical into canonical input<a class="headerlink" href="#examples-for-converting-non-canonical-into-canonical-input" title="Permalink to this heading">¶</a></h4>
+<section id="syslog-entry">
+<h5>Syslog entry<a class="headerlink" href="#syslog-entry" title="Permalink to this heading">¶</a></h5>
+<p>Non canonical input</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="mi">38</span><span class="o">&gt;</span><span class="n">Jan</span>  <span class="mi">1</span> <span class="mi">01</span><span class="p">:</span><span class="mi">41</span><span class="p">:</span><span class="mi">57</span> <span class="n">sshd</span><span class="p">[</span><span class="mi">240</span><span class="p">]:</span> <span class="n">Server</span> <span class="n">listening</span> <span class="n">on</span> <span class="p">::</span> <span class="n">port</span> <span class="mf">22.</span>
+</pre></div>
+</div>
+<p>canonical output</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">date</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1641001317</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">severity</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">source</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;sshd&quot;</span><span class="p">,</span><span class="s2">&quot;pid&quot;</span><span class="p">:</span><span class="mi">240</span><span class="p">}</span>
+<span class="n">hardware</span> <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;4bfa155647104435a92b2a27486fd72c&quot;</span>
+<span class="n">classification</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">messageCode</span> <span class="o">=</span> <span class="mi">2007</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="s2">&quot;Server listening on :: port 22.&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="temperature-form-sysfs">
+<h5>Temperature form sysfs<a class="headerlink" href="#temperature-form-sysfs" title="Permalink to this heading">¶</a></h5>
+<p id="non-canonical-input-1">Non canonical input</p>
+<ul class="simple">
+<li><p>taken from <code class="docutils literal notranslate"><span class="pre">cat</span> <span class="pre">/sys/class/thermal/thermal_zone&lt;X&gt;/temp</span></code></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">50000</span>
+</pre></div>
+</div>
+<p id="canonical-output-1">canonical output</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">date</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">severity</span> <span class="o">=</span> <span class="n">Info</span>
+<span class="n">source</span> <span class="o">=</span> <span class="p">{</span><span class="n">appname</span><span class="p">:</span><span class="s2">&quot;Kernel&quot;</span><span class="p">,</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span><span class="s2">&quot;/sys/class/thermal/thermal_zone&lt;X&gt;/temp&quot;</span><span class="p">}</span>
+<span class="n">hardware</span> <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;4bfa155647104435a92b2a27486fd72c&quot;</span>
+<span class="n">classification</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">messageCode</span> <span class="o">=</span> <span class="mi">6003</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="s2">&quot;50000&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="coredump">
+<h5>Coredump<a class="headerlink" href="#coredump" title="Permalink to this heading">¶</a></h5>
+<p id="non-canonical-input-2">Non canonical input</p>
+<ul class="simple">
+<li><p>taken from <code class="docutils literal notranslate"><span class="pre">coredumpctl</span> <span class="pre">info</span></code></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          <span class="n">PID</span><span class="p">:</span> <span class="mi">2966062</span> <span class="p">(</span><span class="n">conftest</span><span class="p">)</span>
+          <span class="n">UID</span><span class="p">:</span> <span class="mi">1000</span> <span class="p">(</span><span class="n">wgehrha</span><span class="p">)</span>
+          <span class="n">GID</span><span class="p">:</span> <span class="mi">985</span> <span class="p">(</span><span class="n">users</span><span class="p">)</span>
+       <span class="n">Signal</span><span class="p">:</span> <span class="mi">6</span> <span class="p">(</span><span class="n">ABRT</span><span class="p">)</span>
+    <span class="n">Timestamp</span><span class="p">:</span> <span class="n">Mon</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">14</span> <span class="mi">14</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">21</span> <span class="n">CET</span> <span class="p">(</span><span class="mi">2</span><span class="n">h</span> <span class="mi">57</span><span class="nb">min</span> <span class="n">ago</span><span class="p">)</span>
+ <span class="n">Command</span> <span class="n">Line</span><span class="p">:</span> <span class="o">./</span><span class="n">conftest</span>
+   <span class="n">Executable</span><span class="p">:</span> <span class="o">/</span><span class="n">base</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">work</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">coreutils</span><span class="o">-</span><span class="n">native</span><span class="o">/</span><span class="mf">8.32</span><span class="o">-</span><span class="n">r0</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">conftest</span>
+<span class="n">Control</span> <span class="n">Group</span><span class="p">:</span> <span class="o">/</span><span class="n">system</span><span class="o">.</span><span class="n">slice</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">d926ec28b44a1acdef4028e7ac31a57fa59233ea7f252ee942fdad4fdeda2a0c</span><span class="o">.</span><span class="n">scope</span>
+         <span class="n">Unit</span><span class="p">:</span> <span class="n">docker</span><span class="o">-</span><span class="n">d926ec28b44a1acdef4028e7ac31a57fa59233ea7f252ee942fdad4fdeda2a0c</span><span class="o">.</span><span class="n">scope</span>
+        <span class="n">Slice</span><span class="p">:</span> <span class="n">system</span><span class="o">.</span><span class="n">slice</span>
+      <span class="n">Boot</span> <span class="n">ID</span><span class="p">:</span> <span class="n">b0f8d2d6f4c04a4780d37d61c5f040c8</span>
+   <span class="n">Machine</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">4</span><span class="n">bfa155647104435a92b2a27486fd72c</span>
+     <span class="n">Hostname</span><span class="p">:</span> <span class="n">d926ec28b44a</span>
+      <span class="n">Storage</span><span class="p">:</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">coredump</span><span class="o">/</span><span class="n">core</span><span class="o">.</span><span class="n">conftest</span><span class="mf">.1000</span><span class="o">.</span><span class="n">b0f8d2d6f4c04a4780d37d61c5f040c8</span><span class="mf">.2966062.1647265581000000</span><span class="o">.</span><span class="n">zst</span> <span class="p">(</span><span class="n">present</span><span class="p">)</span>
+    <span class="n">Disk</span> <span class="n">Size</span><span class="p">:</span> <span class="mf">17.8</span><span class="n">K</span>
+      <span class="n">Message</span><span class="p">:</span> <span class="n">Process</span> <span class="mi">2966062</span> <span class="p">(</span><span class="n">conftest</span><span class="p">)</span> <span class="n">of</span> <span class="n">user</span> <span class="mi">1000</span> <span class="n">dumped</span> <span class="n">core</span><span class="o">.</span>
+
+               <span class="n">Module</span> <span class="o">/</span><span class="n">base</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">work</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">coreutils</span><span class="o">-</span><span class="n">native</span><span class="o">/</span><span class="mf">8.32</span><span class="o">-</span><span class="n">r0</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">conftest</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="mi">3</span><span class="n">b2c55acb3f48df451fcb1</span><span class="o">&gt;</span>
+               <span class="n">Module</span> <span class="o">/</span><span class="n">base</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">sysroots</span><span class="o">-</span><span class="n">uninative</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">libc</span><span class="o">.</span><span class="n">so</span><span class="mf">.6</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="n">b89eed4abc28929e3cb8a5dd6f0a6cd77d</span><span class="o">&gt;</span>
+               <span class="n">Module</span> <span class="o">/</span><span class="n">base</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">sysroots</span><span class="o">-</span><span class="n">uninative</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ld</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">x86</span><span class="o">-</span><span class="mf">64.</span><span class="n">so</span><span class="mf">.2</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="mf">7341e3</span><span class="n">cb7f7334630abae45</span><span class="o">&gt;</span>
+               <span class="n">Module</span> <span class="n">linux</span><span class="o">-</span><span class="n">vdso</span><span class="o">.</span><span class="n">so</span><span class="mf">.1</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="n">f9fada32e91353254b262e357cb155d189cc0523</span>
+               <span class="n">Stack</span> <span class="n">trace</span> <span class="n">of</span> <span class="n">thread</span> <span class="mi">1766830</span><span class="p">:</span>
+               <span class="c1">#0  0x00007fbd8bc7c723 n/a (/base/build/tmp/sysroots-uninative/x86_64-linux/lib/libc.so.6 + 0x8c723)</span>
+               <span class="n">ELF</span> <span class="nb">object</span> <span class="n">binary</span> <span class="n">architecture</span><span class="p">:</span> <span class="n">AMD</span> <span class="n">x86</span><span class="o">-</span><span class="mi">64</span>
+</pre></div>
+</div>
+<p id="canonical-output-2">canonical output</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">date</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1647265581</span><span class="p">,</span><span class="mi">000000000</span><span class="p">]</span>
+<span class="n">severity</span> <span class="o">=</span> <span class="p">(</span><span class="n">SIGABRT</span> <span class="o">-&gt;</span><span class="p">)</span> <span class="ne">Warning</span>
+<span class="n">source</span> <span class="o">=</span> <span class="p">{</span><span class="n">pid</span><span class="p">:</span> <span class="mi">2966062</span><span class="p">,</span><span class="n">appname</span><span class="p">:</span><span class="s2">&quot;./conftest&quot;</span><span class="p">,</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span><span class="s2">&quot;/base/build/tmp/work/x86_64-linux/coreutils-native/8.32-r0/build/conftest&quot;</span><span class="p">}</span>
+<span class="n">hardware</span> <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;4bfa155647104435a92b2a27486fd72c&quot;</span>
+<span class="n">classification</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">messageCode</span> <span class="o">=</span> <span class="n">n</span><span class="o">/</span><span class="n">a</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="s2">&quot;</span>
+    <span class="n">Message</span><span class="p">:</span> <span class="n">Process</span> <span class="mi">2966062</span> <span class="p">(</span><span class="n">conftest</span><span class="p">)</span> <span class="n">of</span> <span class="n">user</span> <span class="mi">1000</span> <span class="n">dumped</span> <span class="n">core</span><span class="o">.</span>
+    <span class="n">Module</span> <span class="o">/</span><span class="n">base</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">work</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">coreutils</span><span class="o">-</span><span class="n">native</span><span class="o">/</span><span class="mf">8.32</span><span class="o">-</span><span class="n">r0</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">conftest</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="mi">3</span><span class="n">b2c55acb3f48df451fcb1</span><span class="o">&gt;</span>
+    <span class="n">Module</span> <span class="o">/</span><span class="n">base</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">sysroots</span><span class="o">-</span><span class="n">uninative</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">libc</span><span class="o">.</span><span class="n">so</span><span class="mf">.6</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="n">b89eed4abc28929e3cb8a5dd6f0a6cd77d</span><span class="o">&gt;</span>
+    <span class="n">Module</span> <span class="o">/</span><span class="n">base</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">sysroots</span><span class="o">-</span><span class="n">uninative</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ld</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">x86</span><span class="o">-</span><span class="mf">64.</span><span class="n">so</span><span class="mf">.2</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="mf">7341e3</span><span class="n">cb7f7334630abae45</span><span class="o">&gt;</span>
+    <span class="n">Module</span> <span class="n">linux</span><span class="o">-</span><span class="n">vdso</span><span class="o">.</span><span class="n">so</span><span class="mf">.1</span> <span class="k">with</span> <span class="n">build</span><span class="o">-</span><span class="nb">id</span> <span class="n">f9fada32e91353254b262e357cb155d189cc0523</span>
+    <span class="n">Stack</span> <span class="n">trace</span> <span class="n">of</span> <span class="n">thread</span> <span class="mi">1766830</span><span class="p">:</span>
+    <span class="c1">#0  0x00007fbd8bc7c723 n/a (/base/build/tmp/sysroots-uninative/x86_64-linux/lib/libc.so.6 + 0x8c723)</span>
+    <span class="n">ELF</span> <span class="nb">object</span> <span class="n">binary</span> <span class="n">architecture</span><span class="p">:</span> <span class="n">AMD</span> <span class="n">x86</span><span class="o">-</span><span class="mi">64</span>
+<span class="s2">&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+<section id="components">
+<h2>Components<a class="headerlink" href="#components" title="Permalink to this heading">¶</a></h2>
+<p>Based on the requirements we can simplify Elos into the following
+abstract components:</p>
+<ul class="simple">
+<li><p>EventProcessor: Elos itself as the message broker which receives and
+distributes events based on previously defined event filters.</p></li>
+<li><p>LogAggregator: Persist events that fits (SM_REQ001) and is therefore
+the implementation for the required DataCollectionFacility (DCF)</p></li>
+<li><p>Scanner: Modular part (shared object) of the program that scans for
+events and publish them</p></li>
+<li><p>Library: C library that contains everything to communicate with the
+server</p></li>
+</ul>
+<p>Components using elos:</p>
+<ul class="simple">
+<li><p>Client: Applications which subscribe to or publish events by using
+the C-Library (or directly to the socket)</p></li>
+<li><p>Kernel: delivers log messages via its interface to the event logging
+and management system daemon</p></li>
+<li><p>Syslog-ing application: Application that uses syslog() to write log
+infos (most FOSS does this)</p></li>
+</ul>
+<section id="design-decision-basic-principle-of-processing-inputs">
+<h3>Design decision - Basic principle of processing inputs<a class="headerlink" href="#design-decision-basic-principle-of-processing-inputs" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Filtering of input data is done by the scanner in any case</p></li>
+</ul>
+<section id="a-logging-of-events-is-done-seperately-by-each-event-source">
+<h4>A) Logging of events is done seperately by each event source<a class="headerlink" href="#a-logging-of-events-is-done-seperately-by-each-event-source" title="Permalink to this heading">¶</a></h4>
+<p>Input</p>
+<ul class="simple">
+<li><p>Is a arbitrary data point (String, number , …)</p></li>
+</ul>
+<p>processing:</p>
+<ul class="simple">
+<li><p>If matched by filter rule then:</p>
+<ul>
+<li><p>If event should be published pass it to the EventAssembler which
+creates and publish an event containing the input data</p></li>
+<li><p>If event should be logged pass it to the LogAssebler which creates
+and stores the <code class="docutils literal notranslate"><span class="pre">event</span></code></p></li>
+</ul>
+</li>
+</ul>
+<p>Commitment:</p>
+<ul class="simple">
+<li><p>Not each event is automatically logged</p></li>
+<li><p>The EventProcessor receives, filters and dispatches (or drops)
+published events</p></li>
+<li><p>Each Scanner contains the logic on how to filter and convert raw
+inputs into an canonical event</p></li>
+<li><p>Access to LogAggregator must be synchronized for multiple scanner
+threads</p></li>
+<li><p>Knowledge and Logic for new Log sources can be extended separately
+through shared library!</p></li>
+</ul>
+<p><img alt="Component diagram_A" src="../../_images/component_diagram_A.png" /></p>
+</section>
+<section id="b-logging-is-done-by-the-eventprocessor">
+<h4>B) Logging is done by the EventProcessor<a class="headerlink" href="#b-logging-is-done-by-the-eventprocessor" title="Permalink to this heading">¶</a></h4>
+<p>input</p>
+<ul class="simple">
+<li><p>Is a arbitrary data point (String, number , …)</p></li>
+<li><p>Each input <code class="docutils literal notranslate"><span class="pre">Data</span></code> is an event if passes the filter criteria</p></li>
+</ul>
+<p>processing:</p>
+<ul class="simple">
+<li><p>Each event is published</p></li>
+<li><p>Each published event gets logged by the LogAggregator in the
+EventProcessor</p></li>
+</ul>
+<p>Commitment:</p>
+<ul class="simple">
+<li><p>Data is published as it is as event payload</p></li>
+<li><p>Each event is logged through LogAggregator</p></li>
+<li><p>Logging is done by EventProcessor</p></li>
+<li><p>Scanner has no knowledge about Data format</p></li>
+<li><p>Knowledge and Logic is possibly scattered through EventProcessor and
+LogAggregator</p></li>
+</ul>
+<p><img alt="Component diagram_B" src="../../_images/component_diagram_B.png" /></p>
+</section>
+<section id="conclusion-1">
+<span id="id6"></span><h4>Conclusion<a class="headerlink" href="#conclusion-1" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>We use A as :</p>
+<ul>
+<li><p>Separate Log-Features from event handling (separation of concerns)</p></li>
+<li><p>Better performance in the EventProcessor because we do not bother
+with logging</p></li>
+<li><p>Knowledge and logic for new Log sources can be extended separately
+through shared library!</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="elos-1">
+<span id="id7"></span><h3>elos<a class="headerlink" href="#elos-1" title="Permalink to this heading">¶</a></h3>
+<p>Elosd has the following tasks:</p>
+<ul class="simple">
+<li><p>Receive and dispatch events based on user defined event filters
+(EventProcessor)</p></li>
+<li><p>Persist certain event messages on a non volatile storage</p></li>
+<li><p>Maintain the scanner plugins (Scanner Manager)</p></li>
+</ul>
+<section id="the-eventprocessor">
+<h4>The EventProcessor<a class="headerlink" href="#the-eventprocessor" title="Permalink to this heading">¶</a></h4>
+<p>Elos is required to accept messages from scanner plugins or different
+applications generated through arbitrary events and dispatch them to
+corresponding event lists (message queues).</p>
+<section id="communication-patterns">
+<h5>communication patterns<a class="headerlink" href="#communication-patterns" title="Permalink to this heading">¶</a></h5>
+<p>Requirements:</p>
+<ul class="simple">
+<li><p>N to M communication (N message producer to M message consumer)</p></li>
+<li><p>Message producer do not need to know anything about message consumers</p></li>
+</ul>
+<p>Possible approaches using a message broker architecture</p>
+<ul class="simple">
+<li><p>Central instance controlling publishing of message</p></li>
+<li><p>House keeping, resource control at a central known controllable point</p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>Publish &amp; Poll</p></li>
+</ol>
+<p>The message dispatching follows the “publish &amp; poll” or the “message
+queue / mailbox” communication pattern
+(<a class="reference external" href="https://en.wikipedia.org/wiki/Message_queue">https://en.wikipedia.org/wiki/Message_queue</a>)</p>
+<ul class="simple">
+<li><p>Messages will be fetched by the client</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Publish &amp; subscribe</p></li>
+</ol>
+<p>Others like the “publish &amp; subscribe” communication pattern
+(<a class="reference external" href="https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern">https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern</a>)
+are in discussion if required.</p>
+<ul class="simple">
+<li><p>Message is directly pushed to the client, the client gets directly
+notified about new messages</p></li>
+</ul>
+</section>
+<section id="actual-implementation">
+<h5>Actual implementation<a class="headerlink" href="#actual-implementation" title="Permalink to this heading">¶</a></h5>
+<p><img alt="Publish &amp; Poll" src="../../_images/publish_poll.png" /></p>
+<p>In general there are the following roles:</p>
+<ul class="simple">
+<li><p>EventProcessor:</p>
+<ul>
+<li><p>Receives published events</p></li>
+<li><p>Compares the received items with the previously configured
+EventFilters</p>
+<ul>
+<li><p>Append the event to the EventFilter’s EventQueue in case of a
+match</p></li>
+<li><p>Drop the event in case there were no matches</p></li>
+</ul>
+</li>
+<li><p>Only one instance present (running multiple instances is not
+intended)</p></li>
+</ul>
+</li>
+<li><p>Subscriber:</p>
+<ul>
+<li><p>Is a client</p></li>
+<li><p>Registers for specific events based on EventFilterStrings</p></li>
+<li><p>The number of subscribers is limited by design only by system
+resources</p></li>
+<li><p>Subscribers connect via TCP/IP socket</p></li>
+<li><p>Has to maintain an active connection represented by a session to :</p>
+<ul>
+<li><p>Poll for events on a regular basis</p></li>
+<li><p>Keep created EventFilters and EventQueues alive</p></li>
+</ul>
+</li>
+<li><p>Number of EventQueues a subscriber can create is limited by the
+type of the EventQueueID</p></li>
+<li><p>Currently EventFilterStrings are not shared or compared, so
+registering two times to receive events with (e.g.) messsage code
+8004 will result in two fully independent EvenQueues.</p></li>
+</ul>
+</li>
+<li><p>Publisher&lt;client,scanner&gt;:</p>
+<ul>
+<li><p>Send events to the EventProcessor for distribution</p></li>
+<li><p>Can publish an arbitrary amount of independent events per
+session/connection</p></li>
+<li><p>Multiple publishers can publish the same event</p></li>
+</ul>
+</li>
+<li><p>Client:</p>
+<ul>
+<li><p>Can be any arbitrary process who is capable to connect to the
+elosd socket. (this includes remote process on other machines)</p></li>
+<li><p>Can be both Subscriber and Publisher</p></li>
+<li><p>Number is limited at least by CLIENT_MANAGER_MAX_CONNECTIONS +
+CLIENT_MANAGER_LISTEN_QUEUE_LENGTH</p></li>
+</ul>
+</li>
+<li><p>Scanner:</p>
+<ul>
+<li><p>Are dynamic loadable shared objects to extend the basic
+functionality of elosd by publishing arbitrary information
+directly via the EventProcessor</p></li>
+<li><p>Not explicitly limited in number, but by system resources like
+open file descriptors or thread count</p></li>
+</ul>
+</li>
+</ul>
+<p>The relevant entities are related as follows:</p>
+<p><img alt="Entities" src="../../_images/event_class_diagram.png" /></p>
+<ul class="simple">
+<li><p>Event</p>
+<ul>
+<li><p>Is the entity which is published</p></li>
+<li><p>Corresponds usually to one publisher, but it is not excluded that
+multiple publishers publish the same events (i.e. two publishers
+observing the syslog will publish the same log line)</p></li>
+<li><p>Event lifetime depends on existing EventFilters and EventQueues,
+if the Event itself doesn’t match any existing EventFilters while
+published, it is dropped, otherwise it will reside in an
+EventQueue until it is read or overwritten by newer Events.</p></li>
+</ul>
+</li>
+<li><p>EventFilter</p>
+<ul>
+<li><p>Receives a unique EventFilterID during creation</p></li>
+<li><p>Exists only as long as the corresponding client has an active
+connection</p></li>
+<li><p>Matches Events based on the given EventFilterString (e.g. events
+with messageCode 8004)</p></li>
+</ul>
+</li>
+<li><p>EventQueue (message queue/box)</p>
+<ul>
+<li><p>Receives a unique EventQueueID during creation</p></li>
+<li><p>Exists only as long as the corresponding client has an active
+connection</p></li>
+<li><p>Is limited in capacity, which can be controlled through the API</p></li>
+<li><p>Drops oldest messages first on overflow</p></li>
+</ul>
+</li>
+<li><p>EventFilterNode</p>
+<ul>
+<li><p>Receives a unique EventFilterNodeID during creation</p></li>
+<li><p>Exists only as long as the corresponding client has an active
+connection</p></li>
+<li><p>Connects one or more EventFilters with one EventQueue</p></li>
+<li><p>Allows for much easier Event processing (“if any EventFilter in
+EventFilterNode matches, add Event to EventQueue”)</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Publishing</strong></p>
+<p><img alt="Publishing" src="../../_images/publishing_sequence_diagram.png" /></p>
+<p><strong>Subscribing</strong></p>
+<p><img alt="Subscribing" src="../../_images/subscribing_sequence_diagram.png" /></p>
+</section>
+<section id="design-decision-communication-protocol">
+<span id="id8"></span><h5>Design Decision – communication protocol<a class="headerlink" href="#design-decision-communication-protocol" title="Permalink to this heading">¶</a></h5>
+<p>Requirements:</p>
+<ul class="simple">
+<li><p>Easy to extend and human readable</p></li>
+<li><p>Message producer do not need to know anything about message consumers</p></li>
+<li><p>“scale able” and therefore it works for a view as good for many
+participants, which means the number of participants can change
+constantly during runtime</p></li>
+</ul>
+<p>Possible approaches :</p>
+<ol class="upperalpha simple">
+<li><p>Binary protocol</p></li>
+</ol>
+<ul class="simple">
+<li><p>More size efficient then text based</p></li>
+<li><p>Difficult to use i.e. on command line for shell scripting without
+dedicated utilities</p></li>
+<li><p>Not human readable</p></li>
+<li><p>BSON could be a possible solution</p>
+<ul>
+<li><p>Extendable</p></li>
+<li><p>More efficient then text based, due to no text parsing overhead</p></li>
+</ul>
+</li>
+</ul>
+<ol class="upperalpha simple" start="2">
+<li><p>text based protocol</p></li>
+</ol>
+<ul class="simple">
+<li><p>Easy to use i.e. on command line</p></li>
+<li><p>Human readable</p></li>
+<li><p>Somewhat laborious to use in low level languages like C</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p>
+<ul>
+<li><p>Readable but compact in size</p></li>
+<li><p>Well known / supported</p></li>
+<li><p>Structured and type support</p></li>
+<li><p>Not as cycle efficient as binary protocols due to parsing overhead</p></li>
+</ul>
+</li>
+</ul>
+<p>Decision:</p>
+<p>Use a JSON based protocol as:</p>
+<ul class="simple">
+<li><p>Is easy to extend , important for future feature requests</p></li>
+<li><p>Easy to use on command line, many tools/libraries available and
+proven in use</p></li>
+<li><p>Basic type support: possible to encode integer, floating points
+strings, objects/maps and arrays</p></li>
+</ul>
+</section>
+<section id="actual-implementation-1">
+<span id="id9"></span><h5>Actual implementation<a class="headerlink" href="#actual-implementation-1" title="Permalink to this heading">¶</a></h5>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;date&quot;</span><span class="p">:[</span><span class="mi">1362</span><span class="p">,</span><span class="mi">682302528</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="nt">&quot;fileName&quot;</span><span class="p">:</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;hardwareid&quot;</span><span class="p">:</span><span class="s2">&quot;INVALID&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;arbitrary data&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="event-logging">
+<h3>Event Logging<a class="headerlink" href="#event-logging" title="Permalink to this heading">¶</a></h3>
+<p>The event logging system implements a data collection facility, which
+collects events from different sources to filters and limits them in
+order to store them. For details about the canonical event format see
+“canonical event format”.</p>
+<p>The Event Logging system has the following main goals:</p>
+<ul class="simple">
+<li><p>filter events depending on filter settings</p></li>
+<li><p>limit events to log if a configured limit (logs per time) is exceeded</p></li>
+<li><p>optimize storage access to minimize IO operations and maximize
+physical storage lifetime</p></li>
+</ul>
+<p>For the design the following assumptions are made: (TBD make some
+reliable measurements)</p>
+<ul class="simple">
+<li><p>the upper limit of available storage is 100GB</p></li>
+<li><p>an storage entity the event is round about &lt;= 100Kb</p></li>
+<li><p>10⁶ events; 100 event/s =&gt; 60H</p></li>
+<li><p>All events are treated equal / categorize events and apply different
+storage retention policies</p></li>
+<li><p>What is the minimal expected time frame to hold events (1a ?)</p></li>
+<li><p>512 Bytes is smallest storage entity size (SSD/MMC always write at
+least 512 byte)</p></li>
+</ul>
+<p><img alt="overview event logging" src="../../_images/overview_event_logging.png" /></p>
+<section id="log-aggregation">
+<h4>Log aggregation<a class="headerlink" href="#log-aggregation" title="Permalink to this heading">¶</a></h4>
+<p>The details on storing events shall be encapsulated by a component
+called LogAggregator. This component is responsible for the following
+tasks:</p>
+<ul class="simple">
+<li><p>manage storage backend start, stop</p></li>
+<li><p>filter and limit event logs</p></li>
+<li><p>forward events to the actual storage backend to persist them</p></li>
+<li><p>manage concurrent storage requests</p></li>
+<li><p>manage retention policy, (trigger log cleanup, drop old logs )</p></li>
+<li><p>monitor storage backend health, generate notification about failing
+storage backend</p></li>
+<li><p>manage multiple backends (compile time or as loadable plugin?)</p></li>
+</ul>
+<p>The Loggagregator is a shared instance in the elosd. So it has to
+synchronize all attempts to persist an event.</p>
+<section id="logaggregator-detailed-design-api">
+<h5>LogAggregator - Detailed Design (API)<a class="headerlink" href="#logaggregator-detailed-design-api" title="Permalink to this heading">¶</a></h5>
+<p>The LogAggregator interface is defined as follows:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosLogAggregator</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">elosLogAggregator_t</span><span class="p">;</span>
+
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorStart</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorAdd</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorShutdown</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorFindEvents</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">rule</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>elosLogAggregatorStart</p>
+<p>Initialize the event logging system. It initializes the configured
+storage backend and setup synchronization and filter functionality.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorStart</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator instance</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosLogAggregatorShutdown</p>
+<p>Shutdown the logging system and free all related resources.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorShutdown</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator instance</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosLogAggregatorAdd</p>
+<p>Queue an event to store on non volatile storage.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorAdd</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">event</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator instance</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> event -&gt; the event that will get stored</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosLogAggregatorFindEvents</p>
+<div class="line-block">
+<div class="line">Find all logged events that match a given filter rule. The events are
+gathered from the json backend.</div>
+<div class="line">The filter rule, which will be applied to the events, is a comparision
+formula in string format</div>
+<div class="line">i.e. “.event.source.appName ‘exampleName’ STRCMP”. Events with
+elements matching the rule are appended</div>
+<div class="line">to the third parameter, the event vector.</div>
+</div>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorFindEvents</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">rule</span><span class="p">,</span>
+<span class="w">    </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator instance</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> rule -&gt; a filter rule in string format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in|out]</span></code> events -&gt; an event vector, where elements will be
+appended</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+</section>
+</section>
+<section id="logging-backend-s">
+<h4>Logging Backend(s)<a class="headerlink" href="#logging-backend-s" title="Permalink to this heading">¶</a></h4>
+<p>The actual storage process depends on the storage engine used. Therefore
+this is abstracted in so called Storage backends. A storage backend
+takes one or more events store them in the underlying storage engine. A
+storage engine could be a simple file write, a database or any other
+solution that fits the needs for the target system.</p>
+<p>The interface of a storage backend consist basically of the following
+tasks:</p>
+<ul class="simple">
+<li><p>Backend open</p></li>
+<li><p>Backend store</p></li>
+<li><p>Backend close</p></li>
+<li><p>Realize required retention policy</p></li>
+</ul>
+<p>The following Design Decision shall describe the decision process for
+the final storage backend to use.</p>
+<section id="design-decision-storage-backend">
+<span id="id10"></span><h5>Design Decision – Storage backend<a class="headerlink" href="#design-decision-storage-backend" title="Permalink to this heading">¶</a></h5>
+<ol class="upperalpha simple">
+<li><p>JSON-File based</p></li>
+<li><p>DBMS - SQLITE</p></li>
+<li><p>Time series DB</p></li>
+<li><p>NoSQL</p></li>
+<li><p>Custom implementation</p></li>
+</ol>
+</section>
+<section id="storage-backend-interface-detailed-design-api">
+<h5>Storage backend Interface - Detailed Design (API)<a class="headerlink" href="#storage-backend-interface-detailed-design-api" title="Permalink to this heading">¶</a></h5>
+<p>The StorageBackend interface is defined as follows:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">elosStorageBackend</span><span class="p">;</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosStorageBackend</span><span class="w"> </span><span class="n">elosStorageBackend_t</span><span class="p">;</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendStart_t</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendPersist_t</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span>
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendShutdown_t</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">elosStorageBackend</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackendStart_t</span><span class="w"> </span><span class="o">*</span><span class="n">start</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackendPersist_t</span><span class="w"> </span><span class="o">*</span><span class="n">persist</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackendShutdown_t</span><span class="w"> </span><span class="o">*</span><span class="n">shutdown</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>elosStorageBackendStart</p>
+<p>Initialize the event logging system. It initializes the configured
+storage backend and setup synchronization and filter functionality.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendStart_t</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to the backend instance</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosStorageBackendShutdown</p>
+<p>Shutdown the logging system and free all related resources.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendShutdown_t</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> -&gt; a pointer to a backend instance</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosStorageBackendPersist</p>
+<p>Writes the event to the underlying storage.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendPersist_t</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to a backend instance</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> event -&gt; a pointer to a event instance to persist</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+</section>
+<section id="json-backend-detailed-design-api">
+<h5>Json Backend - Detailed Design (API)<a class="headerlink" href="#json-backend-detailed-design-api" title="Permalink to this heading">¶</a></h5>
+<p>The JsonBackend interface is defined as follows:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendStart</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendPersist</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendFindEvents</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendShutdown</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosJsonBackend</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">storageFile</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">elosJsonBackend_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>elosJsonBackendStart</p>
+<p>Initialize the file backed storage of JSON serialized event objects. The
+<code class="docutils literal notranslate"><span class="pre">elosStorageBackend_t.backendData</span></code> shall be initialized with a pointer
+to a <code class="docutils literal notranslate"><span class="pre">elosJsonBackend_t</span></code> instance.
+<code class="docutils literal notranslate"><span class="pre">elosJsonBackend_t.storageFileWrite</span></code> and
+<code class="docutils literal notranslate"><span class="pre">elosJsonBackend_t.storageFileRead</span></code> shall contain valid file
+descriptors to the target file for writing/reading purposes. In write
+mode, the file shall be opened for appending and synchronous writing, to
+ensure a write is carried out through the kernel caches.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendStart</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to the backend instance</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosJsonBackendShutdown</p>
+<p>Shutdown the logging system and free all related resources.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendShutdown</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> -&gt; a pointer to a backend instance</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosJsonBackendPersist</p>
+<p>Writes the event to the underlying storage pointed to by
+<code class="docutils literal notranslate"><span class="pre">elosStorageBackend_t.backendData</span></code>. The function shall not call
+<code class="docutils literal notranslate"><span class="pre">sync</span></code> to flush kernel caches, as the file shall be opened with
+O_SYNC. The function shall block until the event is successful written
+to the storage backend.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendPersist</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to a backend instance</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> event -&gt; a pointer to a event instance to persist</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+<p>elosJsonBackendFindEvents</p>
+<p>Applies a filter to a given storage backend. Events which weren’t sorted
+out by the filter, will be appended on the event vector.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendFindEvents</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span>
+<span class="w">    </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span>
+<span class="w">    </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to a backend instance</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> filter -&gt; a filter that will be applied to the backend</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in|out]</span></code> events -&gt; an event vector, where elements will be
+appended</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>SAFU_RESULT_OK -&gt; on success</p></li>
+<li><p>SAFU_RESULT_FAILED -&gt; on failure</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="event-filtering-and-mapping">
+<h3>Event Filtering and Mapping<a class="headerlink" href="#event-filtering-and-mapping" title="Permalink to this heading">¶</a></h3>
+<p>Elos has to convert arbitrary input into the canonical event format and
+filter such events based on that format. The filter step is necessary to
+categorize events and select them for further processing steps, like
+dispatching them to the correct subscribers.</p>
+<p>This leads to two kinds of event processing:</p>
+<ul class="simple">
+<li><p>Filtering: decide whether or not an event matches at least one rule
+and continue processing or drop the event</p></li>
+<li><p>Mapping: decide whether or not an input with it’s processed event
+data matches a rule and assign a corresponding value to a property of
+an event.</p></li>
+</ul>
+<p>The following diagram gives an overview of possible usages of
+<code class="docutils literal notranslate"><span class="pre">event</span> <span class="pre">filtering</span> <span class="pre">and</span> <span class="pre">mapping</span></code>. <img alt="Event log filtering and mapping" src="../../_images/overview_event_log_filtering.png" /></p>
+<section id="mapping">
+<h4>Mapping<a class="headerlink" href="#mapping" title="Permalink to this heading">¶</a></h4>
+<p>The mapping is a specific task depending on the input and the meaning of
+those inputs and their origin. Therefore it is necessary to have a
+generic component which is capable of mapping values to the different
+canonical event properties according to one or more configurable rules.
+A hard coded rule set will be not flexible enough, as it is not possible
+to predict which programs are running on the final system and to manage
+a mapping for all i.e. log lines of each possible version of a program.</p>
+<p>So for example to assign a message code to a new event depending on the
+original input the <code class="docutils literal notranslate"><span class="pre">MappingComponent</span></code> needs the following inputs :</p>
+<ul class="simple">
+<li><p>A mapping rule</p></li>
+<li><p>The input</p></li>
+<li><p>The event with values already mapped</p></li>
+<li><p>A result, which should be applied if the rule matches</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MappedVal</span> <span class="o">=</span> <span class="n">MappingRule</span><span class="p">(</span><span class="n">Input</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Val</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="filtering">
+<h4>Filtering<a class="headerlink" href="#filtering" title="Permalink to this heading">¶</a></h4>
+<p>Filtering of events can be achieved by a similar approach, the only
+difference is that it is enough to know if a filter yields a <code class="docutils literal notranslate"><span class="pre">true</span></code> or
+<code class="docutils literal notranslate"><span class="pre">false</span></code>. A <code class="docutils literal notranslate"><span class="pre">FilterComponent</span></code> requires the following inputs:</p>
+<ul class="simple">
+<li><p>A filter rule</p></li>
+<li><p>The event</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Applies</span> <span class="o">=</span> <span class="n">FilterRule</span><span class="p">(</span><span class="n">Input</span><span class="p">,</span> <span class="n">Event</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>A rule should be a boolean expression and evaluates always to <code class="docutils literal notranslate"><span class="pre">false</span></code>
+or <code class="docutils literal notranslate"><span class="pre">true</span></code>. To avoid continues parsing of rules a mechanism is needed
+that allows to precompile rules and apply them on incoming events and or
+inputs. A rule given as a string like
+<code class="docutils literal notranslate"><span class="pre">input</span> <span class="pre">==</span> <span class="pre">&quot;open</span> <span class="pre">port&quot;</span> <span class="pre">&amp;&amp;</span> <span class="pre">event.source.appName</span> <span class="pre">==</span> <span class="pre">&quot;ssh&quot;</span></code> must be parsed
+and prepared to be applied efficiently to incoming events.</p>
+<p>To accomplish this the following components are necessary:</p>
+<ul class="simple">
+<li><p>A rule evaluation engine</p></li>
+<li><p>A rule source which provide rules</p></li>
+<li><p>A translation engine to prepare rules for the evaluation engine</p></li>
+</ul>
+<p><img alt="Mapping and filter concept" src="../../_images/mapping_filter_concept.png" /></p>
+</section>
+<section id="rule-sources">
+<h4>Rule Sources<a class="headerlink" href="#rule-sources" title="Permalink to this heading">¶</a></h4>
+<p>Rule sources in the elos context currently can be a configuration object
+or a subscription from a client. In the first case rules can be mapping
+or filtering rules. For the client subscription currently only filtering
+rules are useful. But if a use case for mapping rules comes up it shall
+be possible to use them there as well.</p>
+<p>The rule strings shall be provided by the configuration as simple key
+value mappings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">4001</span><span class="p">:</span> <span class="s2">&quot;event.severity == 2 &amp;&amp; input == &quot;</span><span class="n">some</span> <span class="n">value</span><span class="s2">&quot; &quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="translation-engine">
+<h4>Translation engine<a class="headerlink" href="#translation-engine" title="Permalink to this heading">¶</a></h4>
+<p>The translation unit shall parse the input rule and convert it into a
+valid input sequence for the RpnFilter of the evaluation unit.</p>
+</section>
+<section id="rule-evaluation-engine">
+<h4>Rule evaluation engine<a class="headerlink" href="#rule-evaluation-engine" title="Permalink to this heading">¶</a></h4>
+<p>A state machine based on the Reverse Polish Notation (RpnFilter) is
+currently used as the rule evaluation engine. The concept should be
+easily extensible by additional engines that provide other
+implementations. For example a script interpreter that provides the
+ability of stateful filtering can be plugged in here.</p>
+<section id="rpnfilter">
+<h5>RpnFilter<a class="headerlink" href="#rpnfilter" title="Permalink to this heading">¶</a></h5>
+<p>Fast and efficient message filtering. See the <a class="reference external" href="rpnfilter/rpnfilter.md">RpnFilter
+Documentation</a> for more details.</p>
+</section>
+<section id="eventprocessor">
+<h5>EventProcessor<a class="headerlink" href="#eventprocessor" title="Permalink to this heading">¶</a></h5>
+<p>Abstract component to group components related to Event processing
+together. See the <a class="reference external" href="eventprocessor/eventprocessor.md">EventProcessor
+Documentation</a> for more details.</p>
+</section>
+</section>
+</section>
+<section id="scanner-manager">
+<h3>Scanner Manager<a class="headerlink" href="#scanner-manager" title="Permalink to this heading">¶</a></h3>
+<p>Elosd allows to observe the system for certain events and publish them
+directly via the EventProcessor. The actual observation and publishing
+is done within the Scanners. The Scanner Manager has the task to
+maintain them.</p>
+<ul class="simple">
+<li><p>A Scanner:</p>
+<ul>
+<li><p>Is a shared object that provides the Scanner-API by exporting the
+function symbols defined in scanner.h</p></li>
+<li><p>Intended to publish messages for arbitrary events</p></li>
+<li><p>Are not explicitly limited in number, but by system resources like
+open file descriptors</p></li>
+<li><p>Is expected to achieve lower latency then publishing messages
+through tcp/ip</p></li>
+</ul>
+</li>
+<li><p>Scanner Manager:</p>
+<ul>
+<li><p>Locate shared object files that shall be loaded as Scanner</p></li>
+<li><p>Instantiate, configure and run a Scanner in a separated thread</p></li>
+<li><p>Stop and restart scanner if necessary</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="scanner">
+<h2>Scanner<a class="headerlink" href="#scanner" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>A Scanner:</p>
+<ul>
+<li><p>Is a shared object that provides the Scanner-API by exporting the
+function symbols defined in scanner.h</p></li>
+<li><p>Intended to publish messages for arbitrary events</p></li>
+<li><p>Are not explicitly limited in number, but by system resources like
+open file descriptors</p></li>
+<li><p>Is expected to achieve lower latency then publishing messages
+through tcp/ip</p></li>
+</ul>
+</li>
+</ul>
+<section id="build-in-scanner-examples">
+<h3>build’in scanner (examples)<a class="headerlink" href="#build-in-scanner-examples" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Syslog</p></li>
+<li><p>Kmsg</p></li>
+</ul>
+<section id="syslog-scanner">
+<span id="id11"></span><h4>Syslog – Scanner<a class="headerlink" href="#syslog-scanner" title="Permalink to this heading">¶</a></h4>
+<p>Serves as a syslog daemon and converts syslog lines into the canonical
+event format.</p>
+<p><img alt="Syslog scanner" src="../../_images/scanner_syslog_component.png" /></p>
+<p>The format of syslog lines is defined in</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://datatracker.ietf.org/doc/rfc5424/">The Syslog Protocol</a>
+(most recent)</p></li>
+<li><p><a class="reference external" href="https://datatracker.ietf.org/doc/html/rfc3164">The BSD syslog
+Protocol</a> (obsolet
+but used by libc)</p></li>
+</ul>
+<p>The current implementation can parse syslog lines according to the
+schema produced by the glibc <code class="docutils literal notranslate"><span class="pre">syslog</span></code> function. (see <a class="reference external" href="https://sourceware.org/git/?p=glibc.git;a=blob;f=misc/syslog.c;h=554089bfc45244e87c08eb0482e61c35dd0fa3ca;hb=HEAD">“%h %e %T
+“</a>)
+The syslog socket is configured as an unix domain socket with UDP and
+listen on <code class="docutils literal notranslate"><span class="pre">/dev/log</span></code>.</p>
+<section id="configuration">
+<h5>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">¶</a></h5>
+<p>Compile time:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ELOSD_SYSLOG_PATH</span></code> –&gt; the path where to create a unix UDP socket
+to listen on, default is <code class="docutils literal notranslate"><span class="pre">/dev/log</span></code></p></li>
+</ul>
+<p>Environment:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ELOS_SYSLOG_PATH</span></code> –&gt; the path where to create a unix UDP socket to
+listen on, default is <code class="docutils literal notranslate"><span class="pre">ELOSD_SYSLOG_PATH</span></code></p></li>
+</ul>
+<p>Configuration structure</p>
+<p>The mapping rules are provided through the configuration. The
+configuration (samconf) allows to lookup single options by a path like
+notation. So the syslog scanner expect the following config structure:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>SyslogScanner
+├──<span class="w"> </span>SyslogPath
+├──<span class="w"> </span>MappingRules
+│<span class="w">   </span>├──<span class="w"> </span>MessageCode
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">4000</span>
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">4001</span>
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span><span class="m">2001</span>
+│<span class="w">   </span>└──<span class="w"> </span>...<span class="w"> </span><span class="o">(</span>other<span class="w"> </span>like<span class="w"> </span>Severity,<span class="w"> </span>classification<span class="o">)</span>
+└──<span class="w"> </span>FilterRules<span class="w"> </span><span class="o">(</span>Not<span class="w"> </span>implemented<span class="o">)</span>
+<span class="w">    </span>├──<span class="w"> </span>empty<span class="w"> </span>payload
+<span class="w">    </span>├──<span class="w"> </span>all<span class="w"> </span>from<span class="w"> </span>appName<span class="w"> </span>X
+<span class="w">    </span>└──<span class="w"> </span>containing<span class="w"> </span>secrets
+</pre></div>
+</div>
+<p>The implementation for configuration files is still in progress so the
+format for configuration files is not defined now.</p>
+</section>
+<section id="published-events">
+<h5>Published events<a class="headerlink" href="#published-events" title="Permalink to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>format is:</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="mi">284</span><span class="p">,</span>
+<span class="w">      </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sshd&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;hardwareid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ba9202e00b98474a892ca45f1bfb3624&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;: error: kex_exchange_identification: client sent invalid protocol identifier \&quot;uhuhuhuhuh\&quot;&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="mi">284</span><span class="p">,</span>
+<span class="w">      </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sshd&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;hardwareid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ba9202e00b98474a892ca45f1bfb3624&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;: error: send_error: write: Broken pipe&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="mi">284</span><span class="p">,</span>
+<span class="w">      </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sshd&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;hardwareid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ba9202e00b98474a892ca45f1bfb3624&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;: banner exchange: Connection from 192.168.7.1 port 33720: invalid format&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="implementation-details">
+<h5>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this heading">¶</a></h5>
+<p>The syslog scanner shall preprocess an incoming syslog line according to
+the expected standard.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://datatracker.ietf.org/doc/rfc5424/">The Syslog Protocol</a>
+(most recent)</p></li>
+<li><p><a class="reference external" href="https://datatracker.ietf.org/doc/html/rfc3164">The BSD syslog
+Protocol</a> (obsolete
+but used by libc)</p></li>
+<li><p>libc - syslog implementation of the target system</p></li>
+</ul>
+<p>After the preprocessing the event have at least filled the following
+fields:</p>
+<ul class="simple">
+<li><p>date</p></li>
+<li><p>severity</p></li>
+<li><p>classification</p></li>
+<li><p>source (appName, pid)</p></li>
+<li><p>payload</p></li>
+</ul>
+<p>The prepared event is then provided to all mapping rules found in the
+configuration for
+<code class="docutils literal notranslate"><span class="pre">/elos/Scanner/SyslogScanner/MappingRules/MessageCode/&lt;appName&gt;</span></code>. The
+key of the first rule that matches will be applied as messageCode and
+the event will be dispatched as intended.</p>
+<p>If no rule matches we have to decide :</p>
+<p>ADR - How to handle events without messageCode mapping</p>
+<p>The problem to solve is, how to deal with events for which elos was
+unable to determine a messageCode.</p>
+<p>Without a messageCode the event is probably not interpretable or
+meaningful for a machine without parsing the payload.</p>
+<p><em>A) Use default mapping for messageCode</em></p>
+<p>If no messageCode mapping rule applies, the event can be tagged as
+<code class="docutils literal notranslate"><span class="pre">Informational</span></code> (1000) or more specific with 1102 (Information). This
+way an event will not get lost, the events can still be received with by
+a subscription to the source identifier and/or severity and
+classification. The messageCode indicates to the subscriber that elos
+was unable to map the event to a specific messageCode and therefor to a
+meaning. So it is left to the subscriber if he either tries to do some
+interpretation of the payload by himself or to simply ignore the event.</p>
+<p>No event will be lost in this scenario. But even broken messages or for
+some special reason not mapped events will always be published.</p>
+<p><em>B) Drop event</em></p>
+<p>In case a messageCode can’t determined by the mapping rules the event
+will be dropped. This means the event is lost and will not be further
+processed, no logging and no publishing occurs.</p>
+<p><em>C) Drop event and create a ``drop event``</em></p>
+<p>An option to trace this behavior is to generate specific “Drop”-events.
+This event shall have a messageCode for the elos reserved events (0-999)
+contain the original source and payload of the dropped event. If
+available also the severity and classification of the dropped event.</p>
+<p><em>D) omit the messageCode</em></p>
+<p>It could also be possible through the nature of the event structure,
+that the messageCode is simply omitted. A messageCode equals to zero has
+currently the meaning of “not provided”. So omitting the messageCode
+could have a clear meaning to the subscribers, “elos can’t provide a
+messageCode for this event, use it or leave it”.</p>
+<p>This way such events are not lost and the subscriber has to decide on
+their own if they can deal with an event thats missing a messageCode.</p>
+<p>####### Conclusion/Decision</p>
+<p>severity - Mapping</p>
+<p>The severity for the syslog protocol is defined as follows:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>Emergency: system is unusable</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>Alert: action must be taken immediately</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>Critical: critical conditions</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>Error: error conditions</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>Warning: warning conditions</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>Notice: normal but significant condition</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>Informational: informational messages</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>Debug: debug-level messages</p></td>
+</tr>
+</tbody>
+</table>
+<p>The severity value can be obtained from the PRI value by calculating
+<code class="docutils literal notranslate"><span class="pre">pri</span> <span class="pre">%</span> <span class="pre">8</span></code>.</p>
+<p>The following table shows the mapping from syslog-severity to
+elos-severity values.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Syslog-severity</p></th>
+<th class="head"><p>elos-severity</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>Fatal = 0x01 Fatal error, not recoverable.</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>Error = 0x02 Error with impact to correct
+functionality.</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>Error = 0x02 Error with impact to correct
+functionality.</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>Warn = 0x03 Warning if correct behavior cannot be
+ensured.</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>Warn = 0x03 Warning if correct behavior cannot be
+ensured.</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>Info = 0x04 Informational, providing high level
+understanding.</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>Info = 0x04 Informational, providing high level
+understanding.</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>Debug = 0x05 Detailed information for
+programmers.</p></td>
+</tr>
+<tr class="row-even"><td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Verbose = 0x06 Extra-verbose debug messages
+(highest grade of information)</p></td>
+</tr>
+<tr class="row-odd"><td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Off = 0x00 No logging</p></td>
+</tr>
+</tbody>
+</table>
+<p>classification - Mapping</p>
+<p>The syslog protocol defines a value to group the log messages by
+facility. The following table list them and the corresponding elos
+classification value.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Syslog-facility</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>elos classifaction
+(TBD)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>kernel messages</p></td>
+<td><p>0x0000000000000001</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>user-level messages</p></td>
+<td><p>0x0000000000000000</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>mail system</p></td>
+<td><p>0x0000000000000002</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>system daemons</p></td>
+<td><p>0x0000000000000020</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>security/authorization
+messages</p></td>
+<td><p>0x0000000000000004</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>messages generated
+internally by syslogd</p></td>
+<td><p>0x0000000000000000</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>line printer subsystem</p></td>
+<td><p>0x0000000000000000</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>network news subsystem</p></td>
+<td><p>0x0000000000000001</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>UUCP subsystem</p></td>
+<td><p>0x0000000000000042</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>clock daemon</p></td>
+<td><p>0x0000000000000000</p></td>
+</tr>
+<tr class="row-even"><td><p>10</p></td>
+<td><p>security/authorization
+messages</p></td>
+<td><p>0x0000000000000004</p></td>
+</tr>
+<tr class="row-odd"><td><p>11</p></td>
+<td><p>FTP daemon</p></td>
+<td><p>0x0000000000000002</p></td>
+</tr>
+<tr class="row-even"><td><p>12</p></td>
+<td><p>NTP subsystem</p></td>
+<td><p>0x0000000000000002</p></td>
+</tr>
+<tr class="row-odd"><td><p>13</p></td>
+<td><p>log audit</p></td>
+<td><p>0x0000000000000004</p></td>
+</tr>
+<tr class="row-even"><td><p>14</p></td>
+<td><p>log alert</p></td>
+<td><p>0x0000000000000000</p></td>
+</tr>
+<tr class="row-odd"><td><p>15</p></td>
+<td><p>clock daemon (note 2)</p></td>
+<td><p>0x0000000000000000</p></td>
+</tr>
+<tr class="row-even"><td><p>16</p></td>
+<td><p>local use 0 (local0)</p></td>
+<td><p>0x0000000100000000</p></td>
+</tr>
+<tr class="row-odd"><td><p>17</p></td>
+<td><p>local use 1 (local1)</p></td>
+<td><p>0x0000000200000000</p></td>
+</tr>
+<tr class="row-even"><td><p>18</p></td>
+<td><p>local use 2 (local2)</p></td>
+<td><p>0x0000000400000000</p></td>
+</tr>
+<tr class="row-odd"><td><p>19</p></td>
+<td><p>local use 3 (local3)</p></td>
+<td><p>0x0000000800000000</p></td>
+</tr>
+<tr class="row-even"><td><p>20</p></td>
+<td><p>local use 4 (local4)</p></td>
+<td><p>0x0000001000000000</p></td>
+</tr>
+<tr class="row-odd"><td><p>21</p></td>
+<td><p>local use 5 (local5)</p></td>
+<td><p>0x0000002000000000</p></td>
+</tr>
+<tr class="row-even"><td><p>22</p></td>
+<td><p>local use 6 (local6)</p></td>
+<td><p>0x0000004000000000</p></td>
+</tr>
+<tr class="row-odd"><td><p>23</p></td>
+<td><p>local use 7 (local7)</p></td>
+<td><p>0x0000008000000000</p></td>
+</tr>
+</tbody>
+</table>
+<p>date - Mapping</p>
+<p>In older versions of the syslog protocol the date field doesn’t provide
+a year nor a timezone. The same is the case for the current development
+environment. To solve this the syslog scanner assumes always the UTC
+timezone and applies the current year to the date from the syslogline.</p>
+</section>
+</section>
+<section id="kmsg-scanner">
+<h4>Kmsg - Scanner<a class="headerlink" href="#kmsg-scanner" title="Permalink to this heading">¶</a></h4>
+<p>Reads the kernel log ring buffer from /dev/kmsg and publishes depending
+on pattern matching ([WIP] currently each line) as a “KMSG” event. The
+scanner tries to open the configured file for reading, if it is not
+found at the specified location it will try to create a FIFO node using
+<code class="docutils literal notranslate"><span class="pre">mkfifo()</span></code>. Multiline kernel messages are not handled right now.</p>
+<section id="published-events-1">
+<span id="id12"></span><h5>Published events<a class="headerlink" href="#published-events-1" title="Permalink to this heading">¶</a></h5>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">KMSG</span></code> –&gt; each line read from /dev/kmsg is published as it is in
+the event payload field. But also parsed to set severity,
+classification and date of the published event. All events generated
+by the kmsg scanner have the message code 1111 “kernel log message”.
+If the message could not be parsed for some reason severity and
+classification will stay empty and the message code is set to 3422
+“message not understood”.</p>
+<ul class="simple">
+<li><p>format is:</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1684239716</span><span class="p">,</span><span class="w"> </span><span class="mi">1668901000</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;fileName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;\/dev\/kmsg&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;messageCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1111</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3,215,264071662,-;squashfs: Unknown parameter &#39;tmpfs&#39;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="configuration-1">
+<span id="id13"></span><h5>Configuration<a class="headerlink" href="#configuration-1" title="Permalink to this heading">¶</a></h5>
+<p id="compile-time-1">Compile time:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ELOSD_KMSG_FILE</span></code> –&gt; the path where to open expect a character
+device or FIFO file node, default is <code class="docutils literal notranslate"><span class="pre">/dev/kmsg</span></code></p></li>
+</ul>
+<p id="environment-1">Environment:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ELOS_KMSG_FILE</span></code> –&gt; the path where to open expect a character
+device or FIFO file node, default is <code class="docutils literal notranslate"><span class="pre">ELOSD_SYSLOG_PATH</span></code></p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="scanner-api">
+<h3>Scanner-API<a class="headerlink" href="#scanner-api" title="Permalink to this heading">¶</a></h3>
+<p>The ScannerManager loads and initializes a Scanner. After successful
+initialization the ScannerManager calls the scannerRun method in a
+dedicated thread. If the ScannerManager is asked to stop all or a
+particular Scanner, it will signal it to the corresponding Scanner and
+join the Scanner threads.</p>
+<p>The following diagram demonstrates the live cycle of a scanner.</p>
+<p><img alt="Scanner sequence diagram" src="../../_images/scanner_sequence_diagram.png" /></p>
+<section id="howto-implement-a-scanner">
+<h4>Howto implement a scanner<a class="headerlink" href="#howto-implement-a-scanner" title="Permalink to this heading">¶</a></h4>
+<p>To implement a scanner simply extend the following code snippets or take
+one of the build’in scanner source as an example.</p>
+<ul class="simple">
+<li><p>Create a file example_scanner.c and with the following content:</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/scanner/scanner.h&quot;</span>
+
+<span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerInitialize</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="n">UNUSED</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosScannerParam_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;[my scanner] is initializied</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerRun</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;[my scanner] is runnig</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;[my scanner] has finished</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerStop</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;[my scanner] stop requested</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerFree</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;[my scanner] gets freed</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>compile it with :</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gcc</span> <span class="o">--</span><span class="n">shared</span> <span class="o">-</span><span class="n">o</span> <span class="n">example_scanner</span><span class="o">.</span><span class="n">so</span> <span class="n">example_scanner</span><span class="o">.</span><span class="n">c</span> <span class="o">-</span><span class="n">I</span> <span class="n">elos</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">scanner</span><span class="o">/</span><span class="n">include</span><span class="o">/</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>copy / install example_scanner.so to ELOS_SCANNER_PATH</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cp testscanner/example_scanner.so $ELOS_SCANNER_PATH
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>start elos and have a look for the log messages.</p></li>
+<li><p>extend to your use case</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="interfaces">
+<h2>Interfaces<a class="headerlink" href="#interfaces" title="Permalink to this heading">¶</a></h2>
+<section id="library">
+<h3>Library<a class="headerlink" href="#library" title="Permalink to this heading">¶</a></h3>
+<p>The Library comes in form of a c library (libelos) and a header file.
+The library provides two APIs :</p>
+<ul class="simple">
+<li><p>Event-API:</p>
+<ul>
+<li><p>Used to publish and subscribe to events</p></li>
+</ul>
+</li>
+<li><p>LogAggregator-API (DCF-API)</p>
+<ul>
+<li><p>Used to store logs (content of a log see SM_REQ001)</p></li>
+<li><p>Used to access logs (content of a log see SM_REQ001)</p></li>
+</ul>
+</li>
+</ul>
+<section id="design-decision-thread-safety">
+<span id="id14"></span><h4>Design decision – Thread Safety<a class="headerlink" href="#design-decision-thread-safety" title="Permalink to this heading">¶</a></h4>
+<blockquote>
+<div><p>TBD: The library is intended to be thread safe and forkable, with no
+worker threads and synchronous input/output.</p>
+</div></blockquote>
+</section>
+<section id="actual-implementation-2">
+<span id="id15"></span><h4>Actual implementation<a class="headerlink" href="#actual-implementation-2" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>The functions are documented in this section</p></li>
+<li><p>There is also a simple sequence diagram available further down below
+that shows how to interact with the server.</p></li>
+</ul>
+</section>
+<section id="eloseventqueueremove">
+<h4>elosEventQueueRemove<a class="headerlink" href="#eloseventqueueremove" title="Permalink to this heading">¶</a></h4>
+<p>Removes a previously created EventQueue.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosEventQueueRemove</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> eventQueueId -&gt; the id for the EventQueue that shall be
+removed</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>0 for success or errorcode &lt; 0 on failure</p></li>
+</ul>
+</section>
+<section id="eloseventqueuesetlimit">
+<h4>elosEventQueueSetLimit<a class="headerlink" href="#eloseventqueuesetlimit" title="Permalink to this heading">¶</a></h4>
+<p>Restrict the amount of events that can be recorded in a given timeframe.
+This replaces the default values from the configuration file for the
+specified EventQueueID.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosEventQueueSetLimit</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span><span class="p">,</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">timeframe</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> eventQueueId -&gt; the id for the EventQueue that shall be
+modified</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> timeframe -&gt; the timeframe in which the maximum amount of
+events can occur</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> events -&gt; the maximum amount of events that can occur in the
+specified timeframe</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>0 for success or errorcode &lt; 0 on failure</p></li>
+</ul>
+</section>
+<section id="eloseventqueuegetlimit">
+<h4>elosEventQueueGetLimit<a class="headerlink" href="#eloseventqueuegetlimit" title="Permalink to this heading">¶</a></h4>
+<p>Fetch the amount of events that can be recorded in a given timeframe,
+these are either the default values from the configuration file or the
+values set by the last <code class="docutils literal notranslate"><span class="pre">elosEventQueueSetLimit()</span></code> call.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosEventQueueGetLimit</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span><span class="p">,</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="o">*</span><span class="n">timeframe</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> eventQueueId -&gt; the id for the EventQueue that shall be
+modified</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[out]</span></code> timeframe -&gt; the timeframe in seconds in which the maximum
+amount of events can occur</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[out]</span></code> events -&gt; the maximum amount of events that can occur in
+the specified timeframe</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>0 for success or errorcode &lt; 0 on failure</p></li>
+</ul>
+</section>
+<section id="eloslogfiltercreate">
+<span id="id16"></span><h4>elosLogFilterCreate<a class="headerlink" href="#eloslogfiltercreate" title="Permalink to this heading">¶</a></h4>
+<p>Creates a logFilter struct that can contain one or more rules for
+filtering log entries from the database during a read.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFilterCreate</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="o">*</span><span class="w"> </span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">logFilter</span><span class="p">,</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="eloslogfilteraddrule">
+<span id="id17"></span><h4>elosLogFilterAddRule<a class="headerlink" href="#eloslogfilteraddrule" title="Permalink to this heading">¶</a></h4>
+<p>Adds a new filter rule to the logFilter struct.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFilterAddRule</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="o">*</span><span class="w"> </span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">logFilter</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilterRule_e</span><span class="w"> </span><span class="n">logFilterRule</span><span class="p">,</span><span class="w"> </span><span class="c1">// &lt;TBD&gt; e.g. LOG_FILTER_RULE_TIMESTAMP</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">logFilterParam</span><span class="w">  </span><span class="c1">// &lt;TBD&gt; e.g. a struct with timestamp values</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="eloslogfilterdestroy">
+<span id="id18"></span><h4>elosLogFilterDestroy<a class="headerlink" href="#eloslogfilterdestroy" title="Permalink to this heading">¶</a></h4>
+<p>Frees the memory associated with a logFilter struct.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFilterDestroy</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="o">*</span><span class="w"> </span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">logFilter</span><span class="p">,</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="eloslogfindevent">
+<h4>elosLogFindEvent<a class="headerlink" href="#eloslogfindevent" title="Permalink to this heading">¶</a></h4>
+<p>Fetches all logged events based on the used filter (e.g. based on
+payload or other data).</p>
+<ul class="simple">
+<li><p>In case no events are in the log, the vector parameter won’t be
+changed.</p></li>
+<li><p>The memory of the event vector will be allocated by the library and
+must be freed afterwards with elosEventVectorDelete().</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFindEvent</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filterRule</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">vector</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> filterRule -&gt; filter rule for entry selection</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[out]</span></code> vector -&gt; list of event structs</p></li>
+</ul>
+<p>Returns:</p>
+<ul class="simple">
+<li><p>0 for success or errorcode &lt; 0 on failure</p></li>
+</ul>
+<section id="json-data-structure-example">
+<h5>JSON data structure example<a class="headerlink" href="#json-data-structure-example" title="Permalink to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Each event will always have the fields <strong>name</strong>, <strong>timestamp</strong>, and
+<strong>data</strong></p></li>
+<li><p>The <strong>data</strong> field is individual for each event type, they will be
+described in a separate section of this document.</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COREDUMP_STARTED&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1631720019</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1234&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;exe&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/usr/bin/crashed_application&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;corefile&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/tmp/coredump_with_identifiers&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TEMPERATURE_HIGH&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1631717420</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;sensor_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;71.0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sensor_2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;63.7&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="example-sequence-diagram">
+<h4>Example sequence diagram<a class="headerlink" href="#example-sequence-diagram" title="Permalink to this heading">¶</a></h4>
+<p>This sequence diagram shows a simplified use case for polling for
+events.</p>
+<p><img alt="Library sequence diagram" src="../../_images/library_sequence_diagram.png" /></p>
+</section>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">elos API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developers</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">elos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventprocessor.html">EventProcessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpnfilter.html">RpnFilter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VerificationStrategy.html">Test &amp; Verification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html">The project documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/index.html">Elos API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Developer documentation</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Developer documentation</a></li>
+      <li>Next: <a href="eventprocessor.html" title="next chapter">EventProcessor</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/generated/developer/DeveloperManual.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

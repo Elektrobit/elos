@@ -1,0 +1,5 @@
+event_source.h
+==============
+
+.. autocmodule:: elos/event/event_source.h
+    :members:

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>Test &amp; Verification &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="The project documentation" href="documentation.html" />
+    <link rel="prev" title="RpnFilter" href="rpnfilter.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="test-verification">
+<span id="id1"></span><h1>Test &amp; Verification<a class="headerlink" href="#test-verification" title="Permalink to this heading">¶</a></h1>
+<p>Goal:</p>
+<p>This document shall outline all measures taken to ensure that the
+software fulfills the intended purpose and does not have unwanted
+behavior. Alongside the project there are several techniques and
+measurements used and different test setups developed, to ensure the
+expected behavior.</p>
+<p>[[<em>TOC</em>]]</p>
+<section id="coding-guideline">
+<h2>Coding Guideline<a class="headerlink" href="#coding-guideline" title="Permalink to this heading">¶</a></h2>
+<p>Goal:</p>
+<p>A coding guideline was defined to reduce common programming error and to
+increase readability and thus understandability of the code.</p>
+<p>The to be used coding guideline is found here: link, Version x</p>
+<p>The guideline is checked during static analysis step, described below.</p>
+</section>
+<section id="development-process">
+<h2>Development process<a class="headerlink" href="#development-process" title="Permalink to this heading">¶</a></h2>
+<p>Goal:</p>
+<p>All changes to the repository shall be reviewed by an additional person,
+that is experienced with the software. Hence four-eyes have checked each
+modification.</p>
+<p>The check is documented by means merge- or pull requests of the
+gitlab/github system.</p>
+</section>
+<section id="static-analysis">
+<h2>Static analysis<a class="headerlink" href="#static-analysis" title="Permalink to this heading">¶</a></h2>
+<p>Goal:</p>
+<p>Static analysis shall verify that the coding guideline was fulfilled and
+common rules of secure and safe programming are followed.</p>
+<p>The CI system is responsible of running the check regularly.</p>
+<section id="gccs-static-analyzer">
+<h3>GCCs Static Analyzer<a class="headerlink" href="#gccs-static-analyzer" title="Permalink to this heading">¶</a></h3>
+<p>On default build with GCCs Static Analyzer enabled</p>
+<ul class="simple">
+<li><p>to find common programming issues the project is build on default
+with GCC’s Static Analyzer enabled</p></li>
+<li><p>To explicitly disable it for some reasons (i.e perf benchmarks see.
+profiling) build with <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-DENABLE_ANALYZER=off</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
+<p>Goal:</p>
+<p>During tests the capabilities of the software are verified. Basically
+the question is answered: Does the software (or parts from it) react as
+intended?</p>
+<section id="unit-test-test-utest">
+<h3>Unit Test test/utest<a class="headerlink" href="#unit-test-test-utest" title="Permalink to this heading">¶</a></h3>
+<p>Goal:</p>
+<p>unit-tests verify the the correct function on the lowest level of the
+software. e.g. they verify that a c function returns the correct values
+on given input.</p>
+<p>The CI system is responsible of running the utests regularly.</p>
+<p>Details:</p>
+<ul class="simple">
+<li><p>covers all parts of src/</p></li>
+<li><p>structure is
+&lt;component-name&gt;/&lt;compilation-unit-name&gt;/public_function_name/case_&lt;error|exterr|successful|…&gt;.c</p></li>
+<li><p>how to run the utest from git project root:</p>
+<ul>
+<li><p>call |<code class="docutils literal notranslate"><span class="pre">./elos/ci/run_utest.sh</span></code>| to run the unit tests for
+the debug build</p></li>
+<li><p>call |<code class="docutils literal notranslate"><span class="pre">./elos/ci/run_utest.sh</span> <span class="pre">Release</span></code>| to run the unit
+tests for the release build</p></li>
+</ul>
+</li>
+<li><p>coverage is proven by asmcov, because gcov has dependencies on glibc
+and the test actually mock libc functions to achieve 100% branch
+coverage. (gcov and libc mocking doesn’t work)</p></li>
+<li><p>executed by CI-pipeline</p></li>
+<li><p>controlling the build of unit test with
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-DUNIT_TESTS=&amp;lt;on/off&amp;gt;</span> <span class="pre">-DINSTALL_UNIT_TEST&amp;lt;on/off&amp;gt;</span></code></p></li>
+<li><p>unit tests shall make use of the sanitizers</p></li>
+</ul>
+<section id="coverage-by-asmcov">
+<h4>Coverage by asmcov<a class="headerlink" href="#coverage-by-asmcov" title="Permalink to this heading">¶</a></h4>
+<p>To generate a coverage report for the unit tests asmcov is used. The
+basic steps are:</p>
+<ol class="arabic simple">
+<li><p>Run and trace the unit test with <code class="docutils literal notranslate"><span class="pre">perf</span></code> -&gt; perf.data</p></li>
+<li><p>Create the the instruction stream with perf -&gt; perf.trace</p></li>
+<li><p>Evaluate test binary and trace with asmcov to get a coverage
+statement -&gt; asmcov.log</p></li>
+</ol>
+</section>
+<section id="usage">
+<h4>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h4>
+<p>Currently two usage scenarios are supported:</p>
+<ul class="simple">
+<li><p>For the CI build: create coverage for all available unit tests</p></li>
+<li><p>For the developer: create coverage for a given test or group of tests</p></li>
+</ul>
+<section id="to-create-a-complete-coverage-report-for-the-project-simply-run">
+<h5>To create a complete coverage report for the project simply run:<a class="headerlink" href="#to-create-a-complete-coverage-report-for-the-project-simply-run" title="Permalink to this heading">¶</a></h5>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">ci</span><span class="o">/</span><span class="n">create_coverage</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>The results can be found in <code class="docutils literal notranslate"><span class="pre">./build-coverage/coverage_results</span></code></p>
+</section>
+<section id="to-create-a-coverage-report-for-a-certain-or-group-of-unit-test-s-proceed-as-follows">
+<h5>To create a coverage report for a certain or group of unit test(s) proceed as follows:<a class="headerlink" href="#to-create-a-coverage-report-for-a-certain-or-group-of-unit-test-s-proceed-as-follows" title="Permalink to this heading">¶</a></h5>
+<ol class="arabic simple">
+<li><p>build without Address Sanitizer support, to avoid additional code
+added by the gcc or be aware that probably not 100% branch coverage
+can be achieved as this code is not under your control.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">-</span><span class="n">B</span> <span class="o">./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="n">elos</span> <span class="o">-</span><span class="n">DCMAKE_BUILD_TYPE</span><span class="o">=</span><span class="n">Release</span>
+<span class="n">make</span> <span class="o">-</span><span class="n">C</span> <span class="o">./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>run the coverage suite</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span> <span class="n">functionName</span> <span class="p">[</span><span class="n">otherFunctionName</span><span class="p">]</span> <span class="p">[</span><span class="n">compilationUnitName</span><span class="p">]</span>
+
+<span class="c1">## only run the test for safuVecCreate</span>
+<span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span> <span class="n">vecCreate</span>
+
+<span class="c1">## only run the test for safuVecCreate and elosEventSerialize</span>
+<span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span> <span class="n">vecCreate</span> <span class="n">eventSerialize</span>
+
+<span class="c1">## only run the all tests for the compilation unit vector.c</span>
+<span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span> <span class="n">vector</span>
+
+<span class="c1">## only run the all tests for the compilation unit vector.c and event.c</span>
+<span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span> <span class="n">vector</span> <span class="n">event</span>
+
+<span class="c1">## run all test that match the pattern `test_*_utest` and located in $BUILD_DIR/test/utest</span>
+<span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>The results can be found in <code class="docutils literal notranslate"><span class="pre">$BUILD_DIR/coverage_results</span></code></p>
+<p>To use a custom install location of asmcov set <code class="docutils literal notranslate"><span class="pre">ASMCOV_DIR</span></code> and point
+to the location where the asmcov binaries are installed.</p>
+</section>
+</section>
+</section>
+<section id="smoke-tests-test-smoketest">
+<h3>Smoke Tests test/smoketest<a class="headerlink" href="#smoke-tests-test-smoketest" title="Permalink to this heading">¶</a></h3>
+<p>Goal:</p>
+<p>Smoke tests are quick to execute and they give a brief overview about
+the basic functionality. Smoke tests try to answer: Is the software
+still basically OK? Or does it crash right away?</p>
+<p>The CI system is responsible of running the smoke tests regularly.</p>
+<p>Details:</p>
+<ul class="simple">
+<li><p>Runs all composed artifacts to ensure a basic expected functionality</p></li>
+<li><p>Make usage of the demo project to check expected behavior of elosd</p></li>
+<li><p>Executed by CI-pipeline</p></li>
+<li><p>Based on the sharness framework
+(<a class="reference external" href="http://chriscool.github.io/sharness/">sharness</a>)</p></li>
+<li><p>Output format is TAP (<a class="reference external" href="https://testanything.org/">test anything</a>)</p></li>
+</ul>
+<section id="how-to-run-the-smoke-test-from-git-project-root">
+<h4>how to run the smoke test from git project root:<a class="headerlink" href="#how-to-run-the-smoke-test-from-git-project-root" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./elos/ci/build.sh<span class="w"> </span><span class="o">[</span>Release<span class="o">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>call <code class="docutils literal notranslate"><span class="pre">./elos/ci/run_smoketests.sh</span></code> to run the smoketests for the
+debug build</p></li>
+<li><p>call <code class="docutils literal notranslate"><span class="pre">./elos/ci/run_smoketests.sh</span> <span class="pre">Release</span></code> to run the smoketests
+for the release build</p></li>
+</ul>
+</section>
+<section id="run-on-a-target">
+<h4>Run on a target<a class="headerlink" href="#run-on-a-target" title="Permalink to this heading">¶</a></h4>
+<p>To run the smoketest install all content in <code class="docutils literal notranslate"><span class="pre">elos/tests/smoketest</span></code> to
+a custom location on the target system. Currently it is not packaged and
+installed by elos build system itself.</p>
+<section id="prerequisites">
+<span id="id2"></span><h5>Prerequisites :<a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Elos is installed on target system</p></li>
+<li><p>At least a write able directory to store results and for intermediate
+files</p></li>
+</ul>
+</section>
+<section id="howto">
+<h5>HOWTO<a class="headerlink" href="#howto" title="Permalink to this heading">¶</a></h5>
+<p>To execute the smoketests run the installed smoketest.t script. Here an
+example script to for smoketest integration (taken form baseos-lab)</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1">##!/bin/sh -xe</span>
+
+<span class="nb">export</span><span class="w"> </span><span class="nv">ELOS_SCANNER_PATH</span><span class="o">=</span>/usr/lib/elos/scanner
+<span class="nb">export</span><span class="w"> </span><span class="nv">SMOKETEST_DIR</span><span class="o">=</span>/usr/lib/test/baseos-elos/smoketest/
+<span class="nb">export</span><span class="w"> </span><span class="nv">SMOKETEST_RESULT_DIR</span><span class="o">=</span>/tmp/test-baseos-elos-smoketest
+
+
+<span class="c1">## make sure to stop elosd instances before</span>
+
+/usr/lib/test/baseos-elos/smoketest/smoketest.t
+</pre></div>
+</div>
+</section>
+<section id="extended-configuration">
+<h5>Extended configuration<a class="headerlink" href="#extended-configuration" title="Permalink to this heading">¶</a></h5>
+<p>Depending on the installation and configuration it could be necessary to
+adjust some settings. The following Environment variables can be used :</p>
+<ul class="simple">
+<li><p>Use LD_LIBRARY_PATH to include custom locations for elos libraries.:</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/some/location</span></code></p>
+<p>default is : $BUILD_DIR/dist/usr/local/lib</p>
+<ul class="simple">
+<li><p>Use PATH to include custom locations for elos</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PATH=${PATH}:/some/location</span></code></p>
+<p>default is: $BUILD_DIR/cmake/src/elosd:$BUILD_DIR/cmake/src/demo”</p>
+<ul class="simple">
+<li><p>Use SMOKETEST_DIR to point to the location where elos-smoketests are
+installed</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SMOKETEST_DIR=/some/location</span></code></p>
+<p>default is : $BASE_DIR/test/smoketest/</p>
+<ul class="simple">
+<li><p>Use SMOKETEST_RESULT_DIR to define where to store smoke tests results</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SMOKETEST_RESULT_DIR=/some/write/able/location</span></code></p>
+<p>default is : “$BUILD_DIR/result/smoketest_results”</p>
+<ul class="simple">
+<li><p>Use SMOKETEST_TMP_DIR to define where to store intermediate results
+and or runtime files like sockets, pipes etc.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SMOKETEST_TMP_DIR=/some/write/able/location</span></code></p>
+<p>default is: “/tmp/elosd”</p>
+<ul class="simple">
+<li><p>Use ELOS_SYSLOG_PATH to define an alternative location for the syslog
+unix domain socket</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_SYSLOG_PATH=/some/write/able/location/mysyslog.socket</span></code></p>
+<p>default is: <code class="docutils literal notranslate"><span class="pre">${SMOKETEST_TMP_DIR}/elosd.syslog.socket</span></code></p>
+<ul class="simple">
+<li><p>Use ELOS_KMSG_PATH to define an alternative location for the kmsg
+file</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_KMSG_FILE=/some/write/able/location/my_dev_kmsg</span></code></p>
+<p>default is: ${SMOKETEST_TMP_DIR}/elosd.kmsg”</p>
+<ul class="simple">
+<li><p>Use ELOS_SCANNER_PATH to define where elos shall look for scanner
+plugins (<code class="docutils literal notranslate"><span class="pre">*.so</span></code> files)</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_SCANNER_PATH=/some/location</span></code></p>
+<p>default is: $BUILD_DIR/cmake/src/scanner</p>
+<ul class="simple">
+<li><p>Use ELOS_STORAGE_BACKEND_JSON_FILE where to store the elos event log.
+(persistent event storage if JSON backend enabled)</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_STORAGE_BACKEND_JSON_FILE=/some/write/able/location/elosd_event.log</span></code></p>
+<p>default is: ${SMOKETEST_TMP_DIR}/elosd_event.log</p>
+</section>
+</section>
+</section>
+<section id="integration-test">
+<h3>Integration Test<a class="headerlink" href="#integration-test" title="Permalink to this heading">¶</a></h3>
+<p>Goal:</p>
+<p>Integration tests verify that the software fulfills all requirements in
+the final environment.</p>
+<p>Integration tests shall be done before release of a new version.</p>
+<p>Details:</p>
+<ul class="simple">
+<li><p>Integration Tests account for testing usecases that are not covered
+by smoketests or unittests and ensure elosd works as expected.</p></li>
+<li><p>Tests need to be target agnostic and therefore are packaged as
+separate elos-integration-test package.</p></li>
+<li><p>Robot test framework is used to create integration tests</p></li>
+<li><p>integration tests shall make use of the sanitizers</p></li>
+</ul>
+<section id="components">
+<h4>Components<a class="headerlink" href="#components" title="Permalink to this heading">¶</a></h4>
+<p>The fundamental components required for integration tests are as given
+below, apart from these, additional components are added according to
+test environment.</p>
+<ul class="simple">
+<li><p>Robot test framework</p>
+<ul>
+<li><p><a class="reference external" href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html">Robot
+Framework</a>
+is a test automation framework.</p></li>
+<li><p>Integration tests are written with the help of Robot test
+framework.</p></li>
+</ul>
+</li>
+<li><p>Integration test package</p>
+<ul>
+<li><p>A test directory has one or more tests written in robot as well as
+sub directories containing tests</p></li>
+<li><p>The integration test can be found in <code class="docutils literal notranslate"><span class="pre">test/integration</span></code></p></li>
+<li><p>Elos integration test package consists of all tests in the
+integration directory</p></li>
+</ul>
+</li>
+<li><p>Test targets</p>
+<ul>
+<li><p>The target has elosd installed and running when integration tests
+are executed. They could be</p>
+<ul>
+<li><p>Container</p></li>
+<li><p>Qemu hardware emulator</p></li>
+<li><p>Client hardware</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="setup">
+<h4>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h4>
+<section id="integration-test-setup-for-elos-ci">
+<h5>Integration test setup for elos CI<a class="headerlink" href="#integration-test-setup-for-elos-ci" title="Permalink to this heading">¶</a></h5>
+<p><img alt="Integration Test Setup" src="../../_images/integration_test_container_target_setup.png" /></p>
+<ul class="simple">
+<li><p>The host system has the elos-integration-test packages and a
+test-runner script.</p></li>
+<li><p>The robot container where the robot test framework is installed. The
+test package directory is mounted on to this container.</p></li>
+<li><p>The elos container where elosd is installed and running serves as the
+target.</p></li>
+<li><p>The test results are stored in <code class="docutils literal notranslate"><span class="pre">test/integration/report</span></code></p></li>
+</ul>
+<p>New tests are added directly in the elos-integration-test package.
+Starting the container with robot framework installed, mounts the
+test-package automatically. The test runner script is found in
+<code class="docutils literal notranslate"><span class="pre">integration/scripts</span></code>. The target container should be started before
+running the test runner script. Starting the target container installs
+elosd from source and runs it. The test-runner script requires the
+target credentials like username, password and target ip address in
+order to run the tests.</p>
+</section>
+<section id="integration-test-setup-for-base-os-lab-ci">
+<h5>Integration test setup for Base OS Lab CI<a class="headerlink" href="#integration-test-setup-for-base-os-lab-ci" title="Permalink to this heading">¶</a></h5>
+<p><img alt="Integration Test BaseOS Lab Setup" src="../../_images/integration_test_baseos-lab_setup.png" /></p>
+<ul class="simple">
+<li><p>The host base-os lab has the following components :</p>
+<ul>
+<li><p>elos-integration-package</p></li>
+<li><p>Robot framework</p></li>
+<li><p>Labgrid</p></li>
+<li><p>Pytest Runner plugin for Labgrid</p></li>
+</ul>
+</li>
+<li><p>An hardware emulator (QEMU) or the client hardware will be used as
+the target.</p></li>
+<li><p>Test results will be stored in <code class="docutils literal notranslate"><span class="pre">&amp;lt;&amp;lt;test_image&amp;gt;&amp;gt;/report</span></code></p></li>
+</ul>
+<p>The host in base os lab is a container with the robot framework, labgrid
+and pytest plugin for labgrid installed. The elos-integration-test
+package is retrieved from elos-tools repository. Labgrid establishes
+connection with the target which could be a client hardware or qemu
+image. Upon establishing connection, target information like ip address
+is retrieved for use by integration tests . The pytest runner plugin is
+used to run ptests in the target. The call to run robot integration
+tests is encapsulated in a new test. The test run scripts when called,
+build and boots the target and runs the test and stores the reult in the
+host system.</p>
+</section>
+</section>
+<section id="usage-1">
+<span id="id3"></span><h4>Usage<a class="headerlink" href="#usage-1" title="Permalink to this heading">¶</a></h4>
+<p>To run the tests locally in the elos tools repository</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">elos</span>
+<span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">target</span><span class="o">-</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>    <span class="c1"># start target container in a terminal</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">elos</span>
+<span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">integration</span><span class="o">-</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>    <span class="c1"># start test container in a separate terminal</span>
+<span class="n">PROJECT</span><span class="o">=</span><span class="s2">&quot;elos&quot;</span> <span class="o">./</span><span class="n">scripts</span><span class="o">/</span><span class="n">run_integration_tests</span><span class="o">.</span><span class="n">sh</span>    <span class="c1"># inside the container set project variable and run the test runner script</span>
+</pre></div>
+</div>
+<p>To run the test in base os lab</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">eb</span><span class="o">-</span><span class="n">baseos</span><span class="o">-</span><span class="n">lab</span>
+<span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>                     <span class="c1"># start host container</span>
+                                       <span class="c1"># Inside container</span>
+<span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">repo</span><span class="o">-</span><span class="n">init</span><span class="o">.</span><span class="n">sh</span>                      <span class="c1"># initialize submodule</span>
+<span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">build</span><span class="o">.</span><span class="n">sh</span>                          <span class="c1"># build target image  **note** - the previous step and this step needs to be run at least once before test run</span>
+<span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">qemu</span><span class="o">-</span><span class="n">test</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="n">image_name</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>    <span class="c1"># build and boot given qemu image and run integration tests on it.</span>
+                                       <span class="c1"># To test on all images use --build-all and no image name instead of -i</span>
+</pre></div>
+</div>
+</section>
+<section id="writing-a-robot-test">
+<h4>Writing a Robot Test<a class="headerlink" href="#writing-a-robot-test" title="Permalink to this heading">¶</a></h4>
+<p>The directory structure for integration test is as show below.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>elos
+├──<span class="w"> </span><span class="nb">test</span>
+<span class="w">    </span>├──<span class="w"> </span>integration
+<span class="w">        </span>├──<span class="w"> </span>testmodule
+<span class="w">            </span>├──<span class="w"> </span>test.robot
+<span class="w">            </span>├──<span class="w"> </span>subtestmodule
+<span class="w">                </span>├──<span class="w"> </span>subtest.robot
+</pre></div>
+</div>
+<p>New test suites are added to <code class="docutils literal notranslate"><span class="pre">elos/test/integration</span></code>.</p>
+<section id="step-by-step-guide-to-create-and-run-integration-test">
+<h5>Step by step guide to create and run integration test<a class="headerlink" href="#step-by-step-guide-to-create-and-run-integration-test" title="Permalink to this heading">¶</a></h5>
+<p>An example of a robot test is given below :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>*** Settings ***
+Documentation      ssh test script
+Library            SSHLibrary
+
+*** Variables ***
+${host}            192.168.7.1    # replace with target under test (TUT) ip
+${username}        root           # replace with TUT  username
+${password}        ${EMPTY}       # replace with TUT  password
+${alias}           target         # use any appropriate alias for target
+${hostname}        qemu-64        # replace with TUT  hostname
+
+*** Test Cases ***
+Test SSH Connection
+    Open Connection     ${host}        alias=${alias}
+    Login               ${username}    ${password}    delay=1
+    ${output}=    Is Connected
+    Should Be Equal As String    ${output}    ${hostname}
+    Close All Connections
+
+*** Keywords ***
+Is Connected
+    ${value}=         Execute Command    hostname
+    RETURN    ${value}
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>Create file <code class="docutils literal notranslate"><span class="pre">new_test_suite.robot</span></code> file under
+<code class="docutils literal notranslate"><span class="pre">elos/test/integration/new_module</span></code>.</p></li>
+<li><p>Copy the above code into <code class="docutils literal notranslate"><span class="pre">new_test_suite.robot</span></code></p></li>
+<li><p>Change test variables to target under test (TUT) values.</p></li>
+<li><p>To run test start target elosd container by
+<code class="docutils literal notranslate"><span class="pre">./elos/ci/docker-target-run.sh</span></code> first.</p></li>
+<li><p>In a separate terminal start robot container by
+<code class="docutils literal notranslate"><span class="pre">./elos/ci/docker-integration-run.sh</span></code></p></li>
+<li><p>Inside the robot container run all tests using script
+<code class="docutils literal notranslate"><span class="pre">PROJECT=&quot;elos&quot;</span> <span class="pre">./scripts/run-integration-tests.sh</span></code></p></li>
+<li><p>The test results are stored in <code class="docutils literal notranslate"><span class="pre">report/new_module</span></code></p></li>
+<li><p>In order to run individual test use</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>robot<span class="w"> </span>--outputdir<span class="o">=</span>report/new_module<span class="w"> </span>--output<span class="o">=</span>new_test_suite<span class="w"> </span>--report<span class="o">=</span>new_test_suite<span class="w"> </span>new_test_suite
+<span class="c1">## In order to run only a testcase from the test suite</span>
+robot<span class="w"> </span>-t<span class="w"> </span>test_case_name<span class="w"> </span>--outputdir<span class="o">=</span>report/new_module<span class="w"> </span>--output<span class="o">=</span>test_case_name<span class="w"> </span>--report<span class="o">=</span>test_case_name<span class="w"> </span>new_test_suite
+</pre></div>
+</div>
+</section>
+<section id="robot-test-explanation">
+<h5>Robot Test Explanation<a class="headerlink" href="#robot-test-explanation" title="Permalink to this heading">¶</a></h5>
+<p>In Robot Framework, each robot file is a test suite. Likewise, a
+directory containing .robot files is a master test suite. Unless Robot
+Framework is given with a single robot file to execute, it wil try to
+look for robot files recursively. Spaces in filename should be replaced
+by an underscore.</p>
+<p>This test checks ssh connection to a target whose ip, username and
+password is known. The test script is divided into 4 sections.</p>
+<ul class="simple">
+<li><p>Settings - The required test settings with the keywords</p>
+<ul>
+<li><p>The Documentation keyword is a simple test description text</p></li>
+<li><p>The Library keyword imports keywords from given argument. The
+argument for this keyword is SSHLibrary, which has keywords for a
+ssh interaction with given target.</p></li>
+<li><p>More keyword under settings is found here <a class="reference external" href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#settings-in-the-test-case-section">Additional Settings
+Keywords</a></p></li>
+</ul>
+</li>
+<li><p>Variables - The variables to be used in this test</p>
+<ul>
+<li><p>The variables created in the variable section have a test suite
+scope.</p></li>
+<li><p>All test cases inside a robot file can access it.</p></li>
+<li><p>The variables have read write permission.</p></li>
+<li><p>In order to over write a variable defined in the variable section,
+the <code class="docutils literal notranslate"><span class="pre">Set</span> <span class="pre">Test</span> <span class="pre">Variable</span></code> built in keyword can be used.</p></li>
+</ul>
+</li>
+<li><p>Test case - The actual test case which is written in using available
+keywords and arguments.</p></li>
+<li><p>Keywords - Here keyword can be defined which shall be used in one or
+more testcases in the robot file.</p></li>
+</ul>
+<p>In test suits variables and keywords can be added to a *.resource file
+in order to share them. They are imported into tests that require them,
+using the resource keyword in the settings section as given below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">Settings</span> <span class="o">*</span>
+<span class="n">Documentation</span>      <span class="n">ssh</span> <span class="n">test</span> <span class="n">script</span>
+<span class="n">Resource</span>           <span class="n">keywords</span><span class="o">.</span><span class="n">resource</span>
+</pre></div>
+</div>
+<p>Variables created in .resource files can be of type other than strings.</p>
+</section>
+</section>
+</section>
+<section id="benchmarks">
+<h3>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this heading">¶</a></h3>
+<p>Goal:</p>
+<p>Benchmarks record selected key performance indicators (KPI) that are
+relevant for the resource consumption and performance of the software.</p>
+<p>Benchmarks shall be done before release of a new version.</p>
+<p>Details:</p>
+<ul class="simple">
+<li><p>gives a general overview of how elosd performs</p></li>
+<li><p>the benchmarks covers the following setups: ** 1 on 1 : 1
+subscriber per 1 publisher for 1,2,5,10,100 subscribers and
+publishers ** 1 on n : n subscriber per 1 publisher for
+1,2,5,10,100 subscribers and 1,2 publishers</p></li>
+<li><p>the results can be found in build/benchmark_results **
+report_&lt;messages&gt;<em>&lt;subscriber&gt;</em>&lt;publisher&gt;.csv containing the
+plain timestamps for (send,dispatched,received) **
+report_&lt;messages&gt;<em>&lt;subscriber&gt;</em>&lt;publisher&gt;.csv.png a
+visualization of the csv-report files.</p></li>
+<li><p>how to run the benchmarks from git project root:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">-</span><span class="n">B</span> <span class="n">build</span> <span class="n">elos</span>
+<span class="n">make</span> <span class="o">-</span><span class="n">C</span> <span class="n">build</span>
+<span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">ci</span><span class="o">/</span><span class="n">run_benchmarks</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<section id="profiling">
+<h4>Profiling<a class="headerlink" href="#profiling" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>gives a insides on how elosd spends its time during execution</p></li>
+<li><p>for profiling perf is used</p></li>
+<li><p>the results can be found in build-perf/perf_results/&lt;timestamp&gt; **
+perf.data is the raw output from perf ** perf_output.txt contains
+profiling info from perf.data in text form</p></li>
+<li><p>how to run the benchmarks from git project root:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">profiling</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">perf</span><span class="o">.</span><span class="n">sh</span> <span class="n">setcap</span>        <span class="c1"># Allow profiling without root rights</span>
+<span class="o">./</span><span class="n">perf</span><span class="o">.</span><span class="n">sh</span> <span class="n">clean</span>              <span class="c1"># Removes build and profiling files</span>
+<span class="o">./</span><span class="n">perf</span><span class="o">.</span><span class="n">sh</span> <span class="n">build</span>              <span class="c1"># Build the project with the profiling flag</span>
+<span class="o">./</span><span class="n">perf</span><span class="o">.</span><span class="n">sh</span> <span class="n">elosd</span>              <span class="c1"># Monitor elosd and store the results</span>
+<span class="o">./</span><span class="n">perf</span><span class="o">.</span><span class="n">sh</span> <span class="n">hotspot</span>            <span class="c1"># Call the &#39;hotspot&#39; tool with the latest profiling data set</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">perf</span><span class="o">.</span><span class="n">sh</span> <span class="n">restorecap</span>    <span class="c1"># Restores old capability value</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="sanitizers">
+<h2>Sanitizers<a class="headerlink" href="#sanitizers" title="Permalink to this heading">¶</a></h2>
+<p>Goal:</p>
+<p>During testing (utest, smoketest, integration tests) some self checking
+sanitizers shall be used to detect unwanted behavior.</p>
+<section id="address-sanitizer">
+<h3>Address Sanitizer<a class="headerlink" href="#address-sanitizer" title="Permalink to this heading">¶</a></h3>
+<p>Only the ‘Debug’ target build comes with the Address Sanitizer enabled</p>
+<ul class="simple">
+<li><p>to find common memory access/management failures the project is build
+on default (Debug) with GCC’s Address Sanitizer enabled</p></li>
+<li><p>the Release target is guaranteed to come without sanitizers in case
+you want to use other tools like Valgrind (build with
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-DCMAKE_BUILD_TYPE=Release</span></code>)</p></li>
+<li><p>sanitizers shall be used in unit- and integration-tests.</p></li>
+</ul>
+</section>
+<section id="thread-sanitizer">
+<h3>Thread Sanitizer<a class="headerlink" href="#thread-sanitizer" title="Permalink to this heading">¶</a></h3>
+<p>Only the ‘Tsan’ target build comes with the Thread Sanitizer enabled</p>
+<ul class="simple">
+<li><p>Can be used to find data races, erronous mutex accesses and other
+multi-threading related problems.</p></li>
+<li><p>Can be built with <code class="docutils literal notranslate"><span class="pre">./ci/build.sh</span> <span class="pre">Tsan</span></code> or configured with
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-DCMAKE_BUILD_TYPE=Tsan</span></code>.</p></li>
+<li><p>Has its own build target due to it being incompatible with other
+sanitizers like ASAN and Valgrind.</p></li>
+<li><p>Currently not part of the CI pipeline as we still evaluate its
+usefulness.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">elos API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developers</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="DeveloperManual.html">elos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventprocessor.html">EventProcessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpnfilter.html">RpnFilter</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Test &amp; Verification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html">The project documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/index.html">Elos API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Developer documentation</a><ul>
+      <li>Previous: <a href="rpnfilter.html" title="previous chapter">RpnFilter</a></li>
+      <li>Next: <a href="documentation.html" title="next chapter">The project documentation</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/generated/developer/VerificationStrategy.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>Architecture Design Record - Atomic Variables &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Architecture Design Record - Detecting Coredumps" href="elos-coredump.html" />
+    <link rel="prev" title="Architecture Design Records" href="adrs.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="architecture-design-record-atomic-variables">
+<h1>Architecture Design Record - Atomic Variables<a class="headerlink" href="#architecture-design-record-atomic-variables" title="Permalink to this heading">¶</a></h1>
+<section id="problem">
+<h2>Problem<a class="headerlink" href="#problem" title="Permalink to this heading">¶</a></h2>
+<p>Elos is a multithreaded application that shares a lot of its important
+data structures amongst various threads. So far we have been using
+mutexes, which work overall but come with their own set of problems -
+They have no way of checking if a mutex variable is initialized, while
+mutex locking itself makes the code harder to read due to introducing
+additional complexity.</p>
+<p>C11 added an atomic variable functionality which could help with the
+above problems while being potentially faster too.</p>
+<p>Are atomic variables a viable alternative to mutexes?</p>
+</section>
+<section id="goals">
+<h2>Goals<a class="headerlink" href="#goals" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>At least a basic understanding of atomic variables</p></li>
+<li><p>Potential pitfalls</p></li>
+<li><p>Potential uses</p></li>
+<li><p>Find out if we can replace mutexes with atomic variables</p></li>
+</ul>
+</section>
+<section id="considerations">
+<h2>Considerations<a class="headerlink" href="#considerations" title="Permalink to this heading">¶</a></h2>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading">¶</a></h3>
+<p>The documentation regarding atomic variables is sparse at best and
+usually very technical, especially when it comes to memory order. The
+feature originates from C++11, with C - and interestingly Rust - basing
+their implementations directly on it. Especially for C there is hardly
+any direct documentation available, so a few things have to be inferred
+from alternative sources (C++ and Rust).</p>
+</section>
+<section id="platform-dependency">
+<h3>Platform dependency<a class="headerlink" href="#platform-dependency" title="Permalink to this heading">¶</a></h3>
+<p>The feature depends heavily on the used processor architecture, as the
+atomic commands get converted into appropriate assembler instructions.
+Should a platform lack support for a certain variable type, a soft
+implementation will be utilized that can be expected to be much slower.
+This will not happen silently however, as there will be missing symbols
+during the linking stage that have to be provided via linking
+<code class="docutils literal notranslate"><span class="pre">libatomic</span></code> into the executable.</p>
+</section>
+<section id="creating-and-accessing-atomic-variables">
+<h3>Creating and accessing atomic variables<a class="headerlink" href="#creating-and-accessing-atomic-variables" title="Permalink to this heading">¶</a></h3>
+<p>A list of types and commands can be found under
+<a class="reference external" href="https://en.cppreference.com/w/c/atomic">https://en.cppreference.com/w/c/atomic</a></p>
+<p>An atomic variable can be created by adding the <code class="docutils literal notranslate"><span class="pre">_Atomic</span></code> attribute to
+a variables or by using one of the predefined types, e.g.
+<code class="docutils literal notranslate"><span class="pre">atomic_uint_fast64_t</span></code>. The <code class="docutils literal notranslate"><span class="pre">_Atomic</span></code> prefix works for every type of
+variable, even structs. A potential result of this is however the
+necessity to link <code class="docutils literal notranslate"><span class="pre">libatomic</span></code> and very poor performance (much worse
+than with Mutexes).</p>
+<p>Read and write operations can be done implicitely (e.g.
+<code class="docutils literal notranslate"><span class="pre">atomicVar</span> <span class="pre">+=</span> <span class="pre">1</span></code>) or with special macro operations (e.g.
+<code class="docutils literal notranslate"><span class="pre">atomic_fetch_add(&amp;atomicVar,</span> <span class="pre">1)</span></code>). Implicit read/write can’t be made
+atomic in all cases, notable “not working” cases are for example
+<code class="docutils literal notranslate"><span class="pre">~atomicVar</span></code> or <code class="docutils literal notranslate"><span class="pre">++atomicVar</span></code>. This also extends to structs with the
+<code class="docutils literal notranslate"><span class="pre">_Atomic</span></code> prefix, which cannot be read and modified in one atomic step
+at all.</p>
+<p><strong>Conclusion:</strong></p>
+<ul class="simple">
+<li><p>We should rely only on the given variables types (like
+<code class="docutils literal notranslate"><span class="pre">atomic_uint_fast64_t</span></code>) instead of using the <code class="docutils literal notranslate"><span class="pre">_Atomic</span></code> attribute.</p></li>
+<li><p>We should only use the macro operations like <code class="docutils literal notranslate"><span class="pre">atomic_fetch_add</span></code> and
+limit ourself to what is available here.</p></li>
+</ul>
+<p>Simple code example for using an atomic variable:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pthread.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdatomic.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+
+<span class="cp">#define THREADS    2</span>
+<span class="cp">#define ITERATIONS 1000000</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">incrementWorker</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">atomic_uint_fast64_t</span><span class="w"> </span><span class="o">*</span><span class="n">atomicVar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">atomic_uint_fast64_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">ptr</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ITERATIONS</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">atomic_fetch_add</span><span class="p">(</span><span class="n">atomicVar</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">atomic_uint_fast64_t</span><span class="w"> </span><span class="n">atomicVar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">pthread_t</span><span class="w"> </span><span class="kr">thread</span><span class="p">[</span><span class="n">THREADS</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">THREADS</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="kr">thread</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">incrementWorker</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">atomicVar</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">perror</span><span class="p">(</span><span class="s">&quot;pthread_create&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">THREADS</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_join</span><span class="p">(</span><span class="kr">thread</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">perror</span><span class="p">(</span><span class="s">&quot;pthread_create&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Using %u threads, expected: %u, received: %lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">THREADS</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">THREADS</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ITERATIONS</span><span class="p">),</span><span class="w"> </span><span class="n">atomicVar</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Note:</strong> The sources are available under
+<a class="reference external" href="https://gitlabintern.emlix.com/csteiger/atomic_examples">https://gitlabintern.emlix.com/csteiger/atomic_examples</a></p>
+</section>
+<section id="memory-order-and-fences">
+<h3>Memory order and fences<a class="headerlink" href="#memory-order-and-fences" title="Permalink to this heading">¶</a></h3>
+<p>Memory order and fences will we excluded from this document for now, as
+understanding both topics properly requires a deeper dive into technical
+reference manuals of x86 and ARM, for which we are currently lacking the
+time.</p>
+<p>There also is an oddity at least with x86/GCC, which seems to ignore the
+memory order parameter when given dynamically, as seen below in the code
+snippet.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>static void *incrementValueWorker(void *ptr) {
+    187b:   f3 0f 1e fa             endbr64
+    incrementData_t *data = (incrementData_t *)ptr;
+
+    for (int i = 0; i &lt; ITERATIONS; i += 1) {
+    187f:   b8 00 00 00 00          mov    $0x0,%eax
+    1884:   eb 0c                   jmp    1892 &lt;incrementValueWorker+0x17&gt;
+        atomic_fetch_add_explicit(&amp;value, 1, data-&gt;order);
+    1886:   f0 48 83 05 e1 2a 00    lock addq $0x1,0x2ae1(%rip)        # 4370 &lt;value&gt;
+    188d:   00 01
+    for (int i = 0; i &lt; ITERATIONS; i += 1) {
+    188f:   83 c0 01                add    $0x1,%eax
+    1892:   3d 3f 42 0f 00          cmp    $0xf423f,%eax
+    1897:   7e ed                   jle    1886 &lt;incrementValueWorker+0xb&gt;
+    }
+
+    return NULL;
+}
+    1899:   b8 00 00 00 00          mov    $0x0,%eax
+    189e:   c3                      ret
+</pre></div>
+</div>
+<p>Here the <code class="docutils literal notranslate"><span class="pre">atomic_fetch_add_explicit()</span></code> is converted to
+<code class="docutils literal notranslate"><span class="pre">lock</span> <span class="pre">addq</span> <span class="pre">$0x1,0x2ae1(%rip)</span></code> which does lack any sort of variability
+that one would expect. We have to watch this potential issue closely
+once we find the time to take a second look at the memory order. It
+might be only a suggestion for the compiler, or might not work at all if
+specified during runtime.</p>
+<p><em>Note:</em> The memory order defaults to “sequentially consistent ordering”
+(<code class="docutils literal notranslate"><span class="pre">memory_order_seq_cst</span></code>) if not specified</p>
+</section>
+<section id="performance">
+<h3>Performance<a class="headerlink" href="#performance" title="Permalink to this heading">¶</a></h3>
+<p>Atomic variables are a lot faster than mutexes as long as the soft
+implementation from <code class="docutils literal notranslate"><span class="pre">libatomic</span></code> is not used. See the table below,
+which contains the runtime for 2 threads with 1000000 increments each.
+As the times are varying wildly due to multithreading, average values
+from 20 iterations have been calculated.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>incrementFunc</p></th>
+<th class="head"><p>timeTakenInSeconds</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>U32Unsafe</p></td>
+<td><p>0.003247s</p></td>
+</tr>
+<tr class="row-odd"><td><p>U32Mutex</p></td>
+<td><p>0.264180s</p></td>
+</tr>
+<tr class="row-even"><td><p>U32Atomic</p></td>
+<td><p>0.048557s</p></td>
+</tr>
+<tr class="row-odd"><td><p>U64Atomic</p></td>
+<td><p>0.058961s</p></td>
+</tr>
+<tr class="row-even"><td><p>ComplexMutex</p></td>
+<td><p>0.261543s</p></td>
+</tr>
+<tr class="row-odd"><td><p>ComplexAtomicSeqCst</p></td>
+<td><p>0.640935s</p></td>
+</tr>
+</tbody>
+</table>
+<p>Here we can see that atomic variables for an uint32 are around ~5.4
+times faster than a mutex. An example for the poor performance with soft
+implementation can be seen with the “Complex” test (using a simple
+struct with a couple of dummy entries), which is a lot slower than
+mutexes.</p>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<p>Atomic variables can not replace mutexes. Only certain variable types
+and operations are supported, and there is no way to lock a variable
+between a read with subsequent operations and a write.</p>
+<p>They are however much simpler and faster than mutexes and can be used in
+a variety of places. Examples for this are state and/or flag fields that
+define a components state, allowing to easily circumvent the biggest
+problem with mutexes - not knowing if a mutex is initialized or not.</p>
+<p>As such we gain the most by using atomic variables together with
+mutexes, using each where it provides the most benefits.</p>
+<section id="usage-guidelines">
+<h3>Usage Guidelines<a class="headerlink" href="#usage-guidelines" title="Permalink to this heading">¶</a></h3>
+<p>We should use atomic variables when:</p>
+<ul class="simple">
+<li><p>We have a simple integer based value (e.g. a state enum, a flag
+field, a counter) that can be accessed in paralell</p></li>
+<li><p>Said value can represented by one of the types in <code class="docutils literal notranslate"><span class="pre">stdatomic.h</span></code>,
+e.g. <code class="docutils literal notranslate"><span class="pre">atomic_uint_fast64_t</span></code></p></li>
+<li><p>We are able to realize all the interactions with the value
+exclusively with the macros given in <code class="docutils literal notranslate"><span class="pre">stdatomic.h</span></code>, e.g.
+<code class="docutils literal notranslate"><span class="pre">atomic_fetch_add()</span></code></p></li>
+</ul>
+<p>We should use mutexes when:</p>
+<ul class="simple">
+<li><p>We have data structures (<code class="docutils literal notranslate"><span class="pre">struct</span></code>) that can be accessed in paralell</p></li>
+<li><p>We have values that can be accessed in parallel which can’t be
+represented directly by <code class="docutils literal notranslate"><span class="pre">stdatomics.h</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">float</span></code> or
+<code class="docutils literal notranslate"><span class="pre">double</span></code></p></li>
+<li><p>We need to interact with this value in ways that can’t be represented
+with macros from <code class="docutils literal notranslate"><span class="pre">stdatomics.h</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">++value</span></code> or <code class="docutils literal notranslate"><span class="pre">~value</span></code></p></li>
+<li><p>We have more complex interactions that can’t be done in one step,
+e.g. <em>read value -&gt; do something specific based on value -&gt; write
+value</em></p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developers</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="adrs.html">Architecture Design Records</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Architecture Design Record - Atomic Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elos-coredump.html">Architecture Design Record - Detecting Coredumps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_authorization.html">Architecture Design Record - Event publishing authorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_authorization_blacklisting.html">Architecture Design Record - Blacklist filtering of published events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_logging_storage_concept.html">Architecture Design Record - Event Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_retention_policies.html">Architecture Design Record - Event Retention Policy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html">Architecture Design Record - Event Storage Backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-1">Decision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_class.html">Architecture Design Record - Event Storage Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_throtteling.html">Architecture Design Record - Event Throtteling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage_of_FORTIFY_SOURCE.html">Design Decisions - Enforce usage of _FORTIFY_SOURCE</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="adrs.html">Architecture Design Records</a><ul>
+      <li>Previous: <a href="adrs.html" title="previous chapter">Architecture Design Records</a></li>
+      <li>Next: <a href="elos-coredump.html" title="next chapter">Architecture Design Record - Detecting Coredumps</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/generated/ADRs/atomic_variables.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

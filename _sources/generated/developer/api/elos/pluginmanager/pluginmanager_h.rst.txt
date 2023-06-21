@@ -1,0 +1,5 @@
+pluginmanager.h
+===============
+
+.. autocmodule:: elos/pluginmanager/pluginmanager.h
+    :members:

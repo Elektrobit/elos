@@ -1,0 +1,5 @@
+builder.h
+=========
+
+.. autocmodule:: elos/processfilter/builder.h
+    :members:

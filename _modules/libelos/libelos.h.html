@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>libelos/libelos.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for libelos/libelos.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#ifndef LIBELOS_H</span>
+<div class="viewcode-block" id="c.LIBELOS_H"><span class="cp">#define LIBELOS_H</span></div>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;netinet/in.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;time.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_vector.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/eventqueue_types.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosSession"><div class="viewcode-block" id="c.elosSession_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosSession</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosSession.addr"><div class="viewcode-block" id="c.elosSession_t.addr"><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr_in</span><span class="w"> </span><span class="n">addr</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosSession.fd"><div class="viewcode-block" id="c.elosSession_t.fd"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosSession.connected"><div class="viewcode-block" id="c.elosSession_t.connected"><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">connected</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosSession_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosConnectTcpip"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosConnectTcpip">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosConnectTcpip</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Establishes connection to elos over tcp/ip.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **ip**:       ip address, e.g. &quot;192.168.2.1&quot;</span>
+<span class="cm"> *      - **port**:     port number, e.g. 54321</span>
+<span class="cm"> * Output:</span>
+<span class="cm"> *      - **session**:  session data structure used by other functions</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosConnectTcpip</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">ip</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">port</span><span class="p">,</span><span class="w"> </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">**</span><span class="n">session</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosDisconnect"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosDisconnect">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosDisconnect</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Disconnects from elos and frees the allocated memory and objects.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:  session data structure (invalid after function call)</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosDisconnect</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosGetVersion"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosGetVersion">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosGetVersion</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Returns the version of the elos server.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:  session data structure</span>
+<span class="cm"> * Output:</span>
+<span class="cm"> *      - **version**:  version of the elos server in form of *&quot;major.minor&quot;* (e.g. &quot;1.0&quot;)</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosGetVersion</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">version</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSubscribe"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosEventSubscribe">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosEventSubscribe</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Creates an EventQueue that is filled with Events that match at least</span>
+<span class="cm"> *      one of the given EventFilterStrings.</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *      - The EventQueue can be referred to by the EventQueueID while polling for new events.</span>
+<span class="cm"> *      - Multiple EventQueues can be created and used.</span>
+<span class="cm"> *      - The EventQueueID is only valid during the active session.</span>
+<span class="cm"> *        Once the session is closed (elosDisconnect) the EventQueues associated with it are removed.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:              session data structure</span>
+<span class="cm"> *      - **filterRuleArray**:      list of EventFilterStrings</span>
+<span class="cm"> *        (e.g. `{&quot;.event.messageCode 8004 EQ&quot;, &quot;.event.messageCode 8005 EQ&quot;}`)</span>
+<span class="cm"> *      - **filterRuleArraySize**:  the lenght of the `filterRuleArray`</span>
+<span class="cm"> * Output:</span>
+<span class="cm"> *      - **eventQueueId**:         an id for the created eventlist that is used for fetching events</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSubscribe</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">**</span><span class="n">filterRuleArray</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">filterRuleArraySize</span><span class="p">,</span>
+<span class="w">                                 </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventQueueId</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventUnsubscribe"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosEventUnsubscribe">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosEventUnsubscribe</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Deletes the EventQueue and the associated filters.</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *      - The EventQueue can be referred to by the EventQueueID while polling for new events.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:              session data structure</span>
+<span class="cm"> * Output:</span>
+<span class="cm"> *      - **eventQueueId**:         an id for the eventlist tto be removed</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventUnsubscribe</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventPublish"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosEventPublish">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosEventPublish</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Publishes the given Event.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:  session data structure</span>
+<span class="cm"> * Output:</span>
+<span class="cm"> *      - **event**:    content of the event in form of a elosEvent_t struct</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventPublish</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventQueueRead"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosEventQueueRead">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosEventQueueRead</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Waits for new events in the given EventQueue and returns them in form of a json string.</span>
+<span class="cm"> *</span>
+<span class="cm"> *      - The function is blocking or non blocking depending on how the timeout value is set</span>
+<span class="cm"> *      - The memory for events will be allocated by the library and must be freed by the user</span>
+<span class="cm"> *        _TBD: How to pass through EventFree()?_</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:       session data structure</span>
+<span class="cm"> *      - **eventQueueId**:  the id of the eventQueue to read from</span>
+<span class="cm"> * Output:</span>
+<span class="cm"> *      - **eventsVector**:  list of elosEvent_t structs containing the occuring events</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventQueueRead</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span><span class="p">,</span>
+<span class="w">                                 </span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventVector</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosLogFindEvent"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosLogFindEvent">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosLogFindEvent</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Fetches all logged events based on the used filter (e.g. based on payload or other data).</span>
+<span class="cm"> *</span>
+<span class="cm"> *      - In case no events are in the log, the vector parameter won&#39;t be changed.</span>
+<span class="cm"> *      - The memory of the event vector will be allocated by the library</span>
+<span class="cm"> *        and must be freed afterwards with elosEventVectorDelete().</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:     session data structure</span>
+<span class="cm"> *      - **filterRule**:  filter rule for entry selection</span>
+<span class="cm"> * Output:</span>
+<span class="cm"> *      - **vector**:      list of event structs</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogFindEvent</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filterRule</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventVector</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosSessionValid"><a class="viewcode-back" href="../../generated/api/libelos/libelos/libelos_h.html#c.elosSessionValid">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function: elosSessionValid</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *      Checks if the session is valid.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *      - **session**:  session data structure to check if its valid.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `true` for a valid seesion and `false` otherwise.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">elosSessionValid</span><span class="p">(</span><span class="n">elosSession_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">);</span></div>
+
+<span class="cp">#endif</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

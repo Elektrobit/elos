@@ -1,0 +1,5 @@
+thread.h
+========
+
+.. autocmodule:: elos/plugin/thread.h
+    :members:

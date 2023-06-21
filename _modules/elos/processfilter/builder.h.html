@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/processfilter/builder.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/processfilter/builder.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/processfilter/processfilter.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/processfilter/step_types.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/rpnfilter/builder.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosProcessFilterBuilderNew"><span class="cp">#define elosProcessFilterBuilderNew    elosRpnFilterBuilderNew</span></div>
+<div class="viewcode-block" id="c.elosProcessFilterBuilderDelete"><span class="cp">#define elosProcessFilterBuilderDelete elosRpnFilterBuilderDelete</span></div>
+
+<div class="viewcode-block" id="c.elosProcessFilterBuilderTokenTypeE"><div class="viewcode-block" id="c.elosProcessFilterBuilderTokenTypeE_t"><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosProcessFilterBuilderTokenTypeE</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosProcessFilterBuilderTokenTypeE.PROCESSFILTER_TOKEN_PROCESS"><div class="viewcode-block" id="c.elosProcessFilterBuilderTokenTypeE_t.PROCESSFILTER_TOKEN_PROCESS"><span class="w">    </span><span class="n">PROCESSFILTER_TOKEN_PROCESS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_TOKEN_TYPE_COUNT</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosProcessFilterBuilderTokenTypeE.PROCESSFILTER_TOKEN_TYPE_COUNT"><div class="viewcode-block" id="c.elosProcessFilterBuilderTokenTypeE_t.PROCESSFILTER_TOKEN_TYPE_COUNT"><span class="w">    </span><span class="n">PROCESSFILTER_TOKEN_TYPE_COUNT</span><span class="p">,</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosProcessFilterBuilderTokenTypeE_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosProcessFilterBuilderCompileToken"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosProcessFilterBuilderCompileToken</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                                            </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosProcessFilterBuilderTokenize"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosProcessFilterBuilderTokenize</span><span class="p">(</span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosProcessFilterBuilderCompile"><a class="viewcode-back" href="../../../generated/developer/api/elos/processfilter/builder_h.html#c.elosProcessFilterBuilderCompile">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function:     elosProcessFilterBuilderCompile</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:  Converts tokens into fast to use instructions that</span>
+<span class="cm"> *               are validated by elosProcessFilterBuilderFinalize()</span>
+<span class="cm"> *               used later by elosProcessFilterExecute().</span>
+<span class="cm"> * Info:         Used internally by elosProcessFilterCreate(),</span>
+<span class="cm"> *               shouldn&#39;t be called directly in normal use cases.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Input:        Pointer to existing elosRpnFilterBuilder_t</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosProcessFilterBuilderCompile</span><span class="p">(</span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosProcessFilterBuilderFinalize"><a class="viewcode-back" href="../../../generated/developer/api/elos/processfilter/builder_h.html#c.elosProcessFilterBuilderFinalize">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Function:     elosProcessFilterBuilderFinalize</span>
+<span class="cm"> *------------------------------------------------------------------</span>
+<span class="cm"> * Description:  Checks the results from elosProcessFilterBuilderCompile()</span>
+<span class="cm"> *               for errors and copies the results into a</span>
+<span class="cm"> *               elosRpnFilter_t structure that can be used</span>
+<span class="cm"> *               by elosProcessFilterExecute().</span>
+<span class="cm"> * Info:         Used internally by elosProcessFilterCreate(),</span>
+<span class="cm"> *               shouldn&#39;t be called directly in normal use cases.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Input:        Pointers to existing elosRpnFilterBuilder_t</span>
+<span class="cm"> *               and elosRpnFilter_t structures.</span>
+<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosProcessFilterBuilderFinalize</span><span class="p">(</span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">);</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

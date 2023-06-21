@@ -1,0 +1,5 @@
+eventfiltermanager.h
+====================
+
+.. autocmodule:: elos/eventprocessor/eventfiltermanager.h
+    :members:

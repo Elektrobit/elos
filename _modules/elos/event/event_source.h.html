@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/event/event_source.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/event/event_source.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;json-c/json_types.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/result.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_types.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosEventSourceNew"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceNew">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Allocates a new event.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *      The returned object must be destroyed with :c:func:`elosEventSourceDelete()`.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventSource (elosEventSource_t **): the event to allocate.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceNew</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventSource</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDeleteMembers"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Frees all members of an event.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventSource (elosEvnetSource_t *): Pointer to the eventSource.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">elosEventSourceDeleteMembers</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventSource</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDelete"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDelete">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Frees an event allocated with :c:func:`elosEventSourceNew()`</span>
+<span class="cm"> * or :c:func:`losEventSourceDeepCopy()`.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventSource (elosEventSource_t): Pointer to the allocated memory space.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">elosEventSourceDelete</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventSource</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceSerialize"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceSerialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Saves the members of an :c:type:`elosEventSource_t` into a JSON formatted string.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      toJsonString (char **): the string to safe the event to.</span>
+<span class="cm"> *      from (elosEventSouce_t *): the event to serialize.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceSerialize</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">toJsonString</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDeserialize"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeserialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Stores the information of a JSON formatted string into a elosEventSource_t object.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      to (elosEventSource_t *): Event to safe the data from the JSON to.</span>
+<span class="cm"> *      fromJsonString (const char *): JSON formatted string to deserialize.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceDeserialize</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fromJsonString</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDeepCopy"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeepCopy">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Duplicates elosEventSource_t with its members</span>
+<span class="cm"> *</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *      The returned object must be destroyed with :c:func:`elosEventSourceDelete()`.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      to (elosEventSource_t *): The event to copy to.</span>
+<span class="cm"> *      from (elosEventSource_t *): The event to copy.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceDeepCopy</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceToJsonObject"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceToJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Converts the information from an event</span>
+<span class="cm"> * and stores them into an existing JSON object`.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      to (json_object *): The JSON object to convert to.</span>
+<span class="cm"> *      from (elosEventSource_t *): The event to convert.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceToJsonObject</span><span class="p">(</span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceFromJsonObject"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceFromJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Converts the information from a JSON object</span>
+<span class="cm"> * and stores them into an existing event.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      to (elosEventSource_t *): The evnt to convert into.</span>
+<span class="cm"> *      from (const json_object *): The JSON obect to convert.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceFromJsonObject</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

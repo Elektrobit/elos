@@ -1,0 +1,5 @@
+builder.h
+=========
+
+.. autocmodule:: elos/eventfilter/builder.h
+    :members:

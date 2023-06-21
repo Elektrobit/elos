@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>Architecture Design Record - Blacklist filtering of published events &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Architecture Design Record - Event Storage" href="event_logging_storage_concept.html" />
+    <link rel="prev" title="Architecture Design Record - Event publishing authorization" href="event_authorization.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="architecture-design-record-blacklist-filtering-of-published-events">
+<h1>Architecture Design Record - Blacklist filtering of published events<a class="headerlink" href="#architecture-design-record-blacklist-filtering-of-published-events" title="Permalink to this heading">¶</a></h1>
+<section id="problem">
+<h2>Problem<a class="headerlink" href="#problem" title="Permalink to this heading">¶</a></h2>
+<p>a) Handling error while setting, creating and executing blacklist
+filters due to</p>
+<ul class="simple">
+<li><p>Set blacklist filter strings in config</p>
+<ul>
+<li><p>blacklist filter attribute is available but not set in elos
+config.</p></li>
+<li><p>blacklist filter attribute is not available in elos config.</p></li>
+<li><p>elos is started with a empty config</p></li>
+</ul>
+</li>
+<li><p>Create blacklist filters from filter strings.</p>
+<ul>
+<li><p>The given filter string is invalid</p></li>
+<li><p>Filter creation fails due to external error like malloc fails.</p></li>
+</ul>
+</li>
+<li><p>Executing a created blacklist filter. -elosEventFilterExecute returns
+error status</p></li>
+<li><p>Security event creation fails -security event member allocation
+fails.</p></li>
+</ul>
+<p>b) How to setup complex filter rules which filter on multiple event
+attributes.</p>
+</section>
+<section id="goals">
+<h2>Goals<a class="headerlink" href="#goals" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Use blacklist filters to prevent unauthorized clients from publishing
+critical events. Ensure that safe guards are in place to handle
+events if blacklist filter fails due to reasons given above.</p></li>
+</ul>
+</section>
+<section id="assumptions">
+<h2>Assumptions<a class="headerlink" href="#assumptions" title="Permalink to this heading">¶</a></h2>
+<p>Blacklist filtering of events are carried out only for events published
+from unauthorized clients.</p>
+</section>
+<section id="solution">
+<h2>Solution<a class="headerlink" href="#solution" title="Permalink to this heading">¶</a></h2>
+<p>a) In case of error while setup, creation and execution of blacklist
+filter due to various reasons given in <a class="reference external" href="#problem">Problem</a>, a
+blacklist filter is not created, which means events from unauthorized
+clients can not be properly classified and filtered. In this case events
+from unauthorized clients can be classified as :</p>
+<ol class="arabic">
+<li><p>all events from unauthorized clients are classified as critical and
+shall not be published a security event is published instead.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">42</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;elosd&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1234</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;hardwareid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;hardwareid&gt;&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">324</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;messageCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8007</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The value for <code class="docutils literal notranslate"><span class="pre">classification</span></code> is a concatenation of the flags
+<code class="docutils literal notranslate"><span class="pre">elos|Security|IPC</span></code>.</p>
+<p>If a blacklist filter cannot be created then an error message is
+published and the client is notified.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">42</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;elosd&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1234</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;hardwareid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;hardwareid&gt;&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;classification&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">260</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;messageCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">501</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The value for <code class="docutils literal notranslate"><span class="pre">classification</span></code> is a concatenation of the flags
+<code class="docutils literal notranslate"><span class="pre">elos|Security</span></code>. In this state elos will allow only authorized
+clients to publish events.</p>
+</li>
+<li><p>all events from unauthorized clients are classified as not critical
+and shall be published. In this state elos will allow any event from
+unauthorized clients will be published, which can include possible
+critical events.</p></li>
+<li><p>events from unauthorized clients shall pass through a default
+blacklist filter.</p></li>
+</ol>
+<p>Since security events are set up manually, there is no possibility of
+failure in event creation or event member allocation.</p>
+<p>b) If a filter is used to match more than one event attribute or has
+more then one RPN-term then it is deemed as a complex filter. Such a
+complex filter can be implemented in two ways</p>
+<ul>
+<li><p>define black list as a list of multiple <code class="docutils literal notranslate"><span class="pre">OR</span></code> linked simple
+RPN-filters as given below</p>
+<div class="highlight-Json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;EventBlacklist&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;.event.messageCode 2000 EQ&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;.event.messageCode 3000 EQ&quot;</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p>define black list attribute in config as a simple JSON string and use
+RPN-filter notations to express complex filter rules as given below</p>
+<div class="highlight-Json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;EventBlacklist&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;.event.messageCode 2000 EQ .event.messageCode 3000 EQ OR&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="decision">
+<h2>Decision:<a class="headerlink" href="#decision" title="Permalink to this heading">¶</a></h2>
+<ol class="loweralpha simple">
+<li><p>We chose solution 1 because of the following reasons</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p>We shall classify all events from an unauthorized clients as critical
+so that they are not published, in the case of a failure during
+setup, creation or execution of blacklist filters. If an event from
+unauthorized client matches the blacklist filter, then a security
+event is published instead of the event from the client. If there is
+a failure in the creation of the blacklist filter then a error event
+is published. Unauthorized clients receive a response status,
+informing that they are unauthorized to publish critical events.
+Client would receive a response status from elos which indicates a
+failure, if the blacklist check fails due to an elos internal error.</p></li>
+<li><p>Classifying events from unauthorized clients as not critical is not
+safe and can be exploited by bad faith actors and therefore will be
+avoided.</p></li>
+<li><p>A default blacklist needs to be robust and exhaustive so that all
+possible critical events that could emerge from an unauthorized
+client are accounted for. Since this is not feasible at the moment
+this will be avoided.</p></li>
+</ol>
+<p>b) We use single JSON string along with RPN-Filter notations to
+implement complex filters, because it is easy to implement and it is not
+expected to have a negative performance impact than applying multiple
+filters. Using lists in blacklist filter attribute needs a event filter
+to be created for every filter string listed in the attribute and each
+created filter needs to be executed, which in turn impacts performance.</p>
+</section>
+<section id="open-points">
+<h2>Open Points:<a class="headerlink" href="#open-points" title="Permalink to this heading">¶</a></h2>
+<p>a) Complex filters are open for performance consideration and need to be
+benchmarked in the future.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developers</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="adrs.html">Architecture Design Records</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="atomic_variables.html">Architecture Design Record - Atomic Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elos-coredump.html">Architecture Design Record - Detecting Coredumps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_authorization.html">Architecture Design Record - Event publishing authorization</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Architecture Design Record - Blacklist filtering of published events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_logging_storage_concept.html">Architecture Design Record - Event Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_retention_policies.html">Architecture Design Record - Event Retention Policy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html">Architecture Design Record - Event Storage Backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-1">Decision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_class.html">Architecture Design Record - Event Storage Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_throtteling.html">Architecture Design Record - Event Throtteling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage_of_FORTIFY_SOURCE.html">Design Decisions - Enforce usage of _FORTIFY_SOURCE</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="adrs.html">Architecture Design Records</a><ul>
+      <li>Previous: <a href="event_authorization.html" title="previous chapter">Architecture Design Record - Event publishing authorization</a></li>
+      <li>Next: <a href="event_logging_storage_concept.html" title="next chapter">Architecture Design Record - Event Storage</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/generated/ADRs/event_authorization_blacklisting.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

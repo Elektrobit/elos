@@ -1,0 +1,7 @@
+eventbuffer
+===========
+
+.. toctree::
+    :maxdepth: 4
+
+    eventbuffer_h

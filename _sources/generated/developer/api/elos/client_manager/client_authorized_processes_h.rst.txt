@@ -1,0 +1,5 @@
+client_authorized_processes.h
+=============================
+
+.. autocmodule:: elos/client_manager/client_authorized_processes.h
+    :members:

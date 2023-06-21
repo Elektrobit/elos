@@ -1,0 +1,5 @@
+event_vector.h
+==============
+
+.. autocmodule:: elos/event/event_vector.h
+    :members:

@@ -1,0 +1,7 @@
+pluginmanager
+=============
+
+.. toctree::
+    :maxdepth: 4
+
+    pluginmanager_h

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/event/event_vector.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/event/event_vector.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+
+<span class="cp">#ifndef ELOS_EVENT_VECTOR_H</span>
+<div class="viewcode-block" id="c.ELOS_EVENT_VECTOR_H"><span class="cp">#define ELOS_EVENT_VECTOR_H</span></div>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/common.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/vector.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosEventVectorNew"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorNew">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Allocate a new event vector.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t **): The vector to allocate.</span>
+<span class="cm"> *      elements (uint32_t): the number of elements to allocate.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorNew</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventVector</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorInitialize"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorInitialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to initialize.</span>
+<span class="cm"> *      elements (uint32_t): the number of elements to initialize.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorInitialize</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorSerialize"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorSerialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Serialize an event vector.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to serialize.</span>
+<span class="cm"> *      sEventVector (char **): the string to serialize into.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorSerialize</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">sEventVector</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorToJsonObject"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorToJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Convert an event vector into a JSON object.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to convert.</span>
+<span class="cm"> *      jEventVector (json_object **): the JSON object to convert into.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorToJsonObject</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">,</span><span class="w"> </span><span class="n">json_object</span><span class="w"> </span><span class="o">**</span><span class="n">eventVecJobj</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorToJsonArray"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorToJsonArray">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Convert an event vector into a JSON array.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to convert.</span>
+<span class="cm"> *      jEventVector (json_object **): the JSON Array to convert into.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorToJsonArray</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">,</span><span class="w"> </span><span class="n">json_object</span><span class="w"> </span><span class="o">**</span><span class="n">jEventVector</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorFromJsonObject"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorFromJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Convert a JSON object into an event vector.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVecJobj (json_object *): the JSON object to convert.</span>
+<span class="cm"> *      eventVector (elosEventVector_t **): the event vector to convert into.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorFromJsonObject</span><span class="p">(</span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">eventVecJobj</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventVector</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorFromJsonArray"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorFromJsonArray">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Convert a JSON array into an event vector.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVecJobj (json_object *): the JSON array to convert.</span>
+<span class="cm"> *      eventVector (elosEventVector_t **): the event vector to convert into.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorFromJsonArray</span><span class="p">(</span><span class="n">json_object</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">jEventArray</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventVector</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorDeleteMembers"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Free the memomry of all members of an :c:type:`elosEventVector_t`.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to delete the members from</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">elosEventVectorDeleteMembers</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorDelete"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorDelete">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Free the memomry of an event vector.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to free.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">elosEventVectorDelete</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">);</span></div>
+
+<span class="cp">#endif </span><span class="cm">/* ELOS_EVENT_VECTOR_H */</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,25 @@
+
+Elos API
+==========================
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Contents:
+
+  client_manager <elos/client_manager/client_manager>
+  config <elos/config/config>
+  event <elos/event/event>
+  eventbuffer <elos/eventbuffer/eventbuffer>
+  eventfilter <elos/eventfilter/eventfilter>
+  eventlogging <elos/eventlogging/eventlogging>
+  eventprocessor <elos/eventprocessor/eventprocessor>
+  libelos <../../api/libelos/index>
+  messages <elos/messages/messages>
+  plugin <elos/plugin/plugin>
+  pluginmanager <elos/pluginmanager/pluginmanager>
+  processfilter <elos/processfilter/processfilter>
+  rpnfilter <elos/rpnfilter/rpnfilter>
+  scanner_manager <elos/scanner_manager/scanner_manager>
+  eventdispatcher <elos/eventdispatcher/eventdispatcher>
+
+

@@ -1,0 +1,20 @@
+
+Architecture Design Records
+===========================
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
+   atomic_variables
+   elos-coredump
+   event_authorization
+   event_authorization_blacklisting
+   event_logging_storage_concept
+   event_retention_policies
+   event_storage_backends
+   event_storage_class
+   event_throtteling
+   usage_of_FORTIFY_SOURCE
+
+
