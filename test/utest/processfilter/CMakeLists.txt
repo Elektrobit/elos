@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosProcessFilterBuilderCompile)
+add_subdirectory(elosProcessFilterCreate)
+add_subdirectory(elosProcessFilterExecute)

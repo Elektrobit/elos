@@ -1,0 +1,56 @@
+@startuml
+title Event logging
+
+node elos {
+  package EventLogging {
+    component LogAggregator {
+      component ECM_Engine [
+        ECM-Engine
+        ==========
+        "Event Classification & Mapping Engine"
+      ]
+      component Search_Engine [
+        Search-Engine
+        ==========
+        "Event Search and query Engine"
+      ]
+    }
+    together {
+      component EventLogBackend_A <<LogBackend>>
+      component EventLogBackend_B <<LogBackend>>
+      component EventLogBackend_C <<LogBackend>>
+    }
+    together {
+      database "Non volatile storage" as Storage_Flash <<Flash>>
+      database "Non volatile storage" as Storage_EEPROM <<EEPROM>>
+      database "Non volatile storage" as Storage_SSD <<SSD>>
+      database "Non volatile storage" as Storage_Remote <<Remote>>
+      database "volatile storage" as Storage_InMemory <<In Memory DB>>
+    }
+  }
+
+  together {
+    interface Event
+    interface FilterRule
+  }
+}
+
+FilterRule -[hidden]right-> Event
+Event -down-> ECM_Engine : add
+FilterRule -down-> Search_Engine : find_event
+
+ECM_Engine -down-> EventLogBackend_A : persist
+ECM_Engine -down-> EventLogBackend_B : persist
+ECM_Engine -down-> EventLogBackend_C : persist
+
+Search_Engine -down-> EventLogBackend_A : query
+Search_Engine -down-> EventLogBackend_B : query
+Search_Engine -down-> EventLogBackend_C : query
+
+EventLogBackend_A -down-> Storage_Flash : write
+EventLogBackend_B -down-> Storage_EEPROM : write
+EventLogBackend_C -down-> Storage_SSD : write
+
+EventLogBackend_A -[hidden]right-> EventLogBackend_B
+EventLogBackend_B -[hidden]right-> EventLogBackend_C
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+left to right direction
+
+node RuleSource {
+  object MappingRules {
+    value:"event.severity == 4 && input == 'string to match'"
+    value:"event.severity == 9 && input == 0xCAFFEE"
+  }
+  object FilterRules {
+    [
+      "event.severity == 4 && input == 'string to match'",
+      "event.severity == 9 && input == 0xCAFFEE"
+    ]
+  }
+}
+
+node TranslationUnit {
+}
+
+object Event{
+  source
+  severity
+  classification
+  messageCode
+  date
+  payload <<Input>>
+...
+}
+
+object Input {
+  type:
+    string,
+    number
+}
+
+node RuleEvaluationEngine {
+  object RpnFilter {
+    translated rule: [event.severity,4,eq,input,'string to match',eq,and]
+  }
+  object RpnFilter {
+    translated rule: [event.severity,4,eq,input,0xCAFFEE,eq,and]
+  }
+}
+
+RuleSource --> TranslationUnit: provide rules
+TranslationUnit --> RuleEvaluationEngine: provide translate rule
+Event --> RuleEvaluationEngine: apply event to rules
+Input --> RuleEvaluationEngine: apply input to rules
+
+
+@enduml
+
+

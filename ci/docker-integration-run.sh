@@ -1,0 +1,1 @@
+../../shared/ci/docker-integration-run.sh

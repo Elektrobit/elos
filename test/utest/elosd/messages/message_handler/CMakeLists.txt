@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosMessageHandlerHandleMessage)
+add_subdirectory(elosMessageHandlerSend)
+add_subdirectory(elosMessageHandlerSendJson)
+add_subdirectory(elosMessageHandlerResponseCreate)

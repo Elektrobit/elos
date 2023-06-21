@@ -1,0 +1,20 @@
+@startuml
+
+== Initialization ==
+ScannerManager -[#red]> Scanner: scannerInitialize()
+ScannerManager <[#blue]-- Scanner: Returns ScannerResult
+
+== Scanner loop ==
+ScannerManager -[#red]> Scanner: scannerRun()
+Scanner -> Scanner : observe and publish
+ScannerManager <[#blue]-- Scanner: Returns when thread stopped()
+
+== Scanner stop ==
+ScannerManager -[#red]> Scanner: scannerStop()
+ScannerManager <[#blue]-- Scanner: Returns ScannerResult
+
+ScannerManager -[#red]> Scanner: scannerFree()
+ScannerManager <[#blue]-- Scanner: Returns ScannerResult
+@enduml
+
+

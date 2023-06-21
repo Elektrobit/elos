@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: MIT
+
+#ifndef ELOS_EVENT_SERIALIZE_UTEST_H
+#define ELOS_EVENT_SERIALIZE_UTEST_H
+
+#include <cmocka_extensions/cmocka_extensions.h>
+#include <cmocka_mocks/mock_jsonc.h>
+#include <cmocka_mocks/mock_libc.h>
+
+#include "event_utest.h"
+
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeErrorNullEvent)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeErrorNullStorageString)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeNewJsonObjectError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeEventConversionError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeJsonObjStringError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeStrdupError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeSuccessEmptyEvent)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeSuccessNullEventSource)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeSuccessOnlySeverity)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeSuccessOnlySource)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSerializeSuccessOnlyTime)
+
+#endif /* ELOS_EVENT_SERIALIZE_UTEST_H */

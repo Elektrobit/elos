@@ -1,0 +1,1 @@
+../../shared/ci/create_coverage.sh

@@ -1,0 +1,44 @@
+@startuml
+
+participant Client
+participant ClientManager
+participant EventProcessor
+collections EventFilter
+queue EventQueue
+
+
+group create a session
+  Client --> ClientManager : connect()
+  Client <-- ClientManager : Session
+end
+
+loop for each set of events a client want's to subscribe
+  group create EventQueue for collecting Events matching "EventFilterString"
+    Client --> EventProcessor : eventSubscribe([EventFilterString,...])
+    EventProcessor --> EventFilter : createEventFilter(EventFilterString)
+    EventProcessor <-- EventFilter : EventFilterID
+    EventProcessor --> EventQueue : createEventQueue(EventFilterID)
+    EventProcessor <-- EventQueue : EventQueueID
+    Client <-- EventProcessor : EventQueueID
+  end
+end
+
+loop while client want's to receive events
+  group consume messages from EventQueue
+    Client --> EventProcessor : eventQueueRead(EventQueueID)
+    EventProcessor --> EventQueue : readAndRemoveEvents(EventQueueID)
+    EventProcessor <-- EventQueue : Events[]
+    Client <-- EventProcessor : Result
+  end
+end
+
+group close a session
+  Client --> ClientManager : close()
+  ClientManager --> EventProcessor : deleteEventQueueOwnedByThisSession()
+  EventProcessor --> EventQueue : deleteIfNotUsed()
+  EventProcessor --> EventFilter : deleteIfNotUsed()
+  Client <-- ClientManager :
+end
+@enduml
+
+

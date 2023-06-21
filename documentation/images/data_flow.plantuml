@@ -1,0 +1,47 @@
+@startuml
+title "Data flow"
+left to right direction
+
+together {
+  node Client {
+  }
+  node OS [
+    OS-Resources:
+    ===
+      - /dev/log
+      - /dev/kmsg
+      - /sys/class/thermal/thermal_zone<X>/temp
+  ]
+}
+
+together {
+  entity "Log" as Log.2 <<canonical>>
+  entity "Event" as Event.2 <<canonical>>
+  entity "Raw Input" as RawInput <<non canonical>>
+}
+
+node elosd
+
+together {
+  entity "Log" as Log.1 <<canonical>>
+  entity "Event" as Event.1 <<canonical>>
+}
+
+database LogStorage
+cloud EventSubscribers
+
+Client --> Log.2
+Client --> Event.2
+
+OS --> RawInput
+
+RawInput --> elosd
+Log.2 --> elosd
+Event.2 --> elosd
+
+elosd --> Log.1
+elosd --> Event.1
+Log.1 --> LogStorage
+Event.1 --> EventSubscribers
+
+@enduml

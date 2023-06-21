@@ -1,0 +1,1 @@
+../../shared/cmake/interface_library.cmake

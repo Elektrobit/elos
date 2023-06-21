@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: MIT
+
+#ifndef ELOS_EVENT_SOURCE_DESERIALIZE_UTEST_H
+#define ELOS_EVENT_SOURCE_DESERIALIZE_UTEST_H
+
+#include <cmocka_extensions/cmocka_extensions.h>
+#include <cmocka_mocks/mock_jsonc.h>
+
+#include "elos/event/event_source.h"
+#include "safu/common.h"
+
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceDeserializeErrNull)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceDeserializeExterrJsonTokener)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceDeserializeSuccessComplete)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceDeserializeSuccessEmpty)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceDeserializeSuccessUninitializedAppName)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceDeserializeSuccessUninitializedFileName)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceDeserializeSuccessUninitializedPID)
+
+#endif /* ELOS_EVENT_SOURCE_DESERIALIZE_UTEST_H */
