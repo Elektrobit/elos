@@ -1,0 +1,40 @@
+Checks: '
+    -*,
+    readability-identifier-naming,
+    readability-uppercase-literal-suffix,
+    cert-env33-c,cert-err34-c,cert-flp30-c,
+    bugprone-suspicious-string-compare,
+    bugprone-macro-parentheses,
+    misc-non-copyable-objects,
+    clang-analyzer-core.uninitialized.*,
+    clang-analyzer-unix.Malloc,
+    clang-analyzer-unix.MismatchedDeallocator,
+    -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+'
+WarningsAsErrors: '*'
+CheckOptions:
+  - { key: readability-identifier-naming.TypedefCase,            value: CamelCase              }
+  - { key: readability-identifier-naming.TypedefPrefix,          value: safu                   }
+  - { key: readability-identifier-naming.TypedefSuffix,          value: _t                     }
+  - { key: readability-identifier-naming.TypedefIgnoredRegexp,   value: '^_.+'                 }
+  - { key: readability-identifier-naming.StructCase,             value: CamelCase              }
+  - { key: readability-identifier-naming.StructPrefix,           value: safu                   }
+  - { key: readability-identifier-naming.StructIgnoredRegexp,    value: '^_.+'                 }
+  - { key: readability-identifier-naming.EnumCase,               value: CamelCase              }
+  - { key: readability-identifier-naming.EnumPrefix,             value: safu                   }
+  - { key: readability-identifier-naming.EnumSuffix,             value: E                      }
+  - { key: readability-identifier-naming.EnumIgnoredRegexp,      value: '^_.+'                 }
+  - { key: readability-identifier-naming.UnionCase,              value: CamelCase              }
+  - { key: readability-identifier-naming.UnionPrefix,            value: safu                   }
+  - { key: readability-identifier-naming.UnionIgnoredRegexp,     value: '^_.+'                 }
+  - { key: readability-identifier-naming.FunctionCase,           value: CamelCase              }
+  - { key: readability-identifier-naming.FunctionPrefix,         value: safu                   }
+  - { key: readability-identifier-naming.FunctionIgnoredRegexp,  value: '^_.+'                 }
+  - { key: readability-identifier-naming.VariableCase,           value: camelBack              }
+  - { key: readability-identifier-naming.ParameterCase,          value: camelBack              }
+  - { key: readability-identifier-naming.ParameterIgnoredRegexp, value: '^_.+'                 }
+  - { key: readability-identifier-naming.MemberCase,             value: camelBack              }
+  - { key: readability-identifier-naming.GlobalVariableCase,     value: CamelCase              }
+  - { key: readability-identifier-naming.GlobalVariablePrefix,   value: safu                   }
+  - { key: readability-identifier-naming.GlobalConstantCase,     value: CamelCase              }
+  - { key: readability-identifier-naming.GlobalConstantPrefix,   value: safu                   }

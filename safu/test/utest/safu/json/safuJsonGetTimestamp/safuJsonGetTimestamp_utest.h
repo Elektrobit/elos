@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: MIT
+#ifndef SAFU_JSON_GET_TIMESTAMP_H
+#define SAFU_JSON_GET_TIMESTAMP_H
+
+#include <limits.h>
+
+#include "json_utest.h"
+
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampSuccessArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampSuccessObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrGetArrayFailedArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrGetArrayFailedObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrNoFullTimestampArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrNoFullTimestampObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrGetSecsFailedArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrGetSecsFailedObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrGetNSecsFailedArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetTimestampErrGetNSecsFailedObject)
+
+#endif /* SAFU_JSON_GET_TIMESTAMP_H */

@@ -1,0 +1,74 @@
+@startuml
+skinparam linetype polyline
+
+object "libFunction.c" as libFunc_c {
+	function()
+	dependency()
+}
+object "libFunction.o" as libFunc_o {
+	function()
+	dependency()
+}
+object "libFunction.so" as libFunc_so {
+	function()
+	dependency()
+}
+
+object "utestDoSomething.c" as utestDoSome_c {
+	testDoSomething()
+}
+object "utestDoSomething.o" as utestDoSome_o {
+	testDoSomething()
+}
+object "utestDoSomething" as utestDoSome_bin {
+	testDoSomething()
+	function()
+	'dependency()
+	'dependency() // mocked
+}
+
+object "mockLibFunction.c" as mockLibFunc_c {
+	dependency() // mocked
+}
+object "mockLibFunction.o" as mockLibFunc_o {
+	dependency() // mocked
+}
+object "mockLibFunction.a" as mockLibFunc_a {
+	dependency() // mocked
+}
+
+libFunc_c .> libFunc_c /': depends on ""dependency()""'/
+libFunc_c --> libFunc_o : compile
+libFunc_o --> libFunc_so : link to shared object
+
+utestDoSome_c .> libFunc_c : tests ""function()""
+utestDoSome_c .> mockLibFunc_c : uses mocked dependencies
+utestDoSome_c --> utestDoSome_o : compile
+utestDoSome_o --> utestDoSome_bin : link to test binary
+
+mockLibFunc_c --> mockLibFunc_o : compile
+mockLibFunc_o --> mockLibFunc_a : link to static object
+
+libFunc_so --> utestDoSome_bin : link ""function()"" to test
+mockLibFunc_a --> utestDoSome_bin : link mocked dependencies to test
+
+
+libFunc_c -[hidden]-> libFunc_o
+libFunc_o -[hidden]-> libFunc_so
+
+utestDoSome_c -[hidden]-> utestDoSome_o
+utestDoSome_o -[hidden]-> utestDoSome_bin
+
+mockLibFunc_c -[hidden]-> mockLibFunc_o
+mockLibFunc_o -[hidden]-> mockLibFunc_a
+
+libFunc_c -[hidden]> utestDoSome_c
+utestDoSome_c -[hidden]> mockLibFunc_c
+
+libFunc_o -[hidden]> utestDoSome_o
+utestDoSome_o -[hidden]> mockLibFunc_o
+
+libFunc_so -[hidden]> utestDoSome_bin
+utestDoSome_bin -[hidden]> mockLibFunc_a
+
+@enduml

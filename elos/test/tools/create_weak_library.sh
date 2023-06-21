@@ -1,0 +1,1 @@
+../../../shared/scripts/create_weak_library.sh

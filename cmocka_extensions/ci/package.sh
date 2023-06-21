@@ -1,0 +1,1 @@
+../../shared/ci/package.sh

@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: MIT
+#ifndef ELOS_EVENTDEEPCOPY_UTEST_H
+#define ELOS_EVENTDEEPCOPY_UTEST_H
+
+#include <cmocka_mocks/mock_libc.h>
+
+#include "event_utest.h"
+
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeepCopyNullInput)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeepCopyEventSourceDeepCopyError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventStrdupHardwareIdError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventStrdupPayloadError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSuccessEventSourceNotNull)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSuccessNullEventMemberStrings)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSuccessNullEventSource)
+
+#endif /* ELOS_EVENTDEEPCOPY_UTEST_H */

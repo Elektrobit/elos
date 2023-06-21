@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosAuthorizedProcessInitialize)
+add_subdirectory(elosAuthorizedProcessDelete)
+add_subdirectory(elosAuthorizedProcessCheck)

@@ -1,0 +1,31 @@
+@startuml
+
+Application -> "Configuration Factory" : samconfLoad(location)
+"Configuration Factory" -> "Configuration Factory" : lookupConfigBackend(location)
+"Configuration Factory" <-- "Configuration Factory" : ConfigBackend;
+
+"Configuration Factory" -> ConfigBackend : open
+"Configuration Factory" <-- ConfigBackend : ConfigStatus
+
+alt successful case
+    loop while next() returns SAMCONF_CONFIG_OK
+
+        "Configuration Factory" -> ConfigBackend : is[Bool|Int|Float|String]
+        alt successful case
+            "Configuration Factory" -> ConfigBackend : get[Bool|Int|Float|String|Obj|Array]
+            "Configuration Factory" <-- ConfigBackend : Bool, Int, Float, String
+        else array or object
+            rnote over "Configuration Factory", ConfigBackend
+                In this case we create a node samconfConfig_t of type SAMCONF_CONFIG_VALUE_ARRAY or
+                SAMCONF_CONFIG_VALUE_OBJECT without a value.
+            end rnote
+        end
+
+        "Configuration Factory" -> ConfigBackend : next()
+        "Configuration Factory" <-- ConfigBackend : ConfigStatus
+    end
+end
+
+Application <-- "Configuration Factory" : ConfigStatus, Config
+
+@enduml

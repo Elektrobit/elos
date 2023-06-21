@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: MIT
+
+#ifndef ELOS_EVENT_SOURCE_SERIALIZE_UTEST_H
+#define ELOS_EVENT_SOURCE_SERIALIZE_UTEST_H
+
+#include <cmocka_extensions/cmocka_extensions.h>
+#include <cmocka_mocks/mock_jsonc.h>
+#include <cmocka_mocks/mock_libc.h>
+
+#include "elos/event/event_source.h"
+#include "safu/common.h"
+
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeErrNull)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeExterrEventSourceToJsonObject)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeExterrJsonObjString)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeExterrStrdup)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeSuccessComplete)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeSuccessEmpty)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeSuccessUninitializedAppName)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeSuccessUninitializedFileName)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventSourceSerializeSuccessUninitializedPID)
+
+typedef struct elosTestState {
+    char *receivedString;
+    elosEventSource_t source;
+} elosTestState_t;
+
+#endif /* ELOS_EVENT_SOURCE_SERIALIZE_UTEST_H */

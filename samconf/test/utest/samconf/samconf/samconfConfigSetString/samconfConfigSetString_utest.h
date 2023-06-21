@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: MIT
+#ifndef SAMCONF_CONFIGSETSTRING_UTEST_H
+#define SAMCONF_CONFIGSETSTRING_UTEST_H
+
+#include "samconf_utest.h"
+
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigSetStringSuccess)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigSetStringErrorValueNull)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigSetStringErrorConfigNull)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigSetStringExtErrStrdup)
+#endif /* SAMCONF_CONFIGSETSTRING_UTEST_H */

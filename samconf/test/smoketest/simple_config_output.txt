@@ -1,0 +1,14 @@
+PATH    VALUE   TYPE
+/root   None    SAMCONF_CONFIG_VALUE_OBJECT
+root/elos       None    SAMCONF_CONFIG_VALUE_OBJECT
+elos/UseEnv     FALSE   SAMCONF_CONFIG_VALUE_BOOLEAN
+elos/Port       54321   SAMCONF_CONFIG_VALUE_INT
+elos/Temperature       31.680000   SAMCONF_CONFIG_VALUE_REAL
+elos/ip 127.0.0.0       SAMCONF_CONFIG_VALUE_STRING
+elos/Scanner    None    SAMCONF_CONFIG_VALUE_OBJECT
+Scanner/SyslogScanner   None    SAMCONF_CONFIG_VALUE_OBJECT
+SyslogScanner/SyslogPath        /dev/log        SAMCONF_CONFIG_VALUE_STRING
+SyslogScanner/InputFilter       None    SAMCONF_CONFIG_VALUE_OBJECT
+InputFilter/sshd        None    SAMCONF_CONFIG_VALUE_OBJECT
+sshd/4000       event.source.appname    SAMCONF_CONFIG_VALUE_STRING
+elos/Logger             SAMCONF_CONFIG_VALUE_STRING

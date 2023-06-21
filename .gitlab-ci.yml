@@ -1,0 +1,13 @@
+pages:
+  tags:
+    - docker
+  image:
+    name: alpine:3.14
+    pull_policy: [always, if-not-present]
+  only:
+    - integration
+  script:
+    - ./shared/ci/gitlab_ci-deploy_doc.sh $CI_COMMIT_REF_NAME
+  artifacts:
+    paths:
+    - public

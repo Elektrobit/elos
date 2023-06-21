@@ -1,0 +1,59 @@
+#!/bin/bash
+
+
+start() {
+    if [ -e /run/elosd.pid ]
+    then
+        echo "elos already running"
+        exit 1
+    fi
+
+    touch /tmp/elosd.log
+    chmod 666 /tmp/elosd.log
+
+    export ELOS_STORAGE_BACKEND_JSON_FILE="/tmp/elosd_event.log"
+    stdbuf -o 0 -e 0 /usr/bin/elosd > /tmp/elosd.log 2>&1 &
+    ELOS_PID=$!
+
+    sleep 0.2s
+
+    if [ -d /proc/$ELOS_PID ]
+    then
+        echo $ELOS_PID > /run/elosd.pid
+    fi
+}
+
+stop() {
+    kill $(cat /run/elosd.pid) >> /tmp/elosd.log 2>&1
+    rm -f /run/elosd.pid
+}
+
+status() {
+    if [ -e /run/elosd.pid ] && [ -d /proc/$(cat /run/elosd.pid) ]
+    then
+       echo "Status : Running"
+    else
+       echo "Status : Stopped"
+    fi
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+
+exit 0

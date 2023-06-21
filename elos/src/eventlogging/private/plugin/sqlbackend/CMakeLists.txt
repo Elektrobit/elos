@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: MIT
+find_package(safu)
+find_package(samconf)
+
+add_library(
+  backend_sql SHARED
+  ./SqlBackend.c
+  ./SqlBackendPlugin.c
+)
+
+set_target_properties(backend_sql PROPERTIES PREFIX "")
+
+target_include_directories(
+  backend_sql
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(
+  backend_sql
+  PUBLIC
+    eventlogging_interface
+    elos_common_interface
+    eventfilter_static
+    plugin_interface
+    samconf::samconf
+    safu::safu
+    sqlite3
+)
+
+install(TARGETS backend_sql DESTINATION ${ELOSD_BACKEND_PATH})
+
+create_static_library_from_shared(
+  NAME
+    backend_sql_static
+  FROM
+    backend_sql
+  NO_PREFIX
+)

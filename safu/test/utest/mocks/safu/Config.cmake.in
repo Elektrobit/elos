@@ -1,0 +1,4 @@
+@PACKAGE_INIT@
+find_package(safu REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/mock_safuTargets.cmake")

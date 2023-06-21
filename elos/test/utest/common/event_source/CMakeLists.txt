@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosEventSourceNew)
+add_subdirectory(elosEventSourceDelete)
+add_subdirectory(elosEventSourceSerialize)
+add_subdirectory(elosEventSourceDeserialize)

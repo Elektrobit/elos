@@ -1,0 +1,5 @@
+@startuml
+
+node safu
+
+@enduml

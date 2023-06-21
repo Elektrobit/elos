@@ -1,0 +1,6 @@
+@PACKAGE_INIT@
+find_package(json-c REQUIRED)
+if (UNIT_TESTS)
+    find_package(cmocka_mocks REQUIRED)
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/safuTargets.cmake")

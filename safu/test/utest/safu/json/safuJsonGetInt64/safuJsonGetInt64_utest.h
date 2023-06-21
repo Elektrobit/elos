@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: MIT
+#ifndef SAFU_JSON_GET_INT64_H
+#define SAFU_JSON_GET_INT64_H
+
+#include "json_utest.h"
+
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetInt64SuccessArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetInt64SuccessObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetInt64ErrGetObjectFailedArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetInt64ErrGetObjectFailedObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetInt64ErrGetInt64FailedArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonGetInt64ErrGetInt64FailedObject)
+
+#endif /* SAFU_JSON_GET_INT64_H */

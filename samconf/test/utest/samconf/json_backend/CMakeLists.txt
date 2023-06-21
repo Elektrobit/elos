@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(samconfJsonBackendOpen)
+add_subdirectory(samconfJsonBackendSupports)
+add_subdirectory(samconfJsonBackendClose)
+add_subdirectory(samconfJsonBackendLoad)

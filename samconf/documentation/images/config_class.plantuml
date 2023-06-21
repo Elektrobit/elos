@@ -1,0 +1,16 @@
+@startuml
+
+class samconfConfig_t {
+  samconfConfig_t* parent;
+  char* key;
+  samconfConfigValueTypeE_t type;
+  union value {
+    char* string;
+    int32_t i32;
+    bool boolean;
+  };
+  samconfConfig_t** children;
+  size_t childCount;
+}
+
+@enduml

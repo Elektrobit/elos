@@ -1,0 +1,1 @@
+../../shared/ci/docker-doc-run.sh

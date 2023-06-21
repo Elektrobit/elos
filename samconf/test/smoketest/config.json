@@ -1,0 +1,21 @@
+{
+  "root": {
+    "elos": {
+      "UseEnv": false,
+      "Port": 54321,
+      "Temperature": 31.68,
+      "ip": "127.0.0.0",
+      "Scanner": {
+        "SyslogScanner": {
+          "SyslogPath": "/dev/log",
+          "InputFilter": {
+            "sshd": {
+              "4000": "event.source.appname"
+            }
+          }
+        }
+      },
+      "Logger": ""
+    }
+  }
+}

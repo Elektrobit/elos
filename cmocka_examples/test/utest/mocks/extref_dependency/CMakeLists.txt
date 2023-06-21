@@ -1,0 +1,19 @@
+
+create_mock_lib(
+  NAME
+    mock_extref_dependency
+  SOURCES
+    mock_extref_dependency.c
+  INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  LIBRARIES
+    cmocka_extensions::cmocka_extensions
+  LIBRARIES_DYNAMIC
+    extref_dependency
+  LIBRARIES_STATIC
+    extref_dependency_static_weak
+  WRAP_FLAG
+    MOCK_EXAMPLE_EXTREF_DEPENDENCY_FUNC_LINKER_WRAPPING
+  WRAPS
+    dependency
+)

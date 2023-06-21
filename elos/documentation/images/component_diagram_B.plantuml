@@ -1,0 +1,58 @@
+@startuml
+
+node BaseOS {
+  together {
+    component elos {
+      component EventProcessor
+      component LogAggregator <<DCF>>
+      component Scanner {
+        component EventAssembler <<Publisher>>
+        component Source
+      }
+      component Config {
+        component FilterRules
+      }
+    }
+
+    component Client {
+      component Library
+      component Publisher as pub_client
+      component Subscriber
+    }
+  }
+
+  component Syslog_App as "Syslog-ing Application"
+
+  component Filesystem {
+    interface "/dev/log" as dev_log
+    interface "/dev/kmsg" as dev_kmsg
+    interface "/sys/class/thermal/thermal_zone<X>/temp" as sys_temp
+  }
+
+  component Kernel as "Linux-Kernel"
+
+  Kernel -up-> dev_kmsg : expose kernel log buffer via
+  Kernel -up-> sys_temp : provides via
+
+  Syslog_App --> dev_log : Write log via syslog()
+  Syslog_App -[hidden]left-> Scanner
+
+  Scanner -[hidden]left-> Config
+
+  Source --> dev_kmsg : read
+  Source --> dev_log : listen
+  Source --> sys_temp : read
+  Source -left-> FilterRules : filter by
+  Source -up-> EventAssembler : trigger
+
+  EventAssembler -up-> EventProcessor : publish
+
+  EventProcessor -left-> LogAggregator : store event as log
+  EventProcessor <-right..-> Library : publish & poll events via tcp/ip
+  LogAggregator <-right..-> Library : store & load logs via tcp/ip
+
+  Library <-down- pub_client
+  Library <-down- Subscriber
+}
+
+@enduml

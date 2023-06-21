@@ -1,0 +1,1 @@
+../../shared/ci/build_doc.sh

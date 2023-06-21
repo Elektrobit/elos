@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosEventNew)
+add_subdirectory(elosEventInitialize)
+add_subdirectory(elosEventDelete)
+add_subdirectory(elosEventDeleteMembers)
+add_subdirectory(elosEventSerialize)
+add_subdirectory(elosEventDeserialize)
+add_subdirectory(elosEventClone)
+add_subdirectory(elosEventDeepCopy)
+add_subdirectory(elosEventFromJsonObject)
+add_subdirectory(elosEventToJsonObject)
+add_subdirectory(elosEventIsDateEmpty)

@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+find_package(cmocka_mocks)
+
+create_unit_test(
+  NAME
+    test_common_safuJsonGetInt64_utest
+  SOURCES
+    case_success_array.c
+    case_success_object.c
+    case_err_get_object_failed_array.c
+    case_err_get_object_failed_object.c
+    case_err_get_int64_failed_array.c
+    case_err_get_int64_failed_object.c
+    safuJsonGetInt64_utest.c
+  LIBRARIES
+    safu_weak
+    cmocka_mocks::mock_jsonc
+)

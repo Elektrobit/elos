@@ -1,0 +1,19 @@
+Checks: '
+    -*,
+    readability-identifier-naming,
+    cert-env33-c,cert-err34-c,cert-flp30-c,
+    bugprone-suspicious-string-compare,
+    bugprone-macro-parentheses,
+    misc-non-copyable-objects,
+    clang-analyzer-core.uninitialized.*,
+    clang-analyzer-unix.Malloc,
+    clang-analyzer-unix.MismatchedDeallocator,
+    -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+'
+WarningsAsErrors: '*'
+CheckOptions:
+  - { key: readability-identifier-naming.TypedefCase,            value: CamelCase              }
+  - { key: readability-identifier-naming.TypedefPrefix,          value: cmocka                 }
+  - { key: readability-identifier-naming.TypedefSuffix,          value: _t                     }
+  - { key: readability-identifier-naming.TypedefIgnoredRegexp,   value: '^_.+'                 }
+  - { key: readability-identifier-naming.ParameterIgnoredRegexp, value: '^_.+'                 }

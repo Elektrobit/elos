@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: MIT
+#ifndef SAMCONF_CONFIGGETSTRING_UTEST_H
+#define SAMCONF_CONFIGGETSTRING_UTEST_H
+
+#include <cmocka_extensions/mock_extensions.h>
+
+#include "samconf_utest.h"
+
+typedef struct {
+    samconfConfig_t *childrenData;
+} samconfUteststateT_t;
+
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigGetStringSuccessEntryFound)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigGetStringSuccessEntryNotFound)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigGetStringSuccessNodeNotString)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigGetStringErrorRootNull)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigGetStringErrorPathNull)
+TEST_CASE_FUNC_PROTOTYPES(samconfTestSamconfConfigGetStringErrorResultNull)
+#endif /* SAMCONF_CONFIGGETSTRING_UTEST_H */

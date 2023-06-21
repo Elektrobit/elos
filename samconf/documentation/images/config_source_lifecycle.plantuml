@@ -1,0 +1,28 @@
+@startuml
+
+== Configuration Parsing ==
+
+Application -> "Configuration Factory" : samconfLoad(const char *location, samconfConfig_t **conf)
+"Configuration Factory" -> samconfConfig_t : create
+"Configuration Factory" <-- samconfConfig_t : success | error
+Application <-- "Configuration Factory" : samconfConfig_t
+
+== Merging Configurations ==
+
+Application -> "Configuration Factory" : samconfMerge(samconfConfig_t **new, samconfConfig_t *conf1, samconfConfig_t *conf2)
+Application <-- "Configuration Factory" : samconfConfig_t
+
+== Accessing Configurations ==
+
+Application -> samconfConfig_t : configGet[Bool,Int,String]()
+Application <-- samconfConfig_t : [Bool,Int,String]
+
+== Releasing Configurations ==
+
+Application -> "Configuration Factory" : samconfClear(samconfConfig_t *conf)
+"Configuration Factory" -> samconfConfig_t : delete()
+samconfConfig_t -> samconfConfig_t : delete() childs
+"Configuration Factory" <-- samconfConfig_t
+Application <-- "Configuration Factory"
+
+@enduml

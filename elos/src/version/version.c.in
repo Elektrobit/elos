@@ -1,0 +1,48 @@
+#include "version.h"
+
+#include <string.h>
+
+// clang-format off
+const elosVersion_t elosVersion =
+{
+    .major = @ELOS_VERSION_MAJOR@,
+    .minor = @ELOS_VERSION_MINOR@,
+    .micro = @ELOS_VERSION_MICRO@,
+    .git = "@ELOS_VERSION_GIT@",
+};
+// clang-format on
+
+
+const char* elosGetVersionString(void)
+{
+    return "@ELOS_VERSION_MAJOR@.@ELOS_VERSION_MINOR@.@ELOS_VERSION_MICRO@.@ELOS_VERSION_GIT@";
+}
+
+
+void elosPrintVersion(FILE *const destination, const char* prefix)
+{
+    const char* versionString = elosGetVersionString();
+
+    if (prefix)
+    {
+        fprintf(destination, "%s-%s", prefix, versionString);
+    }
+    else
+    {
+        fprintf(destination, "%s", versionString);
+    }
+}
+
+
+bool elosIsVersionRequested(const char *const *const argv, int argc)
+{
+    for (int i = 0; i < argc; i++)
+    {
+        if (strncmp(argv[i], "-v", sizeof("-v")) == 0 ||
+            strncmp(argv[i], "--version", sizeof("--version")) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}

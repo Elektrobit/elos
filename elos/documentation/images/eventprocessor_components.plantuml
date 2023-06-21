@@ -1,0 +1,58 @@
+@startuml
+skinparam Nodesep 64
+skinparam Ranksep 64
+
+node elosd {
+
+  component Event
+  component RpnFilter
+  component EventFilter
+  component IdManager
+
+  component EventFilterManager
+  component EventQueueManager
+  component "EventDispatcher [TBD]" as EventDispatcher
+  component EventProcessor
+
+  component MessageHandler
+  component ClientManager
+
+  EventFilter <-up- Event
+  EventFilter <-up- RpnFilter
+  EventFilterManager <-up- EventFilter
+  EventFilterManager <-up- IdManager
+  EventFilterManager -right-> EventQueueManager
+  EventQueueManager <-up- IdManager
+  EventQueueManager -right-> EventDispatcher
+  EventDispatcher <-up- IdManager
+
+  EventProcessor <-up-> EventFilterManager
+  EventProcessor <-up-> EventQueueManager
+  EventProcessor <-up-> EventDispatcher
+
+  EventProcessor -[hidden]- EventFilterManager
+  MessageHandler -[hidden]up- EventFilterManager
+  MessageHandler <-up-> EventProcessor : "  publish, subscribe, read"
+  ClientManager <-left-> MessageHandler
+}
+
+component "Scanner (.so)" as Scanner {
+  component "libelos_scanner [TBD]" as libelos_scanner
+}
+
+node "Client" as Client {
+  component libelos
+}
+
+interface "Interface [TBD]" as Interface
+
+EventProcessor <-right- libelos_scanner : publish
+ClientManager <-left-> libelos
+EventDispatcher -right-> Interface
+
+Interface -[hidden]down- libelos_scanner
+Interface -[hidden]down- libelos_scanner
+libelos -[hidden]up- libelos_scanner
+libelos -[hidden]up- libelos_scanner
+
+@enduml

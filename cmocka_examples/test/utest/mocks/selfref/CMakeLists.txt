@@ -1,0 +1,21 @@
+
+create_mock_lib(
+  NAME
+    mock_selfref
+  SOURCES
+    mock_selfref.c
+  INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/self_referencing/include>
+  LIBRARIES
+    cmocka_extensions::cmocka_extensions
+  LIBRARIES_DYNAMIC
+    selfref
+  LIBRARIES_STATIC
+    selfref_static_weak
+  WRAP_FLAG
+    MOCK_EXAMPLE_SELFREF_FUNC_LINKER_WRAPPING
+  WRAPS
+    function
+    dependency
+)

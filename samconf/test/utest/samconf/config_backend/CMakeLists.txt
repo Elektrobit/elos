@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(samconfConfigBackendNew)
+add_subdirectory(samconfConfigBackendInit)
+add_subdirectory(samconfConfigBackendDelete)

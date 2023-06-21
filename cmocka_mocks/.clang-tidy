@@ -1,0 +1,13 @@
+Checks: '
+    -*
+    readability-identifier-naming,
+    -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+'
+InheritParentConfig: true
+CheckOptions:
+  - { key: readability-identifier-naming.FunctionCase,           value: aNy_CasE            }
+  - { key: readability-identifier-naming.GlobalVariableCase,     value: lower_case          }
+  - { key: readability-identifier-naming.GlobalVariablePrefix,   value: __                  }
+  - { key: readability-identifier-naming.VariableCase,           value: aNy_CasE            }
+  - { key: readability-identifier-naming.ParameterCase,          value: aNy_CasE            }
+  - { key: readability-identifier-naming.ParameterIgnoredRegexp, value: '^_.+'              }

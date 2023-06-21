@@ -1,0 +1,1 @@
+../../shared/cmake/weak_library.cmake

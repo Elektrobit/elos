@@ -1,0 +1,42 @@
+@startuml
+package library as l {
+	rectangle "<global Symbol>" as gs
+	'rectangle "<static symbol>" as ss
+}
+
+package library_weak as lw {
+	rectangle "weak <global symbol>" as wgs
+	rectangle "__genuine_<global symbol>" as ggs
+	'rectangle "_<object name><--static-- symbol>" as gss
+}
+
+rectangle objdump {
+	file weaken [
+	--weaken_symbols
+	]
+	file genuine [
+	--add-symbol __genuine_<...>
+	]
+	'file globalize [
+	'--globalize-symbols
+	'--redefine-syms
+	']
+}
+
+'gs -[hidden]--> ss
+
+genuine -[hidden]-> weaken
+'weaken -[hidden]-> globalize
+
+ggs -[hidden]-> wgs
+'wgs -[hidden]-> gss
+
+gs - genuine
+'genuine -> ggs
+
+gs - weaken
+weaken -> wgs
+
+'ss - globalize
+'globalize -> gss
+@enduml

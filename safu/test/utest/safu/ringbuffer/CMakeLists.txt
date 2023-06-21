@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(safuRingBufferDelete)
+add_subdirectory(safuRingBufferDeleteMembers)
+add_subdirectory(safuRingBufferInitialize)
+add_subdirectory(safuRingBufferNew)
+add_subdirectory(safuRingBufferRead)
+add_subdirectory(safuRingBufferWrite)

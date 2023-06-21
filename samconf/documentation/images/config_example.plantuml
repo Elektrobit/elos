@@ -1,0 +1,79 @@
+@startuml
+
+object root_node <<samconfConfig_t>> {
+  key = ""
+  value = none
+  parent = none
+}
+
+object Elos <<samconfConfig_t>> {
+  key = "elos"
+  value = none
+}
+
+root_node -down-> Elos
+
+object UseEnv <<samconfConfig_t>> {
+  key = "UseEnv"
+  value = false
+}
+
+object Port <<samconfConfig_t>> {
+  key = "Port"
+  value = 54321
+}
+
+object Ip <<samconfConfig_t>> {
+  key = "Ip"
+  value = 127.0.0.0
+}
+
+object Scanner <<samconfConfig_t>> {
+  key = "Scanner"
+  value = none
+}
+
+object Logger <<samconfConfig_t>> {
+  key = "Logger"
+  value = none
+}
+
+Elos -down-> UseEnv
+Elos -down-> Port
+Elos -down-> Ip
+Elos -down-> Scanner
+Elos -down-> Logger
+
+object Syslog <<samconfConfig_t>> {
+  key = "SyslogScanner"
+  value = none
+}
+
+object SyslogPath <<samconfConfig_t>> {
+  key = "SyslogPath"
+  value = "/dev/log"
+}
+
+object InputFilter <<samconfConfig_t>> {
+  key = "InputFilter"
+  value = none
+}
+
+Scanner -down-> Syslog
+Syslog -down-> SyslogPath
+Syslog -down-> InputFilter
+
+object Sshd <<samconfConfig_t>> {
+  key = "sshd"
+  value = none
+}
+
+object Sshd4000 <<samconfConfig_t>> {
+  key = "4000"
+  value = "event.source.appname == "ssh" and input == "*failed*" "
+}
+
+InputFilter -down-> Sshd
+Sshd -down-> Sshd4000
+
+@enduml

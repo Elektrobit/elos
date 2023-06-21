@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: MIT
+#ifndef ELOS_EVENTCLONE_UTEST_H
+#define ELOS_EVENTCLONE_UTEST_H
+
+#include "mock_event.h"
+
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventCloneErrEventSource)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventCloneErrEventDest)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventCloneExtErrEventNew)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventCloneExtErrEventDeepCopy)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventCloneSuccess)
+
+#endif /* ELOS_EVENTCLONE_UTEST_H */

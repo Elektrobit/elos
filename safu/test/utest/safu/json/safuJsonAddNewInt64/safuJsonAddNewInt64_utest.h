@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: MIT
+#pragma once
+#include "json_utest.h"
+
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonAddNewInt64SuccessArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonAddNewInt64SuccessObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonAddNewInt64ErrAddObjectFailedArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonAddNewInt64ErrAddObjectFailedObject)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonAddNewInt64ErrNewObjectFailedArray)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuJsonAddNewInt64ErrNewObjectFailedObject)

@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+create_unit_test(
+  NAME
+    test_common_safuJsonGetTimestamp_utest
+  SOURCES
+    case_success_array.c
+    case_success_object.c
+    case_err_get_array_failed_array.c
+    case_err_get_array_failed_object.c
+    case_err_no_full_timestamp_array.c
+    case_err_no_full_timestamp_object.c
+    case_err_get_secs_failed_array.c
+    case_err_get_secs_failed_object.c
+    case_err_get_nsecs_failed_array.c
+    case_err_get_nsecs_failed_object.c
+    safuJsonGetInt64_mock.c
+    safuJsonGetTimestamp_utest.c
+  LIBRARIES
+    safu_weak
+)

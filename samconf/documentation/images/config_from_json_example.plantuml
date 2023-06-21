@@ -1,0 +1,46 @@
+@startuml
+
+object root_node <<samconfConfig_t>> {
+  key = ""
+  value = none
+  parent = none
+}
+
+object root <<samconfConfig_t>> {
+  key = "root"
+  value = none
+}
+
+root_node -down-> root
+
+object categoryA <<samconfConfig_t>> {
+  key = "categoryA"
+}
+
+object categoryB <<samconfConfig_t>> {
+  key = "categoryB"
+}
+
+root -down-> categoryA
+root -down-> categoryB
+
+object itemA1 <<samconfConfig_t>> {
+  key = "itemA"
+  value = 42
+}
+
+object itemA2 <<samconfConfig_t>> {
+  key = "itemA"
+  value = false
+}
+
+object subItem <<samconfConfig_t>> {
+  key = "subItem"
+  value = "the value of a configuration option"
+}
+
+categoryA -down-> itemA1
+itemA1 -down-> subItem
+categoryB -down-> itemA2
+
+@enduml
