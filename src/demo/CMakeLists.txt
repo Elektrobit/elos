@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LOG4C REQUIRED log4c)
+add_subdirectory(elos_log4c_demo)
+
 
 add_executable(
   demo_libelos_v2
@@ -15,23 +15,6 @@ target_link_libraries(
 )
 
 install(TARGETS demo_libelos_v2 DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-add_executable(
-  elos_log4c_demo
-  elos_log4c_demo.c
-)
-
-target_link_libraries(
-  elos_log4c_demo
-  PRIVATE
-    log4c
-    libelos
-    version
-)
-
-install(TARGETS elos_log4c_demo DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/log4crc
-        DESTINATION ../${CMAKE_INSTALL_SYSCONFDIR}/elos/elos_log4c_demo)
 
 add_executable(
   syslog_example

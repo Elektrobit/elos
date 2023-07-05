@@ -15,10 +15,12 @@
 	<appender name="stdout" type="stream" layout="dated"/>
 	<appender name="stderr" type="stream" layout="dated"/>
 	<appender name="syslog" type="syslog" layout="basic"/>
+	<appender name="elos" type="elos_appender" layout="elos_layout"/>
 
 	<layout name="basic" type="basic"/>
 	<layout name="dated" type="dated"/>
+	<layout name="elos_layout" type="elos_formatter"/>
 	
-        <category name="log4c.elos.demo.log4cdemo" priority="debug" appender="stdout" />
+        <category name="log4c.elos.demo.log4cdemo" priority="error" appender="elos" />
 
 </log4c>

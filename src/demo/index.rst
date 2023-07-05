@@ -127,9 +127,12 @@ configuration file.
 In order to log with a log4c framework, a category, a priority
 and an appender for the logged message should be set in the config file.
 
-.. literalinclude:: ../../../elos/src/demo/log4crc
+.. literalinclude:: ../../../elos/src/demo/elos_log4c_demo/log4crc
    :language: xml
 
 More information about how to use log4c framework can be found here : 
 https://log4c.sourceforge.net/
 
+For the elos_log4c_demo application a separate category ``log4c.elos.demo.log4cdemo`` with an appender ``elos`` is created. The category is the log message destination. The appender outputs the log message to the specified output. The output can be an output stream, file, syslog etc. The ``elos_appender`` has a layout ``elos_layout`` which formats the log message using the formatter ``elos_formatter``. The ``elos_formatter`` formats the log message using pattern strings and sends the formatted string back to the appender to be released out.
+
+.. command-output:: elos_log4c_demo
