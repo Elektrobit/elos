@@ -4,8 +4,8 @@ BUILD_TYPE="${1:-Debug}"
 BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE/cmake"
 DIST_DIR="$BASE_DIR/build/$BUILD_TYPE/dist"
 
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH-""}:"./usr/local/lib"
-export PATH=${PATH}:"$BUILD_DIR/src/elosd":"$BUILD_DIR/src/demo":"$BUILD_DIR/src/clients/coredump"
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH-""}:"${DIST_DIR}/usr/local/lib"
+export PATH=${PATH}:"${DIST_DIR}/usr/local/bin"
 export SMOKETEST_DIR=${SMOKETEST_DIR-"$(dirname "$0")"}
 export SMOKETEST_RESULT_DIR=${SMOKETEST_RESULT_DIR-"$BUILD_DIR/result/smoketest_results"}
 export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"/tmp/elosd"}"
@@ -13,13 +13,13 @@ export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"/tmp/elosd"}"
 export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH:-$SMOKETEST_TMP_DIR/elosd_syslog.socket}
 export ELOS_KMSG_FILE=${ELOS_KMSG_FILE:-$SMOKETEST_TMP_DIR/elosd_kmsg.log}
 export ELOS_STORAGE_BACKEND_JSON_FILE=${ELOS_STORAGE_BACKEND_JSON_FILE:-$SMOKETEST_TMP_DIR/elosd_storage.json}
-export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$BUILD_DIR/src/scanner"}
+export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$DIST_DIR/usr/local/lib/elos/scanner"}
 export ELOS_BACKEND_PATH=${ELOS_BACKEND_PATH-"$DIST_DIR/usr/local/lib/elos/backend"}
 export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
 export ELOS_LOG_LEVEL=DEBUG
 
 #config file path for log4c demo
-export LOG4C_RCPATH="${BASE_DIR}/src/demo"
+export LOG4C_RCPATH="${BASE_DIR}/src/demo/elos_log4c_demo"
 
 mkdir -p "$SMOKETEST_TMP_DIR"
 

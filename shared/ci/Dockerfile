@@ -97,7 +97,7 @@ deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main\n\
   && sudo ln -s /usr/lib/x86_64-linux-gnu/libclang-16.so.1 /usr/lib/libclang-16.so
 
 ENV SPHINX_VENV="/home/$USER/.venv/"
-ENV LOG4C_RCPATH="/base/elos/src/demo"
+ENV LOG4C_RCPATH="/base/elos/src/demo/elos_log4c_demo"
 
 WORKDIR /build
 
