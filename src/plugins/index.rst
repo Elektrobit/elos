@@ -1,0 +1,14 @@
+Plugins
+=======
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   scanners/index
+   scanners/kmsg/index
+   scanners/syslog/index
+   storagebackends/index
+   storagebackends/jsonbackend/index
+   storagebackends/sqlbackend/index
+   storagebackends/dummy/index

@@ -1,4 +1,3 @@
-
 eloslog
 =======
 
@@ -13,8 +12,8 @@ The log parameters passed to this function is converted into an elos event. The 
 
 - The event date is set using the clock_gettime function.
 - The event pid is set using the getpid glibc function.
-- The event source application file name is set by reading the link path present in `proc/self/exe` using the
-readlink function.
+- The event source application file name is set by reading the link path
+  present in `proc/self/exe` using the readlink function.
 - The event source application name is set by extracting the application name from application filename using strrchr function.
 - The event severity is set from the passed severity parameter.
 - Hardwareid will ideally be set using the `safuGetHardwareId` but for now is set using the gethostname function.
