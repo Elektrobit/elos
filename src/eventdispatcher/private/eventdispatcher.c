@@ -262,12 +262,10 @@ safuResultE_t elosEventDispatcherDispatch(elosEventDispatcher_t *eventDispatcher
     return result;
 }
 
-safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatcher,
-                                           UNUSED elosEventBuffer_t *eventBuffer,
-                                           UNUSED elosEventBufferId_t *eventBufferId) {
+safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBuffer) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (eventDispatcher == NULL) {
+    if ((eventDispatcher == NULL) || (eventBuffer == NULL)) {
         safuLogErr("Invalid parameter");
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
         safuLogErr("The given eventDispatcher is not initialized");
@@ -278,8 +276,13 @@ safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatche
                 safuLogErr("The given eventDispatcher is not initialized");
                 result = SAFU_RESULT_FAILED;
             } else {
-                safuLogErrF("Function %s is not implemented yet!", __func__);
-                result = SAFU_RESULT_FAILED;
+                int retVal;
+
+                retVal = safuVecPush(&eventDispatcher->eventBufferPtrVector, &eventBuffer);
+                if (retVal < 0) {
+                    safuLogErr("Adding the EventBuffer failed");
+                    result = SAFU_RESULT_FAILED;
+                }
             }
 
             SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
@@ -289,11 +292,21 @@ safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatche
     return result;
 }
 
-safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispatcher,
-                                              UNUSED elosEventBufferId_t eventBufferId) {
+static int _matchByPointer(const void *element, const void *data) {
+    void *elementPtr = *(void **)element;
+    int result = 0;
+
+    if (elementPtr == data) {
+        result = 1;
+    }
+
+    return result;
+}
+
+safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBuffer) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (eventDispatcher == NULL) {
+    if ((eventDispatcher == NULL) || (eventBuffer == NULL)) {
         safuLogErr("Invalid parameter");
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
         safuLogErr("The given eventDispatcher is not initialized");
@@ -304,8 +317,16 @@ safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispat
                 safuLogErr("The given eventDispatcher is not initialized");
                 result = SAFU_RESULT_FAILED;
             } else {
-                safuLogErrF("Function %s is not implemented yet!", __func__);
-                result = SAFU_RESULT_FAILED;
+                int retVal;
+
+                retVal = safuVecFindRemove(&eventDispatcher->eventBufferPtrVector, _matchByPointer, eventBuffer);
+                if (retVal < 0) {
+                    safuLogErr("Removing the EventBuffer failed");
+                    result = SAFU_RESULT_FAILED;
+                } else if (retVal == 0) {
+                    safuLogErr("Could not find the given EventBuffer");
+                    result = SAFU_RESULT_FAILED;
+                }
             }
 
             SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
