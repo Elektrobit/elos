@@ -114,30 +114,27 @@ safuResultE_t elosEventDispatcherDispatch(elosEventDispatcher_t *eventDispatcher
  *   eventDispatcher:
  *       Pointer to the EventDispatcher.
  *   eventBuffer:
- *       Pointer to the EventBuffer that shall be monitored
- *   eventBufferId:
- *       Pointer to an EventBufferId that will contain the ID
- *       associated with the given EventBuffer after the call.
+ *       Pointer to the EventBuffer that shall be monitored.
+ *       The EventBuffer must be initialized prior to calling this function.
  *
  * Returns:
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
-safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBuffer,
-                                           elosEventBufferId_t *eventBufferId);
+safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBuffer);
 
 /*******************************************************************
- * Removes an monitored EventBuffer from the EventDispatcher.
+ * Remove an monitored EventBuffer from the EventDispatcher.
  *
  * Parameters:
  *   eventDispatcher:
  *       Pointer to the EventDispatcher.
- *   eventBufferId:
- *       The ID for the EventBuffer that shall be removed.
+ *   eventBuffer:
+ *       Pointer to the EventBuffer that shall not be monitored anymore.
+ *       The EventBuffer is not free'd by this call and is still useable after the Remove.
  *
  * Returns:
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
-safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispatcher,
-                                              elosEventBufferId_t eventBufferId);
+safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBuffer);
