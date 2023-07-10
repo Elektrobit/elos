@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: MIT
+add_subdirectory(elosEventDispatcherBufferAdd)
+add_subdirectory(elosEventDispatcherBufferRemove)
 add_subdirectory(elosEventDispatcherDelete)
 add_subdirectory(elosEventDispatcherDeleteMembers)
 add_subdirectory(elosEventDispatcherInitialize)
