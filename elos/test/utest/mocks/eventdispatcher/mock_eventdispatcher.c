@@ -83,3 +83,33 @@ MOCK_FUNC_BODY(elosEventDispatcherStop, safuResultE_t, elosEventDispatcher_t *ev
 
     return result;
 }
+
+MOCK_FUNC_BODY(elosEventDispatcherBufferAdd, safuResultE_t, elosEventDispatcher_t *eventDispatcher,
+               elosEventBuffer_t *eventBuffer) {
+    safuResultE_t result;
+
+    if (MOCK_IS_ACTIVE(elosEventDispatcherBufferAdd)) {
+        check_expected_ptr(eventDispatcher);
+        check_expected_ptr(eventBuffer);
+        result = mock_type(safuResultE_t);
+    } else {
+        result = MOCK_FUNC_REAL(elosEventDispatcherBufferAdd)(eventDispatcher, eventBuffer);
+    }
+
+    return result;
+}
+
+MOCK_FUNC_BODY(elosEventDispatcherBufferRemove, safuResultE_t, elosEventDispatcher_t *eventDispatcher,
+               elosEventBuffer_t *eventBuffer) {
+    safuResultE_t result;
+
+    if (MOCK_IS_ACTIVE(elosEventDispatcherBufferRemove)) {
+        check_expected_ptr(eventDispatcher);
+        check_expected_ptr(eventBuffer);
+        result = mock_type(safuResultE_t);
+    } else {
+        result = MOCK_FUNC_REAL(elosEventDispatcherBufferRemove)(eventDispatcher, eventBuffer);
+    }
+
+    return result;
+}
