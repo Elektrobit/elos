@@ -21,6 +21,6 @@
 	<layout name="dated" type="dated"/>
 	<layout name="elos_layout" type="elos_formatter"/>
 	
-        <category name="log4c.elos.demo.log4cdemo" priority="error" appender="elos" />
+        <category name="log4c.elos.demo.log4cdemo" priority="debug" appender="elos" />
 
 </log4c>

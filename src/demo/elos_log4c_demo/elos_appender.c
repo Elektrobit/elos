@@ -71,7 +71,7 @@ static int elosCreateLog4cEvent(char *logMessage, elosEvent_t **event) {
         }
     }
 
-    if (retVal < 0) {
+    if (log4cEvent == NULL) {
         result = -1;
     }
 
@@ -122,6 +122,7 @@ static int elosAppend(UNUSED log4c_appender_t *this, const log4c_logging_event_t
     result = elosCreateLog4cEvent(elosEventMessage, &logEvent);
 
     if (result == 0 && logEvent != NULL) {
+        logEvent->severity = aEvent->evt_priority;
         result = elosPublishLog4cEvent(logEvent);
     }
 
