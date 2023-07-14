@@ -35,7 +35,6 @@ add_subdirectory(eventlogging)
 add_subdirectory(messages)
 add_subdirectory(plugin)
 add_subdirectory(plugins)
-add_subdirectory(pluginmanager)
 add_subdirectory(processfilter)
 add_subdirectory(clients)
 
