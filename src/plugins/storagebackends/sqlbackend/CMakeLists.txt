@@ -25,7 +25,7 @@ target_link_libraries(
     plugin_interface
     samconf::samconf
     safu::safu
-    sqlite3
+    $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_SQL}>:${SQLITE3_LIBRARIES}>
 )
 
 install(TARGETS backend_sql DESTINATION ${ELOSD_BACKEND_PATH})
