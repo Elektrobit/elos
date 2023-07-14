@@ -54,5 +54,3 @@ create_weak_library(
     elos_event_static
     eventfilter_static
 )
-
-add_subdirectory(private/plugin)
