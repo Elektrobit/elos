@@ -43,7 +43,6 @@ target_link_libraries(
     samconf::samconf
     eventfilter_static
     $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_NOSQL}>:mongo::mongoc_shared>
-    $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_SQL}>:${SQLITE3_LIBRARIES}>
 )
 
 set_property(TARGET eventlogging_static PROPERTY POSITION_INDEPENDENT_CODE ON)
