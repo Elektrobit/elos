@@ -4,8 +4,8 @@ find_package(samconf)
 
 add_library(
   backend_sql SHARED
-  ./SqlBackend.c
-  ./SqlBackendPlugin.c
+  private/SqlBackend.c
+  private/SqlBackendPlugin.c
 )
 
 set_target_properties(backend_sql PROPERTIES PREFIX "")
