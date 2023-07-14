@@ -4,8 +4,16 @@ find_package(samconf)
 
 add_library(
   backend_json SHARED
-  ./JsonBackend.c
-  ./JsonBackendPlugin.c
+  private/JsonBackend.c
+  private/JsonBackendPlugin.c
+)
+
+create_interface_library(
+  FROM
+    backend_json
+  LIBRARIES
+    safu::safu_interface
+    samconf::samconf_interface
 )
 
 set_target_properties(backend_json PROPERTIES PREFIX "")
@@ -19,6 +27,7 @@ target_include_directories(
 target_link_libraries(
   backend_json
   PUBLIC
+    backend_json_interface
     eventlogging_interface
     elos_common_interface
     eventfilter_static
