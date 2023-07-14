@@ -20,7 +20,6 @@ set(ELOSD_LOG_LEVEL "Debug")
 
 add_subdirectory(version)
 add_subdirectory(common)
-add_subdirectory(scanner)
 add_subdirectory(elosd)
 add_subdirectory(event)
 add_subdirectory(libelos)
