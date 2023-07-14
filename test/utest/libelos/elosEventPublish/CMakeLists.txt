@@ -14,7 +14,7 @@ create_unit_test(
     elosEventPublish_utest.c
   LIBRARIES
     mock_libelos_static
-    mock_elos_common_static
+    mock_elos_event_static
     cmocka_mocks::mock_libc
     cmocka_mocks::mock_jsonc
     safu::mock_safu

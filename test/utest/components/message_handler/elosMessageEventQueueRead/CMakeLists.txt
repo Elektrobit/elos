@@ -14,7 +14,7 @@ create_unit_test(
     elosMessageEventQueueRead_utest.c
   LIBRARIES
     scanner_manager_static_weak
-    mock_elos_common_static
+    mock_elos_event_static
     mock_message_handler_static
     mock_eventprocessor_static
     safu::mock_safu

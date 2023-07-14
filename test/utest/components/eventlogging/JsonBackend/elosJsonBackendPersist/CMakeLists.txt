@@ -12,7 +12,7 @@ create_unit_test(
     elosJsonBackendPersist_utest.c
   LIBRARIES
     backend_json_static
-    mock_elos_common_static
+    mock_elos_event_static
     safu::mock_safu
     cmocka_mocks::mock_libc
 )

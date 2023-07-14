@@ -17,7 +17,7 @@ create_unit_test(
     case_success.c
     elosLogFindEvent_utest.c
   LIBRARIES
-    mock_elos_common_static
+    mock_elos_event_static
     mock_libelos_static
     cmocka_mocks::mock_jsonc
     safu::mock_safu

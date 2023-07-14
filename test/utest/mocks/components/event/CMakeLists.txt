@@ -2,7 +2,7 @@
 
 create_mock_lib(
   NAME
-    mock_elos_common
+    mock_elos_event
   SOURCES
     mock_event.c
     mock_event_source.c
@@ -13,9 +13,9 @@ create_mock_lib(
     elos_event_static_weak
     cmocka_extensions::cmocka_extensions
 )
-target_compile_definitions(mock_elos_common PUBLIC ELOS_COMMON_FUNC_LINKER_WRAPING)
+target_compile_definitions(mock_elos_event PUBLIC ELOS_COMMON_FUNC_LINKER_WRAPING)
 target_link_options(
-  mock_elos_common
+  mock_elos_event
   PUBLIC
    -Wl,--wrap=elosEventSourceDeepCopy
    -Wl,--wrap=elosEventSourceNew
