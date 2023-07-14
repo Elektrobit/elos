@@ -4,7 +4,7 @@ find_package(samconf)
 
 add_library(
   backend_dummy SHARED
-  dummyBackend.c
+  private/dummyBackend.c
 )
 
 set_target_properties(backend_dummy PROPERTIES PREFIX "")
