@@ -1,8 +1,17 @@
 # SPDX-License-Identifier: MIT
 add_library(
   scanner_kmsg SHARED
-  kmsg.c
-  kmsg_mapper.c
+  private/kmsg.c
+  private/kmsg_mapper.c
+)
+
+create_interface_library(
+  FROM
+    scanner_kmsg
+  LIBRARIES
+    elos_event_interface
+    safu::safu_interface
+    samconf::samconf_interface
 )
 
 set_target_properties(scanner_kmsg PROPERTIES PREFIX "")
@@ -10,10 +19,11 @@ set_target_properties(scanner_kmsg PROPERTIES PREFIX "")
 target_link_libraries(
   scanner_kmsg
   PRIVATE
-    scanner_interface
+    elos_scanner_interface
     elos_event_static
     config_static
   PUBLIC
+    scanner_kmsg_interface
     samconf::samconf
 )
 
