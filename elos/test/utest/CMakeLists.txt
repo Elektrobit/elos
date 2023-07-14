@@ -1,17 +1,9 @@
 # SPDX-License-Identifier: MIT
 include(unit_test.cmake)
 
-add_subdirectory(client_manager)
 add_subdirectory(common)
-add_subdirectory(elosd)
-add_subdirectory(eventbuffer)
-add_subdirectory(eventdispatcher)
-add_subdirectory(eventfilter)
-add_subdirectory(eventprocessor)
+add_subdirectory(components)
 add_subdirectory(libelos)
 add_subdirectory(mocks)
-add_subdirectory(plugin)
-add_subdirectory(processfilter)
-add_subdirectory(rpnfilter)
 add_subdirectory(scanner)
 add_subdirectory(version)
