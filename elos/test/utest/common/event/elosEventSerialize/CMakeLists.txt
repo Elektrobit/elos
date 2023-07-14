@@ -19,7 +19,7 @@ create_unit_test(
     elosEventSerialize_utest.c
   LIBRARIES
     elos_event_static_weak
-    mock_elos_common_static
+    mock_elos_event_static
     cmocka_mocks::mock_libc
     cmocka_mocks::mock_jsonc
 )

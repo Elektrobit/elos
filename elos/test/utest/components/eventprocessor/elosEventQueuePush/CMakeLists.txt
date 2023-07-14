@@ -15,7 +15,7 @@ create_unit_test(
   LIBRARIES
     eventprocessor_static_weak
     mock_eventprocessor_static
-    mock_elos_common_static
+    mock_elos_event_static
     cmocka_mocks::mock_libc
     safu::mock_safu
 )

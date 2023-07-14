@@ -18,5 +18,5 @@ create_unit_test(
     elos_event_static_weak
     cmocka_mocks::mock_jsonc
     safu::mock_safu
-    mock_elos_common_static
+    mock_elos_event_static
 )

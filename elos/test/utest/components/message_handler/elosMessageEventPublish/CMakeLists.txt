@@ -22,7 +22,7 @@ create_unit_test(
     elos_event_static_weak
     scanner_manager_static_weak
     json-c
-    mock_elos_common_static
+    mock_elos_event_static
     mock_eventfilter_static
     mock_eventprocessor_static
     mock_message_handler_static

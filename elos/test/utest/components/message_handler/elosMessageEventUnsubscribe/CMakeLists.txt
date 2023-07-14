@@ -18,7 +18,7 @@ create_unit_test(
     cmocka_mocks::mock_jsonc
     cmocka_mocks::mock_libc
     safu::mock_safu
-    mock_elos_common_static
+    mock_elos_event_static
     mock_message_handler_static
     mock_eventprocessor_static
 )

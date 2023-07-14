@@ -21,7 +21,7 @@ create_unit_test(
   LIBRARIES
     scanner_manager_static_weak
     elos_event_static_weak
-    mock_elos_common_static
+    mock_elos_event_static
     mock_log_aggregator_static
     mock_message_handler_static
     cmocka_mocks::mock_libc
