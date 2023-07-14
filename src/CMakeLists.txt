@@ -24,7 +24,6 @@ add_subdirectory(elosd)
 add_subdirectory(event)
 add_subdirectory(libelos)
 add_subdirectory(demo)
-add_subdirectory(plugin)
 add_subdirectory(plugins)
 add_subdirectory(clients)
 
