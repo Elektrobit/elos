@@ -27,7 +27,7 @@ target_link_libraries(
     config_static
     eventlogging_static
     clientmanager_static
-    scanner_interface
+    elos_scanner_interface
     safu::safu
     ${CMAKE_DL_LIBS}
 )

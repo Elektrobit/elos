@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: MIT
+find_package(safu REQUIRED)
 find_package(samconf REQUIRED)
 
-add_compile_definitions(ELOSD_LOG_PREFIX="${ELOSD_LOG_PREFIX}")
-
-add_subdirectory(interface)
-add_subdirectory(public)
+create_interface_library(
+  FROM
+    elos_scanner
+  LIBRARIES
+    elos_event_interface
+    safu::safu_interface
+    samconf::samconf_interface
+)

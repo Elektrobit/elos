@@ -1,8 +1,17 @@
 # SPDX-License-Identifier: MIT
 add_library(
   scanner_syslog SHARED
-  syslog.c
-  logline_mapper.c
+  private/syslog.c
+  private/logline_mapper.c
+)
+
+create_interface_library(
+  FROM
+    scanner_syslog
+  LIBRARIES
+    elos_event_interface
+    safu::safu_interface
+    samconf::samconf_interface
 )
 
 set_target_properties(scanner_syslog PROPERTIES PREFIX "")
@@ -10,10 +19,11 @@ set_target_properties(scanner_syslog PROPERTIES PREFIX "")
 target_link_libraries(
   scanner_syslog
   PRIVATE
-    scanner_interface
+    elos_scanner_interface
     eventfilter_static
   PUBLIC
     rpnfilter_static
+    scanner_syslog_interface
     elos_common_interface
     elos_event_static
     samconf::samconf
