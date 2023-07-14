@@ -17,14 +17,14 @@
 
 #define UNUSED __attribute__((unused))
 
-static int elosCreateLog4cEvent(char *logMessage, elosEvent_t **event) {
+static int elosCreateLog4cEvent(const log4c_logging_event_t *aEvent, elosEvent_t **event) {
     elosEvent_t *log4cEvent = NULL;
     char *executableName = NULL;
     char *hostName = NULL;
     int retVal = 0;
     int result = 0;
 
-    if ((logMessage == NULL) || (event == NULL)) {
+    if ((aEvent == NULL) || (event == NULL)) {
         fprintf(stderr, "Invalid Parameter");
     } else {
         retVal = elosEventNew(&log4cEvent);
@@ -53,7 +53,7 @@ static int elosCreateLog4cEvent(char *logMessage, elosEvent_t **event) {
                 log4cEvent->source.fileName = strdup(strrchr(executableName, '/'));
             }
 
-            log4cEvent->severity = ELOS_SEVERITY_ERROR;
+            log4cEvent->severity = aEvent->evt_priority;
 
             hostName = safuAllocMem(NULL, PATH_MAX);
             retVal = gethostname(hostName, PATH_MAX);
@@ -61,12 +61,13 @@ static int elosCreateLog4cEvent(char *logMessage, elosEvent_t **event) {
                 fprintf(stderr, "host name not found");
                 log4cEvent->hardwareid = NULL;
             } else {
-                log4cEvent->hardwareid = hostName;
+                log4cEvent->hardwareid =
+                    hostName;  // for the sake of simplicity we use the hardware id instead of /etc/machineid
             }
 
             log4cEvent->classification = ELOS_CLASSIFICATION_PROCESS_ERRORS;
             log4cEvent->messageCode = ELOS_MSG_CODE_DEBUG_LOG;
-            log4cEvent->payload = logMessage;
+            log4cEvent->payload = strdup(aEvent->evt_msg);
             *event = log4cEvent;
         }
     }
@@ -117,23 +118,18 @@ static int elosAppend(UNUSED log4c_appender_t *this, const log4c_logging_event_t
     elosEvent_t *logEvent = NULL;
     int result = 0;
 
-    char *elosEventMessage = strdup(aEvent->evt_msg);
-
-    result = elosCreateLog4cEvent(elosEventMessage, &logEvent);
-
+    result = elosCreateLog4cEvent(aEvent, &logEvent);
     if (result == 0 && logEvent != NULL) {
-        logEvent->severity = aEvent->evt_priority;
         result = elosPublishLog4cEvent(logEvent);
+        if (result < 0) {
+            fprintf(stderr, "publishing log4c message to elos failed\n");
+        } else {
+            fprintf(stderr, "%s", aEvent->evt_rendered_msg);
+        }
+        elosEventDelete(logEvent);
+    } else {
+        fprintf(stderr, "%s", aEvent->evt_rendered_msg);
     }
-
-    if (result < 0 || logEvent == NULL) {
-        fprintf(stderr, "publishing log4c message to elos failed\n");
-        free(elosEventMessage);
-    }
-
-    fprintf(stderr, "%s", aEvent->evt_rendered_msg);
-
-    elosEventDelete(logEvent);
 
     return result;
 }
