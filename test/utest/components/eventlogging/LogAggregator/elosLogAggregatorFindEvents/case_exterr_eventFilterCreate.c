@@ -32,10 +32,10 @@ void elosTestElosLogAggregatorFindEventsExterrEventFilterCreate(void **state) {
     SHOULD("%s", "return SAFU_RESULT_FAILED when elosEventFilterCreate failed");
 
     MOCK_FUNC_AFTER_CALL(elosEventFilterCreate, 0);
-    expect_any(__wrap_elosEventFilterCreate, filter);
-    expect_any(__wrap_elosEventFilterCreate, param);
-    will_set_parameter(__wrap_elosEventFilterCreate, filter, &filter);
-    will_return(__wrap_elosEventFilterCreate, RPNFILTER_RESULT_ERROR);
+    expect_any(elosEventFilterCreate, filter);
+    expect_any(elosEventFilterCreate, param);
+    will_set_parameter(elosEventFilterCreate, filter, &filter);
+    will_return(elosEventFilterCreate, RPNFILTER_RESULT_ERROR);
 
     result = elosLogAggregatorFindEvents(&testState->logAggregator, filterRule, &testState->eventVector);
     assert_int_equal(result, SAFU_RESULT_FAILED);

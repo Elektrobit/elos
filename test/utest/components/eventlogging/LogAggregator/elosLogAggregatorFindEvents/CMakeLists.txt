@@ -19,5 +19,5 @@ create_unit_test(
     eventlogging_static_weak
     cmocka_mocks::mock_libc
     safu::mock_safu
-    mock_eventfilter
+    mock_eventfilter_static
 )
