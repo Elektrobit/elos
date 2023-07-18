@@ -237,31 +237,6 @@ safuResultE_t elosEventDispatcherStop(elosEventDispatcher_t *eventDispatcher) {
     return result;
 }
 
-safuResultE_t elosEventDispatcherDispatch(elosEventDispatcher_t *eventDispatcher) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
-
-    if (eventDispatcher == NULL) {
-        safuLogErr("Invalid parameter");
-    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
-        safuLogErr("The given eventDispatcher is not initialized");
-    } else {
-        SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
-        if (result == SAFU_RESULT_OK) {
-            if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
-                safuLogErr("The given eventDispatcher is not initialized");
-                result = SAFU_RESULT_FAILED;
-            } else {
-                safuLogErrF("Function %s is not implemented yet!", __func__);
-                result = SAFU_RESULT_FAILED;
-            }
-
-            SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
-        }
-    }
-
-    return result;
-}
-
 safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBuffer) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 

@@ -14,6 +14,7 @@ create_interface_library(
 add_library(
   eventdispatcher_static
   STATIC
+    ./private/eventdispatcher_dispatch.c
     ./private/eventdispatcher_worker.c
     ./private/eventdispatcher.c
 )
@@ -30,8 +31,8 @@ target_link_libraries(
   eventdispatcher_static
   PUBLIC
     eventdispatcher_interface
+    eventprocessor_static
     eventbuffer_static
-    safu::safu
 )
 
 set_property(TARGET eventdispatcher_static PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -40,5 +41,6 @@ create_weak_library(
   FROM
     eventdispatcher_static
   WEAKEN_DEPENDENCIES
+    eventprocessor_static
     eventbuffer_static
 )
