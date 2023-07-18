@@ -113,3 +113,16 @@ MOCK_FUNC_BODY(elosEventDispatcherBufferRemove, safuResultE_t, elosEventDispatch
 
     return result;
 }
+
+MOCK_FUNC_BODY(elosEventDispatcherDispatch, safuResultE_t, elosEventDispatcher_t *eventDispatcher) {
+    safuResultE_t result;
+
+    if (MOCK_IS_ACTIVE(elosEventDispatcherDispatch)) {
+        check_expected_ptr(eventDispatcher);
+        result = mock_type(safuResultE_t);
+    } else {
+        result = MOCK_FUNC_REAL(elosEventDispatcherDispatch)(eventDispatcher);
+    }
+
+    return result;
+}

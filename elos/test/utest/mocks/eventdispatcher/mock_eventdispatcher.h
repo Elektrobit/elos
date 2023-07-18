@@ -30,3 +30,5 @@ MOCK_FUNC_PROTOTYPE(elosEventDispatcherBufferAdd, safuResultE_t, elosEventDispat
 
 MOCK_FUNC_PROTOTYPE(elosEventDispatcherBufferRemove, safuResultE_t, elosEventDispatcher_t *eventDispatcher,
                     elosEventBuffer_t *eventBuffer)
+
+MOCK_FUNC_PROTOTYPE(elosEventDispatcherDispatch, safuResultE_t, elosEventDispatcher_t *eventDispatcher)
