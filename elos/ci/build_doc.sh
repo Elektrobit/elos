@@ -35,31 +35,51 @@ Elos API
 
 function createDeveloperApiDocu() {
     local API_INDEX_TABLE=""
-    local MODULE_PATHS=$(find elos/src/ -name "public" -type d)
+    local MODULE_PATHS=$(find elos/src/ -name "public" -or -name "interface" -type d -exec dirname {} \;)
+
     for MODULE_PATH in $MODULE_PATHS; do
-        local MODULE=$(basename `dirname ${MODULE_PATH}`)
-	echo "build doc for ${MODULE}"
+        local MODULE=$(basename ${MODULE_PATH})
+        echo "build doc for ${MODULE} in ${MODULE_PATH}"
         case "${MODULE}" in
           libelos)
             # use already generated for the user manual and avoid duplicate
             # "Duplicate C declaration" warnings
             API_INDEX_TABLE="${API_INDEX_TABLE}  ${MODULE} <../../api/libelos/index>\n"
             ;;
-          scanner)
-            echo "SKIP scanner docu"
+          src | clients | demo | components | plugins | scanners | storagebackends)
+            echo "SKIP ${MODULE}"
             ;;
           *)
-            sphinx-c-apidoc --force \
-                -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/ \
-                --tocfile index \
-                ${ELOS_SOURCE_SOURCE_DIR}/${MODULE}/public
-            API_INDEX_TABLE="${API_INDEX_TABLE}  ${MODULE} <elos/${MODULE}/${MODULE}>\n"
+            if [ -d ${MODULE_PATH}/public ]; then
+                sphinx-c-apidoc --force \
+                    -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/ \
+                    --tocfile index \
+                    ${MODULE_PATH}/public
+            fi
+            if [ -d ${MODULE_PATH}/interface ]; then
+                sphinx-c-apidoc --force \
+                    -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/ \
+                    --tocfile index \
+                    ${MODULE_PATH}/interface
+            fi
+            if [ -d ${MODULE_PATH}/private ]; then
+                sphinx-c-apidoc --force \
+                    -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/ \
+                    --tocfile index \
+                    ${MODULE_PATH}/private
+            fi
             ;;
         esac
     done
 
     # remove generated but unsued files
     rm -r ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/elos/elos.rst
+
+    for DOC in $(find /base/elos/doc/source/generated/developer/api/ -name "*.rst" -and -not -name "index.rst"); do
+        CHAPTER_DOC_PATH="${DOC##"${SPHINX_GENERATED_SOURCE_DIR}/developer/api/"}"
+        echo "----> ${CHAPTER_DOC_PATH}"
+        API_INDEX_TABLE="${API_INDEX_TABLE}  ${CHAPTER_DOC_PATH}\n"
+    done
 
     # override generated index.rst
     echo -e "
