@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 add_subdirectory(elos_log4c_demo)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBESMTP REQUIRED libesmtp-1.0 )
 
 add_executable(
   demo_libelos_v2
