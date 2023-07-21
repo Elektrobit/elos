@@ -24,7 +24,7 @@ void elosTestElosConnectTcpipExtErrConnect(UNUSED void **state) {
     MOCK_FUNC_AFTER_CALL(inet_aton, 0);
     expect_value(__wrap_inet_aton, cp, MOCK_IP_ADDR);
     expect_any(__wrap_inet_aton, inp);
-    will_return(__wrap_inet_aton, 0);
+    will_return(__wrap_inet_aton, 1);
 
     MOCK_FUNC_AFTER_CALL(socket, 0);
     expect_value(__wrap_socket, domain, AF_INET);
