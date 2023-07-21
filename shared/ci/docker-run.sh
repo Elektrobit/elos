@@ -14,6 +14,7 @@ fi
 
 echo "==> create docker image"
 cd $BASE_DIR/ci
+DOCKER_BUILDKIT=0 \
 docker build \
     --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
     --build-arg ASMCOV_URI="${ASMCOV_URI-not available}" \
