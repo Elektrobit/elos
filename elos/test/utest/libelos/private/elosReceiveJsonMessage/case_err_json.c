@@ -37,6 +37,9 @@ void elosTestElosReceiveJsonMessageErrJson(void **state) {
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(testSet->jsonObject);
 
+    // First call of unsubscribe will reset session.
+    test->session.connected = true;
+
     // FIXME: Taken out due to inconsistent response generation, see #15517 for more details
     PARAM("%s", "SKIPPED: json_object_object_get_ex fails (#15517)");
     // PARAM("%s", "json_object_object_get_ex fails");

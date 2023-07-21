@@ -4,6 +4,9 @@
 #include "safu/mock_safu.h"
 
 int elosTestElosSendMessageSuccessSetup(UNUSED void **state) {
+    elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
+    test->session.connected = true;
+
     return 0;
 }
 

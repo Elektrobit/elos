@@ -3,6 +3,9 @@
 #include "elosSendJsonMessage_utest.h"
 
 int elosTestElosSendJsonMessageErrParamSetup(UNUSED void **state) {
+    elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
+    test->session.connected = true;
+
     return 0;
 }
 
@@ -47,9 +50,15 @@ void elosTestElosSendJsonMessageErrParam(void **state) {
     result = elosSendJsonMessage(&test->session, 0, NULL);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "&session, messageId, NULL");
     result = elosSendJsonMessage(&test->session, messageId, NULL);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "&session, 0, &jsonObject");
     result = elosSendJsonMessage(&test->session, 0, test->normal.jsonObject);

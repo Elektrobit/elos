@@ -76,6 +76,9 @@ safuResultE_t elosSendMessage(elosSession_t *session, elosMessage_t const *messa
 
         bytes = safuSendExactly(session->fd, message, messageLen);
         _sendReceiveErrorCheck(result, bytes, messageLen, "Sending message");
+        if (result == SAFU_RESULT_FAILED) {
+            session->connected = false;
+        }
     }
 
     return result;
@@ -118,6 +121,7 @@ safuResultE_t elosReceiveMessage(elosSession_t *session, elosMessage_t **message
             if (result == SAFU_RESULT_OK) {
                 *message = newMessage;
             } else {
+                session->connected = false;
                 free(newMessage);
             }
         }

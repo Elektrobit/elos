@@ -5,6 +5,9 @@
 #include "safu/mock_safu.h"
 
 int elosTestElosSendJsonMessageErrCallSetup(UNUSED void **state) {
+    elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
+    test->session.connected = true;
+
     return 0;
 }
 
@@ -30,6 +33,9 @@ void elosTestElosSendJsonMessageErrCall(void **state) {
     result = elosSendJsonMessage(&test->session, testSet->message->message, testSet->jsonObject);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "elosCreateMessage fails");
 
     MOCK_FUNC_AFTER_CALL(elosCreateMessage, 0);
@@ -41,6 +47,9 @@ void elosTestElosSendJsonMessageErrCall(void **state) {
 
     result = elosSendJsonMessage(&test->session, testSet->message->message, testSet->jsonObject);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "elosSendMessage fails");
 

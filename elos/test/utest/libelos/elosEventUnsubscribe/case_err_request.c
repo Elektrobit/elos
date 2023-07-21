@@ -18,6 +18,9 @@ void elosTestElosEventUnsubscribeErrRequest(void **state) {
     result = elosEventUnsubscribe(&test->session, _MOCK_EVENTQUEUE_ID);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
+    // First call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "adding integer to json object fails (safuJsonAddNewUint64 returns NULL)");
 
     MOCK_FUNC_AFTER_CALL(safuJsonAddNewUint64, 0);

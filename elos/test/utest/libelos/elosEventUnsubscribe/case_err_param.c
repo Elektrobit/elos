@@ -18,6 +18,9 @@ void elosTestElosEventUnsubscribeErrParam(void **state) {
 
         result = elosEventUnsubscribe(session, eventQueueId);
         assert_true(result == SAFU_RESULT_FAILED);
+
+        // First call of unsubscribe will reset session.
+        test->session.connected = true;
     }
 
     PARAM("%s", "test correct behaviour with invalid session");

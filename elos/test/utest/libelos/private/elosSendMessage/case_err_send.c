@@ -6,6 +6,9 @@
 #include "safu/mock_safu.h"
 
 int elosTestElosSendMessageErrSendSetup(UNUSED void **state) {
+    elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
+    test->session.connected = true;
+
     return 0;
 }
 
@@ -32,6 +35,9 @@ void elosTestElosSendMessageErrSend(void **state) {
     result = elosSendMessage(&test->session, test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "safuSendExactly with unexpected connection close");
 
     errno = 0;
@@ -43,6 +49,9 @@ void elosTestElosSendMessageErrSend(void **state) {
 
     result = elosSendMessage(&test->session, test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "safuSendExactly with zero bytes and errno set");
 
@@ -56,6 +65,9 @@ void elosTestElosSendMessageErrSend(void **state) {
     result = elosSendMessage(&test->session, test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "safuSendExactly with too few bytes");
     MOCK_FUNC_AFTER_CALL(safuSendExactly, 0);
     expect_value(__wrap_safuSendExactly, fd, 0);
@@ -65,6 +77,9 @@ void elosTestElosSendMessageErrSend(void **state) {
 
     result = elosSendMessage(&test->session, test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "safuSendExactly with too many bytes");
     MOCK_FUNC_AFTER_CALL(safuSendExactly, 0);
