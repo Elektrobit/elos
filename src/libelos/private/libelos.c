@@ -66,8 +66,10 @@ safuResultE_t elosConnectTcpip(char const *ip, uint16_t port, elosSession_t **se
                     socklen_t const addrLen = sizeof(struct sockaddr_in);
 
                     retVal = connect(newSession->fd, addr, addrLen);
-                    if (retVal < 0) {
+                    if (retVal == -1) {
                         safuLogErrF("connect to %s:%d failed! - %s", ip, port, strerror(errno));
+                    } else if (retVal != 0) {
+                        safuLogErrF("connect to %s:%d failed! - unexpected error", ip, port);
                     } else {
                         result = SAFU_RESULT_OK;
                     }
