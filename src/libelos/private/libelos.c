@@ -55,7 +55,7 @@ safuResultE_t elosConnectTcpip(char const *ip, uint16_t port, elosSession_t **se
             newSession->addr.sin_port = htons(port);
 
             retVal = inet_aton(ip, &newSession->addr.sin_addr);
-            if (retVal < 0) {
+            if (retVal == 0) {
                 safuLogErrErrno("inet_aton failed!");
             } else {
                 newSession->fd = socket(newSession->addr.sin_family, SOCK_STREAM, 0);
