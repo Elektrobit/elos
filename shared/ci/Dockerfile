@@ -4,6 +4,7 @@ ARG USER=ci
 ARG UID=1000
 ARG GID=1000
 ARG ASMCOV_URI="not available"
+ARG CAPSTONE_VERSION=4.0.2
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
@@ -55,7 +56,7 @@ RUN locale-gen en_US.UTF-8 \
  && useradd -m -u $UID -g $GID -o -s /bin/bash $USER \
  && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-RUN git clone --depth 1 https://github.com/aquynh/capstone.git
+RUN git clone --depth 1 --branch $CAPSTONE_VERSION https://github.com/aquynh/capstone.git
 RUN cd capstone/ \
  && ./make.sh \
  &&  sudo ./make.sh install
