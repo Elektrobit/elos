@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 #include "elos/messages/message_handler.h"
 
+#include <elos/logger/logger.h>
+#include <safu/common.h>
+#include <safu/json.h>
+#include <safu/log.h>
 #include <stdlib.h>
-
-#include "safu/common.h"
-#include "safu/json.h"
-#include "safu/log.h"
 
 typedef safuResultE_t elosMessageHandler_t(elosClientManagerConnection_t const *const conn,
                                            elosMessage_t const *const msg);
@@ -186,6 +186,7 @@ safuResultE_t elosMessageHandlerHandleMessage(elosClientManagerConnection_t cons
         }
     }
 
+    elosLog(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_ELOS, "recieved incoming message");
     if (result == SAFU_RESULT_OK) {
         result = elosMessageHandlerReadHeader(conn, msg);
         if (result == SAFU_RESULT_OK) {

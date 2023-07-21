@@ -30,6 +30,7 @@ target_link_libraries(
     eventprocessor_static
     eventlogging_static
     elos_event_static
+    logger_static
     safu::safu
     version
 )
