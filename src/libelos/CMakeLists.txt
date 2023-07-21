@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+
 find_package(json-c REQUIRED)
 find_package(safu REQUIRED)
 
@@ -23,6 +24,7 @@ add_library(
   SHARED
     private/libelos.c
     private/libelos_communication.c
+    private/libelos_logger.c
 )
 
 target_include_directories(
@@ -38,6 +40,7 @@ target_link_libraries(
   PUBLIC
     elos_common_interface
     elos_event_static
+    eloslog_static
     json-c::json-c
     safu::safu
 )

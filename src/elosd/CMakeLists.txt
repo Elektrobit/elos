@@ -28,6 +28,8 @@ target_link_libraries(
     eventfilter_static
     eventprocessor_static
     eventlogging_static
+    logger_static
+    eloslog_static
     config_static
     pluginmanager_static
     eventlogging_static

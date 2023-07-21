@@ -78,6 +78,23 @@ target_link_libraries(
 install(TARGETS elosMon DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_executable(
+  demo_eloslog
+  demo_eloslog.c
+)
+
+target_link_libraries(
+  demo_eloslog
+  PRIVATE
+    elos_common_interface
+    eventprocessor_static
+    eloslog_static
+    libelos
+    version
+)
+
+install(TARGETS demo_eloslog DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(
   demo_eventbuffer
   demo_eventbuffer.c
 )

@@ -10,9 +10,11 @@
 
 #include "elos/clientmanager/clientmanager.h"
 #include "elos/config/config.h"
+#include "elos/eloslog/eloslog.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventlogging/LogAggregator.h"
 #include "elos/eventprocessor/eventprocessor.h"
+#include "elos/logger/logger.h"
 #include "elos/pluginmanager/pluginmanager.h"
 #include "elos/scanner_manager/scanner_manager.h"
 #include "safu/common.h"
@@ -183,6 +185,8 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
     }
+
+    elosLogSetEventProcessor(&context.eventProcessor);
 
     safuLogDebug("Start client manager");
     elosClientManagerParam_t cmParams = {
