@@ -59,7 +59,7 @@ safuResultE_t elosConnectTcpip(char const *ip, uint16_t port, elosSession_t **se
                 safuLogErrErrno("inet_aton failed!");
             } else {
                 newSession->fd = socket(newSession->addr.sin_family, SOCK_STREAM, 0);
-                if (newSession->fd < 0) {
+                if (newSession->fd == -1) {
                     safuLogErrErrno("socket failed!");
                 } else {
                     struct sockaddr *addr = (struct sockaddr *)&newSession->addr;
