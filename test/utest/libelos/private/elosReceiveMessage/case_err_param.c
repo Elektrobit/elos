@@ -3,6 +3,9 @@
 #include "elosReceiveMessage_utest.h"
 
 int elosTestElosReceiveMessageErrParamSetup(UNUSED void **state) {
+    elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
+    test->session.connected = true;
+
     return 0;
 }
 

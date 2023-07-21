@@ -6,6 +6,9 @@
 #include "safu/mock_safu.h"
 
 int elosTestElosReceiveMessageErrReceiveBodySetup(UNUSED void **state) {
+    elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
+    test->session.connected = true;
+
     return 0;
 }
 
@@ -30,6 +33,9 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
 
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "safuRecvExactly body with unexpected connection close");
     testSet = test->receiveJson;
     testSet.body.result = 0;
@@ -38,6 +44,9 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     result = elosReceiveMessage(&test->session, &test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "safuRecvExactly body with zero bytes and errno set");
     testSet = test->receiveJson;
@@ -48,6 +57,9 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
 
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "safuRecvExactly body with too few bytes");
     testSet = test->receiveJson;
     testSet.body.result -= 1;
@@ -56,6 +68,9 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     result = elosReceiveMessage(&test->session, &test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "safuRecvExactly body with too many bytes");
     testSet = test->receiveJson;

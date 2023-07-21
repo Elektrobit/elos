@@ -20,11 +20,17 @@ void elosTestElosReceiveJsonMessageErrReceive(void **state) {
     TEST("elosReceiveJsonMessage");
     SHOULD("%s", "test correct behaviour of elosReceiveJsonMessage with receive errors");
 
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
+
     PARAM("%s", "elosReceiveMessage fails");
 
     elosMockReceive(test, testSet->message, SAFU_RESULT_FAILED);
     result = elosReceiveJsonMessage(&test->session, testSet->message->message, &testSet->jsonObject);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "Message has wrong id");
 
@@ -40,6 +46,9 @@ void elosTestElosReceiveJsonMessageErrReceive(void **state) {
 
     result = elosReceiveJsonMessage(&test->session, testSet->message->message, NULL);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    // Each call of unsubscribe will reset session.
+    test->session.connected = true;
 
     PARAM("%s", "Message has no payload");
 
