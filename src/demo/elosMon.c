@@ -60,54 +60,44 @@ static int elosAuthenticate(auth_client_request_t request, char **result, int fi
     return 1;
 }
 
-static void elosEventCb(UNUSED smtp_session_t session, int eventNo, void *arg, ...) {
-    va_list alist;
-    int *ok;
+static void elosEventCb(UNUSED smtp_session_t session, int event, void *arg, ...) {
+    va_list argumentList;
+    int *status;
 
-    va_start(alist, arg);
-    switch (eventNo) {
-        case SMTP_EV_CONNECT:
-        case SMTP_EV_MAILSTATUS:
-        case SMTP_EV_RCPTSTATUS:
-        case SMTP_EV_MESSAGEDATA:
-        case SMTP_EV_MESSAGESENT:
-        case SMTP_EV_DISCONNECT:
-            break;
-        case SMTP_EV_WEAK_CIPHER: {
-            int bits;
-            bits = va_arg(alist, long);
-            ok = va_arg(alist, int *);
-            printf("SMTP_EV_WEAK_CIPHER, bits=%d - accepted.\n", bits);
-            *ok = 1;
-            break;
-        }
+    va_start(argumentList, arg);
+    switch (event) {
         case SMTP_EV_STARTTLS_OK:
-            puts("SMTP_EV_STARTTLS_OK - TLS started here.");
+            printf("TLS connection started\n");
             break;
-        case SMTP_EV_INVALID_PEER_CERTIFICATE:
-            break;
-        case SMTP_EV_NO_PEER_CERTIFICATE: {
-            ok = va_arg(alist, int *);
-            puts("SMTP_EV_NO_PEER_CERTIFICATE - accepted.");
-            *ok = 1;
+        case SMTP_EV_NO_CLIENT_CERTIFICATE: {
+            status = va_arg(argumentList, int *);
+            *status = 1;
+            printf("Accept connection without client certificate\n");
             break;
         }
         case SMTP_EV_WRONG_PEER_CERTIFICATE: {
-            ok = va_arg(alist, int *);
-            puts("SMTP_EV_WRONG_PEER_CERTIFICATE - accepted.");
-            *ok = 1;
+            status = va_arg(argumentList, int *);
+            *status = 1;
+            printf("Accept connection with wrong peer certificate\n");
             break;
         }
-        case SMTP_EV_NO_CLIENT_CERTIFICATE: {
-            ok = va_arg(alist, int *);
-            puts("SMTP_EV_NO_CLIENT_CERTIFICATE - accepted.");
-            *ok = 1;
+        case SMTP_EV_NO_PEER_CERTIFICATE: {
+            status = va_arg(argumentList, int *);
+            *status = 1;
+            printf("Accept connection with connection with  missing peer certificate\n");
+            break;
+        }
+        case SMTP_EV_WEAK_CIPHER: {
+            int cypherBits = va_arg(argumentList, long);
+            status = va_arg(argumentList, int *);
+            *status = 1;
+            printf("Accepted weak cipher with %d bits\n", cypherBits);
             break;
         }
         default:
-            printf("Got event: %d - ignored.\n", eventNo);
+            printf("Ignore event %d: not implemented\n", event);
     }
-    va_end(alist);
+    va_end(argumentList);
 }
 
 static void elosMonitorCb(const char *buf, int len, int writing, UNUSED void *arg) {
