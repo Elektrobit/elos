@@ -304,7 +304,7 @@ safuResultE_t elosEventSubscribe(elosSession_t *session, const char **filterRule
 
                 for (size_t i = 0; i < filterRuleArraySize; i++) {
                     if (filterRuleArray[i] == NULL) {
-                        safuLogErr("Filter sttring can't be a NULL pointer!");
+                        safuLogErr("Filter string can't be a NULL pointer!");
                         continue;
                     }
                     if (safuJsonAddNewString(jsonFilters, NULL, filterRuleArray[i]) == NULL) {
