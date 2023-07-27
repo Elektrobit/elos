@@ -78,12 +78,12 @@ safuResultE_t elosNoSqlBackendPersist(elosStorageBackend_t *backend, const elosE
             BSON_APPEND_UTF8(bEvent, "payload", event->payload);
         }
 
-        BSON_APPEND_INT64(bEvent, "pid", event.source->pid);
-        if (event.source->appName != NULL) {
-            BSON_APPEND_UTF8(bEvent, "appName", event.source->appName);
+        BSON_APPEND_INT64(bEvent, "pid", event->source.pid);
+        if (event->source.appName != NULL) {
+            BSON_APPEND_UTF8(bEvent, "appName", event->source.appName);
         }
-        if (event.source->fileName != NULL) {
-            BSON_APPEND_UTF8(bEvent, "fileName", event.source->fileName);
+        if (event->source.fileName != NULL) {
+            BSON_APPEND_UTF8(bEvent, "fileName", event->source.fileName);
         }
 
         bool success = mongoc_collection_insert_one(noSqlBackend->collection, bEvent, NULL, NULL, &error);
@@ -109,9 +109,9 @@ static safuResultE_t _convertBsonEventToEvent(const bson_t *bEvent, elosEvent_t 
             if (BSON_ITER_IS_KEY(&iter, "date_s")) event->date.tv_sec = bson_iter_as_int64(&iter);
             if (BSON_ITER_IS_KEY(&iter, "date_ns")) event->date.tv_nsec = bson_iter_as_int64(&iter);
             if (BSON_ITER_IS_KEY(&iter, "payload")) event->payload = bson_iter_dup_utf8(&iter, NULL);
-            if (BSON_ITER_IS_KEY(&iter, "pid")) event.source->pid = bson_iter_as_int64(&iter);
-            if (BSON_ITER_IS_KEY(&iter, "appName")) event.source->appName = bson_iter_dup_utf8(&iter, NULL);
-            if (BSON_ITER_IS_KEY(&iter, "fileName")) event.source->fileName = bson_iter_dup_utf8(&iter, NULL);
+            if (BSON_ITER_IS_KEY(&iter, "pid")) event->source.pid = bson_iter_as_int64(&iter);
+            if (BSON_ITER_IS_KEY(&iter, "appName")) event->source.appName = bson_iter_dup_utf8(&iter, NULL);
+            if (BSON_ITER_IS_KEY(&iter, "fileName")) event->source.fileName = bson_iter_dup_utf8(&iter, NULL);
         }
     }
 
@@ -122,8 +122,9 @@ static safuResultE_t elosNoSqlBackendFilterEvent(elosRpnFilter_t *filter, safuVe
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosRpnFilterResultE_t filterResult;
 
-    elosEvent_t *event = elosEventNew();
-    if (event == NULL) {
+    elosEvent_t *event = NULL;
+    result = elosEventNew(&event);
+    if (result != SAFU_RESULT_OK || event == NULL) {
         safuLogErr("allocate event failed failed");
     } else {
         safuLogDebug("Event created");
