@@ -19,7 +19,7 @@ set_target_properties(backend_sql PROPERTIES PREFIX "")
 target_include_directories(
   backend_sql
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/interface
 )
 
 target_link_libraries(
