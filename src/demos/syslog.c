@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     strcat(message, payload);
     sprintf(eventRule, eventRuleBase, payload);
 
-    result = elosConnectTcpip("localhost", 54321, &session);
+    result = elosConnectTcpip("127.0.0.1", 54321, &session);
     if (result != SAFU_RESULT_OK) {
         free(message);
         free(eventRule);
