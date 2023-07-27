@@ -60,46 +60,6 @@ static int elosAuthenticate(auth_client_request_t request, char **result, int fi
     return 1;
 }
 
-static void elosEventCb(UNUSED smtp_session_t session, int event, void *arg, ...) {
-    va_list argumentList;
-    int *status;
-
-    va_start(argumentList, arg);
-    switch (event) {
-        case SMTP_EV_STARTTLS_OK:
-            printf("TLS connection started\n");
-            break;
-        case SMTP_EV_NO_CLIENT_CERTIFICATE: {
-            status = va_arg(argumentList, int *);
-            *status = 1;
-            printf("Accept connection without client certificate\n");
-            break;
-        }
-        case SMTP_EV_WRONG_PEER_CERTIFICATE: {
-            status = va_arg(argumentList, int *);
-            *status = 1;
-            printf("Accept connection with wrong peer certificate\n");
-            break;
-        }
-        case SMTP_EV_NO_PEER_CERTIFICATE: {
-            status = va_arg(argumentList, int *);
-            *status = 1;
-            printf("Accept connection with connection with  missing peer certificate\n");
-            break;
-        }
-        case SMTP_EV_WEAK_CIPHER: {
-            int cypherBits = va_arg(argumentList, long);
-            status = va_arg(argumentList, int *);
-            *status = 1;
-            printf("Accepted weak cipher with %d bits\n", cypherBits);
-            break;
-        }
-        default:
-            printf("Ignore event %d: not implemented\n", event);
-    }
-    va_end(argumentList);
-}
-
 static void elosMonitorCb(const char *buf, int len, int writing, UNUSED void *arg) {
     if (writing == SMTP_CB_HEADERS) {
         printf("H: %.*s", len, buf);
@@ -163,11 +123,6 @@ static safuResultE_t elosSendNotification(elosNotificationConfig_t *config, elos
     if (elosVerboseFlag) {
         if (smtp_set_monitorcb(smtpSession, elosMonitorCb, stdout, 1) == 0) {
             fprintf(stderr, "Registering SMTP monitor callback failed.\n");
-            goto error;
-        }
-
-        if (smtp_set_eventcb(smtpSession, elosEventCb, NULL) == 0) {
-            fprintf(stderr, "Registering SMTP event callback failed.\n");
             goto error;
         }
     }
