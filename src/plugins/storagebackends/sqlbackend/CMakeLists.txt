@@ -2,6 +2,12 @@
 find_package(safu)
 find_package(samconf)
 
+if(ELOSD_EVENTLOGGING_BACKEND_SQL)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+endif()
+
+
 add_library(
   backend_sql SHARED
   private/SqlBackend.c

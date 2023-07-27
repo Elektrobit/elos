@@ -4,16 +4,10 @@ find_package(Threads REQUIRED)
 find_package(safu REQUIRED)
 find_package(samconf REQUIRED)
 
-if(ELOSD_EVENTLOGGING_BACKEND_SQL)
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(SQLITE3 REQUIRED sqlite3)
-endif()
-
 if(ELOSD_EVENTLOGGING_BACKEND_NOSQL)
   find_package(mongoc-1.0 REQUIRED)
 endif()
 
-option(ELOSD_EVENTLOGGING_BACKEND_SQL "Build elosd with SQL event logging backend instead (PoC!!!)" OFF)
 option(ELOSD_EVENTLOGGING_BACKEND_NOSQL "Build elosd with NoSQL event logging backend instead (PoC!!!)" OFF)
 
 add_executable(
