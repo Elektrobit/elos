@@ -155,9 +155,8 @@ pipeline {
                   gitlabCommitStatus("elos: lint sources") {
                     sh '''#!/bin/bash -xe
                       export IGNORE_SOURCES="\
-                      elos/src/eventlogging/private/*Sql*.c \
-                      elos/src/eventlogging/public/elos/eventlogging/*Sql*.h \
-                      elos/src/processfilter/public/elos/processfilter/vector.h \
+                      elos/src/plugins/storagebackends/nosqlbackend/*/*\
+                      elos/src/components/processfilter/public/elos/processfilter/vector.h \
                       "
                       ./elos/ci/code_lint.py --ci
                       ./elos/ci/checklicense.sh
