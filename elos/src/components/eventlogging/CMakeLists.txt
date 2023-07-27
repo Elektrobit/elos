@@ -17,7 +17,6 @@ create_interface_library(
 add_library(
   eventlogging_static
   STATIC
-    $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_NOSQL}>:./private/NoSqlBackend.c>
     ./private/LogAggregator.c
     ./private/StorageBackend.c
     ./private/PluginFilterLoader.c
@@ -42,7 +41,6 @@ target_link_libraries(
     safu::safu
     samconf::samconf
     eventfilter_static
-    $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_NOSQL}>:mongo::mongoc_shared>
 )
 
 set_property(TARGET eventlogging_static PROPERTY POSITION_INDEPENDENT_CODE ON)

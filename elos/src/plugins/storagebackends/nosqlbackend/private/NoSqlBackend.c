@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-#include "elos/eventlogging/NoSqlBackend.h"
+#include "NoSqlBackend.h"
 
 #include <bson/bson.h>
 #include <mongoc/mongoc.h>
