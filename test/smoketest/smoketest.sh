@@ -6,9 +6,9 @@ BUILD_TYPE="${BUILD_TYPE-Debug}"
 
 export TEST_SOURCE_DIR="$BASE_DIR/test/smoketest"
 export BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE/"
-export DIST_DIR="$BASE_DIR/build/$BUILD_TYPE/dist"
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH-""}:"$BUILD_DIR/dist/usr/local/lib"
-export PATH=${PATH}:"$BUILD_DIR/cmake/src/elosd":"$BUILD_DIR/cmake/src/demo":"$BUILD_DIR/cmake/src/clients/coredump"
+export DIST_DIR="${BUILD_DIR}/dist"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-""}:${DIST_DIR}/usr/local/lib"
+export PATH="${PATH}:${DIST_DIR}/usr/local/bin"
 export NETSTAT=$(which netstat 2>/dev/null || which ss 2> /dev/null || echo "no ${NETSTAT} compliant tool found")
 export SMOKETEST_DIR=${SMOKETEST_DIR-$TEST_SOURCE_DIR}
 export SMOKETEST_RESULT_DIR=${SMOKETEST_RESULT_DIR-"$BUILD_DIR/result/smoketest_results"}
@@ -16,7 +16,7 @@ export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"/tmp/elosd"}"
 
 export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"${SMOKETEST_TMP_DIR}/elosd.syslog.socket"}
 export ELOS_KMSG_FILE=${ELOS_KMSG_FILE-"${SMOKETEST_TMP_DIR}/elosd.kmsg"}
-export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$BUILD_DIR/cmake/src/scanner"}
+export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$DIST_DIR/usr/local/lib/elos/scanner"}
 export ELOS_BACKEND_PATH=${ELOS_BACKEND_PATH-"$DIST_DIR/usr/local/lib/elos/backend"}
 export ELOS_LOG_LEVEL=DEBUG
 
