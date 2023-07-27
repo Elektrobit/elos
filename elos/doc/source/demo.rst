@@ -1,1 +1,1 @@
-.. include:: ../../src/demo/index.rst
+.. include:: ../../src/demos/index.rst
