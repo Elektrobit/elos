@@ -17,6 +17,7 @@
 #include <cmocka_extensions/mock_extensions.h>
 #include <cmocka_extensions/mock_func_wrap.h>
 #include <dirent.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <regex.h>
@@ -174,6 +175,16 @@ int MOCK_FUNC_REAL(inet_aton)(const char *cp, struct in_addr *inp);
 MOCK_FUNC_VAR_EXTERN(inet_pton);
 int MOCK_FUNC_WRAP(inet_pton)(int af, const char *cp, void *buf);
 int MOCK_FUNC_REAL(inet_pton)(int af, const char *cp, void *buf);
+
+MOCK_FUNC_VAR_EXTERN(getaddrinfo);
+int MOCK_FUNC_WRAP(getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints,
+                                struct addrinfo **res);
+int MOCK_FUNC_REAL(getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints,
+                                struct addrinfo **res);
+
+MOCK_FUNC_VAR_EXTERN(freeaddrinfo);
+void MOCK_FUNC_WRAP(freeaddrinfo)(struct addrinfo *res);
+void MOCK_FUNC_REAL(freeaddrinfo)(struct addrinfo *res);
 
 MOCK_FUNC_VAR_EXTERN(socket);
 int MOCK_FUNC_WRAP(socket)(int domain, int type, int protocol);

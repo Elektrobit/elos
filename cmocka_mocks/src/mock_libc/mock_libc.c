@@ -362,6 +362,28 @@ int MOCK_FUNC_WRAP(inet_pton)(int af, const char *cp, void *buf) {
     return MOCK_FUNC_REAL(inet_pton)(af, cp, buf);
 }
 
+MOCK_FUNC_VAR_NEW(getaddrinfo);
+int MOCK_FUNC_WRAP(getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints,
+                                struct addrinfo **res) {
+    if (MOCK_IS_ACTIVE(getaddrinfo)) {
+        check_expected_ptr(node);
+        check_expected_ptr(service);
+        check_expected_ptr(hints);
+        *res = mock_ptr_type(struct addrinfo *);
+        return mock_type(int);
+    }
+    return MOCK_FUNC_REAL(getaddrinfo)(node, service, hints, res);
+}
+
+MOCK_FUNC_VAR_NEW(freeaddrinfo);
+void MOCK_FUNC_WRAP(freeaddrinfo)(struct addrinfo *res) {
+    if (MOCK_IS_ACTIVE(freeaddrinfo)) {
+        check_expected_ptr(res);
+    } else {
+        MOCK_FUNC_REAL(freeaddrinfo)(res);
+    }
+}
+
 MOCK_FUNC_VAR_NEW(socket);
 int MOCK_FUNC_WRAP(socket)(int domain, int type, int protocol) {
     if (MOCK_IS_ACTIVE(socket)) {

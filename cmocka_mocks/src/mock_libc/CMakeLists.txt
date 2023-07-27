@@ -58,6 +58,8 @@ target_link_options(
     -Wl,--wrap=clock_gettime
     -Wl,--wrap=inet_aton
     -Wl,--wrap=inet_pton
+    -Wl,--wrap=getaddrinfo
+    -Wl,--wrap=freeaddrinfo
     -Wl,--wrap=socket
     -Wl,--wrap=setsockopt
     -Wl,--wrap=accept
