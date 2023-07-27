@@ -8,12 +8,13 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <json-c/json.h>
-#include <netinet/in.h>
+#include <netdb.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "elos/common/types.h"
@@ -36,10 +37,10 @@ bool elosSessionValid(elosSession_t const *session) {
     return result;
 }
 
-safuResultE_t elosConnectTcpip(char const *ip, uint16_t port, elosSession_t **session) {
+safuResultE_t elosConnectTcpip(char const *host, uint16_t port, elosSession_t **session) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((ip == NULL) || (session == NULL)) {
+    if ((host == NULL) || (session == NULL)) {
         safuLogErr("Invalid parameter");
     } else {
         elosSession_t *newSession = NULL;
@@ -49,41 +50,51 @@ safuResultE_t elosConnectTcpip(char const *ip, uint16_t port, elosSession_t **se
             safuLogErr("Memory allocation failed");
         } else {
             int retVal;
+            char service[6];
+            struct addrinfo *serverInfo;
+            struct addrinfo hints = {
+                .ai_family = AF_UNSPEC, /* Allow IPv4 or IPv6 */
+                .ai_socktype = SOCK_STREAM,
+                .ai_flags = AI_NUMERICSERV,
+            };
 
-            memset(newSession, 0, sizeof(elosSession_t));
-            newSession->addr.sin_family = AF_INET;
-            newSession->addr.sin_port = htons(port);
+            snprintf(service, ARRAY_SIZE(service), "%d", port);
 
-            retVal = inet_aton(ip, &newSession->addr.sin_addr);
-            if (retVal == 0) {
-                safuLogErrErrno("inet_aton failed!");
+            retVal = getaddrinfo(host, service, &hints, &serverInfo);
+            if (retVal != 0) {
+                safuLogErrF("Failed to fetch address info: %s\n", gai_strerror(retVal));
             } else {
-                newSession->fd = socket(newSession->addr.sin_family, SOCK_STREAM, 0);
-                if (newSession->fd == -1) {
-                    safuLogErrErrno("socket failed!");
-                } else {
-                    struct sockaddr *addr = (struct sockaddr *)&newSession->addr;
-                    socklen_t const addrLen = sizeof(struct sockaddr_in);
+                int sfd;
+                struct addrinfo *ap;
 
-                    retVal = connect(newSession->fd, addr, addrLen);
-                    if (retVal == -1) {
-                        safuLogErrF("connect to %s:%d failed! - %s", ip, port, strerror(errno));
-                    } else if (retVal != 0) {
-                        safuLogErrF("connect to %s:%d failed! - unexpected error", ip, port);
-                    } else {
-                        result = SAFU_RESULT_OK;
+                // iterate threw addresses returned by getaddrinfo()
+                for (ap = serverInfo; ap != NULL; ap = ap->ai_next) {
+                    sfd = socket(ap->ai_family, ap->ai_socktype, ap->ai_protocol);
+                    if (sfd == -1) {
+                        continue;
                     }
+
+                    retVal = connect(sfd, ap->ai_addr, ap->ai_addrlen);
+                    if (retVal != -1) {
+                        break; /* Success */
+                    }
+
+                    close(sfd);
+                }
+
+                freeaddrinfo(serverInfo);
+
+                if (ap == NULL) {
+                    safuLogErrF("connect to %s:%d failed!", host, port);
+                } else {
+                    result = SAFU_RESULT_OK;
+                    newSession->fd = sfd;
+                    newSession->connected = true;
+                    *session = newSession;
                 }
             }
 
-            if (result == SAFU_RESULT_OK) {
-                newSession->connected = true;
-                *session = newSession;
-            } else {
-                if (newSession->fd > 0) {
-                    close(newSession->fd);
-                }
-
+            if (result != SAFU_RESULT_OK) {
                 free(newSession);
             }
         }

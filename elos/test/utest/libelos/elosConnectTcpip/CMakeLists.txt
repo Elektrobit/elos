@@ -8,7 +8,7 @@ create_unit_test(
   SOURCES
     case_err_param.c
     case_exterr_allocmem.c
-    case_exterr_inet_aton.c
+    case_exterr_getaddrinfo.c
     case_exterr_socket.c
     case_exterr_connect.c
     case_success.c

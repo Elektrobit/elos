@@ -13,7 +13,6 @@
 #include "elos/event/eventqueue_types.h"
 
 typedef struct elosSession {
-    struct sockaddr_in addr;
     int fd;
     bool connected;
 } elosSession_t;
@@ -24,14 +23,14 @@ typedef struct elosSession {
  * Description:
  *      Establishes connection to elos over tcp/ip.
  * Input:
- *      - **ip**:       ip address, e.g. "192.168.2.1"
+ *      - **host**:     host address as hostname, ipv4 or ipv6, e.g. "192.168.2.1"
  *      - **port**:     port number, e.g. 54321
  * Output:
  *      - **session**:  session data structure used by other functions
  * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
-safuResultE_t elosConnectTcpip(const char *ip, uint16_t port, elosSession_t **session);
+safuResultE_t elosConnectTcpip(const char *host, uint16_t port, elosSession_t **session);
 
 /*******************************************************************
  * Function: elosDisconnect

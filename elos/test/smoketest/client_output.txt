@@ -1,3 +1,3 @@
-ERROR: connect to xyz.xyz.xyz.1:54321 failed! - Connection refused - file 'libelos.c', line xyz, elosConnectTcpip()
+ERROR: connect to xyz.xyz.xyz.1:54321 failed! - file 'libelos.c', line xyz, elosConnectTcpip()
 Error: retval < 0 (-1); demo_libelos_vxyz.c, main in xyz.
 connecting to event logging and management system...
