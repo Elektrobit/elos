@@ -13,6 +13,8 @@ project_add_documentation_target(
     ${CMAKE_SOURCE_DIR}/documentation/documentation.md
 )
 
+option(ELOSD_EVENTLOGGING_BACKEND_SQL "Build sqlite3 bakend plugin" ON)
+
 add_subdirectory(src)
 if(UNIT_TESTS)
   enable_testing()
