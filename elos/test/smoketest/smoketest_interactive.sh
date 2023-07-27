@@ -1,8 +1,8 @@
 CMDPATH=$(realpath "$(dirname "$0")")
 BASE_DIR=$(realpath "$CMDPATH/../..")
 BUILD_TYPE="${1:-Debug}"
-BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE/cmake"
-DIST_DIR="$BASE_DIR/build/$BUILD_TYPE/dist"
+BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE/"
+DIST_DIR="${BUILD_DIR}/dist"
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH-""}:"${DIST_DIR}/usr/local/lib"
 export PATH=${PATH}:"${DIST_DIR}/usr/local/bin"
