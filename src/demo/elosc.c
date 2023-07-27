@@ -242,7 +242,7 @@ static inline safuResultE_t _commandEventSubscribeHelperPrintVector(elosEventVec
 }
 
 static safuResultE_t _commandEventSubscribe(elosSession_t *session, elosConfig_t *config) {
-    char const *filterArray[2] = {config->commandArgs};
+    char const *filterArray[] = {config->commandArgs};
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosEventVector_t *eventVector = NULL;
 
