@@ -96,7 +96,7 @@ smoketest_elosd() {
     elosd > $RESULT_DIR/elosd.txt 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
-    sleep 1s
+    wait_for_elosd_socket
     find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \; &&
     wait $ELOSD_PID || true
     log "Killed Elosd"
