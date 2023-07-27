@@ -9,13 +9,6 @@
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventfilter/vector.h"
 #include "elos/eventlogging/PluginFilterLoader.h"
-
-#ifdef defined LOG_TO_NOSQL
-#warning "###################### [PoC] NoSQL LOGGING ENABLED !!!!"
-#error 'NoSQL Logging not supported until completion of #16131'
-#include "elos/eventlogging/NoSqlBackend.h"
-#endif
-
 #include "safu/log.h"
 #include "safu/mutex.h"
 
