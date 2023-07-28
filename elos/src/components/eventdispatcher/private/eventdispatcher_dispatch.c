@@ -77,6 +77,7 @@ static safuResultE_t _publishEventBuffer(elosEventDispatcher_t *eventDispatcher,
         if (result != SAFU_RESULT_OK) {
             safuLogErrF("elosEventBufferRead with priority:%d failed", priority);
         } else if (elementsWritten > 0) {
+            eventDispatcher->worker.eventsPublished += elementsWritten;
             result = _publishEventVector(eventDispatcher, &eventPtrVector);
         }
 
