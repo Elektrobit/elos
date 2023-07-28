@@ -11,7 +11,8 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
-#include "eventdispatcher_worker.h"
+#include "elos/eventbuffer/eventbuffer.h"
+#include "eventdispatcher_private.h"
 
 safuResultE_t elosEventDispatcherInitialize(elosEventDispatcher_t *eventDispatcher,
                                             elosEventDispatcherParam_t const *const param) {
@@ -25,11 +26,11 @@ safuResultE_t elosEventDispatcherInitialize(elosEventDispatcher_t *eventDispatch
         SAFU_PTHREAD_MUTEX_INIT_WITH_RESULT(&eventDispatcher->lock, NULL, result);
         SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT_IF_OK(&eventDispatcher->lock, result);
         if (result == SAFU_RESULT_OK) {
-            int eventFdWorkerSync;
+            int eventFdWorkerTrigger;
             int eventFdSync;
 
-            eventFdWorkerSync = eventfd(0, 0);
-            if (eventFdWorkerSync < 0) {
+            eventFdWorkerTrigger = eventfd(0, 0);
+            if (eventFdWorkerTrigger < 0) {
                 safuLogErrErrno("eventfd failed");
             } else {
                 eventFdSync = eventfd(0, 0);
@@ -45,8 +46,21 @@ safuResultE_t elosEventDispatcherInitialize(elosEventDispatcher_t *eventDispatch
                         result = SAFU_RESULT_FAILED;
                     } else {
                         eventDispatcher->eventProcessor = param->eventProcessor;
-                        eventDispatcher->worker.sync = eventFdWorkerSync;
+                        eventDispatcher->worker.trigger = eventFdWorkerTrigger;
+                        eventDispatcher->worker.pollTimeout = ELOS_EVENTDISPATCHER_DEFAULT_POLL_TIMEOUT;
+                        eventDispatcher->worker.healthTimeInterval = ELOS_EVENTDISPATCHER_DEFAULT_HEALTH_INTERVAL;
+                        eventDispatcher->worker.healthTimeTreshold = (struct timespec){0};
+                        eventDispatcher->worker.eventsPublished = 0;
                         eventDispatcher->sync = eventFdSync;
+
+                        if (param->pollTimeout != NULL) {
+                            eventDispatcher->worker.pollTimeout = *param->pollTimeout;
+                        }
+
+                        if (param->healthTimeInterval != NULL) {
+                            eventDispatcher->worker.healthTimeInterval = *param->healthTimeInterval;
+                        }
+
                         atomic_store(&eventDispatcher->flags, SAFU_FLAG_INITIALIZED_BIT);
                     }
                 }
@@ -102,7 +116,7 @@ safuResultE_t elosEventDispatcherDeleteMembers(elosEventDispatcher_t *eventDispa
             if (result == SAFU_RESULT_OK) {
                 int retVal;
 
-                retVal = close(eventDispatcher->worker.sync);
+                retVal = close(eventDispatcher->worker.trigger);
                 if (retVal < 0) {
                     safuLogErrErrno("close failed");
                     result = SAFU_RESULT_FAILED;
@@ -202,7 +216,7 @@ safuResultE_t elosEventDispatcherStop(elosEventDispatcher_t *eventDispatcher) {
         int retVal;
 
         atomic_fetch_and(&eventDispatcher->flags, ~ELOS_EVENTDISPATCHER_FLAG_ACTIVE);
-        retVal = eventfd_write(eventDispatcher->worker.sync, 1);
+        retVal = eventfd_write(eventDispatcher->worker.trigger, 1);
         if (retVal < 0) {
             safuLogErrErrno("eventfd_read failed");
             result = SAFU_RESULT_FAILED;
@@ -212,7 +226,10 @@ safuResultE_t elosEventDispatcherStop(elosEventDispatcher_t *eventDispatcher) {
                 safuLogErr("pthread_join failed");
                 result = SAFU_RESULT_FAILED;
             } else {
-                result = SAFU_RESULT_OK;
+                result = elosEventDispatcherDispatch(eventDispatcher);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErr("Dispatching Events failed!");
+                }
             }
         }
     }
@@ -236,10 +253,20 @@ safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatche
             } else {
                 int retVal;
 
-                retVal = safuVecPush(&eventDispatcher->eventBufferPtrVector, &eventBuffer);
-                if (retVal < 0) {
-                    safuLogErr("Adding the EventBuffer failed");
-                    result = SAFU_RESULT_FAILED;
+                result = elosEventBufferSetWriteTrigger(eventBuffer, eventDispatcher->worker.trigger);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErr("Setting the EventBuffer trigger failed");
+                } else {
+                    retVal = safuVecPush(&eventDispatcher->eventBufferPtrVector, &eventBuffer);
+                    if (retVal < 0) {
+                        safuLogErr("Adding the EventBuffer failed");
+                        result = elosEventBufferSetWriteTrigger(eventBuffer, ELOS_EVENTBUFFER_NO_TRIGGER);
+                        if (result != SAFU_RESULT_OK) {
+                            safuLogErr("Disabling the EventBuffer trigger failed");
+                        } else {
+                            result = SAFU_RESULT_FAILED;
+                        }
+                    }
                 }
             }
 
@@ -284,6 +311,11 @@ safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispat
                 } else if (retVal == 0) {
                     safuLogErr("Could not find the given EventBuffer");
                     result = SAFU_RESULT_FAILED;
+                } else {
+                    result = elosEventBufferSetWriteTrigger(eventBuffer, ELOS_EVENTBUFFER_NO_TRIGGER);
+                    if (result != SAFU_RESULT_OK) {
+                        safuLogErr("Disabling the EventBuffer trigger failed");
+                    }
                 }
             }
 

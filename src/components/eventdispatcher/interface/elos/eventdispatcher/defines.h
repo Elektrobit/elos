@@ -9,3 +9,17 @@
 #ifndef ELOS_EVENTDISPATCHER_DEFAULT_VECTOR_SIZE
 #define ELOS_EVENTDISPATCHER_DEFAULT_VECTOR_SIZE 8
 #endif
+
+#ifndef ELOS_EVENTDISPATCHER_DEFAULT_POLL_TIMEOUT
+#define ELOS_EVENTDISPATCHER_DEFAULT_POLL_TIMEOUT  \
+    (struct timespec) {                            \
+        .tv_sec = 0, .tv_nsec = 250 * 1000 * 1000, \
+    }
+#endif
+
+#ifndef ELOS_EVENTDISPATCHER_DEFAULT_HEALTH_INTERVAL
+#define ELOS_EVENTDISPATCHER_DEFAULT_HEALTH_INTERVAL \
+    (struct timespec) {                              \
+        .tv_sec = 1, .tv_nsec = 0,                   \
+    }
+#endif
