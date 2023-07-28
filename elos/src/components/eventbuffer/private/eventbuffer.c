@@ -46,6 +46,12 @@ safuResultE_t elosEventBufferInitialize(elosEventBuffer_t *eventBuffer, elosEven
         if (newRings == NULL) {
             safuLogErr("Memory allocation failed");
         } else {
+            uint32_t limitEventCount = param->limitEventCount;
+
+            if (limitEventCount == 0) {
+                limitEventCount = ELOS_EVENTBUFFER_DEFAULT_LIMIT;
+            }
+
             eventBuffer->ringCount = defaultRingCount;
             eventBuffer->ring = newRings;
 
@@ -54,7 +60,7 @@ safuResultE_t elosEventBufferInitialize(elosEventBuffer_t *eventBuffer, elosEven
                 safuRingBufferParam_t const ringParam = {
                     .deleteEntries = true,
                     .deleteFunc = (safuRingBufferEntryDeleteFunc_t *)elosEventDelete,
-                    .elements = ELOS_EVENTBUFFER_DEFAULT_LIMIT,
+                    .elements = limitEventCount,
                 };
 
                 result = safuRingBufferInitialize(&ring->ringBuffer, &ringParam);
@@ -62,7 +68,7 @@ safuResultE_t elosEventBufferInitialize(elosEventBuffer_t *eventBuffer, elosEven
                     safuLogErr("Buffer initialization failed");
                     break;
                 } else {
-                    ring->limitEventCount = param->limitEventCount;
+                    ring->limitEventCount = limitEventCount;
                 }
             }
 
