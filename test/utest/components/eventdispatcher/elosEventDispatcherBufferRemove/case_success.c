@@ -52,14 +52,14 @@ void testElosEventDispatcherBufferRemoveSuccess(void **state) {
     result = elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[_VALUE_MIDDLE]);
     assert_int_equal(result, SAFU_RESULT_OK);
     assert_int_equal(safuVecElements(&test->eventDispatcher.eventBufferPtrVector), 2);
-    _testEventBuffer(test, 0, _VALUE_FIRST);
-    _testEventBuffer(test, 1, _VALUE_LAST);
+    _testEventBuffer(test, 0, _VALUE_FIRST + 1);
+    _testEventBuffer(test, 1, _VALUE_LAST + 1);
 
     PARAM("Remove first EventBuffer");
     result = elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[_VALUE_FIRST]);
     assert_int_equal(result, SAFU_RESULT_OK);
     assert_int_equal(safuVecElements(&test->eventDispatcher.eventBufferPtrVector), 1);
-    _testEventBuffer(test, 0, _VALUE_LAST);
+    _testEventBuffer(test, 0, _VALUE_LAST + 1);
 
     PARAM("Remove last EventBuffer");
     result = elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[_VALUE_LAST]);
