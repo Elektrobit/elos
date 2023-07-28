@@ -10,5 +10,6 @@ safuResultE_t elosEventBufferInitialize(elosEventBuffer_t *eventBuffer, elosEven
 safuResultE_t elosEventBufferRead(elosEventBuffer_t *eventBuffer, size_t priority, elosEventPtrVector_t *eventPtrVector,
                                   size_t *elementsWritten);
 safuResultE_t elosEventBufferWrite(elosEventBuffer_t *eventBuffer, elosEvent_t const *const event);
+safuResultE_t elosEventBufferSetWriteTrigger(elosEventBuffer_t *eventBuffer, int eventfd);
 safuResultE_t elosEventBufferDeleteMembers(elosEventBuffer_t *eventBuffer);
 safuResultE_t elosEventBufferDelete(elosEventBuffer_t **eventBuffer);

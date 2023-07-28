@@ -7,6 +7,7 @@
 #include <safu/mutex.h>
 #include <safu/ringbuffer.h>
 #include <stdlib.h>
+#include <sys/eventfd.h>
 
 #include "elos/event/event_vector.h"
 
@@ -75,6 +76,7 @@ safuResultE_t elosEventBufferInitialize(elosEventBuffer_t *eventBuffer, elosEven
             if (result == SAFU_RESULT_FAILED) {
                 _deleteRings(eventBuffer);
             } else {
+                atomic_store(&eventBuffer->writeTrigger, -1);
                 atomic_store(&eventBuffer->flags, SAFU_FLAG_INITIALIZED_BIT);
             }
         }
@@ -152,8 +154,35 @@ safuResultE_t elosEventBufferWrite(elosEventBuffer_t *eventBuffer, elosEvent_t c
             if (result != SAFU_RESULT_OK) {
                 safuLogErrF("Writing to EventBuffer (priority:%lu) failed", priority);
                 elosEventDelete(clonedEvent);
+            } else {
+                int const writeTrigger = atomic_load(&eventBuffer->writeTrigger);
+
+                if (writeTrigger > -1) {
+                    int retVal;
+
+                    retVal = eventfd_write(writeTrigger, 1);
+                    if (retVal < 0) {
+                        safuLogErr("Writing to the eventfd failed");
+                        result = SAFU_RESULT_FAILED;
+                    }
+                }
             }
         }
+    }
+
+    return result;
+}
+
+safuResultE_t elosEventBufferSetWriteTrigger(elosEventBuffer_t *eventBuffer, int eventfd) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (eventBuffer == NULL) {
+        safuLogErr("Invalid parameter given");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventBuffer->flags) == false) {
+        safuLogErr("The given EventBuffer is not initialized");
+    } else {
+        atomic_store(&eventBuffer->writeTrigger, eventfd);
+        result = SAFU_RESULT_OK;
     }
 
     return result;
