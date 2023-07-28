@@ -41,11 +41,13 @@ typedef struct elosEventBufferRing {
  *
  * Members:
  *   flags: contains the component status bits, e.g. initialized
+ *   writeTrigger: optional eventfd that is used for signalizing that an event was written
  *   ring: pointer to an array of elosEventBufferRing_t's
  *   ringCount: size of the array of elosEventBufferRing_t's
  ******************************************************************/
 typedef struct elosEventBuffer {
     safuFlags_t flags;
+    atomic_int writeTrigger;
     elosEventBufferRing_t *ring;
     size_t ringCount;
 } elosEventBuffer_t;
