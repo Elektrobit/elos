@@ -5,9 +5,8 @@ TEST_SUITE_FUNC_PROTOTYPES(_testSuite)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosTestElosEventBufferWriteErrFunc),
-        TEST_CASE(elosTestElosEventBufferWriteErrParam),
-        TEST_CASE(elosTestElosEventBufferWriteSuccessThreaded),
+        TEST_CASE(elosTestElosEventBufferWriteErrFunc),         TEST_CASE(elosTestElosEventBufferWriteErrParam),
+        TEST_CASE(elosTestElosEventBufferWriteSuccessThreaded), TEST_CASE(elosTestElosEventBufferWriteSuccessTrigger),
         TEST_CASE(elosTestElosEventBufferWriteSuccess),
     };
 
