@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef ELOS_EVENTBUFFER_EVENTBUFFERINITIALIZE_H__
-#define ELOS_EVENTBUFFER_EVENTBUFFERINITIALIZE_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
@@ -13,8 +12,3 @@ typedef struct elosUnitTestState {
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventBufferInitializeErrFunc)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventBufferInitializeErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventBufferInitializeSuccess)
-
-void elosTestCaseNew(void **state);
-void elosTestCaseDelete(void **state);
-
-#endif /* ELOS_EVENTBUFFER_EVENTBUFFERINITIALIZE_H__ */
