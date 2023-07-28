@@ -2,8 +2,6 @@
 
 #include "elosEventBufferDelete_utest.h"
 
-#define _VECTORELEMENTS 1
-
 int elosTestElosEventBufferDeleteErrParamSetup(UNUSED void **state) {
     return 0;
 }

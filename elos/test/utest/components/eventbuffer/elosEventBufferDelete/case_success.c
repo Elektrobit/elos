@@ -2,7 +2,6 @@
 
 #include "elosEventBufferDelete_utest.h"
 
-#define _TEST_ID              42
 #define _TEST_EVENTLIMITCOUNT 8
 
 int elosTestElosEventBufferDeleteSuccessSetup(void **state) {

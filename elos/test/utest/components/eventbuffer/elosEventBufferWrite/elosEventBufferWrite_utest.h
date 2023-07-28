@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef ELOS_EVENTBUFFER_EVENTBUFFERWRITE_H__
-#define ELOS_EVENTBUFFER_EVENTBUFFERWRITE_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
@@ -14,8 +13,3 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventBufferWriteErrFunc)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventBufferWriteErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventBufferWriteSuccessThreaded)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventBufferWriteSuccess)
-
-void elosTestCaseNew(void **state);
-void elosTestCaseDelete(void **state);
-
-#endif /* ELOS_EVENTBUFFER_EVENTBUFFERWRITE_H__ */
