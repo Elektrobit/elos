@@ -305,7 +305,7 @@ elosRpnFilterResultE_t elosRpnFilterBuilderCompileToken(elosRpnFilterBuilderToke
         if ((type <= (int)ARRAY_SIZE(funcMap)) && (funcMap[type] != NULL)) {
             result = funcMap[type](token, data);
             if (result == RPNFILTER_RESULT_ERROR) {
-                safuLogErrF("Compile token failed (type:'%d', str:'%*.s')", type, (int)token->length, token->string);
+                safuLogErrF("Compile token failed (type:'%d', str:'%.*s')", type, (int)token->length, token->string);
             }
         } else {
             result = RPNFILTER_RESULT_NOT_FOUND;
