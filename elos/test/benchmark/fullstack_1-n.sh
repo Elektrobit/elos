@@ -67,7 +67,7 @@ function spawn_publisher {
 
     local i
     for i in `seq 1 $PUBLISHER`; do
-        local EVENT="{\"Source\":{\"appName\":\"benchmark_$i\"},\"payload\":[$(date "+%s,%N")]}"
+        local EVENT="{\"source\":{\"appName\":\"benchmark_$i\"},\"payload\":[$(date "+%s,%N")]}"
         elosc -p $EVENT -c $MESSAGES &
         PUBLISHER_PIDS="$PUBLISHER_PIDS $!"
     done

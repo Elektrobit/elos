@@ -21,7 +21,7 @@ ${CLIENT_COUNT}     2
 ${MESSAGE_TEMPLATE}
 ...    {
 ...    "date": [$DATE,0],
-...    "Source": {
+...    "source": {
 ...    "appName": "publish_poll",
 ...    "fileName": "$ELOSC_FILE_NAME",
 ...    "pid": 42

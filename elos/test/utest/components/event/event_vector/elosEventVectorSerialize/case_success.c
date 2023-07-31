@@ -24,7 +24,7 @@ void elosTestElosEventVectorSerializeSuccess(void **state) {
     result = elosEventVectorSerialize(test->eventVector, &sEventVector);
     assert_int_equal(result, SAFU_RESULT_OK);
     assert_non_null(sEventVector);
-    assert_string_equal(sEventVector, "[{\"Source\":{},\"messageCode\":7000},{\"Source\":{},\"messageCode\":8000}]");
+    assert_string_equal(sEventVector, "[{\"source\":{},\"messageCode\":7000},{\"source\":{},\"messageCode\":8000}]");
 
     free(sEventVector);
     sEventVector = NULL;

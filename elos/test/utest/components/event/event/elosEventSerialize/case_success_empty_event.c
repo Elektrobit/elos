@@ -24,7 +24,7 @@ void elosTestElosEventSerializeSuccessEmptyEvent(void **state) {
     retval = elosEventSerialize(&result, &testEvent);
     assert_int_equal(retval, SAFU_RESULT_OK);
     assert_non_null(result);
-    assert_string_equal(result, "{\"Source\":{}}");
+    assert_string_equal(result, "{\"source\":{}}");
 
     *state = result;
 }

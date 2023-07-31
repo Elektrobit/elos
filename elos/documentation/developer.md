@@ -91,7 +91,7 @@ As message payload JSON encoded:
 ```json
 {
   "date": [42,0],
-  "Source": {
+  "source": {
     "appname": "openssh",
     "filename": "/usr/bin/sshd",
     "pid": 208
@@ -860,7 +860,7 @@ Use a JSON based protocol as:
 ```json
 {
   "date":[1362,682302528],
-  "Source": {"appName":"","fileName":"","pid":0},
+  "source": {"appName":"","fileName":"","pid":0},
   "hardwareid":"INVALID",
   "payload":"arbitrary data",
   "classification": 0,
@@ -1421,7 +1421,7 @@ for configuration files is not defined now.
       284,
       0
     ],
-    "Source": {
+    "source": {
       "appName": "sshd",
       "pid": 100
     },
@@ -1435,7 +1435,7 @@ for configuration files is not defined now.
       284,
       0
     ],
-    "Source": {
+    "source": {
       "appName": "sshd",
       "pid": 100
     },
@@ -1449,7 +1449,7 @@ for configuration files is not defined now.
       284,
       0
     ],
-    "Source": {
+    "source": {
       "appName": "sshd",
       "pid": 100
     },

@@ -13,7 +13,7 @@ int elosTestElosEventDeserializeSuccessSourceOnlyTeardown(UNUSED void **state) {
 void elosTestElosEventDeserializeSuccessSourceOnly(UNUSED void **state) {
     safuResultE_t retval;
     elosEvent_t resultEvent = {0};
-    const char *testData = "{\"Source\":{\"pid\":234,\"appName\":\"app234\",\"fileName\":\"/usr/local/app234\"}}";
+    const char *testData = "{\"source\":{\"pid\":234,\"appName\":\"app234\",\"fileName\":\"/usr/local/app234\"}}";
     elosEventSource_t expectedSource = {.pid = 234, .appName = "app234", .fileName = "/usr/local/app234"};
 
     TEST("elosEventDeserialize");

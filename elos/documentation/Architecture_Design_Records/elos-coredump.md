@@ -59,7 +59,7 @@ $ echo "THIS IS THE DUMP" | /usr/local/bin/coredump 1 /usr/bin/somebinary 2 3 11
 * then the file content of */tmp/core.333333.1* should contain the line "THIS IS THE DUMP"
 * the elosd logfile should contain the new event line:
 ```
-{"topicId":42,"topic":"COREDUMP_STARTED","date":[333333,0],"Source":{"appName":"\/usr\/bin\/somebinary","fileName":"\/usr\/bin\/somebinary","pid":1},"severity":1,"hardwareid":"myhostname","classification":512,"messageCode":5005,"payload":"core dumped to \/tmp\/core.333333.1, signal=11, UID=2, GID=3"}
+{"topicId":42,"topic":"COREDUMP_STARTED","date":[333333,0],"source":{"appName":"\/usr\/bin\/somebinary","fileName":"\/usr\/bin\/somebinary","pid":1},"severity":1,"hardwareid":"myhostname","classification":512,"messageCode":5005,"payload":"core dumped to \/tmp\/core.333333.1, signal=11, UID=2, GID=3"}
 ```
 
 ## Decision

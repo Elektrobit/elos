@@ -65,7 +65,7 @@ function spawn_publisher {
 
     local i
     for i in `seq 1 $PUBLISHER`; do
-        elosc -p "{\"Source\":{\"appName\":\"benchmark_$i\"},\"payload\":[$(date "+%s,%N")]}" -c $MESSAGES &
+        elosc -p "{\"source\":{\"appName\":\"benchmark_$i\"},\"payload\":[$(date "+%s,%N")]}" -c $MESSAGES &
         PUBLISHER_PIDS="$PUBLISHER_PIDS $!"
     done
     echo "wait for publisher: $PUBLISHER_PIDS"

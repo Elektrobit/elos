@@ -39,7 +39,7 @@ void elosTestElosMessageEventPublishPublishFailed(void **state) {
     safuResultE_t ret;
     elosUtestState_t *data = *state;
     const char *msg =
-        "{\"date\": [2000, 100], \"Source\": \"Test\", \"severity\": 0, \"hardwareid\":\"0000\","
+        "{\"date\": [2000, 100], \"source\": \"Test\", \"severity\": 0, \"hardwareid\":\"0000\","
         "\"classification\": 0, \"messageCode\": 0, \"payload\": \"testevent\"}";
     const char *errstr = "elosEventProcessorPublish failed";
 

@@ -315,7 +315,7 @@ smoketest_publish_poll() {
     local MESSAGE_TEMPLATE="
 {
   \"date\": [%s],
-  \"Source\": {
+  \"source\": {
     \"appName\": \"publish_poll\",
     \"fileName\": \"$ELOSC_FILE_NAME\",
     \"pid\": 42
@@ -378,7 +378,7 @@ smoketest_locale() {
     local VALID_JSON_MESSAGE="{\"severity\":1,\"hardwareid\":\"localhost\",\"classification\":42.5,\
 \"messageCode\":32,\"payload\":\"this_is_payload\"}"
 
-    local INVALID_JSON_MESSAGE="{\"date\":[%s],\"Source\":{\"appName\":\"☃\",\
+    local INVALID_JSON_MESSAGE="{\"date\":[%s],\"source\":{\"appName\":\"☃\",\
 \"fileName\":\"𝔾𝓻ÿ𝓣𝔃ë𝐋𝐵𝓲𝓂𝓕\",\"pid\":42},\"severity\":💀💀💀,\"hardwareid\":\"🙊\",\
 \"classification\":\"🙉\",\"messageCode\":\"🙈\",\"payload\":\"♔♕♖♗♘♙♚♛♜♝♞♟\"}"
 

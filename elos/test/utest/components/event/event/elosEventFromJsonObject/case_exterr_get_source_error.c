@@ -25,7 +25,7 @@ void elosTestElosEventFromJsonObjectSourceError(void **state) {
     TEST("elosEventFromJsonObject");
     SHOULD("%s", "return SAFU_RESULT_FAILED as retrieving event source fails");
 
-    test->object = json_tokener_parse("{\"Source\":\"INVALIDVALUE\"}");
+    test->object = json_tokener_parse("{\"source\":\"INVALIDVALUE\"}");
     assert_non_null(test->object);
 
     MOCK_FUNC_AFTER_CALL(elosEventSourceFromJsonObject, 0);

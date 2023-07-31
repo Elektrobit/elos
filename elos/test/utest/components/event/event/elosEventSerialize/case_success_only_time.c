@@ -16,9 +16,9 @@ static void _runElosEventSerializeSuccessOnlyTime(const elosEvent_t *testEvent) 
     const char *expectedData;
 
     if (testEvent->date.tv_sec == 0) {
-        expectedData = "{\"date\":[0,100],\"Source\":{}}";
+        expectedData = "{\"date\":[0,100],\"source\":{}}";
     } else {
-        expectedData = "{\"date\":[39,0],\"Source\":{}}";
+        expectedData = "{\"date\":[39,0],\"source\":{}}";
     }
 
     retval = elosEventSerialize(&result, testEvent);

@@ -26,7 +26,7 @@ void elosTestElosEventVectorToJsonArraySuccess(void **state) {
     assert_non_null(test->jEventArray);
 
     sEventVector = json_object_to_json_string_ext(test->jEventArray, JSON_C_TO_STRING_PLAIN);
-    assert_string_equal(sEventVector, "[{\"Source\":{},\"messageCode\":7000},{\"Source\":{},\"messageCode\":8000}]");
+    assert_string_equal(sEventVector, "[{\"source\":{},\"messageCode\":7000},{\"source\":{},\"messageCode\":8000}]");
 
     json_object_put(test->jEventArray);
     test->jEventArray = NULL;

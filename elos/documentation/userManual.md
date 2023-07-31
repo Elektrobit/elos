@@ -56,7 +56,7 @@ Here is an example how the json data of a stored event could look like:
 ```json
 {
   "date": [1667929310,941892533],
-  "Source": {
+  "source": {
     "appname": "openssh",
     "filename": "/usr/bin/sshd",
     "pid": 208,
@@ -288,7 +288,7 @@ coredump file is to be created. Following is an example of an event created by e
 ```json
 {
   "date":[203,0],
-  "Source": {
+  "source": {
      "appName":"\/bin\/busybox.nosuid",
      "fileName":"\/bin\/busybox.nosuid",
      "pid":475
@@ -353,7 +353,7 @@ coredump done
 
 # subscribed elos client captures coredump event
 root@eb-arm64:~#   new data [5964,163307136]:
-[{"date":[333333,0],"Source":{"appName":"\/usr\/bin\/somebinary","fileName":"\/usr\/bin\/somebinary","pid":1},"severity":1,"hardwareid":"myhostname","classification":512,"messageCode":5005,"payload":"core dumped to \/tmp\/core.333333.1, signal=11, UID=2, GID=3"}]
+[{"date":[333333,0],"source":{"appName":"\/usr\/bin\/somebinary","fileName":"\/usr\/bin\/somebinary","pid":1},"severity":1,"hardwareid":"myhostname","classification":512,"messageCode":5005,"payload":"core dumped to \/tmp\/core.333333.1, signal=11, UID=2, GID=3"}]
 
 # Coredump file with given coredump data
 root@eb-arm64:~# ls -lah /tmp/core.333333.1
@@ -396,7 +396,7 @@ root@eb-arm64:~# kill -ABRT 475
 # Triggered coredump generates an new event and it is logged.
 # Logged event is then accessible to subscribed elos client.
 root@eb-arm64:~#   new data [203,936636528]:
-  [{"date":[203,0],"Source":{"appName":"\/bin\/busybox.nosuid","fileName":"\/bin\/busybox.nosuid","pid":475},"severity":1,"hardwareid":"eb-arm64","classification":512,"messageCode":5005,"payload":"core dumped to \/tmp\/core.203.475, signal=6, UID=0, GID=0"}]
+  [{"date":[203,0],"source":{"appName":"\/bin\/busybox.nosuid","fileName":"\/bin\/busybox.nosuid","pid":475},"severity":1,"hardwareid":"eb-arm64","classification":512,"messageCode":5005,"payload":"core dumped to \/tmp\/core.203.475, signal=6, UID=0, GID=0"}]
 
 # coredump file created by default in /tmp
 root@eb-arm64:~# ls -lah /tmp/core.203.475
@@ -646,13 +646,13 @@ elosc -s ".event.source.appName 'sshd' STRCMP" &
 in a new terminal which starts a listening client for events from the sshd.
 Then use another terminal and type:
 ```
-elosc -p '{"Source": { "appName":"sshd"}, "payload": "test"}'
+elosc -p '{"source": { "appName":"sshd"}, "payload": "test"}'
 ```
 To push the event behind the "-p" to the server. Since the filter given to the subscribe command matches the pushed event,
 the event will be transmitted to it. You should see an output on the listening terminal that looks like:
 ```
    new data [1669298051,246902710]:
-[{"date":[1669298051,236492733],"Source":{"appName":"sshd"},"payload":"test"}]
+[{"date":[1669298051,236492733],"source":{"appName":"sshd"},"payload":"test"}]
 ```
 
 Similarly
@@ -662,7 +662,7 @@ elosc -f ".event.source.appName 'sshd' STRCMP"
 will find events which already happened which find events which already happened that match the given filter rule.
 ```
 new data:
-{"date":[1669297969,738218916],"Source":{"appName":"sshd"},"payload":"test"}
+{"date":[1669297969,738218916],"source":{"appName":"sshd"},"payload":"test"}
 ```
 ---
 
@@ -937,14 +937,14 @@ elosc -f ".event.payload 'Hugo' STRCMP .event.messageCode 43 EQ AND"
 elosc -f ".event.source.appName 'sshd' STRCMP .event.payload r'Accept' REGEX AND"
 
 # To publish events:
-elosc -p '{"messageCode": 101, "severity":42, "payload":"ping", "Source": {"appName": "elos_fs_test"}}'
+elosc -p '{"messageCode": 101, "severity":42, "payload":"ping", "source": {"appName": "elos_fs_test"}}'
 elsoc -p '{}' # will result in an event with only the date set
 
 # send an event 10 times as fast as possible
-elosc -c 10 -p '{"messageCode": 101, "severity":42, "payload":"ping", "Source": {"appName": "elos_fs_test"}}'
+elosc -c 10 -p '{"messageCode": 101, "severity":42, "payload":"ping", "source": {"appName": "elos_fs_test"}}'
 
 # send an event 100 times with a rate of 10Hz
-elosc -c 100 -r 10 -p '{"messageCode": 101, "severity":42, "payload":"ping", "Source": {"appName": "elos_fs_test"}}'
+elosc -c 100 -r 10 -p '{"messageCode": 101, "severity":42, "payload":"ping", "source": {"appName": "elos_fs_test"}}'
 ```
 
 ## elosMon demo client

@@ -27,7 +27,7 @@ void elosTestElosEventToJsonObjectSourceAddObjectError(void **state) {
 
     MOCK_FUNC_AFTER_CALL(safuJsonAddObject, 0);
     expect_not_value(__wrap_safuJsonAddObject, jobj, NULL);
-    expect_string(__wrap_safuJsonAddObject, name, "Source");
+    expect_string(__wrap_safuJsonAddObject, name, "source");
     expect_not_value(__wrap_safuJsonAddObject, jdata, NULL);
     will_return(__wrap_safuJsonAddObject, -1);
 
