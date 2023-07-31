@@ -20,7 +20,7 @@ int elosTestElosEventFromJsonObjectSuccessSourceOnlyTeardown(void **state) {
 void elosTestElosEventFromJsonObjectSuccessSourceOnly(void **state) {
     safuResultE_t retval = SAFU_RESULT_FAILED;
     elosTestState_t *test = *(elosTestState_t **)state;
-    const char *testData = "{\"Source\":{\"pid\":234,\"appName\":\"app234\",\"fileName\":\"/usr/local/app234\"}}";
+    const char *testData = "{\"source\":{\"pid\":234,\"appName\":\"app234\",\"fileName\":\"/usr/local/app234\"}}";
     const elosEventSource_t expectedSource = {.pid = 234, .appName = "app234", .fileName = "/usr/local/app234"};
 
     TEST("elosEventFromJsonObject");

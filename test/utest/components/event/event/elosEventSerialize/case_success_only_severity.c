@@ -16,7 +16,7 @@ int elosTestElosEventSerializeSuccessOnlySeverityTeardown(void **state) {
 void elosTestElosEventSerializeSuccessOnlySeverity(void **state) {
     safuResultE_t retval = SAFU_RESULT_FAILED;
     char *result = NULL;
-    const char *expectedData = "{\"Source\":{},\"severity\":5}";
+    const char *expectedData = "{\"source\":{},\"severity\":5}";
     const elosEvent_t testEvent = {.severity = ELOS_SEVERITY_DEBUG};
 
     TEST("elosEventSerialize");

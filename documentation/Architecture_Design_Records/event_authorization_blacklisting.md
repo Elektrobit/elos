@@ -46,7 +46,7 @@ a) In case of error while setup, creation and execution of blacklist filter due 
       ```json
       {
         "date": [42,0],
-        "Source": {
+        "source": {
           "appName": "elosd",
           "pid": 1234
         },
@@ -65,7 +65,7 @@ a) In case of error while setup, creation and execution of blacklist filter due 
       ```json
       {
         "date": [42,0],
-        "Source": {
+        "source": {
           "appName": "elosd",
           "pid": 1234
         },

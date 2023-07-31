@@ -215,7 +215,7 @@ safuResultE_t elosEventFromJsonObject(elosEvent_t *to, const json_object *from) 
     }
 
     if (result == SAFU_RESULT_OK) {
-        json_object *jsource = json_object_object_get(from, "Source");
+        json_object *jsource = json_object_object_get(from, "source");
         if (jsource != NULL) {
             result = elosEventSourceFromJsonObject(&to->source, jsource);
             if (result == SAFU_RESULT_FAILED) {
@@ -314,7 +314,7 @@ safuResultE_t elosEventToJsonObject(json_object *to, const elosEvent_t *from) {
     }
 
     if (result == SAFU_RESULT_OK) {
-        if (safuJsonAddObject(to, "Source", jsource) < 0) {
+        if (safuJsonAddObject(to, "source", jsource) < 0) {
             safuLogErr("adding event source json object to event object failed!");
             json_object_put(jsource);
             result = SAFU_RESULT_FAILED;

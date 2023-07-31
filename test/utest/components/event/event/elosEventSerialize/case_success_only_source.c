@@ -22,7 +22,7 @@ void elosTestElosEventSerializeSuccessOnlySource(void **state) {
         .pid = 234,
     };
 
-    const char *expectedData = "{\"Source\":{\"appName\":\"appName\",\"fileName\":\"usr\\/bin\",\"pid\":234}}";
+    const char *expectedData = "{\"source\":{\"appName\":\"appName\",\"fileName\":\"usr\\/bin\",\"pid\":234}}";
     const elosEvent_t testEvent = {.source = testEventSource};
 
     TEST("elosEventSerialize");

@@ -300,7 +300,7 @@ new event tirggered by elos it self to broadcast the insident:
 ```json
 {
   "date": [42,0],
-  "Source": {
+  "source": {
     "appName": "elosd",
     "pid": 1234
   },

@@ -27,7 +27,7 @@ int elosTestElosMessageEventQueueReadSuccessTeardown(void **state) {
 void elosTestElosMessageEventQueueReadSuccess(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     char const expectedStrData[] =
-        "{\"error\":null,\"eventArray\":[{\"Source\":{},\"messageCode\":2000},{\"Source\":{},\"messageCode\":3000}]}";
+        "{\"error\":null,\"eventArray\":[{\"source\":{},\"messageCode\":2000},{\"source\":{},\"messageCode\":3000}]}";
     char const expectedStrEmpty[] = "{\"error\":null,\"eventArray\":[]}";
     safuResultE_t result;
 

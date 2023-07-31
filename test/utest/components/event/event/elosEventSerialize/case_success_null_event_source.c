@@ -17,7 +17,7 @@ void elosTestElosEventSerializeSuccessNullEventSource(void **state) {
     safuResultE_t retval = SAFU_RESULT_FAILED;
     char *result = NULL;
     const char *expectedData =
-        "{\"date\":[25,100],\"Source\":{},\"severity\":5,"
+        "{\"date\":[25,100],\"source\":{},\"severity\":5,"
         "\"hardwareid\":\"localhost\",\"classification\":42,\"messageCode\":200,\"payload\":\"payload\"}";
 
     const elosEvent_t testEvent = {

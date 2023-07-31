@@ -39,7 +39,7 @@ int elosTestelosMessageEventPublishBlacklistFilterCreateErrorSetup(void **state)
     assert_non_null(data->response);
 
     const char *msg =
-        "{\"topicID\": 0, \"topic\": \"test\", \"date\": [2000, 100], \"Source\": \"Test\", \"severity\": 0, "
+        "{\"topicID\": 0, \"topic\": \"test\", \"date\": [2000, 100], \"source\": \"Test\", \"severity\": 0, "
         "\"hardwareid\":\"0000\", \"classification\": 0, \"messageCode\": 200, \"payload\": \"testevent\"}";
     data->event = NULL;
 
