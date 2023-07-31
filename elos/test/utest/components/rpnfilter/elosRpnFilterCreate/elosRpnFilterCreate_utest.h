@@ -7,6 +7,7 @@
 #include "elos/rpnfilter/rpnfilter.h"
 #include "elos/rpnfilter/step_types.h"
 
+TEST_CASE_FUNC_PROTOTYPES(elos_testElosRpnFilterCreateErrFilter)
 TEST_CASE_FUNC_PROTOTYPES(elos_testElosRpnFilterCreateErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elos_testElosRpnFilterCreateSuccess)
 
