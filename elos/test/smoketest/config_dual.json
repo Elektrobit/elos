@@ -22,7 +22,7 @@
                             ".event.messageCode 5004 EQ"
                         ],
 			"Config" : {
-				"StoragePath": "/tmp/elosd.log"
+				"StoragePath": "/tmp/elosd_%count%.log"
 			}
                     },
                     "Coredump": {
@@ -32,7 +32,7 @@
                             ".event.messageCode 5005 EQ"
                         ],
 			"Config" : {
-				"StoragePath": "/tmp/coredumps.log"
+				"StoragePath": "/tmp/coredumps_%count%.log"
 			}
                     }
                 }

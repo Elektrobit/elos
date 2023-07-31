@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FILE=$RESULT_DIR/smoketest_log
+FILE=$RESULT_DIR/smoketest.log
 
 setup_log() {
 	if [ "$RESULT_DIR" = "" ]; then

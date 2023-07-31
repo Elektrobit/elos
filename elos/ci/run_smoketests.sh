@@ -14,6 +14,6 @@ export ENABLED_TESTS="${2:-""}"
 export DISABLED_TESTS=""
 BASE_DIR=$BASE_DIR BUILD_TYPE=$BUILD_TYPE \
 $BASE_DIR/test/smoketest/smoketest.sh | \
-tee $BUILD_DIR/result/smoketest_results/log
+tee $BUILD_DIR/result/smoketest_results/smoktests.log
 
 #tapview > $BUILD_DIR/result/smoketest_results/summary < $BUILD_DIR/result/smoketest_results/log
