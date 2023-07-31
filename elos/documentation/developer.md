@@ -476,6 +476,8 @@ The following table describes the so far defined message code groups
 | 7003         | device plugged|
 | 7004         | device unplugged|
 | 7005         | device ready|
+| 7126         | Over temperature – system temperature exceeds operation limit|
+| 7127         | Over temperature – system temperature is within operating parameters|
 
 ###### 8000 - 8999 Security Audit
 
