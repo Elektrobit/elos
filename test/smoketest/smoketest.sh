@@ -57,7 +57,7 @@ prepare_env() {
        sleep 2s
     done
 
-    export ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="${result_dir}/elosd_event.log"
+    export ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="${result_dir}/elosd_event_%count%.log"
 }
 
 wait_for_file() {
@@ -515,7 +515,7 @@ smoketest_find_event() {
 
     # Setup environment
     log "Start elosd..."
-    ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="$RESULT_DIR/elosd_event.log" elosd > $LOG_ELOSD 2>&1 &
+    ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="$RESULT_DIR/elosd_event_%count%.log" elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
     sleep 0.5s
 
