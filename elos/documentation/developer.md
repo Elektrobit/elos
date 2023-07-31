@@ -477,6 +477,7 @@ The following table describes the so far defined message code groups
 | 7003         | device plugged|
 | 7004         | device unplugged|
 | 7005         | device ready|
+| 7125         | Heavy Impact – a heavy impact was detected|
 | 7126         | Over temperature – system temperature exceeds operation limit|
 | 7127         | Over temperature – system temperature is within operating parameters|
 
