@@ -116,3 +116,19 @@ elosRpnFilterResultE_t elosRpnFilterBuilderDelete(elosRpnFilterBuilder_t *data);
  ******************************************************************/
 elosRpnFilterResultE_t elosRpnFilterBuilderStackAppend(elosRpnFilterStackEntry_t const *entry,
                                                        elosRpnFilterBuilder_t *data);
+
+/*******************************************************************
+ * Function:     elosRpnFilterBuilderStepAppend
+ *------------------------------------------------------------------
+ * Description:  Helper function that appends a StepEntry
+ *               to the given Builder struct.
+ *               Shouldn't be called directly in normal use cases.
+ *
+ * Input:        Pointer to existing elosRpnFilterBuilderStepEntry_t
+ *               and elosRpnFilterBuilder_t
+ *
+ * Return:       - RPNFILTER_RESULT_OK on success,
+ *               - RPNFILTER_RESULT_ERROR on failure.
+ ******************************************************************/
+elosRpnFilterResultE_t elosRpnFilterBuilderStepAppend(elosRpnFilterBuilderStepEntry_t const *step,
+                                                      elosRpnFilterBuilder_t *data);

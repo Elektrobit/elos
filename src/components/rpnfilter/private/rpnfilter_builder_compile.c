@@ -200,20 +200,23 @@ static elosRpnFilterResultE_t _processCommand(elosRpnFilterBuilderTokenEntry_t c
 
         if (token->length > 0) {
             while (idx < RPNFILTER_STEP_TYPE_COUNT) {
-                retval = strcmp(cmd, elosCommandList[idx].name);
+                _commandListEntry_t const *command = &elosCommandList[idx];
+
+                retval = strcmp(cmd, command->name);
                 if (retval == 0) {
                     step.type = idx;
+                    step.consumes = command->consumes;
+                    step.appends = command->appends;
                     break;
                 }
+
                 idx += 1;
             }
         }
 
-        retval = safuVecPush(&data->step, &step);
-        if (retval < 0) {
-            safuLogErr("safuVecPush failed");
-        } else {
-            result = RPNFILTER_RESULT_OK;
+        result = elosRpnFilterBuilderStepAppend(&step, data);
+        if (result != RPNFILTER_RESULT_OK) {
+            safuLogErr("Appending step failed");
         }
     }
 
@@ -254,7 +257,32 @@ elosRpnFilterResultE_t elosRpnFilterBuilderStackAppend(elosRpnFilterStackEntry_t
         result = RPNFILTER_RESULT_ERROR;
         free(newEntry.data.ptr);
     } else {
+        data->stackSizeTracker += 1;
         result = RPNFILTER_RESULT_OK;
+    }
+
+    return result;
+}
+
+elosRpnFilterResultE_t elosRpnFilterBuilderStepAppend(elosRpnFilterBuilderStepEntry_t const *step,
+                                                      elosRpnFilterBuilder_t *data) {
+    elosRpnFilterResultE_t result = RPNFILTER_RESULT_ERROR;
+    int64_t stackSize = data->stackSizeTracker;
+    int retVal;
+
+    stackSize -= step->consumes;
+    if (stackSize < 0) {
+        safuLogErrF("Too few values on stack for step '%.*s' (consumes:%u, on stack:%ld)", (int)step->token->length,
+                    step->token->string, step->consumes, data->stackSizeTracker);
+    } else {
+        retVal = safuVecPush(&data->step, step);
+        if (retVal < 0) {
+            safuLogErr("safuVecPush failed");
+        } else {
+            stackSize += step->appends;
+            data->stackSizeTracker = stackSize;
+            result = RPNFILTER_RESULT_OK;
+        }
     }
 
     return result;

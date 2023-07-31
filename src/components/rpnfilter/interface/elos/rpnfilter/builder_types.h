@@ -41,6 +41,8 @@ typedef struct elosRpnFilterBuilderToken {
 typedef struct elosRpnFilterBuilderStepEntry {
     elosRpnFilterStepType_t type;
     elosRpnFilterBuilderTokenEntry_t const *token;
+    uint32_t consumes;
+    uint32_t appends;
 } elosRpnFilterBuilderStepEntry_t;
 
 typedef enum elosRpnFilterBuilderStatusE {
@@ -53,6 +55,7 @@ typedef enum elosRpnFilterBuilderStatusE {
 typedef struct elosRpnFilterBuilder {
     elosRpnFilterBuilderStatusE_t status;
     elosRpnFilterParam_t param;
+    int64_t stackSizeTracker;
     safuVec_t token;  // elosRpnFilterBuilderTokenEntry_t
     safuVec_t step;   // elosRpnFilterBuilderStepEntry_t
     safuVec_t stack;  // elosRpnFilterStackEntry_t
