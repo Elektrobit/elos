@@ -64,20 +64,18 @@ void elosTestEventBufferReset(elosUnitTestState_t *test) {
     }
 }
 
-elosEventProcessorPublishBandaid_t elosEventProcessorPublishBandaid = {
-    .result = SAFU_RESULT_OK,
-    .eventCount = {.high = 0, .normal = 0},
-};
+safuResultE_t elosMockEventProcessorPublish(UNUSED elosEventProcessor_t *eventProcessor, elosEvent_t const *event) {
+    safuResultE_t result;
 
-safuResultE_t elosEventProcessorPublish(UNUSED elosEventProcessor_t *eventProcessor, elosEvent_t const *event) {
-    safuResultE_t result = elosEventProcessorPublishBandaid.result;
+    MOCK_FUNC_DATA_NEW(data, elosMockData_t, elosEventProcessorPublish);
+    result = data->result;
 
     if (result == SAFU_RESULT_OK) {
         if (event->severity == ELOS_SEVERITY_FATAL) {
-            elosEventProcessorPublishBandaid.eventCount.high += 1;
+            data->eventCount.high += 1;
             assert_string_equal(event->payload, _EVENT_PAYLOAD_HIGH);
         } else if (event->severity == ELOS_SEVERITY_INFO) {
-            elosEventProcessorPublishBandaid.eventCount.normal += 1;
+            data->eventCount.normal += 1;
             assert_string_equal(event->payload, _EVENT_PAYLOAD_NORMAL);
         }
 

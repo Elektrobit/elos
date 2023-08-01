@@ -48,7 +48,10 @@ void testElosEventDispatcherDispatchErrFunc(void **state) {
     PARAM("EventProcessorPublish fails");
 
     _fillEventBuffer(test);
-    elosEventProcessorPublishBandaid.result = SAFU_RESULT_FAILED;
+    MOCK_FUNC_AFTER_CALL(elosEventProcessorPublish, 0);
+    expect_not_value(elosEventProcessorPublish, eventProcessor, NULL);
+    expect_not_value(elosEventProcessorPublish, event, NULL);
+    will_return(elosEventProcessorPublish, SAFU_RESULT_FAILED);
     result = elosEventDispatcherDispatch(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
