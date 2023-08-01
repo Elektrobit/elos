@@ -24,6 +24,7 @@ target_link_libraries(
     elos_event_static
     rpnfilter_static
     eventbuffer_static
+    eventdispatcher_static
     eventfilter_static
     eventprocessor_static
     eventlogging_static
