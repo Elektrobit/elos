@@ -13,6 +13,7 @@ create_unit_test(
     elosEventDispatcherDispatch_utest.c
   LIBRARIES
     mock_eventbuffer_static
+    mock_eventprocessor_static
     eventdispatcher_static_weak
     safu::mock_safu
     cmocka_mocks::mock_libc

@@ -6,6 +6,7 @@
 #include "elos/event/event.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "mock_eventbuffer.h"
+#include "mock_eventprocessor.h"
 
 #define _EVENTBUFFER_ENTRIES 5
 #define _EVENT_ENTRIES       2
@@ -27,13 +28,12 @@ typedef struct elosEventCount {
     size_t normal;
 } elosEventCount_t;
 
-// Temporary bandaid that should be replaced with a proper mocking solution (function overloading) in the future
-typedef struct elosEventProcessorPublishBandaid {
+typedef struct elosMockData {
     safuResultE_t result;
     elosEventCount_t eventCount;
-} elosEventProcessorPublishBandaid_t;
+} elosMockData_t;
 
-extern elosEventProcessorPublishBandaid_t elosEventProcessorPublishBandaid;
+safuResultE_t elosMockEventProcessorPublish(elosEventProcessor_t *eventProcessor, elosEvent_t const *event);
 
 void elosTestEventBufferReset(elosUnitTestState_t *test);
 

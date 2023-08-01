@@ -84,31 +84,36 @@ int testElosEventDispatcherDispatchSuccessTeardown(void **state) {
 void testElosEventDispatcherDispatchSuccess(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     elosEventCount_t eventCount = {0};
+    elosMockData_t mockData = {0};
     safuResultE_t result;
 
     TEST("elosEventDispatcherDispatch");
     SHOULD("test correct behaviour of elosEventDispatcherDispatch");
 
+    MOCK_FUNC_ALWAYS_WITH(elosEventProcessorPublish, elosMockEventProcessorPublish, &mockData);
+
     PARAM("Test with no registered EventBuffers");
 
-    elosEventProcessorPublishBandaid.result = SAFU_RESULT_FAILED;  // publish must not be called here
+    mockData.result = SAFU_RESULT_FAILED;  // publish must not be called here, so we will fail the call to notice
     result = elosEventDispatcherDispatch(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_OK);
 
     PARAM("Test with no Events in the EventBuffers");
 
     _registerEventBuffers(test);
-    elosEventProcessorPublishBandaid.result = SAFU_RESULT_FAILED;  // again, publish must not be called here
+    mockData.result = SAFU_RESULT_FAILED;  // again, publish must not be called here
     result = elosEventDispatcherDispatch(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_OK);
 
     PARAM("Test with Events in the EventBuffers");
-    elosEventProcessorPublishBandaid.result = SAFU_RESULT_OK;
-    elosEventProcessorPublishBandaid.eventCount.high = 0;
-    elosEventProcessorPublishBandaid.eventCount.normal = 0;
+    mockData.result = SAFU_RESULT_OK;
+    mockData.eventCount.high = 0;
+    mockData.eventCount.normal = 0;
     _fillEventBuffers(test, &eventCount);
     result = elosEventDispatcherDispatch(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_OK);
-    assert_int_equal(elosEventProcessorPublishBandaid.eventCount.high, eventCount.high);
-    assert_int_equal(elosEventProcessorPublishBandaid.eventCount.normal, eventCount.normal);
+    assert_int_equal(mockData.eventCount.high, eventCount.high);
+    assert_int_equal(mockData.eventCount.normal, eventCount.normal);
+
+    MOCK_FUNC_NEVER(elosEventProcessorPublish);
 }
