@@ -9,10 +9,12 @@
 #undef MOCK_FUNC_PROTOTYPE
 #undef MOCK_FUNC_BODY
 
+#define MOCK_FUNC_WITH(__mockf) ((MOCK_FUNC_TYPEDEF(__mockf) *)MOCK_FUNC_PTR(__mockf))
 #define MOCK_FUNC_WRAP(__mockf) __mockf
 #define MOCK_FUNC_REAL(__mockf) __genuine##_##__mockf
-#define MOCK_FUNC_PROTOTYPE(__fn, __fr, ...) \
-    MOCK_FUNC_VAR_EXTERN(__fn);              \
+#define MOCK_FUNC_PROTOTYPE(__fn, __fr, ...)        \
+    MOCK_FUNC_VAR_EXTERN(__fn);                     \
+    MOCK_FUNC_TYPEDEF_NEW(__fn, __fr, __VA_ARGS__); \
     __fr MOCK_FUNC_REAL(__fn)(__VA_ARGS__);
 
 #define MOCK_FUNC_BODY(__fn, __fr, ...) \
