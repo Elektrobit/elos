@@ -8,12 +8,18 @@ MOCK_FUNC_BODY(elosEventProcessorInitialize, safuResultE_t, elosEventProcessor_t
                elosEventProcessorParam_t const *param) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorInitialize)) {
-        check_expected_ptr(eventProcessor);
-        check_expected_ptr(param);
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorInitialize)(eventProcessor, param);
+    switch (MOCK_GET_TYPE(elosEventProcessorInitialize)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorInitialize)(eventProcessor, param);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected_ptr(param);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorInitialize)(eventProcessor, param);
+            break;
     }
 
     return result;
@@ -22,11 +28,17 @@ MOCK_FUNC_BODY(elosEventProcessorInitialize, safuResultE_t, elosEventProcessor_t
 MOCK_FUNC_BODY(elosEventProcessorDeleteMembers, safuResultE_t, elosEventProcessor_t *eventProcessor) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorDeleteMembers)) {
-        check_expected_ptr(eventProcessor);
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorDeleteMembers)(eventProcessor);
+    switch (MOCK_GET_TYPE(elosEventProcessorDeleteMembers)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorDeleteMembers)(eventProcessor);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorDeleteMembers)(eventProcessor);
+            break;
     }
 
     return result;
@@ -37,22 +49,29 @@ MOCK_FUNC_BODY(elosEventProcessorFilterNodeCreateWithQueue, safuResultE_t, elosE
                elosEventFilterNodeId_t *eventFilterNodeId) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorFilterNodeCreateWithQueue)) {
-        check_expected_ptr(eventProcessor);
-        check_expected_ptr(filterStrings);
-        check_expected(filterStringCount);
-        check_expected_ptr(eventQueueId);
-        check_expected_ptr(eventFilterNodeId);
-        if (eventQueueId != NULL) {
-            *eventQueueId = mock_type(elosEventQueueId_t);
-        }
-        if (eventFilterNodeId != NULL) {
-            *eventFilterNodeId = mock_type(elosEventFilterNodeId_t);
-        }
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorFilterNodeCreateWithQueue)(
-            eventProcessor, filterStrings, filterStringCount, eventQueueId, eventFilterNodeId);
+    switch (MOCK_GET_TYPE(elosEventProcessorFilterNodeCreateWithQueue)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorFilterNodeCreateWithQueue)(
+                eventProcessor, filterStrings, filterStringCount, eventQueueId, eventFilterNodeId);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected_ptr(filterStrings);
+            check_expected(filterStringCount);
+            check_expected_ptr(eventQueueId);
+            check_expected_ptr(eventFilterNodeId);
+            if (eventQueueId != NULL) {
+                *eventQueueId = mock_type(elosEventQueueId_t);
+            }
+            if (eventFilterNodeId != NULL) {
+                *eventFilterNodeId = mock_type(elosEventFilterNodeId_t);
+            }
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorFilterNodeCreateWithQueue)(
+                eventProcessor, filterStrings, filterStringCount, eventQueueId, eventFilterNodeId);
+            break;
     }
 
     return result;
@@ -63,19 +82,26 @@ MOCK_FUNC_BODY(elosEventProcessorFilterNodeCreate, safuResultE_t, elosEventProce
                elosEventFilterNodeId_t *eventFilterNodeId) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorFilterNodeCreate)) {
-        check_expected_ptr(eventProcessor);
-        check_expected_ptr(filterStrings);
-        check_expected(filterStringCount);
-        check_expected(eventQueueId);
-        check_expected_ptr(eventFilterNodeId);
-        if (eventFilterNodeId != NULL) {
-            *eventFilterNodeId = mock_type(elosEventFilterNodeId_t);
-        }
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorFilterNodeCreate)(eventProcessor, filterStrings, filterStringCount,
-                                                                    eventQueueId, eventFilterNodeId);
+    switch (MOCK_GET_TYPE(elosEventProcessorFilterNodeCreate)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorFilterNodeCreate)(
+                eventProcessor, filterStrings, filterStringCount, eventQueueId, eventFilterNodeId);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected_ptr(filterStrings);
+            check_expected(filterStringCount);
+            check_expected(eventQueueId);
+            check_expected_ptr(eventFilterNodeId);
+            if (eventFilterNodeId != NULL) {
+                *eventFilterNodeId = mock_type(elosEventFilterNodeId_t);
+            }
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorFilterNodeCreate)(
+                eventProcessor, filterStrings, filterStringCount, eventQueueId, eventFilterNodeId);
+            break;
     }
 
     return result;
@@ -85,12 +111,18 @@ MOCK_FUNC_BODY(elosEventProcessorFilterNodeRemove, safuResultE_t, elosEventProce
                elosEventFilterNodeId_t eventFilterNodeId) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorFilterNodeRemove)) {
-        check_expected_ptr(eventProcessor);
-        check_expected(eventFilterNodeId);
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorFilterNodeRemove)(eventProcessor, eventFilterNodeId);
+    switch (MOCK_GET_TYPE(elosEventProcessorFilterNodeRemove)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorFilterNodeRemove)(eventProcessor, eventFilterNodeId);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected(eventFilterNodeId);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorFilterNodeRemove)(eventProcessor, eventFilterNodeId);
+            break;
     }
 
     return result;
@@ -100,15 +132,21 @@ MOCK_FUNC_BODY(elosEventProcessorQueueCreate, safuResultE_t, elosEventProcessor_
                elosEventQueueId_t *eventQueueId) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorQueueCreate)) {
-        check_expected_ptr(eventProcessor);
-        check_expected_ptr(eventQueueId);
-        if (eventQueueId != NULL) {
-            *eventQueueId = mock_type(elosEventQueueId_t);
-        }
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorQueueCreate)(eventProcessor, eventQueueId);
+    switch (MOCK_GET_TYPE(elosEventProcessorQueueCreate)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorQueueCreate)(eventProcessor, eventQueueId);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected_ptr(eventQueueId);
+            if (eventQueueId != NULL) {
+                *eventQueueId = mock_type(elosEventQueueId_t);
+            }
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorQueueCreate)(eventProcessor, eventQueueId);
+            break;
     }
 
     return result;
@@ -118,12 +156,18 @@ MOCK_FUNC_BODY(elosEventProcessorQueueRemove, safuResultE_t, elosEventProcessor_
                elosEventQueueId_t eventQueueId) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorQueueRemove)) {
-        check_expected_ptr(eventProcessor);
-        check_expected(eventQueueId);
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorQueueRemove)(eventProcessor, eventQueueId);
+    switch (MOCK_GET_TYPE(elosEventProcessorQueueRemove)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorQueueRemove)(eventProcessor, eventQueueId);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected(eventQueueId);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorQueueRemove)(eventProcessor, eventQueueId);
+            break;
     }
 
     return result;
@@ -133,16 +177,22 @@ MOCK_FUNC_BODY(elosEventProcessorQueueRead, safuResultE_t, elosEventProcessor_t 
                elosEventQueueId_t eventQueueId, elosEventVector_t **eventVector) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorQueueRead)) {
-        check_expected_ptr(eventProcessor);
-        check_expected(eventQueueId);
-        check_expected_ptr(eventVector);
-        if (eventVector != NULL) {
-            *eventVector = mock_type(elosEventVector_t *);
-        }
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorQueueRead)(eventProcessor, eventQueueId, eventVector);
+    switch (MOCK_GET_TYPE(elosEventProcessorQueueRead)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorQueueRead)(eventProcessor, eventQueueId, eventVector);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected(eventQueueId);
+            check_expected_ptr(eventVector);
+            if (eventVector != NULL) {
+                *eventVector = mock_type(elosEventVector_t *);
+            }
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorQueueRead)(eventProcessor, eventQueueId, eventVector);
+            break;
     }
 
     return result;
@@ -152,12 +202,18 @@ MOCK_FUNC_BODY(elosEventProcessorPublish, safuResultE_t, elosEventProcessor_t *e
                elosEvent_t const *event) {
     safuResultE_t result;
 
-    if (MOCK_IS_ACTIVE(elosEventProcessorPublish)) {
-        check_expected_ptr(eventProcessor);
-        check_expected_ptr(event);
-        result = mock_type(safuResultE_t);
-    } else {
-        result = MOCK_FUNC_REAL(elosEventProcessorPublish)(eventProcessor, event);
+    switch (MOCK_GET_TYPE(elosEventProcessorPublish)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventProcessorPublish)(eventProcessor, event);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventProcessor);
+            check_expected_ptr(event);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventProcessorPublish)(eventProcessor, event);
+            break;
     }
 
     return result;
