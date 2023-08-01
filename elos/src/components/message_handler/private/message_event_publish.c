@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "elos/event/event.h"
+#include "elos/eventbuffer/eventbuffer.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventlogging/LogAggregator.h"
 #include "elos/eventprocessor/eventprocessor.h"
@@ -102,19 +103,16 @@ safuResultE_t elosMessageEventPublish(elosClientManagerConnection_t *conn, elosM
         }
 
         if (retval == SAFU_RESULT_OK) {
-            safuResultE_t publisherResult = elosEventProcessorPublish(conn->sharedData->eventProcessor, &event);
-            if (publisherResult != SAFU_RESULT_OK) {
-                errstr = "elosEventProcessorPublish failed";
+            safuResultE_t bufferResult = elosEventBufferWrite(&conn->eventBuffer, &event);
+            if (bufferResult != SAFU_RESULT_OK) {
+                errstr = "Writing into the EventBuffer failed";
+                retval = SAFU_RESULT_FAILED;
                 safuLogErr(errstr);
             }
 
             safuResultE_t loggerResult = elosLogAggregatorAdd(conn->sharedData->logAggregator, &event);
             if (loggerResult != SAFU_RESULT_OK) {
                 safuLogWarn("elosLogAggregatorAdd failed");
-            }
-
-            if (publisherResult != SAFU_RESULT_OK) {
-                retval = SAFU_RESULT_FAILED;
             }
         }
 

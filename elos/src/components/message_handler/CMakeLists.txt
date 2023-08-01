@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(safu)
+find_package(safu REQUIRED)
 
 add_library(
   messagehandler_static
@@ -26,6 +26,7 @@ target_link_libraries(
   PUBLIC
     clientmanager_interface
     elos_common_interface
+    eventbuffer_static
     eventprocessor_static
     eventlogging_static
     elos_event_static
@@ -39,6 +40,7 @@ create_weak_library(
   FROM
     messagehandler_static
   WEAKEN_DEPENDENCIES
+    eventbuffer_static
     eventprocessor_static
     eventlogging_static
     elos_event_static
