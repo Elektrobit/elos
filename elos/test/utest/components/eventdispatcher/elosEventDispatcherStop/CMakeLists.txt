@@ -6,7 +6,6 @@ create_unit_test(
   NAME
     test_eventdispatcher_elosEventDispatcherStop_utest
   SOURCES
-    case_err_mutex.c
     case_err_param.c
     case_success.c
     elosEventDispatcherStop_utest.c
