@@ -86,40 +86,21 @@ safuResultE_t elosEventDispatcherNew(elosEventDispatcher_t **eventDispatcher,
     return result;
 }
 
-safuResultE_t _eventDispatcherStop(elosEventDispatcher_t *eventDispatcher) {
-    safuResultE_t result = SAFU_RESULT_OK;
-    int retVal;
-
-    atomic_fetch_and(&eventDispatcher->flags, ~ELOS_EVENTDISPATCHER_FLAG_ACTIVE);
-    retVal = eventfd_write(eventDispatcher->worker.sync, 1);
-    if (retVal < 0) {
-        safuLogErrErrno("eventfd_read failed");
-        result = SAFU_RESULT_FAILED;
-    } else {
-        retVal = pthread_join(eventDispatcher->worker.thread, 0);
-        if (retVal < 0) {
-            safuLogErr("pthread_join failed");
-            result = SAFU_RESULT_FAILED;
-        } else {
-            result = SAFU_RESULT_OK;
-        }
-    }
-
-    return result;
-}
-
 safuResultE_t elosEventDispatcherDeleteMembers(elosEventDispatcher_t *eventDispatcher) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (eventDispatcher != NULL) {
         if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == true) {
+            if (ELOS_EVENTDISPATCHER_FLAG_HAS_ACTIVE_BIT(&eventDispatcher->flags) == true) {
+                result = elosEventDispatcherStop(eventDispatcher);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogWarn("elosEventDispatcherStop failed");
+                }
+            }
+
             SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
             if (result == SAFU_RESULT_OK) {
                 int retVal;
-
-                if (ELOS_EVENTDISPATCHER_FLAG_HAS_ACTIVE_BIT(&eventDispatcher->flags) == true) {
-                    result = _eventDispatcherStop(eventDispatcher);
-                }
 
                 retVal = close(eventDispatcher->worker.sync);
                 if (retVal < 0) {
@@ -218,19 +199,21 @@ safuResultE_t elosEventDispatcherStop(elosEventDispatcher_t *eventDispatcher) {
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
         safuLogErr("The given eventDispatcher is not initialized");
     } else {
-        SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
-        if (result == SAFU_RESULT_OK) {
-            if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
-                safuLogErr("The given eventDispatcher is not initialized");
-                result = SAFU_RESULT_FAILED;
-            } else if (ELOS_EVENTDISPATCHER_FLAG_HAS_ACTIVE_BIT(&eventDispatcher->flags) == false) {
-                safuLogErr("The given eventDispatcher is not active");
+        int retVal;
+
+        atomic_fetch_and(&eventDispatcher->flags, ~ELOS_EVENTDISPATCHER_FLAG_ACTIVE);
+        retVal = eventfd_write(eventDispatcher->worker.sync, 1);
+        if (retVal < 0) {
+            safuLogErrErrno("eventfd_read failed");
+            result = SAFU_RESULT_FAILED;
+        } else {
+            retVal = pthread_join(eventDispatcher->worker.thread, 0);
+            if (retVal < 0) {
+                safuLogErr("pthread_join failed");
                 result = SAFU_RESULT_FAILED;
             } else {
-                result = _eventDispatcherStop(eventDispatcher);
+                result = SAFU_RESULT_OK;
             }
-
-            SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
         }
     }
 
