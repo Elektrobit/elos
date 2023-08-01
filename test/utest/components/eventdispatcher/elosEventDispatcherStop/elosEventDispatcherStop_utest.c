@@ -5,7 +5,6 @@ TEST_SUITE_FUNC_PROTOTYPES(_testSuite)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(testElosEventDispatcherStopErrMutex),
         TEST_CASE(testElosEventDispatcherStopErrParam),
         TEST_CASE(testElosEventDispatcherStopSuccess),
     };

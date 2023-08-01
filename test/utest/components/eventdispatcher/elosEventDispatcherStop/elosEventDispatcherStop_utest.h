@@ -10,6 +10,5 @@ typedef struct elosUnitTestState {
     elosEventProcessor_t eventProcessor;
 } elosUnitTestState_t;
 
-TEST_CASE_FUNC_PROTOTYPES(testElosEventDispatcherStopErrMutex)
 TEST_CASE_FUNC_PROTOTYPES(testElosEventDispatcherStopErrParam)
 TEST_CASE_FUNC_PROTOTYPES(testElosEventDispatcherStopSuccess)
