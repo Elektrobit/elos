@@ -9,9 +9,34 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "safu/log.h"
+
+safuResultE_t safuStringIsEmpty(const char *stringToCheck) {
+    safuResultE_t retval = SAFU_RESULT_OK;
+    int stringsCharCount = 0;
+
+    if (stringToCheck == NULL || stringToCheck[0] == '/0' || strlen(stringToCheck) == 0) {
+        retval = SAFU_RESULT_FAILED;
+    }
+
+    if (retval == SAFU_RESULT_OK) {
+        int i = 0;
+        while (stringToCheck[i]) {
+            char stringsChar = stringToCheck[i++];
+            if (isspace(stringsChar) == 0) {
+                stringsCharCount++;
+            }
+        }
+        if (stringsCharCount == 0) {
+            retval = SAFU_RESULT_FAILED;
+        }
+    }
+    return retval;
+}
 
 void *safuAllocMem(void *oldptr, size_t newlen) {
     void *newptr = NULL;

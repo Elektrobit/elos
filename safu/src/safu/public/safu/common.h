@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/socket.h>
 
+safuResultE_t safuStringIsEmpty(const char *stringToCheck); 
 void *safuAllocMem(void *oldptr, size_t newlen);
 ssize_t safuTransferExactly(int fd, void *buf, size_t len, int flags, safuTransferFunc_t *transferFunc);
 ssize_t safuRecvExactly(int fd, void *buf, size_t len);
