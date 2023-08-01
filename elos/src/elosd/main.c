@@ -10,6 +10,7 @@
 
 #include "elos/client_manager/client_manager.h"
 #include "elos/config/config.h"
+#include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventlogging/LogAggregator.h"
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/pluginmanager/pluginmanager.h"
@@ -27,6 +28,7 @@ struct serverContext {
     elosScannerManagerContext_t scannerManagerContext;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
+    elosEventDispatcher_t eventDispatcher;
     elosEventProcessor_t eventProcessor;
 };
 
@@ -69,6 +71,10 @@ int elosServerShutdown(struct serverContext *ctx) {
     }
     if (elosScannerManagerStop(&ctx->scannerManagerContext) != NO_ERROR) {
         safuLogErr("Stoping scanner manager failed!");
+        result = EXIT_FAILURE;
+    }
+    if (elosEventDispatcherDeleteMembers(&ctx->eventDispatcher) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting event dispatcher members failed!");
         result = EXIT_FAILURE;
     }
     if (elosEventProcessorDeleteMembers(&ctx->eventProcessor) != SAFU_RESULT_OK) {
@@ -156,6 +162,26 @@ int main(int argc, char **argv) {
         safuLogErr("elosEventProcessorInitialize");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
+    }
+
+    safuLogDebug("Start EventDispatcher");
+    elosEventDispatcherParam_t const edParam = {
+        .eventProcessor = &context.eventProcessor,
+        .healthTimeInterval = NULL,
+        .pollTimeout = NULL,
+    };
+    retval = elosEventDispatcherInitialize(&context.eventDispatcher, &edParam);
+    if (retval < 0) {
+        safuLogErr("elosEventDispatcherInitialize");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
+    } else {
+        retval = elosEventDispatcherStart(&context.eventDispatcher);
+        if (retval < 0) {
+            safuLogErr("elosEventDispatcherStart");
+            elosServerShutdown(&context);
+            return EXIT_FAILURE;
+        }
     }
 
     safuLogDebug("Start client manager");
