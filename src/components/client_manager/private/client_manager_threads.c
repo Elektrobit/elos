@@ -11,6 +11,8 @@
 
 #include "elos/client_manager/client_authorization.h"
 #include "elos/client_manager/client_manager.h"
+#include "elos/eventbuffer/eventbuffer.h"
+#include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/messages/message_handler.h"
 #include "safu/common.h"
 #include "safu/log.h"
@@ -149,24 +151,42 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
     return result;
 }
 
-static int _createConnectionData(elosClientManagerConnection_t *conn) {
-    int retval = safuVecCreate(&conn->data.eventQueueIdVector, CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE,
-                               sizeof(elosEventQueueId_t));
-    if (retval < 0) {
-        safuLogErr("safuVecCreate failed");
+static safuResultE_t _createConnectionData(elosClientManagerConnection_t *conn) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    int retVal;
+
+    retVal = safuVecCreate(&conn->data.eventQueueIdVector, CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE,
+                           sizeof(elosEventQueueId_t));
+    if (retVal != 0) {
+        safuLogErrValue("Creating EventQueueId vector failed", retVal);
     } else {
-        retval = safuVecCreate(&conn->data.eventFilterNodeIdVector, CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE,
+        retVal = safuVecCreate(&conn->data.eventFilterNodeIdVector, CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE,
                                sizeof(elosEventFilterNodeId_t));
-        if (retval < 0) {
-            safuLogErr("safuVecCreate failed");
+        if (retVal != 0) {
+            safuLogErrValue("Creating EventFilterNodeId vector failed", retVal);
+        } else {
+            elosEventBufferParam_t param = {
+                .limitEventCount = ELOS_EVENTBUFFER_DEFAULT_LIMIT,
+            };
+
+            result = elosEventBufferInitialize(&conn->eventBuffer, &param);
+            if (result != SAFU_RESULT_OK) {
+                safuLogErrValue("Creating EventBuffer failed", result);
+            } else {
+                result = elosEventDispatcherBufferAdd(conn->sharedData->eventDispatcher, &conn->eventBuffer);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErrValue("Adding EventBuffer to EventDispatcher failed", result);
+                }
+            }
         }
     }
 
-    return retval;
+    return result;
 }
 
 static safuResultE_t _cleanupConnectionData(elosClientManagerConnection_t *conn) {
     safuResultE_t result = SAFU_RESULT_OK;
+    safuResultE_t stepResult;
     uint32_t elements;
     int retVal;
 
@@ -214,6 +234,18 @@ static safuResultE_t _cleanupConnectionData(elosClientManagerConnection_t *conn)
         result = SAFU_RESULT_FAILED;
     }
 
+    stepResult = elosEventDispatcherBufferRemove(conn->sharedData->eventDispatcher, &conn->eventBuffer);
+    if (stepResult != SAFU_RESULT_OK) {
+        safuLogWarn("Removing EventBuffer from EventDispatcher failed");
+        result = stepResult;
+    }
+
+    stepResult = elosEventBufferDeleteMembers(&conn->eventBuffer);
+    if (stepResult != SAFU_RESULT_OK) {
+        safuLogWarn("Deleting EventBuffer members failed");
+        result = stepResult;
+    }
+
     return result;
 }
 
@@ -241,22 +273,21 @@ static void _closeConnection(elosClientManagerConnection_t *conn) {
 
 void *elosClientManagerThreadConnection(void *ptr) {
     elosClientManagerConnection_t *conn = (elosClientManagerConnection_t *)ptr;
-    uint32_t status = 0;
-    safuResultE_t result = SAFU_RESULT_FAILED;
-    int retval = _createConnectionData(conn);
+    safuResultE_t result;
 
     // send and receive messages over the connection
-    while (retval >= 0) {
+    result = _createConnectionData(conn);
+    while (result == SAFU_RESULT_OK) {
+        uint32_t status = 0;
+
         result = elosClientManagerGetStatus((elosClientManagerContext_t *)conn, &status);
-        if (result != SAFU_RESULT_OK) {
-            break;
+        if (result == SAFU_RESULT_OK) {
+            if (status & CLIENT_MANAGER_CONNECTION_ACTIVE) {
+                result = elosMessageHandlerHandleMessage(conn);
+            } else {
+                result = SAFU_RESULT_FAILED;
+            }
         }
-
-        if (!(status & CLIENT_MANAGER_CONNECTION_ACTIVE)) {
-            break;
-        }
-
-        retval = elosMessageHandlerHandleMessage(conn);
     }
 
     _closeConnection(conn);
