@@ -22,7 +22,7 @@ static int _testSuiteSetup(void **state) {
     assert_non_null(test);
 
     for (size_t i = 0; i < _EVENTBUFFER_ENTRIES; i += 1) {
-        elosEventBufferParam_t const param = {.limitEventCount = i};
+        elosEventBufferParam_t const param = {0};
         result = elosEventBufferInitialize(&test->eventBuffer[i], &param);
         assert_int_equal(result, SAFU_RESULT_OK);
     }
@@ -58,7 +58,7 @@ void elosTestEventBufferReset(elosUnitTestState_t *test) {
     }
 
     for (size_t i = 0; i < _EVENTBUFFER_ENTRIES; i += 1) {
-        elosEventBufferParam_t const param = {.limitEventCount = i};
+        elosEventBufferParam_t const param = {0};
         result = elosEventBufferInitialize(&test->eventBuffer[i], &param);
         assert_int_equal(result, SAFU_RESULT_OK);
     }
