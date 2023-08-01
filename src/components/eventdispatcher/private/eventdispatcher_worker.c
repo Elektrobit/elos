@@ -37,7 +37,7 @@ static void _handleHealthEvent(elosEventDispatcher_t *eventDispatcher) {
 
         retVal = asprintf(&payload, "%lu Events published\n", worker->eventsPublished);
         if (retVal < 0) {
-            safuLogErrErrno("Creating payload for health event failed");
+            safuLogErrErrnoValue("Creating payload for health event failed", retVal);
         } else {
             struct timespec interval = worker->healthTimeInterval;
             struct timespec next = {0};
@@ -77,16 +77,16 @@ static void _waitForNextIteration(elosEventDispatcher_t *eventDispatcher) {
                 break;
             default:
                 atomic_fetch_and(&eventDispatcher->flags, ~ELOS_EVENTDISPATCHER_FLAG_ACTIVE);
-                safuLogErrErrno("ppoll failed");
+                safuLogErrErrnoValue("ppoll failed", retVal);
                 break;
         }
     } else if (retVal > 0) {
         eventfd_t value = 0;
 
         retVal = eventfd_read(eventDispatcher->worker.trigger, &value);
-        if (retVal < 0) {
+        if (retVal != 0) {
             atomic_fetch_and(&eventDispatcher->flags, ~ELOS_EVENTDISPATCHER_FLAG_ACTIVE);
-            safuLogErrErrno("eventfd_read failed");
+            safuLogErrErrnoValue("eventfd_read failed", retVal);
         }
     }
 }
@@ -98,9 +98,9 @@ void *elosEventDispatcherWorker(void *data) {
     atomic_fetch_or(&eventDispatcher->flags, ELOS_EVENTDISPATCHER_FLAG_ACTIVE);
 
     retVal = eventfd_write(eventDispatcher->sync, 1);
-    if (retVal < 0) {
+    if (retVal != 0) {
         atomic_fetch_and(&eventDispatcher->flags, ~ELOS_EVENTDISPATCHER_FLAG_ACTIVE);
-        safuLogErrErrno("eventfd_write failed");
+        safuLogErrErrnoValue("eventfd_write failed", retVal);
     } else {
         safuResultE_t result;
 
