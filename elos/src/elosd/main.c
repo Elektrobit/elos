@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
         .config = context.config,
         .logAggregator = &context.logAggregator,
         .eventProcessor = &context.eventProcessor,
+        .eventDispatcher = &context.eventDispatcher,
     };
     retval = elosClientManagerStart(&context.clientManagerContext, &cmParams);
     if (retval < 0) {

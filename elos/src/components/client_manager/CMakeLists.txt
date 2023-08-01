@@ -8,6 +8,8 @@ create_interface_library(
   FROM
     clientmanager
   LIBRARIES
+    eventbuffer_interface
+    eventdispatcher_interface
     eventprocessor_interface
     processfilter_interface
     eventlogging_interface
@@ -40,6 +42,8 @@ target_link_libraries(
     elos_common_interface
     elos_event_static
     config_static
+    eventbuffer_static
+    eventdispatcher_static
     eventprocessor_static
     processfilter_static
     eventlogging_static
@@ -56,6 +60,8 @@ create_weak_library(
   WEAKEN_DEPENDENCIES
     elos_event_static
     config_static
+    eventbuffer_static
+    eventdispatcher_static
     eventprocessor_static
     processfilter_static
     eventlogging_static

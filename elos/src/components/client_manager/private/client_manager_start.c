@@ -20,6 +20,7 @@ static int _initContext(elosClientManagerContext_t *ctx, elosClientManagerParam_
     samconfConfig_t *config = parameters->config;
     ctx->sharedData.logAggregator = parameters->logAggregator;
     ctx->sharedData.eventProcessor = parameters->eventProcessor;
+    ctx->sharedData.eventDispatcher = parameters->eventDispatcher;
     ctx->addr.sin_family = AF_INET;
     ctx->addr.sin_port = htons(elosConfigGetElosdPort(config));
 

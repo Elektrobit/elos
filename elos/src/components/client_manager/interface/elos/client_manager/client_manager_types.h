@@ -8,6 +8,8 @@
 #include <stddef.h>
 
 #include "elos/client_manager/client_authorization_types.h"
+#include "elos/eventbuffer/types.h"
+#include "elos/eventdispatcher/types.h"
 #include "elos/eventfilter/eventfilter_types.h"
 #include "elos/eventlogging/LogAggregatorTypes.h"
 #include "elos/eventprocessor/types.h"
@@ -32,6 +34,7 @@ typedef safuVec_t elosEventQueueIdVector_t;
 typedef struct elosClientManagerSharedData {
     elosLogAggregator_t *logAggregator;
     sem_t connectionSemaphore;
+    elosEventDispatcher_t *eventDispatcher;
     elosEventProcessor_t *eventProcessor;
 } elosClientManagerSharedData_t;
 
@@ -50,6 +53,7 @@ typedef struct elosClientManagerConnection {
     elosClientManagerData_t data;
     bool isTrusted;
     elosEventFilter_t blacklist;
+    elosEventBuffer_t eventBuffer;
 } elosClientManagerConnection_t;
 
 typedef struct elosClientManagerContext {
@@ -65,6 +69,7 @@ typedef struct elosClientManagerContext {
 
 typedef struct elosClientManagerParam {
     samconfConfig_t *config;
+    elosEventDispatcher_t *eventDispatcher;
     elosEventProcessor_t *eventProcessor;
     elosLogAggregator_t *logAggregator;
 } elosClientManagerParam_t;
