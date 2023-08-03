@@ -59,6 +59,8 @@ void _printUsage(FILE *stream, const char *const elosProgramName) {
             "  -f <filter>      event log find\n"
             "  -c <count>       set event count\n"
             "  -r <events/sec>  set event rate\n"
+            "  -H <Host-Ip>     set host ip address\n"
+            "  -P <Port>        set host port\n"
             "  -h               print this help\n"
             "  -v               get version\n\n"
             "<filter>: event filter in RPN notation\n"
@@ -69,10 +71,7 @@ void _printUsage(FILE *stream, const char *const elosProgramName) {
 int main(int argc, char *argv[]) {
     int result = EXIT_SUCCESS;
     safuResultE_t resVal = SAFU_RESULT_FAILED;
-    elosConfig_t config = {
-        .host = "127.0.0.1",
-        .port = 54321,
-    };
+    elosConfig_t config = {0};
 
     // Improve smoke tests by disable message buffer
     setbuf(stdout, NULL);
@@ -140,9 +139,11 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
     config->eventRate = 0;
     config->commandArgs = NULL;
     config->command = UNKNOWN;
+    config->host = strdup("127.0.0.1");
+    config->port = 54321;
 
     while (result == SAFU_RESULT_OK) {
-        c = getopt(argc, argv, "s:u:p:f:c:r:vh");
+        c = getopt(argc, argv, "s:u:p:f:c:r:H:P:vh");
         if (c == -1) {
             break;
         }
@@ -178,6 +179,13 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
             case 'r':
                 config->eventRate = strtoul(optarg, NULL, 10);
                 break;
+            case 'H':
+                free(config->host);
+                config->host = strdup(optarg);
+                break;
+            case 'P':
+                config->port = strtol(optarg, NULL, 10);
+                break;
             case 'v':
                 config->command = GET_VERSION;
                 break;
@@ -208,6 +216,7 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
 
 void elosDeleteConfig(elosConfig_t *config) {
     free(config->commandArgs);
+    free(config->host);
 }
 
 static inline safuResultE_t _commandEventSubscribeHelperPrintVector(elosEventVector_t *eventVector) {
