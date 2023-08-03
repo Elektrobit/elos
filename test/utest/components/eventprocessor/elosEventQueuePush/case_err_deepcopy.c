@@ -18,7 +18,6 @@ int elosTestEloEventQueuePushErrDeepCopySetup(void **state) {
 int elosTestEloEventQueuePushErrDeepCopyTeardown(void **state) {
     elosTestState_t *test = *(elosTestState_t **)state;
 
-    pthread_mutex_unlock(test->eventQueue.mutex);
     elosEventQueueDeleteMembers(&test->eventQueue);
 
     return 0;

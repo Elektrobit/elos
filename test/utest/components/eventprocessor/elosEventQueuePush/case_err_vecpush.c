@@ -18,7 +18,6 @@ int elosTestEloEventQueuePushErrVecPushSetup(void **state) {
 int elosTestEloEventQueuePushErrVecPushTeardown(void **state) {
     elosTestState_t *test = *(elosTestState_t **)state;
 
-    pthread_mutex_unlock(test->eventQueue.mutex);
     elosEventQueueDeleteMembers(&test->eventQueue);
 
     return 0;
