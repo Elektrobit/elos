@@ -78,25 +78,36 @@ void elosEventQueueDelete(elosEventQueue_t *eventQueue) {
 }
 
 safuResultE_t elosEventQueuePush(elosEventQueue_t *eventQueue, elosEvent_t const *event) {
-    safuResultE_t result = SAFU_RESULT_OK;
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((eventQueue == NULL) || (eventQueue->eventVector == NULL) || (event == NULL)) {
-        result = SAFU_RESULT_FAILED;
+    if ((eventQueue == NULL) || (event == NULL) || (eventQueue->mutex == NULL)) {
+        safuLogErr("Invalid parameter");
     } else {
-        elosEvent_t newEvent = {0};
-
-        SAFU_PTHREAD_MUTEX_LOCK(eventQueue->mutex, result = SAFU_RESULT_FAILED);
+        SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(eventQueue->mutex, result);
         if (result == SAFU_RESULT_OK) {
-            result = elosEventDeepCopy(&newEvent, event);
-        }
-
-        if (result == SAFU_RESULT_OK) {
-            int retVal = safuVecPush(eventQueue->eventVector, &newEvent);
-            if (retVal < 0) {
+            if (eventQueue->eventVector == NULL) {
+                safuLogErr("eventVector is NULL");
                 result = SAFU_RESULT_FAILED;
+            } else {
+                elosEvent_t newEvent = {0};
+
+                result = elosEventDeepCopy(&newEvent, event);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErr("elosEventDeepCopy failed");
+                } else {
+                    int retVal;
+
+                    retVal = safuVecPush(eventQueue->eventVector, &newEvent);
+                    if (retVal < 0) {
+                        safuLogErr("safuVecPush failed");
+                        elosEventDeleteMembers(&newEvent);
+                        result = SAFU_RESULT_FAILED;
+                    }
+                }
             }
+
+            SAFU_PTHREAD_MUTEX_UNLOCK(eventQueue->mutex, result = SAFU_RESULT_FAILED);
         }
-        SAFU_PTHREAD_MUTEX_UNLOCK(eventQueue->mutex, result = SAFU_RESULT_FAILED);
     }
 
     return result;
