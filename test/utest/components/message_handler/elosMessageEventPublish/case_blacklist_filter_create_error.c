@@ -11,6 +11,7 @@
 #include "json-c/json.h"
 #include "mock_LogAggregator.h"
 #include "mock_event.h"
+#include "mock_eventbuffer.h"
 #include "mock_eventfilter.h"
 #include "mock_eventprocessor.h"
 #include "mock_message_handler.h"
@@ -130,10 +131,10 @@ void elosTestelosMessageEventPublishBlacklistFilterCreateError(void **state) {
     MOCK_FUNC_ENABLE(safuGetHardwareId);
     will_return(__wrap_safuGetHardwareId, "localhost");
 
-    MOCK_FUNC_ENABLE(elosEventProcessorPublish);
-    expect_value(elosEventProcessorPublish, eventProcessor, data->conn->sharedData->eventProcessor);
-    expect_check(elosEventProcessorPublish, event, _check_event, &errorEvent);
-    will_return(elosEventProcessorPublish, SAFU_RESULT_OK);
+    MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 0);
+    expect_value(elosEventBufferWrite, eventBuffer, &data->conn->eventBuffer);
+    expect_check(elosEventBufferWrite, event, _check_event, &errorEvent);
+    will_return(elosEventBufferWrite, SAFU_RESULT_OK);
 
     MOCK_FUNC_ENABLE(elosLogAggregatorAdd);
     expect_value(elosLogAggregatorAdd, logAggregator, data->conn->sharedData->logAggregator);
