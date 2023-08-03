@@ -136,8 +136,9 @@ safuResultE_t elosEventQueueRead(elosEventQueue_t *eventQueue, elosEventVector_t
                     eventQueue->eventVector = newEventVector;
                 }
             }
+
+            SAFU_PTHREAD_MUTEX_UNLOCK(eventQueue->mutex, result = SAFU_RESULT_FAILED);
         }
-        SAFU_PTHREAD_MUTEX_UNLOCK(eventQueue->mutex, result = SAFU_RESULT_FAILED);
     }
 
     return result;
