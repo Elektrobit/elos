@@ -5,7 +5,7 @@ via request to client applications
 
 # Documentation
 
-The elos documentation can be found here: https://elektrobit.pages.emlix.com/base-os/corbos-tools/
+The elos documentation can be found here: https://elektrobit.github.io/elos/
 
 ## Building
 
