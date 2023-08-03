@@ -4,6 +4,7 @@
 #include "json-c/json.h"
 #include "mock_LogAggregator.h"
 #include "mock_event.h"
+#include "mock_eventbuffer.h"
 #include "mock_eventprocessor.h"
 #include "mock_message_handler.h"
 #include "safu/mock_log.h"
@@ -50,10 +51,10 @@ void elosTestElosMessageEventPublishLoggingFailed(void **state) {
     assert_non_null(data->msg);
     memcpy(data->msg->json, msg, strlen(msg) + 1);
 
-    MOCK_FUNC_AFTER_CALL(elosEventProcessorPublish, 0);
-    expect_value(elosEventProcessorPublish, eventProcessor, data->conn->sharedData->eventProcessor);
-    expect_any(elosEventProcessorPublish, event);
-    will_return(elosEventProcessorPublish, SAFU_RESULT_OK);
+    MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 0);
+    expect_value(elosEventBufferWrite, eventBuffer, &data->conn->eventBuffer);
+    expect_any(elosEventBufferWrite, event);
+    will_return(elosEventBufferWrite, SAFU_RESULT_OK);
 
     MOCK_FUNC_AFTER_CALL(elosLogAggregatorAdd, 0);
     expect_value(elosLogAggregatorAdd, logAggregator, data->conn->sharedData->logAggregator);
