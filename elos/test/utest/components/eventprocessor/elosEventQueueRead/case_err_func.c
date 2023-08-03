@@ -21,7 +21,6 @@ int elosTestEloEventQueueReadErrFuncSetup(void **state) {
 int elosTestEloEventQueueReadErrFuncTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
 
-    pthread_mutex_unlock(test->eventQueue.mutex);
     elosEventQueueDeleteMembers(&test->eventQueue);
 
     return 0;
