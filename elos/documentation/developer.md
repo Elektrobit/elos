@@ -2,7 +2,8 @@
 
 ## Intro
 
-The event logging and management system (elos) is intended to implement the System Monitor specification from EB [System Monitoring DRAFT](https://infohub.automotive.elektrobit.com/display/PRJEBLINUX/System+monitoring+requirements+draft).
+The event logging and management system (elos) is intended to implement and
+provide a unified system monitoring interface standard.
 The main task is to collect various information about the system and convert
 them into a canonical format and therefore annotate the information with a
 specific set of meta data if possible. The thus obtained and refined system
