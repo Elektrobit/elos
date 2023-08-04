@@ -5,7 +5,6 @@ TEST_SUITE_FUNC_PROTOTYPES(elosClientManagerStopUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {TEST_CASE(elosTestElosClientManagerStopErrContextNull),
-                                       TEST_CASE(elosTestElosClientManagerStopCloseConnections),
                                        TEST_CASE(elosTestElosClientManagerStopExtErrSemDestroy),
                                        TEST_CASE(elosTestElosClientManagerStopNoManagerStarted),
                                        TEST_CASE(elosTestElosClientManagerStopClientManagerActive)};

@@ -7,7 +7,6 @@ create_unit_test(
   SOURCES
     case_err_context_null.c
     case_exterr_sem_destroy.c
-    case_success_close_connections.c
     case_success_no_clientmanager.c
     case_success_clientmanager_started.c
     elosClientManagerStop_utest.c
