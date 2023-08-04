@@ -25,6 +25,8 @@ void elosClientManagerStopUtestInitParameters(void **state) {
     testState->parameters->logAggregator = calloc(1, sizeof(elosLogAggregator_t));
     retval = testState->parameters->logAggregator == NULL ? -1 : 0;
     assert_int_equal(retval, 0);
+
+    testState->parameters->eventDispatcher = &testState->eventDispatcher;
 }
 
 void elosClientManagerStopUtestDeleteParameters(void **state) {

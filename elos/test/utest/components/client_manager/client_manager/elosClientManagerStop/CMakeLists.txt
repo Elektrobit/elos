@@ -13,5 +13,6 @@ create_unit_test(
   LIBRARIES
     clientmanager_static_weak
     mock_client_manager_static
+    mock_eventdispatcher_static
     cmocka_mocks::mock_libc
 )

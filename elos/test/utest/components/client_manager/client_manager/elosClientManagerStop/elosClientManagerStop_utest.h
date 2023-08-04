@@ -6,10 +6,12 @@
 #include <cmocka_extensions/mock_extensions.h>
 
 #include "elos/client_manager/client_manager.h"
+#include "elos/eventdispatcher/eventdispatcher.h"
 
 typedef struct {
     elosClientManagerContext_t *context;
     elosClientManagerParam_t *parameters;
+    elosEventDispatcher_t eventDispatcher;
 } elosUteststateT_t;
 
 void elosClientManagerStopUtestInitParameters(void **state);
