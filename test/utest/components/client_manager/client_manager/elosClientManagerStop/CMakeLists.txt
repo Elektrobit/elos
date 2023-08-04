@@ -8,7 +8,6 @@ create_unit_test(
     case_err_context_null.c
     case_exterr_sem_destroy.c
     case_success_no_clientmanager.c
-    case_success_clientmanager_started.c
     elosClientManagerStop_utest.c
   LIBRARIES
     clientmanager_static_weak

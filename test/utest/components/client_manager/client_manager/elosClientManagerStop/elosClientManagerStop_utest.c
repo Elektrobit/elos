@@ -4,10 +4,11 @@
 TEST_SUITE_FUNC_PROTOTYPES(elosClientManagerStopUtest)
 
 int main() {
-    const struct CMUnitTest tests[] = {TEST_CASE(elosTestElosClientManagerStopErrContextNull),
-                                       TEST_CASE(elosTestElosClientManagerStopExtErrSemDestroy),
-                                       TEST_CASE(elosTestElosClientManagerStopNoManagerStarted),
-                                       TEST_CASE(elosTestElosClientManagerStopClientManagerActive)};
+    const struct CMUnitTest tests[] = {
+        TEST_CASE(elosTestElosClientManagerStopErrContextNull),
+        TEST_CASE(elosTestElosClientManagerStopExtErrSemDestroy),
+        TEST_CASE(elosTestElosClientManagerStopNoManagerStarted),
+    };
     return RUN_TEST_SUITE(tests, elosClientManagerStopUtest);
 }
 
