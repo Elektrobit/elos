@@ -30,7 +30,7 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
 
-    // Each call of unsubscribe will reset session.
+    // Each transmission error resets the connection state.
     test->session.connected = true;
 
     PARAM("%s", "safuRecvExactly body with unexpected connection close");
@@ -41,7 +41,7 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
 
-    // Each call of unsubscribe will reset session.
+    // Each transmission error resets the connection state.
     test->session.connected = true;
 
     PARAM("%s", "safuRecvExactly body with zero bytes");
@@ -52,7 +52,7 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
 
-    // Each call of unsubscribe will reset session.
+    // Each transmission error resets the connection state.
     test->session.connected = true;
 
     PARAM("%s", "safuRecvExactly body with too few bytes");
@@ -63,7 +63,7 @@ void elosTestElosReceiveMessageErrReceiveBody(void **state) {
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_null(test->message);
 
-    // Each call of unsubscribe will reset session.
+    // Each transmission error resets the connection state.
     test->session.connected = true;
 
     PARAM("%s", "safuRecvExactly body with too many bytes");
