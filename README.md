@@ -8,7 +8,7 @@ elos is a tool to collect, store and publish various system events (i.e. syslogs
 elos and its libraries:
 * [elos](elos/documentation/documentation.md)
 * [safu](safu/documentation/documentation.md)
-* [samconf](samconf/documentation/documentation.md)
+* [samconf](samconf/documentation/developer.md)
 
 and for testing:
 
