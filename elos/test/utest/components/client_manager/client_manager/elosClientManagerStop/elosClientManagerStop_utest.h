@@ -20,6 +20,5 @@ void elosClientManagerStopUtestDeleteParameters(void **state);
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosClientManagerStopErrContextNull)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosClientManagerStopExtErrSemDestroy)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosClientManagerStopNoManagerStarted)
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosClientManagerStopClientManagerActive)
 
 #endif /* __ELOS_CLIENTMANAGERSTOP_UTEST_H__ */
