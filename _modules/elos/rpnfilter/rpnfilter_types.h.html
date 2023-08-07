@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/rpnfilter/rpnfilter_types.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/rpnfilter/rpnfilter_types.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+
+<div class="viewcode-block" id="c.elosRpnFilterResultE"><div class="viewcode-block" id="c.elosRpnFilterResultE_t"><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosRpnFilterResultE</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosRpnFilterResultE.RPNFILTER_RESULT_ERROR"><div class="viewcode-block" id="c.elosRpnFilterResultE_t.RPNFILTER_RESULT_ERROR"><span class="w">    </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterResultE.RPNFILTER_RESULT_OK"><div class="viewcode-block" id="c.elosRpnFilterResultE_t.RPNFILTER_RESULT_OK"><span class="w">    </span><span class="n">RPNFILTER_RESULT_OK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterResultE.RPNFILTER_RESULT_MATCH"><div class="viewcode-block" id="c.elosRpnFilterResultE_t.RPNFILTER_RESULT_MATCH"><span class="w">    </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterResultE.RPNFILTER_RESULT_NO_MATCH"><div class="viewcode-block" id="c.elosRpnFilterResultE_t.RPNFILTER_RESULT_NO_MATCH"><span class="w">    </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterResultE.RPNFILTER_RESULT_NOT_FOUND"><div class="viewcode-block" id="c.elosRpnFilterResultE_t.RPNFILTER_RESULT_NOT_FOUND"><span class="w">    </span><span class="n">RPNFILTER_RESULT_NOT_FOUND</span><span class="p">,</span></div></div>
+<span class="w">    </span><span class="c1">// Specific error codes</span>
+<div class="viewcode-block" id="c.elosRpnFilterResultE.RPNFILTER_RESULT_ERROR_NUMOP_TYPE"><div class="viewcode-block" id="c.elosRpnFilterResultE_t.RPNFILTER_RESULT_ERROR_NUMOP_TYPE"><span class="w">    </span><span class="n">RPNFILTER_RESULT_ERROR_NUMOP_TYPE</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterResultE.RPNFILTER_RESULT_ERROR_NUMCMP_TYPE"><div class="viewcode-block" id="c.elosRpnFilterResultE_t.RPNFILTER_RESULT_ERROR_NUMCMP_TYPE"><span class="w">    </span><span class="n">RPNFILTER_RESULT_ERROR_NUMCMP_TYPE</span><span class="p">,</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t"><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosRpnFilterValueTypeE</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_UNDEFINED"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_UNDEFINED"><span class="w">    </span><span class="n">RPNFILTER_VALUE_UNDEFINED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_BINARY"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_BINARY"><span class="w">    </span><span class="n">RPNFILTER_VALUE_BINARY</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_BOOL"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_BOOL"><span class="w">    </span><span class="n">RPNFILTER_VALUE_BOOL</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_I32"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_I32"><span class="w">    </span><span class="n">RPNFILTER_VALUE_I32</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_U32"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_U32"><span class="w">    </span><span class="n">RPNFILTER_VALUE_U32</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_I64"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_I64"><span class="w">    </span><span class="n">RPNFILTER_VALUE_I64</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_U64"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_U64"><span class="w">    </span><span class="n">RPNFILTER_VALUE_U64</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_STRING"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_STRING"><span class="w">    </span><span class="n">RPNFILTER_VALUE_STRING</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_REGEX"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_REGEX"><span class="w">    </span><span class="n">RPNFILTER_VALUE_REGEX</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterValueTypeE.RPNFILTER_VALUE_TYPE_COUNT"><div class="viewcode-block" id="c.elosRpnFilterValueTypeE_t.RPNFILTER_VALUE_TYPE_COUNT"><span class="w">    </span><span class="n">RPNFILTER_VALUE_TYPE_COUNT</span><span class="w">  </span><span class="c1">// Useful for range checks</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilterValueTypeE_t</span><span class="p">;</span></div></div>
+
+<span class="c1">// We need to define a separate type from the enum here as the RpnFilter</span>
+<span class="c1">// is intended to be extended by other components (like EventFilter).</span>
+<span class="c1">// These have their own value types in addition to elosRpnFilterValueTypeE_t,</span>
+<span class="c1">// as such we define this value as a standard integer to avoid warnings.</span>
+<div class="viewcode-block" id="c.elosRpnFilterValueType_t"><span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">elosRpnFilterValueType_t</span><span class="p">;</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterParam"><div class="viewcode-block" id="c.elosRpnFilterParam_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosRpnFilterParam</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosRpnFilterParam.filterString"><div class="viewcode-block" id="c.elosRpnFilterParam_t.filterString"><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filterString</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilterParam_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t"><span class="k">typedef</span><span class="w"> </span><span class="k">union</span><span class="w"> </span><span class="nc">elosRpnFilterStackDataU</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.b"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.b"><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">b</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.e"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.e"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.i32"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.i32"><span class="w">    </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">i32</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.u32"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.u32"><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">u32</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.i64"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.i64"><span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">i64</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.u64"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.u64"><span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">u64</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.str"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.str"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackDataU.ptr"><div class="viewcode-block" id="c.elosRpnFilterStackDataU_t.ptr"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilterStackDataU_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterStackEntry"><div class="viewcode-block" id="c.elosRpnFilterStackEntry_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosRpnFilterStackEntry</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosRpnFilterStackEntry.type"><div class="viewcode-block" id="c.elosRpnFilterStackEntry_t.type"><span class="w">    </span><span class="n">elosRpnFilterValueType_t</span><span class="w"> </span><span class="n">type</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackEntry.bytes"><div class="viewcode-block" id="c.elosRpnFilterStackEntry_t.bytes"><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilterStackEntry.data"><div class="viewcode-block" id="c.elosRpnFilterStackEntry_t.data"><span class="w">    </span><span class="n">elosRpnFilterStackDataU_t</span><span class="w"> </span><span class="n">data</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilterStackEntry_t</span><span class="p">;</span></div></div>
+
+<span class="c1">// These macros will be replaced with something nicer in the future</span>
+
+<span class="c1">// Creates a stack with __num_entries entries, the stack will be known under the var-name given to __stack</span>
+<div class="viewcode-block" id="c.ELOS_FILTERSTACK_NEW"><span class="cp">#define ELOS_FILTERSTACK_NEW(__stack, __num_entries)                                                                  \</span>
+<span class="cp">    uint8_t __stack##Buffer[sizeof(elosRpnFilterStack_t) + (sizeof(elosRpnFilterStackEntry_t) * (__num_entries))] = { \</span>
+<span class="cp">        0};                                                                                                           \</span>
+<span class="cp">    elosRpnFilterStack_t *(__stack) = (elosRpnFilterStack_t *)__stack##Buffer;                                        \</span>
+<span class="cp">    (__stack)-&gt;count = (__num_entries);</span></div>
+
+<span class="c1">// Set the __idx&#39;th entry&#39;s contents of elosRpnFilterStack &quot;__stack&quot; to __type, __bytes, __data ...</span>
+<span class="c1">// ... when __data is a pointer</span>
+<div class="viewcode-block" id="c.ELOS_FILTERSTACK_SET"><span class="cp">#define ELOS_FILTERSTACK_SET(__stack, __idx, __type, __bytes, __data) \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].type = (__type);                          \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].bytes = (__bytes);                        \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].data.ptr = (__data);</span></div>
+
+<span class="c1">// ... when __data is a bool</span>
+<div class="viewcode-block" id="c.ELOS_FILTERSTACK_SET_BOOL"><span class="cp">#define ELOS_FILTERSTACK_SET_BOOL(__stack, __idx, __data) \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].type = RPNFILTER_VALUE_BOOL;  \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].bytes = sizeof(bool);         \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].data.b = (__data);</span></div>
+
+<span class="c1">// ... when __data is a signed 32 bit int</span>
+<div class="viewcode-block" id="c.ELOS_FILTERSTACK_SET_I32"><span class="cp">#define ELOS_FILTERSTACK_SET_I32(__stack, __idx, __data) \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].type = RPNFILTER_VALUE_I32;  \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].bytes = sizeof(int32_t);     \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].data.i32 = (__data);</span></div>
+
+<span class="c1">// ... when __data is a unsigned 32 bit int</span>
+<div class="viewcode-block" id="c.ELOS_FILTERSTACK_SET_U32"><span class="cp">#define ELOS_FILTERSTACK_SET_U32(__stack, __idx, __data) \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].type = RPNFILTER_VALUE_U32;  \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].bytes = sizeof(uint32_t);    \</span>
+<span class="cp">    (__stack)-&gt;entry[__idx].data.u32 = (__data);</span></div>
+
+<div class="viewcode-block" id="c.elosFilterStack"><div class="viewcode-block" id="c.elosRpnFilterStack_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosFilterStack</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosFilterStack.count"><div class="viewcode-block" id="c.elosRpnFilterStack_t.count"><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosFilterStack.entry"><div class="viewcode-block" id="c.elosRpnFilterStack_t.entry"><span class="w">    </span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="n">entry</span><span class="p">[];</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="p">;</span></div></div>
+
+<span class="c1">// Filter based data types</span>
+<div class="viewcode-block" id="c.elosRpnFilterStateE.RPNFILTER_FINALIZED"><div class="viewcode-block" id="c.elosRpnFilterStateE.RPNFILTER_UNDEFINED"><div class="viewcode-block" id="c.elosRpnFilterStateE"><div class="viewcode-block" id="c.elosRpnFilterStateE_t.RPNFILTER_FINALIZED"><div class="viewcode-block" id="c.elosRpnFilterStateE_t.RPNFILTER_UNDEFINED"><div class="viewcode-block" id="c.elosRpnFilterStateE_t"><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosRpnFilterStateE</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">RPNFILTER_UNDEFINED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RPNFILTER_FINALIZED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilterStateE_t</span><span class="p">;</span></div></div></div></div></div></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterStep"><span class="k">struct</span><span class="w"> </span><span class="nc">elosRpnFilterStep</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.elosRpnFilterStep_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosRpnFilterStep</span><span class="w"> </span><span class="n">elosRpnFilterStep_t</span><span class="p">;</span></div>
+
+<div class="viewcode-block" id="c.ELOS_RPNFILTER_INIT"><span class="cp">#define ELOS_RPNFILTER_INIT \</span>
+<span class="cp">    { 0 }</span></div>
+
+<span class="c1">// Note: elosRpnFilterStep_t is defined in rpnfilter/builder.h</span>
+<div class="viewcode-block" id="c.elosRpnFilter"><div class="viewcode-block" id="c.elosRpnFilter_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosRpnFilter</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosRpnFilter.state"><div class="viewcode-block" id="c.elosRpnFilter_t.state"><span class="w">    </span><span class="n">elosRpnFilterStateE_t</span><span class="w"> </span><span class="n">state</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilter.memorySize"><div class="viewcode-block" id="c.elosRpnFilter_t.memorySize"><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">memorySize</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilter.memory"><div class="viewcode-block" id="c.elosRpnFilter_t.memory"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">memory</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilter.steps"><div class="viewcode-block" id="c.elosRpnFilter_t.steps"><span class="w">    </span><span class="n">elosRpnFilterStep_t</span><span class="w"> </span><span class="o">*</span><span class="n">steps</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosRpnFilter.values"><div class="viewcode-block" id="c.elosRpnFilter_t.values"><span class="w">    </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">*</span><span class="n">values</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="p">;</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

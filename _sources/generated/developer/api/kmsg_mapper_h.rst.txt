@@ -1,0 +1,5 @@
+kmsg_mapper.h
+=============
+
+.. autocmodule:: kmsg_mapper.h
+    :members:

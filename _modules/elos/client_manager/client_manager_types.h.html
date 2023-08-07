@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/client_manager/client_manager_types.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/client_manager/client_manager_types.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;netinet/in.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pthread.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;samconf/samconf_types.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;semaphore.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/client_manager/client_authorization_types.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventfilter/eventfilter_types.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventlogging/LogAggregatorTypes.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventprocessor/types.h&quot;</span>
+
+<div class="viewcode-block" id="c.CLIENT_MANAGER_MAX_CONNECTIONS"><span class="cp">#define CLIENT_MANAGER_MAX_CONNECTIONS     200</span></div>
+<div class="viewcode-block" id="c.CLIENT_MANAGER_LISTEN_QUEUE_LENGTH"><span class="cp">#define CLIENT_MANAGER_LISTEN_QUEUE_LENGTH 200</span></div>
+<div class="viewcode-block" id="c.CLIENT_MANAGER_LISTEN_ACTIVE"><span class="cp">#define CLIENT_MANAGER_LISTEN_ACTIVE       1</span></div>
+<div class="viewcode-block" id="c.CLIENT_MANAGER_CONNECTION_ACTIVE"><span class="cp">#define CLIENT_MANAGER_CONNECTION_ACTIVE   1</span></div>
+<div class="viewcode-block" id="c.CLIENT_MANAGER_THREAD_NOT_JOINED"><span class="cp">#define CLIENT_MANAGER_THREAD_NOT_JOINED   2</span></div>
+
+<span class="cp">#ifndef CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE</span>
+<div class="viewcode-block" id="c.CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE"><span class="cp">#define CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE 4</span></div>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifndef CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE</span>
+<div class="viewcode-block" id="c.CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE"><span class="cp">#define CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE 4</span></div>
+<span class="cp">#endif</span>
+
+<div class="viewcode-block" id="c.elosEventFilterNodeIdVector_t"><span class="k">typedef</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="n">elosEventFilterNodeIdVector_t</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.elosEventQueueIdVector_t"><span class="k">typedef</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="n">elosEventQueueIdVector_t</span><span class="p">;</span></div>
+
+<div class="viewcode-block" id="c.elosClientManagerSharedData"><div class="viewcode-block" id="c.elosClientManagerSharedData_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosClientManagerSharedData</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosClientManagerSharedData.logAggregator"><div class="viewcode-block" id="c.elosClientManagerSharedData_t.logAggregator"><span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerSharedData.connectionSemaphore"><div class="viewcode-block" id="c.elosClientManagerSharedData_t.connectionSemaphore"><span class="w">    </span><span class="n">sem_t</span><span class="w"> </span><span class="n">connectionSemaphore</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerSharedData.eventProcessor"><div class="viewcode-block" id="c.elosClientManagerSharedData_t.eventProcessor"><span class="w">    </span><span class="n">elosEventProcessor_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventProcessor</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosClientManagerSharedData_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosClientManagerData"><div class="viewcode-block" id="c.elosClientManagerData_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosClientManagerData</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosClientManagerData.eventFilterNodeIdVector"><div class="viewcode-block" id="c.elosClientManagerData_t.eventFilterNodeIdVector"><span class="w">    </span><span class="n">elosEventFilterNodeIdVector_t</span><span class="w"> </span><span class="n">eventFilterNodeIdVector</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerData.eventQueueIdVector"><div class="viewcode-block" id="c.elosClientManagerData_t.eventQueueIdVector"><span class="w">    </span><span class="n">elosEventQueueIdVector_t</span><span class="w"> </span><span class="n">eventQueueIdVector</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosClientManagerData_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosClientManagerConnection"><div class="viewcode-block" id="c.elosClientManagerConnection_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosClientManagerConnection</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosClientManagerConnection.lock"><div class="viewcode-block" id="c.elosClientManagerConnection_t.lock"><span class="w">    </span><span class="n">pthread_mutex_t</span><span class="w"> </span><span class="n">lock</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.status"><div class="viewcode-block" id="c.elosClientManagerConnection_t.status"><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">status</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.fd"><div class="viewcode-block" id="c.elosClientManagerConnection_t.fd"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.addr"><div class="viewcode-block" id="c.elosClientManagerConnection_t.addr"><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr_in</span><span class="w"> </span><span class="n">addr</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.thread"><div class="viewcode-block" id="c.elosClientManagerConnection_t.thread"><span class="w">    </span><span class="n">pthread_t</span><span class="w"> </span><span class="kr">thread</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.sharedData"><div class="viewcode-block" id="c.elosClientManagerConnection_t.sharedData"><span class="w">    </span><span class="n">elosClientManagerSharedData_t</span><span class="w"> </span><span class="o">*</span><span class="n">sharedData</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.data"><div class="viewcode-block" id="c.elosClientManagerConnection_t.data"><span class="w">    </span><span class="n">elosClientManagerData_t</span><span class="w"> </span><span class="n">data</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.isTrusted"><div class="viewcode-block" id="c.elosClientManagerConnection_t.isTrusted"><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">isTrusted</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerConnection.blacklist"><div class="viewcode-block" id="c.elosClientManagerConnection_t.blacklist"><span class="w">    </span><span class="n">elosEventFilter_t</span><span class="w"> </span><span class="n">blacklist</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosClientManagerConnection_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosClientManagerContext"><div class="viewcode-block" id="c.elosClientManagerContext_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosClientManagerContext</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosClientManagerContext.lock"><div class="viewcode-block" id="c.elosClientManagerContext_t.lock"><span class="w">    </span><span class="n">pthread_mutex_t</span><span class="w"> </span><span class="n">lock</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerContext.status"><div class="viewcode-block" id="c.elosClientManagerContext_t.status"><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">status</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerContext.fd"><div class="viewcode-block" id="c.elosClientManagerContext_t.fd"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerContext.addr"><div class="viewcode-block" id="c.elosClientManagerContext_t.addr"><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr_in</span><span class="w"> </span><span class="n">addr</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerContext.connection"><div class="viewcode-block" id="c.elosClientManagerContext_t.connection"><span class="w">    </span><span class="n">elosClientManagerConnection_t</span><span class="w"> </span><span class="n">connection</span><span class="p">[</span><span class="n">CLIENT_MANAGER_MAX_CONNECTIONS</span><span class="p">];</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerContext.listenThread"><div class="viewcode-block" id="c.elosClientManagerContext_t.listenThread"><span class="w">    </span><span class="n">pthread_t</span><span class="w"> </span><span class="n">listenThread</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerContext.sharedData"><div class="viewcode-block" id="c.elosClientManagerContext_t.sharedData"><span class="w">    </span><span class="n">elosClientManagerSharedData_t</span><span class="w"> </span><span class="n">sharedData</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerContext.clientAuth"><div class="viewcode-block" id="c.elosClientManagerContext_t.clientAuth"><span class="w">    </span><span class="n">elosClientAuthorization_t</span><span class="w"> </span><span class="n">clientAuth</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosClientManagerContext_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosClientManagerParam"><div class="viewcode-block" id="c.elosClientManagerParam_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosClientManagerParam</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosClientManagerParam.config"><div class="viewcode-block" id="c.elosClientManagerParam_t.config"><span class="w">    </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerParam.eventProcessor"><div class="viewcode-block" id="c.elosClientManagerParam_t.eventProcessor"><span class="w">    </span><span class="n">elosEventProcessor_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventProcessor</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosClientManagerParam.logAggregator"><div class="viewcode-block" id="c.elosClientManagerParam_t.logAggregator"><span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosClientManagerParam_t</span><span class="p">;</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,5 @@
+eventfilternodevector.h
+=======================
+
+.. autocmodule:: eventprocessor/eventfilternodevector.h
+    :members:

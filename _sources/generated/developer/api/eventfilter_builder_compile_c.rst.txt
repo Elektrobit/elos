@@ -1,0 +1,4 @@
+eventfilter_builder_compile.c
+=============================
+
+.. autocmodule:: eventfilter_builder_compile.c

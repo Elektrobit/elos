@@ -1,0 +1,4 @@
+LogAggregator.c
+===============
+
+.. autocmodule:: LogAggregator.c

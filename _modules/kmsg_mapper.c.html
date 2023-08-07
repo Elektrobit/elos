@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kmsg_mapper.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kmsg_mapper.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;kmsg_mapper.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;inttypes.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;limits.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;time.h&gt;</span>
+
+<span class="c1">// clang-format off</span>
+<div class="viewcode-block" id="c.elosSeverityMapping"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">elosSeverityMapping</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span></div>
+<span class="w">    </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_FATAL</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_ERROR</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_ERROR</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_WARN</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_WARN</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_INFO</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_INFO</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_DEBUG</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="c1">// clang-format on</span>
+
+<span class="c1">// clang-format off</span>
+<div class="viewcode-block" id="c.elosClassificationMapping"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">elosClassificationMapping</span><span class="p">[</span><span class="mi">24</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span></div>
+<span class="w">    </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_KERNEL</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_PROCESS</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_SECURITY</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_IPC</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_SECURITY</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">11</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">12</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">13</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_SECURITY</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">14</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">15</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">16</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">17</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_1</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">18</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_2</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">19</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_3</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">20</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_4</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">21</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_5</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">22</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_6</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">23</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_7</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="c1">// clang-format on</span>
+
+<div class="viewcode-block" id="c._getTimeOfBoot"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_getTimeOfBoot</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="o">*</span><span class="n">bootTime</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">upTime</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">procUptime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fopen</span><span class="p">(</span><span class="s">&quot;/proc/uptime&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">procUptime</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;opening /proc/uptime failed!&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="mi">50</span><span class="p">];</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fgets</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">buffer</span><span class="p">),</span><span class="w"> </span><span class="n">procUptime</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;reading from /proc/uptime failed!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">procUptime</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fclose</span><span class="p">(</span><span class="n">procUptime</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">buffer</span><span class="p">[</span><span class="mi">49</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">decimalPoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">upTime</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtoul</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">decimalPoints</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">buffer</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">decimalPoints</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">upTime</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">INT64_MAX</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">decimalPoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;.&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parsing seconds since boot failed!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">decimalPoints</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="n">upTime</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtoul</span><span class="p">(</span><span class="n">decimalPoints</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">end</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">decimalPoints</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">upTime</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">INT64_MAX</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parsing decimal points of seconds since boot failed!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">upTime</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="mi">10000000</span><span class="p">;</span>
+<span class="w">        </span><span class="n">bootTime</span><span class="o">-&gt;</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">upTime</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">bootTime</span><span class="o">-&gt;</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000000000</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">upTime</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.kmsgMsg"><span class="k">struct</span><span class="w"> </span><span class="nc">kmsgMsg</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.kmsgMsg.fullMsg"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fullMsg</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsgMsg.prefix"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">prefix</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsgMsg.sequenceNumber"><span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">sequenceNumber</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsgMsg.timeStamp"><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">timeStamp</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsgMsg.flag"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">flag</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsgMsg.msg"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">;</span></div>
+<span class="p">};</span></div>
+
+<div class="viewcode-block" id="c._microsecsToTimespec"><span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">_microsecsToTimespec</span><span class="p">(</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">microSec</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">timeStamp</span><span class="p">;</span>
+<span class="w">    </span><span class="n">timeStamp</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">microSec</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="p">;</span>
+<span class="w">    </span><span class="n">timeStamp</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">microSec</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">1000000</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">timeStamp</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._parseKmsg"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">_parseKmsg</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fullMessage</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsgMsg</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">prefix</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">sequenceNumber</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">timeStamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">valueStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fullMessage</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">valueEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtol</span><span class="p">(</span><span class="n">valueStart</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">valueEnd</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valueStart</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">prefix</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LONG_MAX</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">prefix</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LONG_MIN</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">valueEnd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;,&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parsing kmsg prefix failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">valueStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="n">sequenceNumber</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtoul</span><span class="p">(</span><span class="n">valueStart</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">valueEnd</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valueStart</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">sequenceNumber</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">UINT64_MAX</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">valueEnd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;,&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parsing kmsg sequence number failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">valueStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="n">timeStamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtoul</span><span class="p">(</span><span class="n">valueStart</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">valueEnd</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valueStart</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">timeStamp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">UINT64_MAX</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">valueEnd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;,&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parsing kmsg timestamp failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">valueStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">valueEnd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">valueStart</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">flag</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parsing kmsg no flag field&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">valueStart</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valueStart</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;;&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">valueStart</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;kmsg text field is empty/dosnt exist&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">msg</span><span class="o">-&gt;</span><span class="n">fullMsg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fullMessage</span><span class="p">;</span>
+<span class="w">        </span><span class="n">msg</span><span class="o">-&gt;</span><span class="n">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prefix</span><span class="p">;</span>
+<span class="w">        </span><span class="n">msg</span><span class="o">-&gt;</span><span class="n">sequenceNumber</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sequenceNumber</span><span class="p">;</span>
+<span class="w">        </span><span class="n">msg</span><span class="o">-&gt;</span><span class="n">timeStamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_microsecsToTimespec</span><span class="p">(</span><span class="n">timeStamp</span><span class="p">);</span>
+<span class="w">        </span><span class="n">msg</span><span class="o">-&gt;</span><span class="n">flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag</span><span class="p">;</span>
+<span class="w">        </span><span class="n">msg</span><span class="o">-&gt;</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">valueStart</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._monotonicToGlobalClock"><span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">_monotonicToGlobalClock</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">elosKmsgMapper_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">mono</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">mono</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">bootTime</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">;</span>
+<span class="w">    </span><span class="n">mono</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">bootTime</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">mono</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosKmsgMapperInit"><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">elosKmsgMapperInit</span><span class="p">(</span><span class="n">elosKmsgMapper_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapper</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_getTimeOfBoot</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">bootTime</span><span class="p">);</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosKmsgMapperDoMapping"><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">elosKmsgMapperDoMapping</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">elosKmsgMapper_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">kmsgLine</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsgMsg</span><span class="w"> </span><span class="n">kmsg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_parseKmsg</span><span class="p">(</span><span class="n">kmsgLine</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">kmsg</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_MSG_CODE_KMSG</span><span class="p">;</span>
+<span class="w">        </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kmsg</span><span class="p">.</span><span class="n">fullMsg</span><span class="p">;</span>
+<span class="w">        </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">severity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosSeverityMapping</span><span class="p">[</span><span class="n">kmsg</span><span class="p">.</span><span class="n">prefix</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x07</span><span class="p">];</span>
+<span class="w">        </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">classification</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">elosClassificationMapping</span><span class="p">[</span><span class="n">kmsg</span><span class="p">.</span><span class="n">prefix</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">3</span><span class="p">];</span>
+<span class="w">        </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_monotonicToGlobalClock</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="n">kmsg</span><span class="p">.</span><span class="n">timeStamp</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">res</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

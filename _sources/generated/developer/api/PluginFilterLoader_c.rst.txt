@@ -1,0 +1,4 @@
+PluginFilterLoader.c
+====================
+
+.. autocmodule:: PluginFilterLoader.c

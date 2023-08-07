@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/eventfilter/eventfilter_types.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/eventfilter/eventfilter_types.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_types.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/rpnfilter/rpnfilter_types.h&quot;</span>
+
+<div class="viewcode-block" id="c.ELOS_EVENTFILTER_INIT"><span class="cp">#define ELOS_EVENTFILTER_INIT ELOS_RPNFILTER_INIT</span></div>
+
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t"><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosEventFilterValueTypeE</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_TYPE_COUNT</span><span class="p">,</span><span class="w">  </span><span class="c1">// Extend elosRpnFilterValueTypeE_t</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_DATE"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_DATE"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_DATE</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_DATE_SEC"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_DATE_SEC"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_DATE_SEC</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_DATE_NSEC"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_DATE_NSEC"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_DATE_NSEC</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_SOURCE"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_SOURCE"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_SOURCE</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_SOURCE_PID"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_SOURCE_PID"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_SOURCE_PID</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_SOURCE_APPNAME"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_SOURCE_APPNAME"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_SOURCE_APPNAME</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_SOURCE_FILENAME"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_SOURCE_FILENAME"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_SOURCE_FILENAME</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_SEVERITY"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_SEVERITY"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_SEVERITY</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_HARDWAREID"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_HARDWAREID"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_HARDWAREID</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_CLASSIFICATION"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_CLASSIFICATION"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_CLASSIFICATION</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_MESSAGECODE"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_MESSAGECODE"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_MESSAGECODE</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_EVENT_PAYLOAD"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_EVENT_PAYLOAD"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_EVENT_PAYLOAD</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosEventFilterValueTypeE.EVENTFILTER_VALUE_TYPE_COUNT"><div class="viewcode-block" id="c.elosEventFilterValueTypeE_t.EVENTFILTER_VALUE_TYPE_COUNT"><span class="w">    </span><span class="n">EVENTFILTER_VALUE_TYPE_COUNT</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosEventFilterValueTypeE_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosEventFilterParam_t"><span class="k">typedef</span><span class="w"> </span><span class="n">elosRpnFilterParam_t</span><span class="w"> </span><span class="n">elosEventFilterParam_t</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.elosEventFilterStack_t"><span class="k">typedef</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="n">elosEventFilterStack_t</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.elosEventFilter_t"><span class="k">typedef</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="n">elosEventFilter_t</span><span class="p">;</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

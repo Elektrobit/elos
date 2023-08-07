@@ -1,0 +1,4 @@
+client_manager_stop.c
+=====================
+
+.. autocmodule:: client_manager_stop.c

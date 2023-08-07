@@ -1,0 +1,4 @@
+plugin_load.c
+=============
+
+.. autocmodule:: plugin_load.c

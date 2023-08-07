@@ -1,0 +1,4 @@
+pluginmanager_entry.c
+=====================
+
+.. autocmodule:: pluginmanager_entry.c

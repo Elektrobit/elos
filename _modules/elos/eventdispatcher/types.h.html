@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/eventdispatcher/types.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/eventdispatcher/types.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pthread.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/flags.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;time.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventbuffer/types.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventprocessor/types.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosEventDispatcherParam"><div class="viewcode-block" id="c.elosEventDispatcherParam_t"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam_t">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Parameter for EventDispatcher initialization</span>
+<span class="cm"> *</span>
+<span class="cm"> * Members:</span>
+<span class="cm"> *   eventProcessor: The EventProcessor the Events shall be dispatched to</span>
+<span class="cm"> *   pollTimeout:  Timeout for the poll() command that is waiting for eventfd writes</span>
+<span class="cm"> *                 Can be NULL, in this case ELOS_EVENTDISPATCHER_DEFAULT_POLL_TIMEOUT is used.</span>
+<span class="cm"> *   healthTimeInterval:  Minimum time interval for health events to be published (can be more).</span>
+<span class="cm"> *                        Can be NULL, in this case ELOS_EVENTDISPATCHER_DEFAULT_HEALTH_INTERVAL is used.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEventDispatcherParam</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosEventDispatcherParam.eventProcessor"><div class="viewcode-block" id="c.elosEventDispatcherParam_t.eventProcessor"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam_t.eventProcessor">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam.eventProcessor">[docs]</a><span class="w">    </span><span class="n">elosEventProcessor_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventProcessor</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcherParam.pollTimeout"><div class="viewcode-block" id="c.elosEventDispatcherParam_t.pollTimeout"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam_t.pollTimeout">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam.pollTimeout">[docs]</a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">pollTimeout</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcherParam.healthTimeInterval"><div class="viewcode-block" id="c.elosEventDispatcherParam_t.healthTimeInterval"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam_t.healthTimeInterval">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherParam.healthTimeInterval">[docs]</a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">healthTimeInterval</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosEventDispatcherParam_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosEventDispatcherWorker"><div class="viewcode-block" id="c.elosEventDispatcherWorker_t"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker_t">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Data structure of an EventDispatcher&#39;s worker thread</span>
+<span class="cm"> *</span>
+<span class="cm"> * Members:</span>
+<span class="cm"> *   thread: Posix thread identifiert</span>
+<span class="cm"> *   trigger: Eventfd used for synchronization between worker thread and the EventDispatcher</span>
+<span class="cm"> *   pollTimeout: Timeout for the poll() command that is waiting for eventfd writes</span>
+<span class="cm"> *   healthTimeInterval: Minimum time interval for health events to be published (can be more)</span>
+<span class="cm"> *   healthTimeTreshold: Timestamp used for testing if a health event needs to be published</span>
+<span class="cm"> *   eventsPublished: Published events since the last health event</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEventDispatcherWorker</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosEventDispatcherWorker.thread"><div class="viewcode-block" id="c.elosEventDispatcherWorker_t.thread"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker_t.thread">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker.thread">[docs]</a><span class="w">    </span><span class="n">pthread_t</span><span class="w"> </span><span class="kr">thread</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcherWorker.trigger"><div class="viewcode-block" id="c.elosEventDispatcherWorker_t.trigger"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker_t.trigger">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker.trigger">[docs]</a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">trigger</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcherWorker.pollTimeout"><div class="viewcode-block" id="c.elosEventDispatcherWorker_t.pollTimeout"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker_t.pollTimeout">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker.pollTimeout">[docs]</a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">pollTimeout</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcherWorker.healthTimeInterval"><div class="viewcode-block" id="c.elosEventDispatcherWorker_t.healthTimeInterval"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker_t.healthTimeInterval">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker.healthTimeInterval">[docs]</a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">healthTimeInterval</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcherWorker.healthTimeTreshold"><div class="viewcode-block" id="c.elosEventDispatcherWorker_t.healthTimeTreshold"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker_t.healthTimeTreshold">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker.healthTimeTreshold">[docs]</a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">healthTimeTreshold</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcherWorker.eventsPublished"><div class="viewcode-block" id="c.elosEventDispatcherWorker_t.eventsPublished"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker_t.eventsPublished">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcherWorker.eventsPublished">[docs]</a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">eventsPublished</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosEventDispatcherWorker_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosEventDispatcher"><div class="viewcode-block" id="c.elosEventDispatcher_t"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher_t">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Data structure of an EventDispatcher</span>
+<span class="cm"> *</span>
+<span class="cm"> * Members:</span>
+<span class="cm"> *   flags: contains the component status bits, e.g. initialized, active</span>
+<span class="cm"> *   lock: mutex for ensuring thread safe access to the EventDispatcher</span>
+<span class="cm"> *   sync: eventfd used for synchronization between EventDispatcher and its worker thread</span>
+<span class="cm"> *   worker: data structure for the EventDispatcher worker thread</span>
+<span class="cm"> *   eventBufferPtrVector: contains the EventBuffers the EventDispatcher is monitoring</span>
+<span class="cm"> *   eventProcessor: the EventProcessor the Events shall be dispatched to</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEventDispatcher</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosEventDispatcher.flags"><div class="viewcode-block" id="c.elosEventDispatcher_t.flags"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher_t.flags">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher.flags">[docs]</a><span class="w">    </span><span class="n">safuFlags_t</span><span class="w"> </span><span class="n">flags</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcher.lock"><div class="viewcode-block" id="c.elosEventDispatcher_t.lock"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher_t.lock">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher.lock">[docs]</a><span class="w">    </span><span class="n">pthread_mutex_t</span><span class="w"> </span><span class="n">lock</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcher.sync"><div class="viewcode-block" id="c.elosEventDispatcher_t.sync"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher_t.sync">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher.sync">[docs]</a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sync</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcher.worker"><div class="viewcode-block" id="c.elosEventDispatcher_t.worker"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher_t.worker">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher.worker">[docs]</a><span class="w">    </span><span class="n">elosEventDispatcherWorker_t</span><span class="w"> </span><span class="n">worker</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcher.eventBufferPtrVector"><div class="viewcode-block" id="c.elosEventDispatcher_t.eventBufferPtrVector"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher_t.eventBufferPtrVector">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher.eventBufferPtrVector">[docs]</a><span class="w">    </span><span class="n">elosEventBufferPtrVector_t</span><span class="w"> </span><span class="n">eventBufferPtrVector</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventDispatcher.eventProcessor"><div class="viewcode-block" id="c.elosEventDispatcher_t.eventProcessor"><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher_t.eventProcessor">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/eventdispatcher/types_h.html#c.elosEventDispatcher.eventProcessor">[docs]</a><span class="w">    </span><span class="n">elosEventProcessor_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventProcessor</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosEventDispatcher_t</span><span class="p">;</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rpnfilter_builder_compile.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for rpnfilter_builder_compile.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;regex.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/vector.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/rpnfilter/builder.h&quot;</span>
+
+<span class="c1">// Helper types, variables and macros for creating steps</span>
+
+<div class="viewcode-block" id="c._commandListEntry"><div class="viewcode-block" id="c._commandListEntry_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">_commandListEntry</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c._commandListEntry.name"><div class="viewcode-block" id="c._commandListEntry_t.name"><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c._commandListEntry.consumes"><div class="viewcode-block" id="c._commandListEntry_t.consumes"><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">consumes</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c._commandListEntry.appends"><div class="viewcode-block" id="c._commandListEntry_t.appends"><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">appends</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">_commandListEntry_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c._ENTRY"><span class="cp">#define _ENTRY(__t, __n, __c, __a) [__t] = {.name = (__n), .consumes = (__c), .appends = (__a)}</span></div>
+
+<div class="viewcode-block" id="c.elosCommandList"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">_commandListEntry_t</span><span class="w"> </span><span class="n">elosCommandList</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span></div>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_EQ</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;EQ&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">         </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_NE</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;NE&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_LE</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;LE&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">         </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_GE</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GE&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_LT</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;LT&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">         </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_GT</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GT&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_AND</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;AND&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">       </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_OR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;OR&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_XOR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;XOR&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">       </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_NOT</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;NOT&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_ADD</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ADD&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">       </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_SUB</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SUB&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_DIV</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;DIV&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">       </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_MUL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;MUL&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_STRCMP</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;STRCMP&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_REGEX</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;REGEX&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_LDV</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;LDV&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w">       </span><span class="n">_ENTRY</span><span class="p">(</span><span class="n">RPNFILTER_STEP_LDP</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;LDP&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+<span class="p">};</span>
+
+<span class="c1">// Helper types, variables, macros and functions to process tokens</span>
+
+<div class="viewcode-block" id="c._CMD_MAX_LEN"><span class="cp">#define _CMD_MAX_LEN 64</span></div>
+
+<div class="viewcode-block" id="c._processUndefined"><span class="k">static</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_processUndefined</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                                </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterBuilderStepEntry_t</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_STEP_UNDEFINED</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">step</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuVecPush failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._processLocation"><span class="k">static</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_processLocation</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                               </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">location</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtol</span><span class="p">(</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;strtol failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">location</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">location</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">UINT32_MAX</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Location must be an UINT32 value&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosRpnFilterBuilderStepEntry_t</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_STEP_LDP</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="p">};</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">step</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuVecPush failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_U32</span><span class="p">,</span>
+<span class="w">                </span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">),</span>
+<span class="w">                </span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">u32</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">location</span><span class="p">,</span>
+<span class="w">            </span><span class="p">};</span>
+
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosRpnFilterBuilderStackAppend</span><span class="p">(</span><span class="o">&amp;</span><span class="n">entry</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosRpnFilterBuilderStackAppend failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._processString"><span class="k">static</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_processString</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                             </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterBuilderStepEntry_t</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_STEP_LDV</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">step</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuVecPush failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_STRING</span><span class="p">,</span>
+<span class="w">            </span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">,</span>
+<span class="w">            </span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">,</span><span class="w">  </span><span class="c1">// String is not modified, so the typecast is safe</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosRpnFilterBuilderStackAppend</span><span class="p">(</span><span class="o">&amp;</span><span class="n">entry</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;_stackPush failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._processRegex"><span class="k">static</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_processRegex</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                            </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterBuilderStepEntry_t</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_STEP_LDV</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+<span class="w">    </span><span class="n">regex_t</span><span class="w"> </span><span class="n">regex</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">errbuf</span><span class="p">[</span><span class="mi">200</span><span class="p">];</span>
+
+<span class="w">    </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">step</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuVecPush failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strndup</span><span class="p">((</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pattern</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regcomp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">regex</span><span class="p">,</span><span class="w"> </span><span class="n">pattern</span><span class="p">,</span><span class="w"> </span><span class="n">REG_EXTENDED</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_REGEX</span><span class="p">,</span>
+<span class="w">                    </span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">regex_t</span><span class="p">),</span>
+<span class="w">                    </span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">regex</span><span class="p">,</span>
+<span class="w">                </span><span class="p">};</span>
+
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosRpnFilterBuilderStackAppend</span><span class="p">(</span><span class="o">&amp;</span><span class="n">entry</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;_stackPush failed&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">regerror</span><span class="p">(</span><span class="n">retval</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">regex</span><span class="p">,</span><span class="w"> </span><span class="n">errbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">errbuf</span><span class="p">));</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Processing regex failed: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">errbuf</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">pattern</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Copying of pattern string failed.&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._processNumber"><span class="k">static</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_processNumber</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                             </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">number</span><span class="p">;</span><span class="w">  </span><span class="c1">// Note: We should add a compile time check that long long == int64_t for platform independency</span>
+
+<span class="w">    </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">number</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtoll</span><span class="p">(</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;strtol failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosRpnFilterBuilderStepEntry_t</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_STEP_LDV</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="p">};</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">step</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuVecPush failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_I64</span><span class="p">,</span>
+<span class="w">                </span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int64_t</span><span class="p">),</span>
+<span class="w">                </span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">i64</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int64_t</span><span class="p">)</span><span class="n">number</span><span class="p">,</span>
+<span class="w">            </span><span class="p">};</span>
+
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosRpnFilterBuilderStackAppend</span><span class="p">(</span><span class="o">&amp;</span><span class="n">entry</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;_stackPush failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._processCommand"><span class="k">static</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_processCommand</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                              </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterStepType_t</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_STEP_UNDEFINED</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterBuilderStepEntry_t</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_STEP_UNDEFINED</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">_CMD_MAX_LEN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Token too long for command&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">cmd</span><span class="p">[</span><span class="n">_CMD_MAX_LEN</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">strncpy</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">RPNFILTER_STEP_TYPE_COUNT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_commandListEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">elosCommandList</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span>
+
+<span class="w">                </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="n">command</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">step</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idx</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">step</span><span class="p">.</span><span class="n">consumes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command</span><span class="o">-&gt;</span><span class="n">consumes</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">step</span><span class="p">.</span><span class="n">appends</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command</span><span class="o">-&gt;</span><span class="n">appends</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="n">idx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosRpnFilterBuilderStepAppend</span><span class="p">(</span><span class="o">&amp;</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Appending step failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterBuilderStackAppend"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterBuilderStackAppend</span><span class="p">(</span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">entry</span><span class="p">,</span>
+<span class="w">                                                       </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="n">newEntry</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">newEntry</span><span class="p">,</span><span class="w"> </span><span class="n">entry</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosRpnFilterStackEntry_t</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_UNDEFINED</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BINARY</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_STRING</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_REGEX</span><span class="p">:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newEntry</span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">                </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">memcpy</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">newEntry</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">stack</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">newEntry</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuVecPush failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">newEntry</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">ptr</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">data</span><span class="o">-&gt;</span><span class="n">stackSizeTracker</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterBuilderStepAppend"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterBuilderStepAppend</span><span class="p">(</span><span class="n">elosRpnFilterBuilderStepEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">step</span><span class="p">,</span>
+<span class="w">                                                      </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">stackSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="o">-&gt;</span><span class="n">stackSizeTracker</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">stackSize</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">step</span><span class="o">-&gt;</span><span class="n">consumes</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">stackSize</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Too few values on stack for step &#39;%.*s&#39; (consumes:%u, on stack:%ld)&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">step</span><span class="o">-&gt;</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">step</span><span class="o">-&gt;</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">step</span><span class="o">-&gt;</span><span class="n">consumes</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="o">-&gt;</span><span class="n">stackSizeTracker</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="n">step</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuVecPush failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">stackSize</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">step</span><span class="o">-&gt;</span><span class="n">appends</span><span class="p">;</span>
+<span class="w">            </span><span class="n">data</span><span class="o">-&gt;</span><span class="n">stackSizeTracker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stackSize</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterBuilderCompileToken"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterBuilderCompileToken</span><span class="p">(</span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">,</span>
+<span class="w">                                                        </span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">token</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid parameter&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosRpnFilterBuilderTokenType_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">;</span>
+<span class="w">        </span><span class="n">elosRpnFilterBuilderCompileFunc_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">funcMap</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">[</span><span class="n">RPNFILTER_TOKEN_UNDEFINED</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_processUndefined</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="n">RPNFILTER_TOKEN_LOCATION</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_processLocation</span><span class="p">,</span>
+<span class="w">            </span><span class="p">[</span><span class="n">RPNFILTER_TOKEN_STRING</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_processString</span><span class="p">,</span><span class="w">       </span><span class="p">[</span><span class="n">RPNFILTER_TOKEN_NUMBER</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_processNumber</span><span class="p">,</span>
+<span class="w">            </span><span class="p">[</span><span class="n">RPNFILTER_TOKEN_COMMAND</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_processCommand</span><span class="p">,</span><span class="w">     </span><span class="p">[</span><span class="n">RPNFILTER_TOKEN_REGEX</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_processRegex</span><span class="p">,</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">type</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">funcMap</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">funcMap</span><span class="p">[</span><span class="n">type</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">funcMap</span><span class="p">[</span><span class="n">type</span><span class="p">](</span><span class="n">token</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Compile token failed (type:&#39;%d&#39;, str:&#39;%.*s&#39;)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NOT_FOUND</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterBuilderCompileWith"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterBuilderCompileWith</span><span class="p">(</span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span>
+<span class="w">                                                       </span><span class="n">elosRpnFilterBuilderCompileFunc_t</span><span class="w"> </span><span class="n">func</span><span class="p">[],</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">funcCount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">data</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">func</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">funcCount</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid parameter&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_CREATE_TOKENIZED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;The given data struct is not in state &#39;RPNFILTER_CREATE_TOKENIZED&#39;&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">elements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecElements</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">token</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">i</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">elements</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">elosRpnFilterBuilderTokenEntry_t</span><span class="w"> </span><span class="o">*</span><span class="n">token</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">o</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecGet</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">token</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">token</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;token[%d]: safuVecGet failed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">funcCount</span><span class="p">;</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">func</span><span class="p">[</span><span class="n">o</span><span class="p">](</span><span class="n">token</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NOT_FOUND</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NOT_FOUND</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Invalid token (type:&#39;%d&#39;, str:&#39;%.*s&#39;)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">token</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">-&gt;</span><span class="n">string</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">data</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_CREATE_COMPILED</span><span class="p">;</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterBuilderCompile"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterBuilderCompile</span><span class="p">(</span><span class="n">elosRpnFilterBuilder_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterBuilderCompileFunc_t</span><span class="w"> </span><span class="n">func</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">elosRpnFilterBuilderCompileToken</span><span class="p">};</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">elosRpnFilterBuilderCompileWith</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">func</span><span class="p">));</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

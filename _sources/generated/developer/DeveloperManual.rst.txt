@@ -5,12 +5,11 @@ Intro
 -----
 
 The event logging and management system (elos) is intended to implement
-the System Monitor specification from EB `System Monitoring
-DRAFT <https://infohub.automotive.elektrobit.com/display/PRJEBLINUX/System+monitoring+requirements+draft>`__.
-The main task is to collect various information about the system and
-convert them into a canonical format and therefore annotate the
-information with a specific set of meta data if possible. The thus
-obtained and refined system information are then :
+and provide a unified system monitoring interface standard. The main
+task is to collect various information about the system and convert them
+into a canonical format and therefore annotate the information with a
+specific set of meta data if possible. The thus obtained and refined
+system information are then :
 
 -  persistently stored in a canonical format
 -  published in a canonical format
@@ -112,7 +111,7 @@ As message payload JSON encoded:
 
    {
      "date": [42,0],
-     "Source": {
+     "source": {
        "appname": "openssh",
        "filename": "/usr/bin/sshd",
        "pid": 208
@@ -679,16 +678,29 @@ message code Description
 7000 - 7999 Hardware Status Change
                                   
 
-============ ================================
-message code Description
-============ ================================
-7000         wildcard - subscribe to any 7xxx
-7001         (peripheral) device power on
-7002         (peripheral) device power off
-7003         device plugged
-7004         device unplugged
-7005         device ready
-============ ================================
++--------------+------------------------------------------------------+
+| message code | Description                                          |
++==============+======================================================+
+| 7000         | wildcard - subscribe to any 7xxx                     |
++--------------+------------------------------------------------------+
+| 7001         | (peripheral) device power on                         |
++--------------+------------------------------------------------------+
+| 7002         | (peripheral) device power off                        |
++--------------+------------------------------------------------------+
+| 7003         | device plugged                                       |
++--------------+------------------------------------------------------+
+| 7004         | device unplugged                                     |
++--------------+------------------------------------------------------+
+| 7005         | device ready                                         |
++--------------+------------------------------------------------------+
+| 7125         | Heavy Impact – a heavy impact was detected           |
++--------------+------------------------------------------------------+
+| 7126         | Over temperature – system temperature exceeds        |
+|              | operation limit                                      |
++--------------+------------------------------------------------------+
+| 7127         | Over temperature – system temperature is within      |
+|              | operating parameters                                 |
++--------------+------------------------------------------------------+
 
 .. _8000---8999-security-audit:
 
@@ -1182,7 +1194,7 @@ Actual implementation
 
    {
      "date":[1362,682302528],
-     "Source": {"appName":"","fileName":"","pid":0},
+     "source": {"appName":"","fileName":"","pid":0},
      "hardwareid":"INVALID",
      "payload":"arbitrary data",
      "classification": 0,
@@ -1839,7 +1851,7 @@ Published events
          284,
          0
        ],
-       "Source": {
+       "source": {
          "appName": "sshd",
          "pid": 100
        },
@@ -1853,7 +1865,7 @@ Published events
          284,
          0
        ],
-       "Source": {
+       "source": {
          "appName": "sshd",
          "pid": 100
        },
@@ -1867,7 +1879,7 @@ Published events
          284,
          0
        ],
-       "Source": {
+       "source": {
          "appName": "sshd",
          "pid": 100
        },

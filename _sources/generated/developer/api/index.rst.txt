@@ -6,20 +6,156 @@ Elos API
   :maxdepth: 1
   :caption: Contents:
 
-  client_manager <elos/client_manager/client_manager>
-  config <elos/config/config>
-  event <elos/event/event>
-  eventbuffer <elos/eventbuffer/eventbuffer>
-  eventfilter <elos/eventfilter/eventfilter>
-  eventlogging <elos/eventlogging/eventlogging>
-  eventprocessor <elos/eventprocessor/eventprocessor>
-  libelos <../../api/libelos/index>
-  messages <elos/messages/messages>
-  plugin <elos/plugin/plugin>
-  pluginmanager <elos/pluginmanager/pluginmanager>
-  processfilter <elos/processfilter/processfilter>
-  rpnfilter <elos/rpnfilter/rpnfilter>
-  scanner_manager <elos/scanner_manager/scanner_manager>
-  eventdispatcher <elos/eventdispatcher/eventdispatcher>
+  elos/common/process_h.rst
+  elos/common/types_h.rst
+  elos/common/message_h.rst
+  elos/common/common.rst
+  elos/client_manager/client_authorization_h.rst
+  elos/client_manager/client_authorized_processes_h.rst
+  elos/client_manager/client_blacklist_h.rst
+  elos/client_manager/client_manager_h.rst
+  elos/client_manager/client_manager.rst
+  elos/client_manager/client_authorization_types_h.rst
+  elos/client_manager/client_manager_types_h.rst
+  elos/client_manager/types_h.rst
+  elos/event/event_h.rst
+  elos/event/event_source_h.rst
+  elos/event/event_vector_h.rst
+  elos/event/event.rst
+  elos/event/event_types_h.rst
+  elos/event/eventqueue_types_h.rst
+  elos/event/types_h.rst
+  elos/event/event_message_codes_h.rst
+  elos/eventbuffer/eventbuffer_h.rst
+  elos/eventbuffer/eventbuffer.rst
+  elos/eventbuffer/defines_h.rst
+  elos/eventbuffer/types_h.rst
+  elos/eventdispatcher/eventdispatcher_h.rst
+  elos/eventdispatcher/eventdispatcher.rst
+  elos/eventdispatcher/defines_h.rst
+  elos/eventdispatcher/types_h.rst
+  elos/eventfilter/builder_h.rst
+  elos/eventfilter/eventfilter_h.rst
+  elos/eventfilter/execute_h.rst
+  elos/eventfilter/vector_h.rst
+  elos/eventfilter/eventfilter.rst
+  elos/eventfilter/eventfilter_types_h.rst
+  elos/eventfilter/step_types_h.rst
+  elos/eventfilter/types_h.rst
+  elos/eventfilter/vector_types_h.rst
+  elos/eventlogging/LogAggregator_h.rst
+  elos/eventlogging/eventlogging.rst
+  elos/eventlogging/LogAggregatorTypes_h.rst
+  elos/eventlogging/PluginFilterLoader_h.rst
+  elos/eventlogging/StorageBackend_h.rst
+  elos/eventprocessor/eventfiltermanager_h.rst
+  elos/eventprocessor/eventfilternode_h.rst
+  elos/eventprocessor/eventprocessor_h.rst
+  elos/eventprocessor/eventqueue_h.rst
+  elos/eventprocessor/eventqueuemanager_h.rst
+  elos/eventprocessor/idmanager_h.rst
+  elos/eventprocessor/eventprocessor.rst
+  elos/eventprocessor/defines_h.rst
+  elos/eventprocessor/eventfilter_types_h.rst
+  elos/eventprocessor/eventqueue_types_h.rst
+  elos/eventprocessor/types_h.rst
+  elos/plugin/plugin_h.rst
+  elos/plugin/thread_h.rst
+  elos/plugin/vector_h.rst
+  elos/plugin/plugin.rst
+  elos/plugin/types_h.rst
+  elos/pluginmanager/pluginmanager_h.rst
+  elos/pluginmanager/pluginmanager.rst
+  elos/pluginmanager/types_h.rst
+  elos/processfilter/builder_h.rst
+  elos/processfilter/execute_h.rst
+  elos/processfilter/processfilter_h.rst
+  elos/processfilter/vector_h.rst
+  elos/processfilter/processfilter.rst
+  elos/processfilter/processfilter_types_h.rst
+  elos/processfilter/step_types_h.rst
+  elos/processfilter/types_h.rst
+  elos/rpnfilter/builder_h.rst
+  elos/rpnfilter/execute_h.rst
+  elos/rpnfilter/rpnfilter_h.rst
+  elos/rpnfilter/vector_h.rst
+  elos/rpnfilter/rpnfilter.rst
+  elos/rpnfilter/builder_types_h.rst
+  elos/rpnfilter/execute_types_h.rst
+  elos/rpnfilter/rpnfilter_types_h.rst
+  elos/rpnfilter/step_types_h.rst
+  elos/rpnfilter/types_h.rst
+  elos/rpnfilter/vector_types_h.rst
+  elos/scanner/scanner_h.rst
+  elos/scanner/scanner.rst
+  client_authorization_c.rst
+  client_authorized_processes_c.rst
+  client_blacklist_c.rst
+  client_manager_start_c.rst
+  client_manager_stop_c.rst
+  client_manager_threads_c.rst
+  event_source_c.rst
+  event_vector_c.rst
+  event_c.rst
+  eventbuffer_c.rst
+  eventdispatcher_c.rst
+  eventdispatcher_dispatch_c.rst
+  eventdispatcher_private_h.rst
+  eventdispatcher_worker_c.rst
+  eventfilter_c.rst
+  eventfilter_builder_compile_c.rst
+  eventfilter_builder_tokenize_c.rst
+  eventfilter_execute_c.rst
+  LogAggregator_c.rst
+  PluginFilterLoader_c.rst
+  StorageBackend_c.rst
+  eventfiltermanager/eventfiltermanager_c.rst
+  eventfiltermanager/eventfilternode_c.rst
+  eventfiltermanager/eventfilternodevector_c.rst
+  eventfiltermanager/eventfiltermanager.rst
+  eventprocessor/eventfilternodevector_h.rst
+  eventprocessor/eventprocessor_c.rst
+  eventprocessor/eventqueuevector_h.rst
+  eventprocessor/eventprocessor.rst
+  eventqueue/eventqueue_c.rst
+  eventqueue/eventqueuemanager_c.rst
+  eventqueue/eventqueuevector_c.rst
+  eventqueue/eventqueue.rst
+  plugin_c.rst
+  plugin_load_c.rst
+  plugin_load_h.rst
+  plugin_vector_c.rst
+  plugin_workerthread_c.rst
+  pluginmanager_c.rst
+  pluginmanager_entry_c.rst
+  pluginmanager_load_c.rst
+  pluginmanager_remove_c.rst
+  pluginmanager_unload_c.rst
+  processfilter_c.rst
+  processfilter_builder_compile_c.rst
+  processfilter_builder_tokenize_c.rst
+  processfilter_execute_c.rst
+  rpnfilter_c.rst
+  rpnfilter_builder_c.rst
+  rpnfilter_builder_compile_c.rst
+  rpnfilter_builder_finalize_c.rst
+  rpnfilter_builder_tokenize_c.rst
+  rpnfilter_execute_c.rst
+  rpnfilter_vector_c.rst
+  kmsg_mapper_h.rst
+  kmsg_c.rst
+  kmsg_mapper_c.rst
+  logline_mapper_h.rst
+  logline_mapper_c.rst
+  syslog_c.rst
+  JsonBackend_h.rst
+  JsonBackendPlugin_c.rst
+  JsonBackend_c.rst
+  NoSqlBackend_h.rst
+  NoSqlBackend_c.rst
+  SqlBackend_h.rst
+  SqlBackend_c.rst
+  SqlBackendPlugin_c.rst
+  SqlQueries_h.rst
 
 

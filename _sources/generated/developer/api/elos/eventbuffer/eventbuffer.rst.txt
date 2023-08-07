@@ -4,4 +4,5 @@ eventbuffer
 .. toctree::
     :maxdepth: 4
 
-    eventbuffer_h
+    defines_h
+    types_h

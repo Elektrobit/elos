@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/event/event_types.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/event/event_types.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/vector_types.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;time.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_message_codes.h&quot;</span>
+
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_ELOS_MASK"><span class="cp">#define ELOS_CLASSIFICATION_ELOS_MASK      0x00000000FFFFFFFFULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_MASK"><span class="cp">#define ELOS_CLASSIFICATION_USER_MASK      0x000000FF00000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_RESERVED_MASK"><span class="cp">#define ELOS_CLASSIFICATION_RESERVED_MASK  0xFFFFFF0000000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_UNDEFINED"><span class="cp">#define ELOS_CLASSIFICATION_UNDEFINED      0x0000000000000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_KERNEL"><span class="cp">#define ELOS_CLASSIFICATION_KERNEL         0x0000000000000001ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_NETWORK"><span class="cp">#define ELOS_CLASSIFICATION_NETWORK        0x0000000000000002ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_SECURITY"><span class="cp">#define ELOS_CLASSIFICATION_SECURITY       0x0000000000000004ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_POWER"><span class="cp">#define ELOS_CLASSIFICATION_POWER          0x0000000000000008ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_STORAGE"><span class="cp">#define ELOS_CLASSIFICATION_STORAGE        0x0000000000000010ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_PROCESS"><span class="cp">#define ELOS_CLASSIFICATION_PROCESS        0x0000000000000020ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_IPC"><span class="cp">#define ELOS_CLASSIFICATION_IPC            0x0000000000000040ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_HARDWARE"><span class="cp">#define ELOS_CLASSIFICATION_HARDWARE       0x0000000000000080ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_ELOS"><span class="cp">#define ELOS_CLASSIFICATION_ELOS           0x0000000000000100ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_PROCESS_ERRORS"><span class="cp">#define ELOS_CLASSIFICATION_PROCESS_ERRORS 0x0000000000000200ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_0"><span class="cp">#define ELOS_CLASSIFICATION_USER_0         0x0000000100000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_1"><span class="cp">#define ELOS_CLASSIFICATION_USER_1         0x0000000200000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_2"><span class="cp">#define ELOS_CLASSIFICATION_USER_2         0x0000000400000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_3"><span class="cp">#define ELOS_CLASSIFICATION_USER_3         0x0000000800000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_4"><span class="cp">#define ELOS_CLASSIFICATION_USER_4         0x0000001000000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_5"><span class="cp">#define ELOS_CLASSIFICATION_USER_5         0x0000002000000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_6"><span class="cp">#define ELOS_CLASSIFICATION_USER_6         0x0000004000000000ULL</span></div>
+<div class="viewcode-block" id="c.ELOS_CLASSIFICATION_USER_7"><span class="cp">#define ELOS_CLASSIFICATION_USER_7         0x0000008000000000ULL</span></div>
+
+<div class="viewcode-block" id="c.elosSeverityE"><div class="viewcode-block" id="c.elosSeverityE_t"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * The possible severities for an :c:expr:`elosEvent_t *` can have</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosSeverityE</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosSeverityE.ELOS_SEVERITY_VERBOSE"><div class="viewcode-block" id="c.elosSeverityE.ELOS_SEVERITY_DEBUG"><div class="viewcode-block" id="c.elosSeverityE.ELOS_SEVERITY_INFO"><div class="viewcode-block" id="c.elosSeverityE.ELOS_SEVERITY_WARN"><div class="viewcode-block" id="c.elosSeverityE.ELOS_SEVERITY_ERROR"><div class="viewcode-block" id="c.elosSeverityE.ELOS_SEVERITY_FATAL"><div class="viewcode-block" id="c.elosSeverityE.ELOS_SEVERITY_OFF"><div class="viewcode-block" id="c.elosSeverityE_t.ELOS_SEVERITY_VERBOSE"><div class="viewcode-block" id="c.elosSeverityE_t.ELOS_SEVERITY_DEBUG"><div class="viewcode-block" id="c.elosSeverityE_t.ELOS_SEVERITY_INFO"><div class="viewcode-block" id="c.elosSeverityE_t.ELOS_SEVERITY_WARN"><div class="viewcode-block" id="c.elosSeverityE_t.ELOS_SEVERITY_ERROR"><div class="viewcode-block" id="c.elosSeverityE_t.ELOS_SEVERITY_FATAL"><div class="viewcode-block" id="c.elosSeverityE_t.ELOS_SEVERITY_OFF"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t.ELOS_SEVERITY_WARN">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t.ELOS_SEVERITY_VERBOSE">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t.ELOS_SEVERITY_OFF">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t.ELOS_SEVERITY_INFO">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t.ELOS_SEVERITY_FATAL">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t.ELOS_SEVERITY_ERROR">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE_t.ELOS_SEVERITY_DEBUG">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE.ELOS_SEVERITY_WARN">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE.ELOS_SEVERITY_VERBOSE">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE.ELOS_SEVERITY_OFF">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE.ELOS_SEVERITY_INFO">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE.ELOS_SEVERITY_FATAL">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE.ELOS_SEVERITY_ERROR">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosSeverityE.ELOS_SEVERITY_DEBUG">[docs]</a><span class="w">    </span><span class="cm">/**/</span><span class="w">  </span><span class="c1">// this comment is needet so that the enumerators are listet in the documentation!</span>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_OFF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span></div></div>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_FATAL</span><span class="p">,</span></div></div>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_ERROR</span><span class="p">,</span></div></div>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_WARN</span><span class="p">,</span></div></div>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_INFO</span><span class="p">,</span></div></div>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_DEBUG</span><span class="p">,</span></div></div>
+<span class="w">    </span><span class="n">ELOS_SEVERITY_VERBOSE</span><span class="p">,</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosSeverityE_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosEventSource"><div class="viewcode-block" id="c.elosEventSource_t"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource_t">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Source of an :c:type:`elosEvent_t`</span>
+<span class="cm"> *</span>
+<span class="cm"> * Members:</span>
+<span class="cm"> *      appName: a string containing the name of the application the event originated from</span>
+<span class="cm"> *      fileName: a string containing the filename of the application the event originated from</span>
+<span class="cm"> *      pid: an integeter containing the process id of the application the event originated from</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEventSource</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosEventSource.appName"><div class="viewcode-block" id="c.elosEventSource_t.appName"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource_t.appName">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource.appName">[docs]</a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">appName</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventSource.fileName"><div class="viewcode-block" id="c.elosEventSource_t.fileName"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource_t.fileName">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource.fileName">[docs]</a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fileName</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEventSource.pid"><div class="viewcode-block" id="c.elosEventSource_t.pid"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource_t.pid">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventSource.pid">[docs]</a><span class="w">    </span><span class="kt">pid_t</span><span class="w"> </span><span class="n">pid</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosEvent"><div class="viewcode-block" id="c.elosEvent_t"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Representation of an elos event</span>
+<span class="cm"> *</span>
+<span class="cm"> * Members:</span>
+<span class="cm"> *      date: unix timestamp in nano seconds resolution.</span>
+<span class="cm"> *      source: struct containing informations about where the event originated from</span>
+<span class="cm"> *      severity: when the message gets classified it is mapped to a severity value defined by this project.</span>
+<span class="cm"> *      hardwareid: an unique identifier for the hardware which produced this particular information.</span>
+<span class="cm"> *      classification:</span>
+<span class="cm"> *          The classification attribute is used to categorize events</span>
+<span class="cm"> *          to be related to a certain context of system information.</span>
+<span class="cm"> *          The classification value is a 64 unsigned integer and is splitted into 3 sections.</span>
+<span class="cm"> *</span>
+<span class="cm"> *          - bit 1 to 32  (0x00000000FFFFFFFF) reserved by elos (never change their meaning)</span>
+<span class="cm"> *          - bit 33 to 41 (0x000000FF00000000) can be defined and used by the user</span>
+<span class="cm"> *            (something like User_1-User_7)</span>
+<span class="cm"> *          - bit 42 to 64 (0xFFFFFF0000000000) reserved for future use</span>
+<span class="cm"> *</span>
+<span class="cm"> *          The following table describes the lower 32 bit classification bit mask and their meaning:</span>
+<span class="cm"> *</span>
+<span class="cm"> *          ==================  ==============  ===================================================================</span>
+<span class="cm"> *                Value         Name            Description</span>
+<span class="cm"> *          ==================  ==============  ===================================================================</span>
+<span class="cm"> *          0x0000000000000000  undefined       used to indicate not available classification information</span>
+<span class="cm"> *          0x0000000000000001  Kernel          all events which are related to some kernel functionality</span>
+<span class="cm"> *          0x0000000000000002  Network         all network related information</span>
+<span class="cm"> *          0x0000000000000004  Security        all events that are security related</span>
+<span class="cm"> *          0x0000000000000008  Power           all events that is relevant for power management</span>
+<span class="cm"> *          0x0000000000000010  Storage         all events which are related to filesystem and non volatile storage</span>
+<span class="cm"> *          0x0000000000000020  Process         all events about the livecycle of a process</span>
+<span class="cm"> *          0x0000000000000040  IPC             all events about IPC</span>
+<span class="cm"> *          0x0000000000000080  Hardware        all events about hardware</span>
+<span class="cm"> *          0x0000000000000100  elos            all events about elos internals</span>
+<span class="cm"> *          0x0000000000000200  Process Errors  all events about faulty or misbehaving processes</span>
+<span class="cm"> *          ==================  ==============  ===================================================================</span>
+<span class="cm"> *</span>
+<span class="cm"> *          An event can have multiple classification flags, for example a chassis</span>
+<span class="cm"> *          intrusion detection event can be classified as `Security|Hardware`.</span>
+<span class="cm"> *</span>
+<span class="cm"> *      messageCode: used to hide information (from security perspective),</span>
+<span class="cm"> *          thus an information has a meaning without providing a payload (text).</span>
+<span class="cm"> *</span>
+<span class="cm"> *      payload: the actual payload of the information (text, number, structs)).</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosEvent</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosEvent.date"><div class="viewcode-block" id="c.elosEvent_t.date"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t.date">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent.date">[docs]</a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">date</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEvent.source"><div class="viewcode-block" id="c.elosEvent_t.source"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t.source">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent.source">[docs]</a><span class="w">    </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="n">source</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEvent.severity"><div class="viewcode-block" id="c.elosEvent_t.severity"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t.severity">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent.severity">[docs]</a><span class="w">    </span><span class="n">elosSeverityE_t</span><span class="w"> </span><span class="n">severity</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEvent.hardwareid"><div class="viewcode-block" id="c.elosEvent_t.hardwareid"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t.hardwareid">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent.hardwareid">[docs]</a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">hardwareid</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEvent.classification"><div class="viewcode-block" id="c.elosEvent_t.classification"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t.classification">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent.classification">[docs]</a><span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">classification</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEvent.messageCode"><div class="viewcode-block" id="c.elosEvent_t.messageCode"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t.messageCode">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent.messageCode">[docs]</a><span class="w">    </span><span class="n">elosEventMessageCodeE_t</span><span class="w"> </span><span class="n">messageCode</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosEvent.payload"><div class="viewcode-block" id="c.elosEvent_t.payload"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent_t.payload">[docs]</a><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEvent.payload">[docs]</a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">payload</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosEventVector_t"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_types_h.html#c.elosEventVector_t">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * typedef :c:type:`safuVec_t` to :c:type:`elosEventVector_t`.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="n">elosEventVector_t</span><span class="p">;</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

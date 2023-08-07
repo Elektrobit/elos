@@ -1,0 +1,4 @@
+plugin_workerthread.c
+=====================
+
+.. autocmodule:: plugin_workerthread.c

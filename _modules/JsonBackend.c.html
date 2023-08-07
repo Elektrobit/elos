@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JsonBackend.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for JsonBackend.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;JsonBackend.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fcntl.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/time.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/stat.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventfilter/eventfilter.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventlogging/StorageBackend.h&quot;</span>
+
+<div class="viewcode-block" id="c.BACKEND_NAME"><span class="cp">#define BACKEND_NAME &quot;JSON&quot;</span></div>
+
+<div class="viewcode-block" id="c._matchAndReplaceMacro"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">_matchAndReplaceMacro</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">str</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">macro</span><span class="p">,</span>
+<span class="w">                                         </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Trying to write macro value to NULL string&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">path</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Trying to replace macro in NULL string&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Output counter pointer NULL&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Input counter pointer NULL&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">macro</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogWarn</span><span class="p">(</span><span class="s">&quot;Called _matchAndReplaceMacro with NULL macro, skipping checks&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">macroLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">macro</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// ensure macro AND \0 can be contained in rest of string</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">strlen</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">macroLen</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strncmp</span><span class="p">(</span><span class="n">path</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="n">macro</span><span class="p">,</span><span class="w"> </span><span class="n">macroLen</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">val</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Trying to replace maro with NULL value&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="o">*</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">val</span><span class="p">))</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">strcpy</span><span class="p">(</span><span class="o">*</span><span class="n">str</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">);</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">j</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">val</span><span class="p">);</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">macroLen</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">j</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">val</span><span class="p">);</span><span class="w">  </span><span class="c1">// force storagePath to use default location.</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._completeStoragePath"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">_completeStoragePath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">countStr</span><span class="p">,</span>
+<span class="w">                                         </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="o">*</span><span class="n">hasCount</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">recCounter</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">*</span><span class="n">hasCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">countStr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogWarn</span><span class="p">(</span><span class="s">&quot;Called elosCompleteStoragePath with count String NULL, defaulting to </span><span class="se">\&quot;</span><span class="s">0</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">countStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;0&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">recCounter</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">path</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid argument: Path is NULL&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">_completeStoragePath</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">,</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">countStr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span><span class="w"> </span><span class="n">date</span><span class="p">,</span>
+<span class="w">                                    </span><span class="n">hasCount</span><span class="p">,</span><span class="w"> </span><span class="n">recCounter</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to allocate storage path memory.&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">_completeStoragePath</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">,</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">countStr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span><span class="w"> </span><span class="n">date</span><span class="p">,</span>
+<span class="w">                                    </span><span class="n">hasCount</span><span class="p">,</span><span class="w"> </span><span class="n">recCounter</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">hardwareId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuGetHardwareId</span><span class="p">();</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">pathLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">pathLen</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogWarnF</span><span class="p">(</span>
+<span class="w">                </span><span class="s">&quot;completed storage path would have gone beyond defined path length limitations: %lu. Defaulting to %s.&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="n">sizelimit</span><span class="p">,</span><span class="w"> </span><span class="n">STORAGE_LOCATION</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">out</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">_completeStoragePath</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">,</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">countStr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span>
+<span class="w">                                        </span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="n">hasCount</span><span class="p">,</span><span class="w"> </span><span class="n">recCounter</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">written</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_matchAndReplaceMacro</span><span class="p">(</span><span class="o">&amp;</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%count%&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">);</span>
+<span class="w">        </span><span class="o">*</span><span class="n">hasCount</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">written</span><span class="p">;</span>
+<span class="w">        </span><span class="n">written</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="n">_matchAndReplaceMacro</span><span class="p">(</span><span class="o">&amp;</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%host%&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">hardwareId</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">);</span>
+<span class="w">        </span><span class="n">written</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="n">_matchAndReplaceMacro</span><span class="p">(</span><span class="o">&amp;</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%date%&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">written</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">            </span><span class="n">j</span><span class="o">++</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!*</span><span class="n">hasCount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">strlen</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">countStr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;.&#39;</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">countStr</span><span class="p">);</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">countStr</span><span class="p">[</span><span class="n">k</span><span class="p">];</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">            </span><span class="o">*</span><span class="n">hasCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogWarn</span><span class="p">(</span><span class="s">&quot;Failed to append &#39;count&#39; to log file path .&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">strlen</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to resize storage path memory.&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">_completeStoragePath</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">,</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">STORAGE_LOCATION</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">countStr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span><span class="w"> </span><span class="n">date</span><span class="p">,</span>
+<span class="w">                                    </span><span class="n">hasCount</span><span class="p">,</span><span class="w"> </span><span class="n">recCounter</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">out</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosCompleteStoragePath"><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">elosCompleteStoragePath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span>
+<span class="w">                              </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="o">*</span><span class="n">hasCount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_completeStoragePath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">sizelimit</span><span class="p">,</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span><span class="w"> </span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="n">hasCount</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.max_number_lenght"><span class="cp">#define max_number_lenght 25</span></div>
+<div class="viewcode-block" id="c._jsonBackendOpen"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_jsonBackendOpen</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosJsonBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">countStr</span><span class="p">[</span><span class="n">max_number_lenght</span><span class="p">];</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">snprintf</span><span class="p">(</span><span class="n">countStr</span><span class="p">,</span><span class="w"> </span><span class="n">max_number_lenght</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%lu&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to use correct count for filename, defaulting to 0&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">countStr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="p">;</span>
+<span class="w">        </span><span class="n">countStr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuGetCurrentDateString</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">dateFormat</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">));</span>
+<span class="w">        </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">elosCompleteStoragePath</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFilePattern</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">pathSizeLimit</span><span class="p">,</span><span class="w"> </span><span class="n">countStr</span><span class="p">,</span>
+<span class="w">                                </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">pathContainsCount</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">,</span><span class="w"> </span><span class="n">O_CREAT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">O_WRONLY</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">O_APPEND</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">O_CLOEXEC</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">additionalFlags</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">S_IRUSR</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">S_IWUSR</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">S_IRGRP</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">S_IROTH</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fd</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to open log file %s for write: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileWrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fd</span><span class="p">;</span>
+<span class="w">        </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;stored backend file under fd %d (writeable)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fd</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">,</span><span class="w"> </span><span class="n">O_RDONLY</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">O_CLOEXEC</span><span class="p">,</span><span class="w"> </span><span class="n">S_IRUSR</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">S_IWUSR</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">S_IRGRP</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">S_IROTH</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fd</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to open log file %s for read: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileRead</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fd</span><span class="p">;</span>
+<span class="w">            </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;stored backend file under fd %d (readable)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fd</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendStart"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendStart</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosJsonBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;start backend %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_jsonBackendOpen</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;filepath %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._jsonBackendClose"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_jsonBackendClose</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">backend</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosJsonBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">close</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileWrite</span><span class="p">);</span>
+<span class="w">            </span><span class="n">close</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileRead</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendShutdown"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendShutdown</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;shutdown backend %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_jsonBackendClose</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">);</span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendCheckRotate"><span class="kt">bool</span><span class="w"> </span><span class="nf">elosJsonBackendCheckRotate</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">nextWrite</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">shouldRotate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">backend</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosJsonBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strstr</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">currentDate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuGetCurrentDateString</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">dateFormat</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">currentDate</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">currentDate</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageDate</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">shouldRotate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">free</span><span class="p">(</span><span class="n">currentDate</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">pathContainsCount</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">maxFileSize</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">struct</span><span class="w"> </span><span class="nc">stat</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stat</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">buf</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to get size of file %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">st_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">nextWrite</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">maxFileSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// rotate without date change, so increase count to make filename unique</span>
+<span class="w">                </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                </span><span class="n">shouldRotate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">shouldRotate</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendRotate"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendRotate</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosJsonBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;rotating logfile %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFilePattern</span><span class="p">);</span>
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;Closing logfile %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_jsonBackendClose</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_jsonBackendOpen</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">        </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;Opened logfile %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;Failed to open new logfile %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;Failed to close logfile %s, refraining from rotating&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendPersist"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendPersist</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosJsonBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">jsonString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventSerialize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jsonString</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosEventSerialize failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elosJsonBackendCheckRotate</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">jsonString</span><span class="p">)))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosJsonBackendRotate</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to rotate log, trying to store log anyway into %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">filePath</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;persist to %s : %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">jsonString</span><span class="p">);</span>
+<span class="w">        </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuWriteExactly</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileWrite</span><span class="p">,</span><span class="w"> </span><span class="n">jsonString</span><span class="p">,</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">jsonString</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;safuWriteExactly[0] failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuWriteExactly</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileWrite</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;safuWriteExactly[1] failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">jsonString</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to persist event&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendFilterEvent"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendFilterEvent</span><span class="p">(</span><span class="n">elosEventFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">jsonString</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">filterResult</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventNew</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosEventNew failed!&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventDeserialize</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">jsonString</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosEventDeserialize failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;Event created: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonString</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">filterResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventFilterExecute</span><span class="p">(</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">filterResult</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuVecPush</span><span class="p">(</span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">);</span><span class="w">  </span><span class="c1">// copies event and free&#39;s its members</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebug</span><span class="p">(</span><span class="s">&quot;Append event: Match&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">filterResult</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">elosEventDelete</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebug</span><span class="p">(</span><span class="s">&quot;Free Event: No Match&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosEventFilterExecute failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;Free Event: RPN filter result is: %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">filterResult</span><span class="p">);</span>
+<span class="w">            </span><span class="n">elosEventDelete</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendFindEvents"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendFindEvents</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosJsonBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">jsonBackendFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bufferSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="n">endOfFilePos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">readSuccess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">backend</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">filter</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">events</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Called elosJsonBackendFindEvents with NULL-parameter&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="n">jsonBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">        </span><span class="n">jsonBackendFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdopen</span><span class="p">(</span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileRead</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jsonBackendFile</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to get file stream from log file: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fseek</span><span class="p">(</span><span class="n">jsonBackendFile</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">SEEK_END</span><span class="p">);</span>
+<span class="w">            </span><span class="n">endOfFilePos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ftell</span><span class="p">(</span><span class="n">jsonBackendFile</span><span class="p">);</span>
+<span class="w">            </span><span class="n">rewind</span><span class="p">(</span><span class="n">jsonBackendFile</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;opened backend file via fd %d (readable)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackend</span><span class="o">-&gt;</span><span class="n">storageFileRead</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;file length is %ld&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">endOfFilePos</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;;</span><span class="w"> </span><span class="n">idx</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">readSuccess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getline</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bufferSize</span><span class="p">,</span><span class="w"> </span><span class="n">jsonBackendFile</span><span class="p">);</span><span class="w">  </span><span class="c1">// calls malloc / realloc internally</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">readSuccess</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosJsonBackendFilterEvent</span><span class="p">(</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosJsonBackendFilterEvent failed&quot;</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">free</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">memset</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">bufferSize</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ftell</span><span class="p">(</span><span class="n">jsonBackendFile</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">endOfFilePos</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">free</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;getline failed reading the %d line in log file: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">idx</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">                    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;actual file position is: %ld, end of file position is: %ld&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ftell</span><span class="p">(</span><span class="n">jsonBackendFile</span><span class="p">),</span>
+<span class="w">                                  </span><span class="n">endOfFilePos</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">free</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosJsonBackendNew"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendNew</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">**</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">newBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">newBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newBackend</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">newBackend</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="p">));</span>
+<span class="w">        </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosJsonBackend_t</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogCrit</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">newBackend</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">memset</span><span class="p">(</span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosJsonBackend_t</span><span class="p">));</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BACKEND_NAME</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosJsonBackendStart</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">persist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosJsonBackendPersist</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">findEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosJsonBackendFindEvents</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">shutdown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosJsonBackendShutdown</span><span class="p">;</span>
+<span class="w">            </span><span class="o">*</span><span class="n">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newBackend</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

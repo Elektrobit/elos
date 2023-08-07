@@ -1,0 +1,5 @@
+PluginFilterLoader.h
+====================
+
+.. autocmodule:: elos/eventlogging/PluginFilterLoader.h
+    :members:

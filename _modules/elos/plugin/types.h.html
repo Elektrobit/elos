@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/plugin/types.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/plugin/types.h</h1><div class="viewcode-block" id="c.safuResultE_t"><div class="highlight"><pre></div>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pthread.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/result.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/vector_types.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;samconf/samconf_types.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/common/types.h&quot;</span>
+
+<div class="viewcode-block" id="c.ELOS_PLUGIN_ID_INVALID"><span class="cp">#define ELOS_PLUGIN_ID_INVALID 0</span></div>
+
+<div class="viewcode-block" id="c.elosPluginId_t"><span class="k">typedef</span><span class="w"> </span><span class="n">elosId_t</span><span class="w"> </span><span class="n">elosPluginId_t</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.elosPluginState_t"><span class="k">typedef</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">elosPluginState_t</span><span class="p">;</span></div>
+
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="p">(</span><span class="n">elosPluginFunc_t</span><span class="p">)(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">);</span>
+
+<div class="viewcode-block" id="c.elosPluginStateE"><div class="viewcode-block" id="c.elosPluginStateE_t"><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">elosPluginStateE</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosPluginStateE.PLUGIN_STATE_INVALID"><div class="viewcode-block" id="c.elosPluginStateE_t.PLUGIN_STATE_INVALID"><span class="w">    </span><span class="n">PLUGIN_STATE_INVALID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosPluginStateE.PLUGIN_STATE_INITIALIZED"><div class="viewcode-block" id="c.elosPluginStateE_t.PLUGIN_STATE_INITIALIZED"><span class="w">    </span><span class="n">PLUGIN_STATE_INITIALIZED</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosPluginStateE.PLUGIN_STATE_LOADED"><div class="viewcode-block" id="c.elosPluginStateE_t.PLUGIN_STATE_LOADED"><span class="w">    </span><span class="n">PLUGIN_STATE_LOADED</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosPluginStateE.PLUGIN_STATE_STARTED"><div class="viewcode-block" id="c.elosPluginStateE_t.PLUGIN_STATE_STARTED"><span class="w">    </span><span class="n">PLUGIN_STATE_STARTED</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosPluginStateE.PLUGIN_STATE_STOPPED"><div class="viewcode-block" id="c.elosPluginStateE_t.PLUGIN_STATE_STOPPED"><span class="w">    </span><span class="n">PLUGIN_STATE_STOPPED</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosPluginStateE.PLUGIN_STATE_UNLOADED"><div class="viewcode-block" id="c.elosPluginStateE_t.PLUGIN_STATE_UNLOADED"><span class="w">    </span><span class="n">PLUGIN_STATE_UNLOADED</span><span class="p">,</span></div></div>
+<div class="viewcode-block" id="c.elosPluginStateE.PLUGIN_STATE_ERROR"><div class="viewcode-block" id="c.elosPluginStateE_t.PLUGIN_STATE_ERROR"><span class="w">    </span><span class="n">PLUGIN_STATE_ERROR</span><span class="p">,</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosPluginStateE_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosPluginFuncTable"><div class="viewcode-block" id="c.elosPluginFuncTable_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosPluginFuncTable</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosPluginFuncTable.load"><div class="viewcode-block" id="c.elosPluginFuncTable_t.load"><span class="w">    </span><span class="n">elosPluginFunc_t</span><span class="w"> </span><span class="o">*</span><span class="n">load</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginFuncTable.unload"><div class="viewcode-block" id="c.elosPluginFuncTable_t.unload"><span class="w">    </span><span class="n">elosPluginFunc_t</span><span class="w"> </span><span class="o">*</span><span class="n">unload</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginFuncTable.start"><div class="viewcode-block" id="c.elosPluginFuncTable_t.start"><span class="w">    </span><span class="n">elosPluginFunc_t</span><span class="w"> </span><span class="o">*</span><span class="n">start</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginFuncTable.stop"><div class="viewcode-block" id="c.elosPluginFuncTable_t.stop"><span class="w">    </span><span class="n">elosPluginFunc_t</span><span class="w"> </span><span class="o">*</span><span class="n">stop</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosPluginFuncTable_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosPluginParam"><div class="viewcode-block" id="c.elosPluginParam_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosPluginParam</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosPluginParam.id"><div class="viewcode-block" id="c.elosPluginParam_t.id"><span class="w">    </span><span class="n">elosPluginId_t</span><span class="w"> </span><span class="n">id</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginParam.config"><div class="viewcode-block" id="c.elosPluginParam_t.config"><span class="w">    </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginParam.path"><div class="viewcode-block" id="c.elosPluginParam_t.path"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginParam.loadParam"><div class="viewcode-block" id="c.elosPluginParam_t.loadParam"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">loadParam</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginParam.data"><div class="viewcode-block" id="c.elosPluginParam_t.data"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosPluginParam_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosPluginWorker"><div class="viewcode-block" id="c.elosPluginWorker_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosPluginWorker</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosPluginWorker.thread"><div class="viewcode-block" id="c.elosPluginWorker_t.thread"><span class="w">    </span><span class="n">pthread_t</span><span class="w"> </span><span class="kr">thread</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginWorker.isThreadRunning"><div class="viewcode-block" id="c.elosPluginWorker_t.isThreadRunning"><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">isThreadRunning</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginWorker.sync"><div class="viewcode-block" id="c.elosPluginWorker_t.sync"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sync</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosPluginWorker_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosPlugin"><div class="viewcode-block" id="c.elosPlugin_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosPlugin</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosPlugin.id"><div class="viewcode-block" id="c.elosPlugin_t.id"><span class="w">    </span><span class="n">elosPluginId_t</span><span class="w"> </span><span class="n">id</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.state"><div class="viewcode-block" id="c.elosPlugin_t.state"><span class="w">    </span><span class="n">elosPluginStateE_t</span><span class="w"> </span><span class="n">state</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.func"><div class="viewcode-block" id="c.elosPlugin_t.func"><span class="w">    </span><span class="n">elosPluginFuncTable_t</span><span class="w"> </span><span class="n">func</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.config"><div class="viewcode-block" id="c.elosPlugin_t.config"><span class="w">    </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.worker"><div class="viewcode-block" id="c.elosPlugin_t.worker"><span class="w">    </span><span class="n">elosPluginWorker_t</span><span class="w"> </span><span class="n">worker</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.sync"><div class="viewcode-block" id="c.elosPlugin_t.sync"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sync</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.stop"><div class="viewcode-block" id="c.elosPlugin_t.stop"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">stop</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.data"><div class="viewcode-block" id="c.elosPlugin_t.data"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.path"><div class="viewcode-block" id="c.elosPlugin_t.path"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.file"><div class="viewcode-block" id="c.elosPlugin_t.file"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">file</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPlugin.dlHandle"><div class="viewcode-block" id="c.elosPlugin_t.dlHandle"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">dlHandle</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosPlugin_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c.elosPluginVector_t"><span class="k">typedef</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="n">elosPluginVector_t</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.elosPluginPtrVector_t"><span class="k">typedef</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="n">elosPluginPtrVector_t</span><span class="p">;</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

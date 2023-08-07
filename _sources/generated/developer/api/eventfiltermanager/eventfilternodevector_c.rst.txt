@@ -1,0 +1,4 @@
+eventfilternodevector.c
+=======================
+
+.. autocmodule:: eventfiltermanager/eventfilternodevector.c

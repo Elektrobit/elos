@@ -7,14 +7,14 @@
     <link href="_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
     <link href="_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
     <title>Demos &#8212; elos  documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Elos API" href="generated/api/index.html" />
@@ -82,55 +82,55 @@ Example:
 </div>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -v
-elosc-0.44.0.ca4ef74f
+elosc-0.45.8.fd31cf7d
 </pre></div>
 </div>
 <p>To subscribe on any event :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -s &quot;1 1 EQ&quot;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
 <p>To subscribe on coredump events :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -s &quot;.event.messageCode 5005 EQ&quot;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
 <p>To list all events logged :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -f &quot;1 1 EQ&quot;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
 <p>To list all logged events that are critical :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -f &quot;event.severity 1 EQ&quot;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
 <p>To publish an event :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -p &#39;{&quot;messageCode&quot;: 1001, &quot;severity&quot;: 4, &quot;payload&quot;: &quot;a custom event with severity INFO (4)&quot;}&#39;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
 <p>To publish 100 events as fast as possible :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -c 100 -p &#39;{&quot;messageCode&quot;: 1001, &quot;severity&quot;: 4, &quot;payload&quot;: &quot;publish 100 events as fast as possible&quot;}&#39;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
 <p>To publish 100 events with 50Hz :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -c 100 -r 50 -p &#39;{&quot;messageCode&quot;: 1001, &quot;severity&quot;: 4, &quot;payload&quot;: &quot;publish 100 events at 50Hz&quot;}&#39;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
@@ -139,7 +139,7 @@ ERROR: Connection to elosd failed!
 <h2>demo_libelos_v2 – publish subscrie demo using libelos<a class="headerlink" href="#demo-libelos-v2-publish-subscrie-demo-using-libelos" title="Permalink to this heading">¶</a></h2>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ demo_libelos_v2 -v
-libelos_demo-0.44.0.ca4ef74f
+libelos_demo-0.45.8.fd31cf7d
 </pre></div>
 </div>
 </section>
@@ -168,17 +168,17 @@ messageCount: 1000
 
 messagesPublished: 4000
 messagesConsumed: 4000
-messagesLostByLimit: 28
+messagesLostByLimit: 0
 
-publishTimes.min: 0.000406msec
-publishTimes.avg: 0.001742msec
-publishTimes.max: 0.029883msec
-publishTimes.sum: 6.968476msec
+publishTimes.min: 0.000581msec
+publishTimes.avg: 0.002606msec
+publishTimes.max: 0.038390msec
+publishTimes.sum: 10.425081msec
 
-consumerTimes.min: 0.000132msec
-consumerTimes.avg: 0.001722msec
-consumerTimes.max: 0.034431msec
-consumerTimes.sum: 6.887324msec
+consumerTimes.min: 0.000304msec
+consumerTimes.avg: 0.002521msec
+consumerTimes.max: 0.037965msec
+consumerTimes.sum: 10.085757msec
 </pre></div>
 </div>
 <p>To benchmark the event buffers on a target to find optimal configuration :</p>
@@ -190,17 +190,17 @@ messageCount: 1000
 
 messagesPublished: 100000
 messagesConsumed: 100000
-messagesLostByLimit: 0
+messagesLostByLimit: 12775
 
-publishTimes.min: 0.000000msec
-publishTimes.avg: 0.003615msec
-publishTimes.max: 0.068026msec
-publishTimes.sum: 361.473582msec
+publishTimes.min: 0.000096msec
+publishTimes.avg: 0.002658msec
+publishTimes.max: 0.050775msec
+publishTimes.sum: 265.769070msec
 
-consumerTimes.min: 0.000244msec
-consumerTimes.avg: 0.003322msec
-consumerTimes.max: 0.034775msec
-consumerTimes.sum: 33.216760msec
+consumerTimes.min: 0.000369msec
+consumerTimes.avg: 0.004349msec
+consumerTimes.max: 0.049581msec
+consumerTimes.sum: 43.489962msec
 </pre></div>
 </div>
 </section>
@@ -211,7 +211,7 @@ is configured correctly. It can also be used to develop the mapping rules for
 the syslog scanner.</p>
 <p>To verify that the syslog scanner is working:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ syslog_example &quot;Syslog scanner test&quot;; elosc -f &quot;.event.payload &#39;Syslog scanner test&#39; STRCMP&quot;
-ERROR: connect to localhost:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 failed to connect to elos
 </pre></div>
 </div>
@@ -219,7 +219,7 @@ failed to connect to elos
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">simulate the syslog line</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ syslog_example &quot;Jun 15 19:56:23 hostnameXY wpa_supplicant[420]: wlp0s20f3: WPA: Group rekeying completed with 00:00:00:00:00:00 [GTK=TKIP]&quot;
-ERROR: connect to localhost:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 failed to connect to elos
 </pre></div>
 </div>
@@ -228,7 +228,7 @@ failed to connect to elos
 <div class="code-block-caption"><span class="caption-text">check if rule mtches the syslog line</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -f &quot;.event.payload r&#39;WPA: Group rekeying&#39; REGEX&quot;
 Connecting to elosd...
-ERROR: connect to 127.0.0.1:54321 failed! - Connection refused - file &#39;libelos.c&#39;, line 70, elosConnectTcpip()
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
@@ -288,17 +288,23 @@ and an appender for the logged message should be set in the config file.</p>
 <span class="w">	</span><span class="nt">&lt;appender</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;stdout&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;stream&quot;</span><span class="w"> </span><span class="na">layout=</span><span class="s">&quot;dated&quot;</span><span class="nt">/&gt;</span>
 <span class="w">	</span><span class="nt">&lt;appender</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;stderr&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;stream&quot;</span><span class="w"> </span><span class="na">layout=</span><span class="s">&quot;dated&quot;</span><span class="nt">/&gt;</span>
 <span class="w">	</span><span class="nt">&lt;appender</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;syslog&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;syslog&quot;</span><span class="w"> </span><span class="na">layout=</span><span class="s">&quot;basic&quot;</span><span class="nt">/&gt;</span>
+<span class="w">	</span><span class="nt">&lt;appender</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;elos&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;elos_appender&quot;</span><span class="w"> </span><span class="na">layout=</span><span class="s">&quot;elos_layout&quot;</span><span class="nt">/&gt;</span>
 
 <span class="w">	</span><span class="nt">&lt;layout</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;basic&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;basic&quot;</span><span class="nt">/&gt;</span>
 <span class="w">	</span><span class="nt">&lt;layout</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;dated&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;dated&quot;</span><span class="nt">/&gt;</span>
+<span class="w">	</span><span class="nt">&lt;layout</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;elos_layout&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;elos_formatter&quot;</span><span class="nt">/&gt;</span>
 <span class="w">	</span>
-<span class="w">        </span><span class="nt">&lt;category</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;log4c.elos.demo.log4cdemo&quot;</span><span class="w"> </span><span class="na">priority=</span><span class="s">&quot;debug&quot;</span><span class="w"> </span><span class="na">appender=</span><span class="s">&quot;stdout&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;category</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;log4c.elos.demo.log4cdemo&quot;</span><span class="w"> </span><span class="na">priority=</span><span class="s">&quot;debug&quot;</span><span class="w"> </span><span class="na">appender=</span><span class="s">&quot;elos&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
 
 <span class="nt">&lt;/log4c&gt;</span>
 </pre></div>
 </div>
 <p>More information about how to use log4c framework can be found here :
 <a class="reference external" href="https://log4c.sourceforge.net/">https://log4c.sourceforge.net/</a></p>
+<p>For the elos_log4c_demo application a separate category <code class="docutils literal notranslate"><span class="pre">log4c.elos.demo.log4cdemo</span></code> with an appender <code class="docutils literal notranslate"><span class="pre">elos</span></code> is created in the config file <code class="docutils literal notranslate"><span class="pre">log4crc</span></code> as shown above. The category is the log message destination. The appender outputs the log message to the specified output. An example of an log4c appender can be found here : <a class="reference external" href="https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_appenders.c">https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_appenders.c</a>. The output can be an output stream, file, syslog etc. The <code class="docutils literal notranslate"><span class="pre">elos_appender</span></code> has a layout <code class="docutils literal notranslate"><span class="pre">elos_layout</span></code> which formats the log message using the formatter <code class="docutils literal notranslate"><span class="pre">elos_formatter</span></code>. An example ofa log4c formatter can be found here : <a class="reference external" href="https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_formatters.c">https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_formatters.c</a>. The <code class="docutils literal notranslate"><span class="pre">elos_formatter</span></code> formats the log message using pattern strings and sends the formatted string back to the appender to be released out.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elos_log4c_demo
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -375,7 +381,7 @@ and an appender for the logged message should be set in the config file.</p>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

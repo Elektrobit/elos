@@ -1,0 +1,4 @@
+eventfilternode.c
+=================
+
+.. autocmodule:: eventfiltermanager/eventfilternode.c

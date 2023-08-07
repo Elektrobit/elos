@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logline_mapper.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logline_mapper.c</h1><div class="viewcode-block" id="c.elosClassificationMapping"><div class="highlight"><pre></div>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#ifndef _GNU_SOURCE</span>
+<div class="viewcode-block" id="c._GNU_SOURCE"><span class="cp">#define _GNU_SOURCE</span></div>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;bits/types/struct_timespec.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;samconf/samconf.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_message_codes.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventfilter/eventfilter.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/common.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/vector.h&quot;</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;bits/types/locale_t.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;langinfo.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;locale.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;time.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_source.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/rpnfilter/builder.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/scanner/scanner.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;logline_mapper.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/log.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/time.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosElosDateTemplate"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">elosElosDateTemplate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;%h %e %T &quot;</span><span class="p">;</span></div>
+
+<span class="c1">// clang-format off</span>
+<div class="viewcode-block" id="c.elosSeverityMapping"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">elosSeverityMapping</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span></div>
+<span class="w">    </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_FATAL</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_ERROR</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_ERROR</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_WARN</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_WARN</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_INFO</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_INFO</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_SEVERITY_DEBUG</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="c1">// clang-format on</span>
+
+<span class="c1">// clang-format off</span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">elosClassificationMapping</span><span class="p">[</span><span class="mi">24</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_KERNEL</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_PROCESS</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_SECURITY</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_IPC</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_SECURITY</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">11</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">12</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_NETWORK</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">13</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_SECURITY</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">14</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">15</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_UNDEFINED</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">16</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">17</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_1</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">18</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_2</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">19</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_3</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">20</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_4</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">21</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_5</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">22</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_6</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="mi">23</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_USER_7</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="c1">// clang-format on</span>
+
+<div class="viewcode-block" id="c.elosMessageCodeFilterMapping"><div class="viewcode-block" id="c.elosMessageCodeFilterMapping_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosMessageCodeFilterMapping</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosMessageCodeFilterMapping.messageCode"><div class="viewcode-block" id="c.elosMessageCodeFilterMapping_t.messageCode"><span class="w">    </span><span class="n">elosEventMessageCodeE_t</span><span class="w"> </span><span class="n">messageCode</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosMessageCodeFilterMapping.filter"><div class="viewcode-block" id="c.elosMessageCodeFilterMapping_t.filter"><span class="w">    </span><span class="n">elosEventFilter_t</span><span class="w"> </span><span class="n">filter</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosMessageCodeFilterMapping_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c._parsePRI"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">_parsePRI</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">logline</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">pri</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">nextColumn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">logline</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;&lt;&#39;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strchr</span><span class="p">(</span><span class="n">logline</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;&gt;&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">*</span><span class="n">pri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtol</span><span class="p">(</span><span class="o">&amp;</span><span class="n">logline</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">nextColumn</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">        </span><span class="n">nextColumn</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">nextColumn</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._mapPRI"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_mapPRI</span><span class="p">(</span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pri</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">severity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosSeverityMapping</span><span class="p">[</span><span class="n">pri</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x07</span><span class="p">];</span>
+<span class="w">    </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">classification</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">elosClassificationMapping</span><span class="p">[</span><span class="n">pri</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">3</span><span class="p">];</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._parseTime"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">_parseTime</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="o">*</span><span class="n">eventTime</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">tm</span><span class="w"> </span><span class="n">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">time_t</span><span class="w"> </span><span class="n">timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">remaining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">eventTime</span><span class="o">-&gt;</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">eventTime</span><span class="o">-&gt;</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">safuTimeGetLocalTime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">locale_t</span><span class="w"> </span><span class="n">useLocale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newlocale</span><span class="p">(</span><span class="n">LC_TIME</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">useLocale</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span><span class="n">locale_t</span><span class="p">)</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;newlocale failed, use current time&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">remaining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strptime_l</span><span class="p">(</span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="n">elosElosDateTemplate</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">,</span><span class="w"> </span><span class="n">useLocale</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">remaining</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;strptime_l failed, use current time&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mktime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">timestamp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;mktime failed, use current time&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">eventTime</span><span class="o">-&gt;</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">timestamp</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">remaining</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._parseSource"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">_parseSource</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">identifier</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">source</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">appNameLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">nextColumn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">identifier</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">pid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strchr</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;[&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pid</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="o">-&gt;</span><span class="n">pid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtol</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pid</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">nextColumn</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">        </span><span class="n">appNameLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pid</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">identifier</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">payloadDelimiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strchr</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;:&#39;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">payloadDelimiter</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;failed to parse source identifier&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;invalid syslog format at &#39;%s&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">identifier</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">appNameLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">payloadDelimiter</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">identifier</span><span class="p">;</span>
+<span class="w">            </span><span class="n">nextColumn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">identifier</span><span class="p">[</span><span class="n">appNameLength</span><span class="p">];</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">source</span><span class="o">-&gt;</span><span class="n">appName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strndup</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span><span class="w"> </span><span class="n">appNameLength</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">nextColumn</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._mapMessageCode"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_mapMessageCode</span><span class="p">(</span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">filterList</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosMessageCodeFilterMapping_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">filterCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecElements</span><span class="p">(</span><span class="n">filterList</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">filterCount</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">mapping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecGet</span><span class="p">(</span><span class="n">filterList</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mapping</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Filter list at %ld is NULL&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventFilterExecute</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapping</span><span class="o">-&gt;</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapping</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to execute filter&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._isNumericMessageCode"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">_isNumericMessageCode</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">digitCheck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">strtol</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">digitCheck</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="n">digitCheck</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._getFilterRuleCount"><span class="k">static</span><span class="w"> </span><span class="kt">ssize_t</span><span class="w"> </span><span class="nf">_getFilterRuleCount</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">ruleCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">childCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">config</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">childCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="o">-&gt;</span><span class="n">childCount</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">childItr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">childItr</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">childCount</span><span class="p">;</span><span class="w"> </span><span class="n">childItr</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAMCONF_CONFIG_VALUE_STRING</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">_isNumericMessageCode</span><span class="p">(</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="o">++</span><span class="n">ruleCount</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ruleCount</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._getFilterRule"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_getFilterRule</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">ruleIdx</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">filterCount</span><span class="p">,</span>
+<span class="w">                                    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">rules</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="o">*</span><span class="n">keys</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">childCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">config</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">childCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="o">-&gt;</span><span class="n">childCount</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">childItr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">childItr</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">childCount</span><span class="p">;</span><span class="w"> </span><span class="n">childItr</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAMCONF_CONFIG_VALUE_STRING</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_isNumericMessageCode</span><span class="p">(</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">ruleIdx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">filterCount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">rules</span><span class="p">[</span><span class="o">*</span><span class="n">ruleIdx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">string</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">keys</span><span class="p">[</span><span class="o">*</span><span class="n">ruleIdx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtol</span><span class="p">(</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">                        </span><span class="o">++</span><span class="p">(</span><span class="o">*</span><span class="n">ruleIdx</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;invalid config: MessageCode </span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;</span><span class="s"> has wrong formating!&quot;</span><span class="p">,</span>
+<span class="w">                                </span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;invalid config: filter under MessageCode </span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;</span><span class="s"> is not a valid filter string!&quot;</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">config</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">childItr</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid or null config to collect filter rules&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._createFilterList"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_createFilterList</span><span class="p">(</span><span class="kt">ssize_t</span><span class="w"> </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">filterRules</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="o">*</span><span class="n">filterKeys</span><span class="p">,</span>
+<span class="w">                                </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">filterList</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecCreate</span><span class="p">(</span><span class="n">filterList</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosMessageCodeFilterMapping_t</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retValue</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">elosMessageCodeFilterMapping_t</span><span class="w"> </span><span class="n">mapping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">messageCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterKeys</span><span class="p">[</span><span class="n">i</span><span class="p">]};</span>
+<span class="w">            </span><span class="k">const</span><span class="w"> </span><span class="n">elosEventFilterParam_t</span><span class="w"> </span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">filterString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterRules</span><span class="p">[</span><span class="n">i</span><span class="p">]};</span>
+
+<span class="w">            </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">filterResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventFilterCreate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapping</span><span class="p">.</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">param</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">filterResult</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;Failed to create filter for rule &#39;%s&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">filterRules</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">retValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecPush</span><span class="p">(</span><span class="n">filterList</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">mapping</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retValue</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogWarn</span><span class="p">(</span><span class="s">&quot;Failed to insert filter into filter list&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">elosEventFilterDeleteMembers</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapping</span><span class="p">.</span><span class="n">filter</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to create vector of filters&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._loadFilterRules"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_loadFilterRules</span><span class="p">(</span><span class="kt">ssize_t</span><span class="w"> </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">***</span><span class="n">filterRules</span><span class="p">,</span>
+<span class="w">                               </span><span class="kt">long</span><span class="w"> </span><span class="o">**</span><span class="n">filterKeys</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">ruleIdx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_getFilterRuleCount</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">filterRuleCount</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">*</span><span class="n">filterRules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!*</span><span class="n">filterRules</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="o">*</span><span class="n">filterKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="o">*</span><span class="p">));</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!*</span><span class="n">filterKeys</span><span class="p">)</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_getFilterRule</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ruleIdx</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">filterRuleCount</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">filterRules</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">filterKeys</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to collect filter rules&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;No message code filters found in given application configurations&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosLoglineMapperInit"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLoglineMapperInit</span><span class="p">(</span><span class="n">elosLoglineMapper_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">filterRuleCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">messageCodeConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">filterRules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="o">*</span><span class="n">filterKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">samconfConfigStatusE_t</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAMCONF_CONFIG_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">config</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Configuration or mapper passed is null&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samconfConfigGet</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/MappingRules/MessageCodes&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">messageCodeConfig</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAMCONF_CONFIG_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Given configuration does not have applications config nodes&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_loadFilterRules</span><span class="p">(</span><span class="o">&amp;</span><span class="n">filterRuleCount</span><span class="p">,</span><span class="w"> </span><span class="n">messageCodeConfig</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">filterRules</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">filterKeys</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_createFilterList</span><span class="p">(</span><span class="o">&amp;</span><span class="n">filterRuleCount</span><span class="p">,</span><span class="w"> </span><span class="n">filterRules</span><span class="p">,</span><span class="w"> </span><span class="n">filterKeys</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">filterList</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">filterRules</span><span class="p">);</span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">filterKeys</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosLoglineMapperDeleteMembers"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLoglineMapperDeleteMembers</span><span class="p">(</span><span class="n">elosLoglineMapper_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapper</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosMessageCodeFilterMapping_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapping</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">filterCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecElements</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">filterList</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">filterCount</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">mapping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">elosMessageCodeFilterMapping_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">safuVecGet</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">filterList</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">        </span><span class="n">elosEventFilterDeleteMembers</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapping</span><span class="o">-&gt;</span><span class="n">filter</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">safuVecFree</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">filterList</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<span class="c1">// syslog  Format:</span>
+<span class="c1">// PRI VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID STRUCTURED-DATA MSG</span>
+<span class="c1">//</span>
+<div class="viewcode-block" id="c.elosLoglineMapperDoMapping"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLoglineMapperDoMapping</span><span class="p">(</span><span class="n">elosLoglineMapper_t</span><span class="w"> </span><span class="o">*</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">logLine</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">pri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_parsePRI</span><span class="p">(</span><span class="n">logLine</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">pri</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">next</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_mapPRI</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">pri</span><span class="p">);</span>
+<span class="w">        </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_parseTime</span><span class="p">(</span><span class="n">next</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">next</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_parseSource</span><span class="p">(</span><span class="n">next</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">next</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="o">&amp;</span><span class="n">next</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_mapMessageCode</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">mapper</span><span class="o">-&gt;</span><span class="n">filterList</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogWarn</span><span class="p">(</span><span class="s">&quot;Failed to map message code&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;invalid syslog format:%s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">logLine</span><span class="p">);</span>
+<span class="w">        </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">logLine</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

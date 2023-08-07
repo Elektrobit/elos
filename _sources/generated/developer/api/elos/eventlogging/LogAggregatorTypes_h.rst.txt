@@ -1,0 +1,5 @@
+LogAggregatorTypes.h
+====================
+
+.. autocmodule:: elos/eventlogging/LogAggregatorTypes.h
+    :members:

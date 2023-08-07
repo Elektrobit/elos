@@ -1,0 +1,4 @@
+eventqueue.c
+============
+
+.. autocmodule:: eventqueue/eventqueue.c

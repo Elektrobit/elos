@@ -4,6 +4,6 @@ eventlogging
 .. toctree::
     :maxdepth: 4
 
-    NoSqlBackend_h
-    SqlBackend_h
-    LogAggregator_h
+    LogAggregatorTypes_h
+    PluginFilterLoader_h
+    StorageBackend_h

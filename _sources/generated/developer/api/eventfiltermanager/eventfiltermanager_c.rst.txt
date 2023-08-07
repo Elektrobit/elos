@@ -1,0 +1,4 @@
+eventfiltermanager.c
+====================
+
+.. autocmodule:: eventfiltermanager/eventfiltermanager.c

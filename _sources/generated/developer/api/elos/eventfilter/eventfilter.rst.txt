@@ -4,7 +4,7 @@ eventfilter
 .. toctree::
     :maxdepth: 4
 
-    builder_h
-    eventfilter_h
-    execute_h
-    vector_h
+    eventfilter_types_h
+    step_types_h
+    types_h
+    vector_types_h

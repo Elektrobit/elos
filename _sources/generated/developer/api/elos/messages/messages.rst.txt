@@ -1,7 +1,0 @@
-messages
-========
-
-.. toctree::
-    :maxdepth: 4
-
-    message_handler_h

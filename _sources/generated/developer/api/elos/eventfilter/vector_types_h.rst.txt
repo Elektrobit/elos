@@ -1,0 +1,5 @@
+vector_types.h
+==============
+
+.. autocmodule:: elos/eventfilter/vector_types.h
+    :members:

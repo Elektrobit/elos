@@ -4,7 +4,6 @@ client_manager
 .. toctree::
     :maxdepth: 4
 
-    client_authorized_processes_h
-    client_authorization_h
-    client_blacklist_h
-    client_manager_h
+    client_authorization_types_h
+    client_manager_types_h
+    types_h

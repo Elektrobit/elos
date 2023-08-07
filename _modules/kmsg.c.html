@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kmsg.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kmsg.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;errno.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fcntl.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;poll.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;samconf/samconf.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/eventfd.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/stat.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/types.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;time.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/config/config.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_message_codes.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/scanner/scanner.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;kmsg_mapper.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/log.h&quot;</span>
+
+<span class="cp">#ifndef ELOS_KMSG_FILE</span>
+<div class="viewcode-block" id="c.ELOS_KMSG_FILE"><span class="cp">#define ELOS_KMSG_FILE &quot;/dev/kmsg&quot;</span></div>
+<span class="cp">#endif</span>
+
+<div class="viewcode-block" id="c.MAX_LOG_ENTRY_SIZE"><span class="cp">#define MAX_LOG_ENTRY_SIZE        4096</span></div>
+<div class="viewcode-block" id="c.SCANNER_NAME"><span class="cp">#define SCANNER_NAME              &quot;kmsg&quot;</span></div>
+<div class="viewcode-block" id="c.SCANNER_CMD_STOP"><span class="cp">#define SCANNER_CMD_STOP          1</span></div>
+<div class="viewcode-block" id="c.SCANNER_KMSG_FILE_CREATED"><span class="cp">#define SCANNER_KMSG_FILE_CREATED 1</span></div>
+
+<div class="viewcode-block" id="c.scanner_command_t"><span class="k">typedef</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">scanner_command_t</span><span class="p">;</span></div>
+
+<div class="viewcode-block" id="c.kmsg_context"><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.kmsg_context.kmsgEventId"><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">kmsgEventId</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsg_context.kmsgFile"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">kmsgFile</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsg_context.kmsgPollFd"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">kmsgPollFd</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsg_context.cmdPollFd"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">cmdPollFd</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsg_context.running"><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">running</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsg_context.flags"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsg_context.mapper"><span class="w">    </span><span class="n">elosKmsgMapper_t</span><span class="w"> </span><span class="n">mapper</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.kmsg_context.config"><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span></div>
+<span class="p">};</span></div>
+
+<div class="viewcode-block" id="c._openKmsgFile"><span class="k">static</span><span class="w"> </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">_openKmsgFile</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">stat</span><span class="w"> </span><span class="n">stbuf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">kmsgFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosConfigGetElosdScannerKmsgFile</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">kmsgFile</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stat</span><span class="p">(</span><span class="n">kmsgFile</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">stbuf</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ENOENT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">mode_t</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">S_IRUSR</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">S_IWUSR</span><span class="p">;</span>
+<span class="w">            </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mkfifo</span><span class="p">(</span><span class="n">kmsgFile</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;mkfifo &#39;%s&#39; failed - %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">kmsgFile</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">SCANNER_KMSG_FILE_CREATED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;stat &#39;%s&#39; failed - %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">kmsgFile</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">S_ISCHR</span><span class="p">(</span><span class="n">stbuf</span><span class="p">.</span><span class="n">st_mode</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">S_ISFIFO</span><span class="p">(</span><span class="n">stbuf</span><span class="p">.</span><span class="n">st_mode</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;file &#39;%s&#39; is neither S_IFCHR or S_IFIFO&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">kmsgFile</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgPollFd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open</span><span class="p">(</span><span class="n">kmsgFile</span><span class="p">,</span><span class="w"> </span><span class="n">O_RDONLY</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">O_NONBLOCK</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgPollFd</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;open &#39;%s&#39; failed (%s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">kmsgFile</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">SCANNER_KMSG_FILE_CREATED</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">lseek</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgPollFd</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">SEEK_END</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._publishMessage"><span class="k">static</span><span class="w"> </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">_publishMessage</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">readBuffer</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">readBytes</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">readBuffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">),</span><span class="w"> </span><span class="n">MAX_LOG_ENTRY_SIZE</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">readBuffer</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">readBytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgPollFd</span><span class="p">,</span><span class="w"> </span><span class="n">readBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">MAX_LOG_ENTRY_SIZE</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">readBytes</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;read message&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">readBytes</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">readBuffer</span><span class="p">[</span><span class="n">readBytes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\n&#39;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">readBuffer</span><span class="p">[</span><span class="n">readBytes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">readBuffer</span><span class="p">[</span><span class="n">readBytes</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosScannerCallbackData_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">.</span><span class="n">scannerCallbackData</span><span class="p">;</span>
+<span class="w">        </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">resVal</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="n">eventSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">fileName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgFile</span><span class="p">};</span>
+<span class="w">        </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">.</span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eventSource</span><span class="p">,</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">        </span><span class="n">resVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosKmsgMapperDoMapping</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">readBuffer</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">event</span><span class="p">.</span><span class="n">date</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">            </span><span class="n">event</span><span class="p">.</span><span class="n">date</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="n">event</span><span class="p">.</span><span class="n">messageCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_MSG_CODE_MESSAGE_NOT_UNDERSTOOD</span><span class="p">;</span>
+<span class="w">            </span><span class="n">event</span><span class="p">.</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">readBuffer</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">resVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">.</span><span class="n">eventPublish</span><span class="p">(</span><span class="n">cbData</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;eventPublish failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">resVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">.</span><span class="n">eventLog</span><span class="p">(</span><span class="n">cbData</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;eventLog failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">readBuffer</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosScannerFree"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerFree</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">close</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgPollFd</span><span class="p">);</span>
+<span class="w">        </span><span class="n">close</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmdPollFd</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgFile</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">SCANNER_KMSG_FILE_CREATED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">unlink</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgFile</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgFile</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">);</span>
+<span class="w">        </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosScannerInitialize"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerInitialize</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosScannerParam_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">calloc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgPollFd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmdPollFd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">param</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">;</span>
+<span class="w">        </span><span class="n">elosKmsgMapper_t</span><span class="w"> </span><span class="n">mapper</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elosKmsgMapperInit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mapper</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">mapper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapper</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmdPollFd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eventfd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmdPollFd</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;failed to establish eventfd for command channel&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_openKmsgFile</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_NAME</span><span class="p">;</span>
+<span class="w">        </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosScannerRun"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerRun</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">pollfd</span><span class="w"> </span><span class="n">fds</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">{.</span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmdPollFd</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{.</span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">kmsgPollFd</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">},</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+<span class="w">        </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">poll</span><span class="p">(</span><span class="n">fds</span><span class="p">,</span><span class="w"> </span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">fds</span><span class="p">),</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">revents</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">                </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmdPollFd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">command</span><span class="p">));</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">command</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;read failed on command event (%s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">                    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">command</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCANNER_CMD_STOP</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;ignore invalid command %lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">command</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">revents</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_publishMessage</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;failed to publish message&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;polling failed - %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">            </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosScannerStop"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerStop</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">kmsg_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">scanner_command_t</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_CMD_STOP</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">write</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmdPollFd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">scanner_command_t</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;failed to send command event&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

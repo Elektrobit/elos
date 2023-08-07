@@ -1,0 +1,5 @@
+eventdispatcher_private.h
+=========================
+
+.. autocmodule:: eventdispatcher_private.h
+    :members:

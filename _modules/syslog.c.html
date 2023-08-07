@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>syslog.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for syslog.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;errno.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;poll.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;regex.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/eventfd.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/socket.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/un.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/config/config.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_source.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/scanner/scanner.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;logline_mapper.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/log.h&quot;</span>
+
+<span class="cp">#ifndef ELOSD_SYSLOG_PATH</span>
+<div class="viewcode-block" id="c.ELOSD_SYSLOG_PATH"><span class="cp">#define ELOSD_SYSLOG_PATH &quot;/dev/log&quot;</span></div>
+<span class="cp">#endif</span>
+
+<div class="viewcode-block" id="c.REGEX_FILTER_ACTIVE"><span class="cp">#define REGEX_FILTER_ACTIVE          0x01</span></div>
+<div class="viewcode-block" id="c.REGEX_FILTER_NEEDS_CLEANUP"><span class="cp">#define REGEX_FILTER_NEEDS_CLEANUP   0x02</span></div>
+<div class="viewcode-block" id="c.LOGLINE_MAPPER_NEEDS_CLEANUP"><span class="cp">#define LOGLINE_MAPPER_NEEDS_CLEANUP (0x01 &lt;&lt; 2)</span></div>
+<div class="viewcode-block" id="c.MAX_LOG_ENTRY_SIZE"><span class="cp">#define MAX_LOG_ENTRY_SIZE           4096</span></div>
+<div class="viewcode-block" id="c.SCANNER_NAME"><span class="cp">#define SCANNER_NAME                 &quot;syslog&quot;</span></div>
+
+<div class="viewcode-block" id="c.elosScannerCommand_t"><span class="k">typedef</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">elosScannerCommand_t</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.elosScannerCmdStop"><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosScannerCommand_t</span><span class="w"> </span><span class="n">elosScannerCmdStop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span></div>
+
+<div class="viewcode-block" id="c.syslog_context"><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.syslog_context.syslogEventId"><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">syslogEventId</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.syslog_context.socket"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">socket</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.syslog_context.cmd"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">cmd</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.syslog_context.running"><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">running</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.syslog_context.regExFilter"><span class="w">    </span><span class="n">regex_t</span><span class="w"> </span><span class="n">regExFilter</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.syslog_context.status"><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">status</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.syslog_context.mapper"><span class="w">    </span><span class="n">elosLoglineMapper_t</span><span class="w"> </span><span class="n">mapper</span><span class="p">;</span></div>
+<div class="viewcode-block" id="c.syslog_context.config"><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span></div>
+<span class="p">};</span></div>
+
+<span class="k">static</span><span class="w"> </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">_setupSocket</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">);</span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_publishMessage</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">);</span>
+
+<div class="viewcode-block" id="c.elosScannerInitialize"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerInitialize</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosScannerParam_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filterString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">configPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/root/elos/Scanner/SyslogScanner&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCANNER_NAME</span><span class="p">;</span>
+<span class="w">    </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">param</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">param</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">config</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">samconfConfigGet</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">configPath</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAMCONF_CONFIG_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogInfo</span><span class="p">(</span><span class="s">&quot;No config for syslog scanner found&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eventfd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;failed to establish eventfd for command channel&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">samconfConfigGetString</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;FilterString&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">filterString</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAMCONF_CONFIG_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+<span class="w">        </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regcomp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">regExFilter</span><span class="p">,</span><span class="w"> </span><span class="n">filterString</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;regcomp for filterString &#39;%s&#39; failed!&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">filterString</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// There seems to be no easy way to detect if a regex_t is valid;</span>
+<span class="w">            </span><span class="c1">// This causes problems further down the line as regfree() causes</span>
+<span class="w">            </span><span class="c1">// segmentation faults when used on a uninitialized regex_t struct,</span>
+<span class="w">            </span><span class="c1">// so we have to rely on flags to make sure everything runs smoothly</span>
+<span class="w">            </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="p">(</span><span class="n">REGEX_FILTER_ACTIVE</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">REGEX_FILTER_NEEDS_CLEANUP</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elosLoglineMapperInit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to setup logline mapper&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">LOGLINE_MAPPER_NEEDS_CLEANUP</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_setupSocket</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosScannerRun"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerRun</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">pollfd</span><span class="w"> </span><span class="n">fds</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">{.</span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{.</span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">},</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">poll</span><span class="p">(</span><span class="n">fds</span><span class="p">,</span><span class="w"> </span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">fds</span><span class="p">),</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">revents</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_publishMessage</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">revents</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">command</span><span class="p">));</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">command</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;failed to receive command event&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">command</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">elosScannerCmdStop</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogInfoF</span><span class="p">(</span><span class="s">&quot;Ignore command %lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">command</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;polling failed, bail out&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosScannerStop"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerStop</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">write</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">elosScannerCmdStop</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosScannerCommand_t</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;failed to send command event&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosScannerFree"><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">elosScannerFree</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">REGEX_FILTER_NEEDS_CLEANUP</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">regfree</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">regExFilter</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">LOGLINE_MAPPER_NEEDS_CLEANUP</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosLoglineMapperDeleteMembers</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">mapper</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">close</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">close</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">unlink</span><span class="p">(</span><span class="n">elosConfigGetElosdSyslogSocketPath</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">));</span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._setupSocket"><span class="k">static</span><span class="w"> </span><span class="n">elosScannerResultE_t</span><span class="w"> </span><span class="nf">_setupSocket</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr_un</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">sun_family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AF_UNIX</span><span class="p">};</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">syslogSocketPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosConfigGetElosdSyslogSocketPath</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">);</span>
+<span class="w">    </span><span class="n">strncpy</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">sun_path</span><span class="p">,</span><span class="w"> </span><span class="n">syslogSocketPath</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">sun_path</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">socket</span><span class="p">(</span><span class="n">AF_UNIX</span><span class="p">,</span><span class="w"> </span><span class="n">SOCK_DGRAM</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;failed to setup syslog socket&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">access</span><span class="p">(</span><span class="n">syslogSocketPath</span><span class="p">,</span><span class="w"> </span><span class="n">F_OK</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">unlink</span><span class="p">(</span><span class="n">syslogSocketPath</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;failed to delete socket&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bind</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">name</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;failed to bind socket to &#39;%s&#39; - %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">syslogSocketPath</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SCANNER_OK</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._publishMessage"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_publishMessage</span><span class="p">(</span><span class="n">elosScannerSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filterString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">syslog_context</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">),</span><span class="w"> </span><span class="n">MAX_LOG_ENTRY_SIZE</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">publish</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">bytesRead</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">socket</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">MAX_LOG_ENTRY_SIZE</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytesRead</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;read message&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">bytesRead</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="n">bytesRead</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\n&#39;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">buffer</span><span class="p">[</span><span class="n">bytesRead</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">buffer</span><span class="p">[</span><span class="n">bytesRead</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">REGEX_FILTER_ACTIVE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="p">;</span>
+<span class="w">        </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexec</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">regExFilter</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">REG_NOMATCH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">publish</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retval</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">samconfConfigGetString</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;FilterString&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">filterString</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;regexec for filterString &#39;%s&#39; failed! Disabling filter.&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">filterString</span><span class="p">);</span>
+<span class="w">            </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">REGEX_FILTER_ACTIVE</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">publish</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosScannerCallbackData_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">.</span><span class="n">scannerCallbackData</span><span class="p">;</span>
+<span class="w">        </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">        </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">        </span><span class="n">elosLoglineMapperDoMapping</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">mapper</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">.</span><span class="n">eventLog</span><span class="p">(</span><span class="n">cbData</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;eventPublish failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">.</span><span class="n">eventPublish</span><span class="p">(</span><span class="n">cbData</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;eventLog failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">elosEventDeleteMembers</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

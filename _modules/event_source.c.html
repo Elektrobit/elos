@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>event_source.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for event_source.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_source.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;json-c/json_tokener.h&gt;</span><span class="c1"> /* json_tokener_parse */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span><span class="c1">              /* calloc, free */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span><span class="c1">              /* strdup */</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/common.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/json.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/log.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosEventSourceNew"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceNew</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventSource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="o">*</span><span class="n">eventSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calloc</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">eventSource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDeleteMembers"><span class="kt">void</span><span class="w"> </span><span class="nf">elosEventSourceDeleteMembers</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventSource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">eventSource</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">eventSource</span><span class="o">-&gt;</span><span class="n">appName</span><span class="p">);</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">eventSource</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDelete"><span class="kt">void</span><span class="w"> </span><span class="nf">elosEventSourceDelete</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventSource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">eventSource</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosEventSourceDeleteMembers</span><span class="p">(</span><span class="n">eventSource</span><span class="p">);</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">eventSource</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceToJsonObject"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceToJsonObject</span><span class="p">(</span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">to</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parameter is NULL!&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">from</span><span class="o">-&gt;</span><span class="n">appName</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">safuJsonAddNewString</span><span class="p">(</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;appName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">from</span><span class="o">-&gt;</span><span class="n">appName</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuJsonAddNewString failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">from</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">safuJsonAddNewString</span><span class="p">(</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;fileName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">from</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuJsonAddNewString failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">from</span><span class="o">-&gt;</span><span class="n">pid</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">safuJsonAddNewInt</span><span class="p">(</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pid&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">from</span><span class="o">-&gt;</span><span class="n">pid</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuJsonAddNewInt failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceSerialize"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceSerialize</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">toJsonString</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">jobj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parameter &#39;from&#39; is NULL!&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">jobj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json_object_new_object</span><span class="p">();</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">jobj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;conversion to json object failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventSourceToJsonObject</span><span class="p">(</span><span class="n">jobj</span><span class="p">,</span><span class="w"> </span><span class="n">from</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json_object_to_json_string_ext</span><span class="p">(</span><span class="n">jobj</span><span class="p">,</span><span class="w"> </span><span class="n">JSON_C_TO_STRING_PRETTY</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tmp</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;json_object_to_json_string_ext failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="o">*</span><span class="n">toJsonString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!*</span><span class="n">toJsonString</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;allocating string failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jobj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">json_object_put</span><span class="p">(</span><span class="n">jobj</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceFromJsonObject"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceFromJsonObject</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">to</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parameter is NULL!&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">json_object_object_get</span><span class="p">(</span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;appName&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">safuJsonGetString</span><span class="p">(</span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;appName&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuJsonGetString failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">to</span><span class="o">-&gt;</span><span class="n">appName</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">free</span><span class="p">(</span><span class="n">to</span><span class="o">-&gt;</span><span class="n">appName</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">to</span><span class="o">-&gt;</span><span class="n">appName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">to</span><span class="o">-&gt;</span><span class="n">appName</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;allocating appName failed!&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">json_object_object_get</span><span class="p">(</span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;fileName&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">safuJsonGetString</span><span class="p">(</span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;fileName&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuJsonGetString failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">to</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">free</span><span class="p">(</span><span class="n">to</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">to</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">to</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;allocating fileName failed!&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">json_object_object_get</span><span class="p">(</span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pid&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">safuJsonGetInt32</span><span class="p">(</span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pid&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">to</span><span class="o">-&gt;</span><span class="n">pid</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuJsonGetInt32 failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDeserialize"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceDeserialize</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fromJsonString</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">to</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">fromJsonString</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parameter is NULL!&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">jobj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json_tokener_parse</span><span class="p">(</span><span class="n">fromJsonString</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">jobj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;json_tokener_parse failed!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventSourceFromJsonObject</span><span class="p">(</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="n">jobj</span><span class="p">);</span>
+<span class="w">            </span><span class="n">json_object_put</span><span class="p">(</span><span class="n">jobj</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventSourceDeepCopy"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceDeepCopy</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">to</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">from</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;parameter is NULL!&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">to</span><span class="o">-&gt;</span><span class="n">pid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">from</span><span class="o">-&gt;</span><span class="n">pid</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">from</span><span class="o">-&gt;</span><span class="n">appName</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">appName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">from</span><span class="o">-&gt;</span><span class="n">appName</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">appName</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;strdup from-&gt;appName failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">to</span><span class="o">-&gt;</span><span class="n">appName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">appName</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">to</span><span class="o">-&gt;</span><span class="n">appName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">from</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fileName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strdup</span><span class="p">(</span><span class="n">from</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fileName</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;strdup from-&gt;fileName failed!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">to</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fileName</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">to</span><span class="o">-&gt;</span><span class="n">fileName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

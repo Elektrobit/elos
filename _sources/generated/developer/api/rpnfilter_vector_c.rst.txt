@@ -1,0 +1,4 @@
+rpnfilter_vector.c
+==================
+
+.. autocmodule:: rpnfilter_vector.c

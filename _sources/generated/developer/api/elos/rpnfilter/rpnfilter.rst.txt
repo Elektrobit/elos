@@ -4,7 +4,9 @@ rpnfilter
 .. toctree::
     :maxdepth: 4
 
-    builder_h
-    execute_h
-    rpnfilter_h
-    vector_h
+    builder_types_h
+    execute_types_h
+    rpnfilter_types_h
+    step_types_h
+    types_h
+    vector_types_h

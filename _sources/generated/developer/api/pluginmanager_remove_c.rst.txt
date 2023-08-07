@@ -1,0 +1,4 @@
+pluginmanager_remove.c
+======================
+
+.. autocmodule:: pluginmanager_remove.c

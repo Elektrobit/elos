@@ -4,6 +4,4 @@ plugin
 .. toctree::
     :maxdepth: 4
 
-    plugin_h
-    thread_h
-    vector_h
+    types_h

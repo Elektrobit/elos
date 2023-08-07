@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rpnfilter_execute.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for rpnfilter_execute.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;regex.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/rpnfilter/execute.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/rpnfilter/types.h&quot;</span>
+
+<div class="viewcode-block" id="c._STACK_SIZE"><span class="cp">#define _STACK_SIZE       32</span></div>
+<div class="viewcode-block" id="c._STACK_ENTRY"><span class="cp">#define _STACK_ENTRY(__i) ctx-&gt;stack-&gt;entry[__i]</span></div>
+<div class="viewcode-block" id="c._STACK_LAST"><span class="cp">#define _STACK_LAST       _STACK_ENTRY(ctx-&gt;stackIdx)</span></div>
+<div class="viewcode-block" id="c._VSTACK_LAST"><span class="cp">#define _VSTACK_LAST      ctx-&gt;filter-&gt;values-&gt;entry[ctx-&gt;valueStackIdx]</span></div>
+<div class="viewcode-block" id="c._STACK_SUB1"><span class="cp">#define _STACK_SUB1       _STACK_ENTRY(ctx-&gt;stackIdx - 1)</span></div>
+<div class="viewcode-block" id="c._STACK_SUB2"><span class="cp">#define _STACK_SUB2       _STACK_ENTRY(ctx-&gt;stackIdx - 2)</span></div>
+
+<div class="viewcode-block" id="c._pushBool"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_pushBool</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_BOOL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">bool</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w">  </span><span class="c1">// bool isn&#39;t just one bit, so we make sure its really only true/false</span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._pushI64"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_pushI64</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_I64</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int64_t</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">i64</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._pushU64"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_pushU64</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_U64</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_STACK_LAST</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">u64</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._entryToI64"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="nf">_entryToI64</span><span class="p">(</span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">entry</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BOOL</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I32</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">i32</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">i64</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U32</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">u32</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">u64</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="c1">// This part will never be reached due to _verifyNumberTypeTuple always being called first</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Incompatible value type&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._entryToU64"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="nf">_entryToU64</span><span class="p">(</span><span class="n">elosRpnFilterStackEntry_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">entry</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BOOL</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I32</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">i32</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">i64</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U32</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">u32</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">.</span><span class="n">u64</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="c1">// This part will never be reached due to _verifyNumberTypeTuple always being called first</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Incompatible value type&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._verifyNumberType"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_verifyNumberType</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterValueTypeE_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">type</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BOOL</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I32</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U32</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR_NUMOP_TYPE</span><span class="p">;</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Step RPNFILTER_STEP_NOT used with non-numeric type!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._verifyNumberTypeTuple"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_verifyNumberTypeTuple</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">ctx</span><span class="p">,</span>
+<span class="w">                                                            </span><span class="n">elosRpnFilterValueTypeE_t</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">mode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterValueTypeE_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">).</span><span class="n">type</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterValueTypeE_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">type</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Note: We do not want the hassle with types in the RpnFilter syntax right now,</span>
+<span class="w">    </span><span class="c1">//       so we use either int64_t or uint64_t for operations until we have requirements</span>
+<span class="w">    </span><span class="c1">//       that warrant a more strict test or different behaviour. The used type is based on the first parameter</span>
+<span class="w">    </span><span class="c1">//       expect when its a bool, in which case the second parameter decides it.</span>
+<span class="w">    </span><span class="c1">// Note2: This likely can be further optimized by using a data table (= avoiding conditional jumps)</span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BOOL</span><span class="p">:</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U32</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_U64</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BOOL</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I32</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_I64</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR_NUMOP_TYPE</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Incompatible comparison types&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I32</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BOOL</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U32</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I32</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_I64</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR_NUMOP_TYPE</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Incompatible comparison types&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U32</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_BOOL</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I32</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U32</span><span class="p">:</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_U64</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR_NUMOP_TYPE</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Incompatible comparison types&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR_NUMOP_TYPE</span><span class="p">;</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Incompatible comparison types&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._stepUnaryNumberOperation"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_stepUnaryNumberOperation</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">ctx</span><span class="p">,</span>
+<span class="w">                                                               </span><span class="n">elosRpnFilterStepType_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_entryToI64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NOT</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">val</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Unknown comparison type&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NOT</span><span class="p">:</span>
+<span class="w">                </span><span class="n">_pushBool</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                </span><span class="n">_pushI64</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._stepNumberOperationSigned"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_stepNumberOperationSigned</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">ctx</span><span class="p">,</span>
+<span class="w">                                                                </span><span class="n">elosRpnFilterStepType_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_entryToI64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">));</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_entryToI64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_AND</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_OR</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_XOR</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_ADD</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_SUB</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_DIV</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_MUL</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_EQ</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NE</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LE</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GE</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LT</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GT</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Unknown comparison type&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_EQ</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NE</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LE</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GE</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LT</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GT</span><span class="p">:</span>
+<span class="w">                </span><span class="n">_pushBool</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                </span><span class="n">_pushI64</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._stepNumberOperationUnsigned"><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_stepNumberOperationUnsigned</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="kr">restrict</span><span class="w"> </span><span class="n">ctx</span><span class="p">,</span>
+<span class="w">                                                                  </span><span class="n">elosRpnFilterStepType_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_entryToU64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">));</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_entryToU64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_STACK_ENTRY</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_AND</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_OR</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_XOR</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_ADD</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_SUB</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_DIV</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_MUL</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_EQ</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NE</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LE</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GE</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LT</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GT</span><span class="p">:</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Unknown comparison type&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_EQ</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NE</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LE</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GE</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LT</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GT</span><span class="p">:</span>
+<span class="w">                </span><span class="n">_pushBool</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                </span><span class="n">_pushU64</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._stepNumberOperation"><span class="k">static</span><span class="w"> </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">_stepNumberOperation</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilterStepType_t</span><span class="w"> </span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterValueTypeE_t</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_UNDEFINED</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_verifyNumberTypeTuple</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">mode</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">mode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_I64</span><span class="p">:</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_stepNumberOperationSigned</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_VALUE_U64</span><span class="p">:</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_stepNumberOperationUnsigned</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterExecuteStackNew"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecuteStackNew</span><span class="p">(</span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">**</span><span class="n">stack</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">stackSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">stack</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">stackSize</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid parameter&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">stackMemLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosRpnFilterStack_t</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">((</span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosRpnFilterStackEntry_t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">stackSize</span><span class="p">));</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// We should find a way to avoid this allocMem, as this function will get called VERY often</span>
+<span class="w">        </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">stackMemLen</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">memset</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">stackMemLen</span><span class="p">);</span>
+<span class="w">            </span><span class="o">*</span><span class="n">stack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterExecuteStackDelete"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecuteStackDelete</span><span class="p">(</span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">*</span><span class="n">stack</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">stack</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterExecuteStep"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecuteStep</span><span class="p">(</span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">idx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterStepType_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">filter</span><span class="o">-&gt;</span><span class="n">steps</span><span class="o">-&gt;</span><span class="n">entry</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">type</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">ui32</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LDP</span><span class="p">:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">param</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Step RPNFILTER_STEP_LDP used without parameters!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">ui32</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_VSTACK_LAST</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">u32</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                </span><span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_STACK_LAST</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">param</span><span class="o">-&gt;</span><span class="n">entry</span><span class="p">[</span><span class="n">ui32</span><span class="p">],</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosRpnFilterStackEntry_t</span><span class="p">));</span>
+<span class="w">                </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">valueStackIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LDV</span><span class="p">:</span>
+<span class="w">            </span><span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_STACK_LAST</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_VSTACK_LAST</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosRpnFilterStackEntry_t</span><span class="p">));</span>
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">valueStackIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_EQ</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NE</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LE</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GE</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_LT</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_GT</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_AND</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_OR</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_XOR</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_ADD</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_SUB</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_DIV</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_MUL</span><span class="p">:</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_stepNumberOperation</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_NOT</span><span class="p">:</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_verifyNumberType</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_stepUnaryNumberOperation</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_STRCMP</span><span class="p">:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">_STACK_SUB1</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_STRING</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">_STACK_SUB2</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_STRING</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Step RPNFILTER_STEP_STRCMP used with non-string values!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_STACK_SUB1</span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">_STACK_SUB2</span><span class="p">.</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strncmp</span><span class="p">(</span><span class="n">_STACK_SUB1</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">str</span><span class="p">,</span><span class="w"> </span><span class="n">_STACK_SUB2</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">str</span><span class="p">,</span><span class="w"> </span><span class="n">_STACK_SUB1</span><span class="p">.</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_pushBool</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="cm">/* 2nd param expects true (1) or false (0) */</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_STEP_REGEX</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">res</span><span class="p">;</span>
+<span class="w">            </span><span class="n">regex_t</span><span class="w"> </span><span class="o">*</span><span class="n">regex</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">char</span><span class="w"> </span><span class="n">errbuf</span><span class="p">[</span><span class="mi">200</span><span class="p">];</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">_STACK_SUB1</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_REGEX</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">_STACK_SUB2</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">RPNFILTER_VALUE_STRING</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Step RPNFILTER_STEP_REGEX expects a regex string as first and a string as second value!&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">;</span>
+<span class="w">                </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_STACK_SUB1</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">ptr</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_STACK_SUB1</span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_STACK_SUB2</span><span class="p">.</span><span class="n">bytes</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexec</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span><span class="w"> </span><span class="n">_STACK_SUB2</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">str</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">REG_NOMATCH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">regerror</span><span class="p">(</span><span class="n">res</span><span class="p">,</span><span class="w"> </span><span class="n">regex</span><span class="p">,</span><span class="w"> </span><span class="n">errbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">errbuf</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Step RPNFILTER_STEP_REGEX failed to match regex: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">errbuf</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">stackIdx</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_pushBool</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"> </span><span class="cm">/* 2nd param expects true (1) or false (0) */</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NOT_FOUND</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterExecuteWith"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecuteWith</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">,</span>
+<span class="w">                                                </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilterExecuteFunc_t</span><span class="w"> </span><span class="n">func</span><span class="p">[],</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">funcCount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">filter</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">func</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">funcCount</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid parameter&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">filter</span><span class="o">-&gt;</span><span class="n">steps</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">filter</span><span class="o">-&gt;</span><span class="n">values</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid filter&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosRpnFilterExecute_t</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">filter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">param</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosRpnFilterExecuteStackNew</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ctx</span><span class="p">.</span><span class="n">stack</span><span class="p">,</span><span class="w"> </span><span class="n">_STACK_SIZE</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosRpnFilterExecuteStackNew failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">stepIdx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">stepIdx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">filter</span><span class="o">-&gt;</span><span class="n">steps</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="n">stepIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">funcIdx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">funcIdx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">funcCount</span><span class="p">;</span><span class="w"> </span><span class="n">funcIdx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">func</span><span class="p">[</span><span class="n">funcIdx</span><span class="p">](</span><span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">stepIdx</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;executeStep (stepIdx:%u, funcIdx:%lu) failed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">stepIdx</span><span class="p">,</span><span class="w"> </span><span class="n">funcIdx</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NOT_FOUND</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_RESULT_ERROR</span><span class="p">:</span>
+<span class="w">                        </span><span class="n">stepIdx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="o">-&gt;</span><span class="n">steps</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_RESULT_NOT_FOUND</span><span class="p">:</span>
+<span class="w">                        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid step&quot;</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_RESULT_OK</span><span class="p">:</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_RESULT_MATCH</span><span class="p">:</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">RPNFILTER_RESULT_NO_MATCH</span><span class="p">:</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Invalid step response &#39;%d&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_ERROR</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">elosRpnFilterExecuteStackDelete</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">stack</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterExecute"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecute</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterExecuteFunc_t</span><span class="w"> </span><span class="n">func</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">elosRpnFilterExecuteStep</span><span class="p">};</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">elosRpnFilterExecuteWith</span><span class="p">(</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">param</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">func</span><span class="p">));</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosRpnFilterExecuteResult"><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecuteResult</span><span class="p">(</span><span class="n">UNUSED</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span>
+<span class="w">                                                  </span><span class="n">UNUSED</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">,</span>
+<span class="w">                                                  </span><span class="n">UNUSED</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">*</span><span class="n">output</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;%s not implemented yet!&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">__func__</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

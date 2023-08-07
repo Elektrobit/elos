@@ -4,7 +4,6 @@ processfilter
 .. toctree::
     :maxdepth: 4
 
-    vector_h
-    builder_h
-    execute_h
-    processfilter_h
+    processfilter_types_h
+    step_types_h
+    types_h

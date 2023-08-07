@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NoSqlBackend.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for NoSqlBackend.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;NoSqlBackend.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;bson/bson.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;mongoc/mongoc.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event.h&quot;</span>
+
+<div class="viewcode-block" id="c.BACKEND_NAME"><span class="cp">#define BACKEND_NAME &quot;NOSQL&quot;</span></div>
+
+<span class="cp">#ifndef CONNECTION_STRING</span>
+<div class="viewcode-block" id="c.CONNECTION_STRING"><span class="cp">#define CONNECTION_STRING &quot;mongodb:</span><span class="c1">//localhost:27017/?appname=elosd&quot;</span></div>
+<span class="cp">#endif</span>
+
+<div class="viewcode-block" id="c.elosNoSqlBackend"><div class="viewcode-block" id="c.elosNoSqlBackend_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosNoSqlBackend</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosNoSqlBackend.client"><div class="viewcode-block" id="c.elosNoSqlBackend_t.client"><span class="w">    </span><span class="n">mongoc_client_t</span><span class="w"> </span><span class="o">*</span><span class="n">client</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosNoSqlBackend.collection"><div class="viewcode-block" id="c.elosNoSqlBackend_t.collection"><span class="w">    </span><span class="n">mongoc_collection_t</span><span class="w"> </span><span class="o">*</span><span class="n">collection</span><span class="p">;</span></div></div>
+<span class="p">}</span><span class="w"> </span><span class="n">elosNoSqlBackend_t</span><span class="p">;</span></div></div>
+
+<div class="viewcode-block" id="c._getConnectionString"><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">_getConnectionString</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">safuGetEnvOr</span><span class="p">(</span><span class="s">&quot;ELOS_STORAGE_BACKEND_NOSQL_CONNECTION&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">CONNECTION_STRING</span><span class="p">);</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosNoSqlBackendStart"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosNoSqlBackendStart</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosNoSqlBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">noSqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">connectionString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_getConnectionString</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;start backend %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">mongoc_init</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mongoc_client_new</span><span class="p">(</span><span class="n">connectionString</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">client</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to connect to : %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">connectionString</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">collection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mongoc_client_get_collection</span><span class="p">(</span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">client</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;elosd&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;events&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">collection</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to get database : %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;elsod&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;%s connected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosNoSqlBackendPersist"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosNoSqlBackendPersist</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosNoSqlBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">noSqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="n">bson_error_t</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="n">bson_oid_t</span><span class="w"> </span><span class="n">objectId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="n">bson_t</span><span class="w"> </span><span class="o">*</span><span class="n">bEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;store event: %i, %lu, %i, %lu, %lu, &#39;%s&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">classification</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">severity</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">bEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bEvent</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to create new bson object&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">bson_oid_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">objectId</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BSON_APPEND_OID</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;_id&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">objectId</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BSON_APPEND_INT32</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;messageCode&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BSON_APPEND_INT64</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;classification&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">classification</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BSON_APPEND_INT32</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;severity&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">severity</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BSON_APPEND_INT64</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;date_s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BSON_APPEND_INT64</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;date_ns&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">BSON_APPEND_UTF8</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;payload&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">BSON_APPEND_INT64</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pid&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">pid</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">appName</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">BSON_APPEND_UTF8</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;appName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">appName</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">fileName</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">BSON_APPEND_UTF8</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;fileName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">fileName</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mongoc_collection_insert_one</span><span class="p">(</span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">collection</span><span class="p">,</span><span class="w"> </span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">error</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to persist event: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="n">message</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">bson_destroy</span><span class="p">(</span><span class="n">bEvent</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._convertBsonEventToEvent"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_convertBsonEventToEvent</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">bson_t</span><span class="w"> </span><span class="o">*</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">bson_iter_t</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bson_iter_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="n">bEvent</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">bson_iter_next</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;messageCode&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_as_int64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;classification&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">classification</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_as_int64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;severity&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">severity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_as_int64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;date_s&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_as_int64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;date_ns&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_as_int64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;payload&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_dup_utf8</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pid&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">pid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_as_int64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;appName&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">appName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_dup_utf8</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BSON_ITER_IS_KEY</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;fileName&quot;</span><span class="p">))</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">fileName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_iter_dup_utf8</span><span class="p">(</span><span class="o">&amp;</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosNoSqlBackendFilterEvent"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosNoSqlBackendFilterEvent</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">bson_t</span><span class="w"> </span><span class="o">*</span><span class="n">bEvent</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="n">filterResult</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventNew</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">event</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;allocate event failed failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogDebug</span><span class="p">(</span><span class="s">&quot;Event created&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">_convertBsonEventToEvent</span><span class="p">(</span><span class="n">bEvent</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">filterResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventFilterExecute</span><span class="p">(</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">filterResult</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_MATCH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuVecPush</span><span class="p">(</span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebug</span><span class="p">(</span><span class="s">&quot;Append event: Match&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">filterResult</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RPNFILTER_RESULT_NO_MATCH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">elosEventDelete</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebug</span><span class="p">(</span><span class="s">&quot;Free Event: No Match&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosEventFilterExecute failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">elosEventDelete</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogDebug</span><span class="p">(</span><span class="s">&quot;Free Event: Error&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosNoSqlBackendFindEvents"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosNoSqlBackendFindEvents</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosNoSqlBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">noSqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">bson_t</span><span class="w"> </span><span class="o">*</span><span class="n">selectAll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">backend</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">filter</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">events</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Called elosNoSqlBackendFindEvents with NULL-parameter&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">noSqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Called elosNoSqlBackendFindEvents with uninitialized backend data&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">selectAll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bson_new</span><span class="p">();</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">selectAll</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;bson_new failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">mongoc_cursor_t</span><span class="w"> </span><span class="o">*</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mongoc_collection_find_with_opts</span><span class="p">(</span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">collection</span><span class="p">,</span><span class="w"> </span><span class="n">selectAll</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">bson_t</span><span class="w"> </span><span class="o">*</span><span class="n">bEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">mongoc_cursor_next</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bEvent</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosNoSqlBackendFilterEvent</span><span class="p">(</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">bEvent</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosNoSqlBackendFilterEvent failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">mongoc_cursor_destroy</span><span class="p">(</span><span class="n">cursor</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">bson_destroy</span><span class="p">(</span><span class="n">selectAll</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosNoSqlBackendShutdown"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosNoSqlBackendShutdown</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">backend</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;shutdown backend %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">elosNoSqlBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">noSqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">noSqlBackend</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">mongoc_collection_destroy</span><span class="p">(</span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">collection</span><span class="p">);</span>
+<span class="w">            </span><span class="n">mongoc_client_destroy</span><span class="p">(</span><span class="n">noSqlBackend</span><span class="o">-&gt;</span><span class="n">client</span><span class="p">);</span>
+<span class="w">            </span><span class="n">mongoc_cleanup</span><span class="p">();</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosNoSqlBackendNew"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosNoSqlBackendNew</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">**</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">newBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">newBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newBackend</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">newBackend</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="p">));</span>
+<span class="w">        </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosNoSqlBackend_t</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogCrit</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">newBackend</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">memset</span><span class="p">(</span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosNoSqlBackend_t</span><span class="p">));</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BACKEND_NAME</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosNoSqlBackendStart</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">persist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosNoSqlBackendPersist</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">findEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosNoSqlBackendFindEvents</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">shutdown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosNoSqlBackendShutdown</span><span class="p">;</span>
+<span class="w">            </span><span class="o">*</span><span class="n">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newBackend</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

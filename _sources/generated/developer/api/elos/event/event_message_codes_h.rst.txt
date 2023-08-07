@@ -1,0 +1,5 @@
+event_message_codes.h
+=====================
+
+.. autocmodule:: elos/event/event_message_codes.h
+    :members:

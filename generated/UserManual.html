@@ -7,14 +7,14 @@
     <link href="../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
     <link href="../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
     <title>elos &#8212; elos  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Demos" href="../demo.html" />
@@ -92,7 +92,7 @@ police of the logging backend.</p>
 <p>Here is an example how the json data of a stored event could look like:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1667929310</span><span class="p">,</span><span class="mi">941892533</span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;appname&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;openssh&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/usr/bin/sshd&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">208</span><span class="p">,</span>
@@ -329,7 +329,7 @@ created. Following is an example of an event created by elos-coredump
 and logged in elos log</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;date&quot;</span><span class="p">:[</span><span class="mi">203</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;Source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">     </span><span class="nt">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;\/bin\/busybox.nosuid&quot;</span><span class="p">,</span>
 <span class="w">     </span><span class="nt">&quot;fileName&quot;</span><span class="p">:</span><span class="s2">&quot;\/bin\/busybox.nosuid&quot;</span><span class="p">,</span>
 <span class="w">     </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="mi">475</span>
@@ -393,7 +393,7 @@ illustrated below.</p>
 
 <span class="c1"># subscribed elos client captures coredump event</span>
 <span class="n">root</span><span class="nd">@eb</span><span class="o">-</span><span class="n">arm64</span><span class="p">:</span><span class="o">~</span><span class="c1">#   new data [5964,163307136]:</span>
-<span class="p">[{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">333333</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s2">&quot;Source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;\/usr\/bin\/somebinary&quot;</span><span class="p">,</span><span class="s2">&quot;fileName&quot;</span><span class="p">:</span><span class="s2">&quot;\/usr\/bin\/somebinary&quot;</span><span class="p">,</span><span class="s2">&quot;pid&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span><span class="s2">&quot;severity&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;hardwareid&quot;</span><span class="p">:</span><span class="s2">&quot;myhostname&quot;</span><span class="p">,</span><span class="s2">&quot;classification&quot;</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="s2">&quot;messageCode&quot;</span><span class="p">:</span><span class="mi">5005</span><span class="p">,</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;core dumped to \/tmp\/core.333333.1, signal=11, UID=2, GID=3&quot;</span><span class="p">}]</span>
+<span class="p">[{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">333333</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s2">&quot;source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;\/usr\/bin\/somebinary&quot;</span><span class="p">,</span><span class="s2">&quot;fileName&quot;</span><span class="p">:</span><span class="s2">&quot;\/usr\/bin\/somebinary&quot;</span><span class="p">,</span><span class="s2">&quot;pid&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span><span class="s2">&quot;severity&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;hardwareid&quot;</span><span class="p">:</span><span class="s2">&quot;myhostname&quot;</span><span class="p">,</span><span class="s2">&quot;classification&quot;</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="s2">&quot;messageCode&quot;</span><span class="p">:</span><span class="mi">5005</span><span class="p">,</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;core dumped to \/tmp\/core.333333.1, signal=11, UID=2, GID=3&quot;</span><span class="p">}]</span>
 
 <span class="c1"># Coredump file with given coredump data</span>
 <span class="n">root</span><span class="nd">@eb</span><span class="o">-</span><span class="n">arm64</span><span class="p">:</span><span class="o">~</span><span class="c1"># ls -lah /tmp/core.333333.1</span>
@@ -433,7 +433,7 @@ core_patterns is demonstrated below.</p>
 <span class="c1"># Triggered coredump generates an new event and it is logged.</span>
 <span class="c1"># Logged event is then accessible to subscribed elos client.</span>
 <span class="n">root</span><span class="nd">@eb</span><span class="o">-</span><span class="n">arm64</span><span class="p">:</span><span class="o">~</span><span class="c1">#   new data [203,936636528]:</span>
-  <span class="p">[{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">203</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s2">&quot;Source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;\/bin\/busybox.nosuid&quot;</span><span class="p">,</span><span class="s2">&quot;fileName&quot;</span><span class="p">:</span><span class="s2">&quot;\/bin\/busybox.nosuid&quot;</span><span class="p">,</span><span class="s2">&quot;pid&quot;</span><span class="p">:</span><span class="mi">475</span><span class="p">},</span><span class="s2">&quot;severity&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;hardwareid&quot;</span><span class="p">:</span><span class="s2">&quot;eb-arm64&quot;</span><span class="p">,</span><span class="s2">&quot;classification&quot;</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="s2">&quot;messageCode&quot;</span><span class="p">:</span><span class="mi">5005</span><span class="p">,</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;core dumped to \/tmp\/core.203.475, signal=6, UID=0, GID=0&quot;</span><span class="p">}]</span>
+  <span class="p">[{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">203</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s2">&quot;source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;\/bin\/busybox.nosuid&quot;</span><span class="p">,</span><span class="s2">&quot;fileName&quot;</span><span class="p">:</span><span class="s2">&quot;\/bin\/busybox.nosuid&quot;</span><span class="p">,</span><span class="s2">&quot;pid&quot;</span><span class="p">:</span><span class="mi">475</span><span class="p">},</span><span class="s2">&quot;severity&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;hardwareid&quot;</span><span class="p">:</span><span class="s2">&quot;eb-arm64&quot;</span><span class="p">,</span><span class="s2">&quot;classification&quot;</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="s2">&quot;messageCode&quot;</span><span class="p">:</span><span class="mi">5005</span><span class="p">,</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;core dumped to \/tmp\/core.203.475, signal=6, UID=0, GID=0&quot;</span><span class="p">}]</span>
 
 <span class="c1"># coredump file created by default in /tmp</span>
 <span class="n">root</span><span class="nd">@eb</span><span class="o">-</span><span class="n">arm64</span><span class="p">:</span><span class="o">~</span><span class="c1"># ls -lah /tmp/core.203.475</span>
@@ -723,7 +723,7 @@ started elosd should end with the message:</p>
 </div>
 <p>in a new terminal which starts a listening client for events from the
 sshd. Then use another terminal and type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">elosc</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39;{&quot;Source&quot;: { &quot;appName&quot;:&quot;sshd&quot;}, &quot;payload&quot;: &quot;test&quot;}&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">elosc</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39;{&quot;source&quot;: { &quot;appName&quot;:&quot;sshd&quot;}, &quot;payload&quot;: &quot;test&quot;}&#39;</span>
 </pre></div>
 </div>
 <p>To push the event behind the “-p” to the server. Since the filter given
@@ -731,7 +731,7 @@ to the subscribe command matches the pushed event, the event will be
 transmitted to it. You should see an output on the listening terminal
 that looks like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   <span class="n">new</span> <span class="n">data</span> <span class="p">[</span><span class="mi">1669298051</span><span class="p">,</span><span class="mi">246902710</span><span class="p">]:</span>
-<span class="p">[{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">1669298051</span><span class="p">,</span><span class="mi">236492733</span><span class="p">],</span><span class="s2">&quot;Source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;sshd&quot;</span><span class="p">},</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;test&quot;</span><span class="p">}]</span>
+<span class="p">[{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">1669298051</span><span class="p">,</span><span class="mi">236492733</span><span class="p">],</span><span class="s2">&quot;source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;sshd&quot;</span><span class="p">},</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;test&quot;</span><span class="p">}]</span>
 </pre></div>
 </div>
 <p>Similarly</p>
@@ -741,7 +741,7 @@ that looks like:</p>
 <p>will find events which already happened which find events which already
 happened that match the given filter rule.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new</span> <span class="n">data</span><span class="p">:</span>
-<span class="p">{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">1669297969</span><span class="p">,</span><span class="mi">738218916</span><span class="p">],</span><span class="s2">&quot;Source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;sshd&quot;</span><span class="p">},</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;test&quot;</span><span class="p">}</span>
+<span class="p">{</span><span class="s2">&quot;date&quot;</span><span class="p">:[</span><span class="mi">1669297969</span><span class="p">,</span><span class="mi">738218916</span><span class="p">],</span><span class="s2">&quot;source&quot;</span><span class="p">:{</span><span class="s2">&quot;appName&quot;</span><span class="p">:</span><span class="s2">&quot;sshd&quot;</span><span class="p">},</span><span class="s2">&quot;payload&quot;</span><span class="p">:</span><span class="s2">&quot;test&quot;</span><span class="p">}</span>
 </pre></div>
 </div>
 </section>
@@ -1019,14 +1019,14 @@ elosc<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;.e
 elosc<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;.event.source.appName &#39;sshd&#39; STRCMP .event.payload r&#39;Accept&#39; REGEX AND&quot;</span>
 
 <span class="c1"># To publish events:</span>
-elosc<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;messageCode&quot;: 101, &quot;severity&quot;:42, &quot;payload&quot;:&quot;ping&quot;, &quot;Source&quot;: {&quot;appName&quot;: &quot;elos_fs_test&quot;}}&#39;</span>
+elosc<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;messageCode&quot;: 101, &quot;severity&quot;:42, &quot;payload&quot;:&quot;ping&quot;, &quot;source&quot;: {&quot;appName&quot;: &quot;elos_fs_test&quot;}}&#39;</span>
 elsoc<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{}&#39;</span><span class="w"> </span><span class="c1"># will result in an event with only the date set</span>
 
 <span class="c1"># send an event 10 times as fast as possible</span>
-elosc<span class="w"> </span>-c<span class="w"> </span><span class="m">10</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;messageCode&quot;: 101, &quot;severity&quot;:42, &quot;payload&quot;:&quot;ping&quot;, &quot;Source&quot;: {&quot;appName&quot;: &quot;elos_fs_test&quot;}}&#39;</span>
+elosc<span class="w"> </span>-c<span class="w"> </span><span class="m">10</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;messageCode&quot;: 101, &quot;severity&quot;:42, &quot;payload&quot;:&quot;ping&quot;, &quot;source&quot;: {&quot;appName&quot;: &quot;elos_fs_test&quot;}}&#39;</span>
 
 <span class="c1"># send an event 100 times with a rate of 10Hz</span>
-elosc<span class="w"> </span>-c<span class="w"> </span><span class="m">100</span><span class="w"> </span>-r<span class="w"> </span><span class="m">10</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;messageCode&quot;: 101, &quot;severity&quot;:42, &quot;payload&quot;:&quot;ping&quot;, &quot;Source&quot;: {&quot;appName&quot;: &quot;elos_fs_test&quot;}}&#39;</span>
+elosc<span class="w"> </span>-c<span class="w"> </span><span class="m">100</span><span class="w"> </span>-r<span class="w"> </span><span class="m">10</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;messageCode&quot;: 101, &quot;severity&quot;:42, &quot;payload&quot;:&quot;ping&quot;, &quot;source&quot;: {&quot;appName&quot;: &quot;elos_fs_test&quot;}}&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -1296,7 +1296,7 @@ command. An example written in python is given below.</p>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

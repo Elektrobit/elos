@@ -1,5 +1,0 @@
-config.h
-========
-
-.. autocmodule:: elos/config/config.h
-    :members:

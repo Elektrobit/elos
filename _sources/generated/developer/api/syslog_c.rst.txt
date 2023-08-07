@@ -1,0 +1,4 @@
+syslog.c
+========
+
+.. autocmodule:: syslog.c

@@ -1,0 +1,5 @@
+eventqueuevector.h
+==================
+
+.. autocmodule:: eventprocessor/eventqueuevector.h
+    :members:

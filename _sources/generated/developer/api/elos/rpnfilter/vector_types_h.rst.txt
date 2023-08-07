@@ -1,0 +1,5 @@
+vector_types.h
+==============
+
+.. autocmodule:: elos/rpnfilter/vector_types.h
+    :members:

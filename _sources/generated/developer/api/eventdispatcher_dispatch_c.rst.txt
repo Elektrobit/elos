@@ -1,0 +1,4 @@
+eventdispatcher_dispatch.c
+==========================
+
+.. autocmodule:: eventdispatcher_dispatch.c

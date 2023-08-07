@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SqlBackend.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for SqlBackend.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;SqlBackend.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/common.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;SqlQueries.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventlogging/StorageBackend.h&quot;</span>
+
+<div class="viewcode-block" id="c.BACKEND_NAME"><span class="cp">#define BACKEND_NAME &quot;SQLite&quot;</span></div>
+
+<div class="viewcode-block" id="c._checkDatabase"><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">_checkDatabase</span><span class="p">(</span><span class="n">sqlite3</span><span class="w"> </span><span class="o">*</span><span class="n">db</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">errMessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_exec</span><span class="p">(</span><span class="n">db</span><span class="p">,</span><span class="w"> </span><span class="n">ELOS_SQL_CREATE_TABLE_EVENTS</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">errMessage</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to create &#39;events&#39; table: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">errMessage</span><span class="p">);</span>
+<span class="w">        </span><span class="n">sqlite3_free</span><span class="p">(</span><span class="n">errMessage</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosSqlBackendStart"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosSqlBackendStart</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosSqlBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">sqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">sqlConnectionString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">connectionString</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;start backend %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_open</span><span class="p">(</span><span class="n">sqlConnectionString</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to open database %s: %i&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlConnectionString</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_checkDatabase</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_prepare_v2</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">,</span><span class="w"> </span><span class="n">ELOS_SQL_INSERT_EVENT</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to prepare &#39;insert event&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosSqlBackendPersist"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosSqlBackendPersist</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosSqlBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">sqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;store event: %i, %lu, %i, %lu, %lu, &#39;%s&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">classification</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">severity</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">messageCode</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;messageCode&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">classification</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;classification&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">severity</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;severity&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;date_s&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">date</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;date_ns&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_text</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">payload</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;payload&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">pid</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;pid&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_text</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">appName</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;appName&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_text</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">source</span><span class="p">.</span><span class="n">fileName</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to bind value for &#39;fileName&#39; statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_step</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_DONE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to execute insert statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">sqlResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_reset</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Failed to reset insert statement: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">));</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Failed to persist event&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosSqlBackendFindEvents"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosSqlBackendFindEvents</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">backend</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">filter</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">events</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Called elosSqlBackendFindEvents with NULL-parameter&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;not implemented for &#39;%s&#39;-backend&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosSqlBackendShutdown"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosSqlBackendShutdown</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">backend</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogDebugF</span><span class="p">(</span><span class="s">&quot;shutdown backend %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">elosSqlBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">sqlBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sqlBackend</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">sqlite3_finalize</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">insertEvent</span><span class="p">);</span>
+<span class="w">            </span><span class="n">sqlite3_close_v2</span><span class="p">(</span><span class="n">sqlBackend</span><span class="o">-&gt;</span><span class="n">db</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">backend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">backend</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosSqlBackendNew"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosSqlBackendNew</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">**</span><span class="n">backend</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">newBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">newBackend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newBackend</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">newBackend</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="p">));</span>
+<span class="w">        </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuAllocMem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosSqlBackend_t</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogCrit</span><span class="p">(</span><span class="s">&quot;safuAllocMem failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">newBackend</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">memset</span><span class="p">(</span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">backendData</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosSqlBackend_t</span><span class="p">));</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BACKEND_NAME</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosSqlBackendStart</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">persist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosSqlBackendPersist</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">findEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosSqlBackendFindEvents</span><span class="p">;</span>
+<span class="w">            </span><span class="n">newBackend</span><span class="o">-&gt;</span><span class="n">shutdown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosSqlBackendShutdown</span><span class="p">;</span>
+<span class="w">            </span><span class="o">*</span><span class="n">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newBackend</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

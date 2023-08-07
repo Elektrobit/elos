@@ -1,0 +1,4 @@
+eventprocessor.c
+================
+
+.. autocmodule:: eventprocessor/eventprocessor.c

@@ -1,0 +1,5 @@
+SqlQueries.h
+============
+
+.. autocmodule:: SqlQueries.h
+    :members:

@@ -1,0 +1,4 @@
+pluginmanager_load.c
+====================
+
+.. autocmodule:: pluginmanager_load.c

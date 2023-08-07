@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eventdispatcher_worker.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for eventdispatcher_worker.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+
+<div class="viewcode-block" id="c._GNU_SOURCE"><span class="cp">#define _GNU_SOURCE</span></div>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;poll.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/eventfd.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;time.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventdispatcher/eventdispatcher.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventprocessor/eventprocessor.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;eventdispatcher_private.h&quot;</span>
+
+<span class="cp">#if EAGAIN != EWOULDBLOCK</span>
+<span class="cp">#define _CASE_EWOULDBLOCK case EWOULDBLOCK:</span>
+<span class="cp">#else</span>
+<div class="viewcode-block" id="c._CASE_EWOULDBLOCK"><span class="cp">#define _CASE_EWOULDBLOCK</span></div>
+<span class="cp">#endif</span>
+
+<div class="viewcode-block" id="c._is_timespec_greather_than"><span class="cp">#define _is_timespec_greather_than(__a, __b) \</span>
+<span class="cp">    (((__a).tv_sec &gt; (__b).tv_sec) || (((__a).tv_sec == (__b).tv_sec) &amp;&amp; ((__a).tv_nsec &gt;= (__b).tv_nsec)))</span></div>
+
+<div class="viewcode-block" id="c._handleHealthEvent"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_handleHealthEvent</span><span class="p">(</span><span class="n">elosEventDispatcher_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventDispatcher</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosEventDispatcherWorker_t</span><span class="w"> </span><span class="o">*</span><span class="n">worker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">worker</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">treshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">worker</span><span class="o">-&gt;</span><span class="n">healthTimeTreshold</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">current</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;Fetching current time for health event failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_is_timespec_greather_than</span><span class="p">(</span><span class="n">current</span><span class="p">,</span><span class="w"> </span><span class="n">treshold</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">        </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="n">healthEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asprintf</span><span class="p">(</span><span class="o">&amp;</span><span class="n">payload</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%lu Events published</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">worker</span><span class="o">-&gt;</span><span class="n">eventsPublished</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrErrnoValue</span><span class="p">(</span><span class="s">&quot;Creating payload for health event failed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">retVal</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">worker</span><span class="o">-&gt;</span><span class="n">healthTimeInterval</span><span class="p">;</span>
+<span class="w">            </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+
+<span class="w">            </span><span class="n">healthEvent</span><span class="p">.</span><span class="n">date</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">current</span><span class="p">;</span>
+<span class="w">            </span><span class="n">healthEvent</span><span class="p">.</span><span class="n">classification</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLASSIFICATION_ELOS</span><span class="p">;</span>
+<span class="w">            </span><span class="n">healthEvent</span><span class="p">.</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">payload</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventProcessorPublish</span><span class="p">(</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">eventProcessor</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">healthEvent</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;Publishing health event failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">next</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">current</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">interval</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">1000000000</span><span class="p">);</span>
+<span class="w">            </span><span class="n">next</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">current</span><span class="p">.</span><span class="n">tv_nsec</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">interval</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000000</span><span class="p">);</span>
+<span class="w">            </span><span class="n">next</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="n">current</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">interval</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">);</span>
+<span class="w">            </span><span class="n">worker</span><span class="o">-&gt;</span><span class="n">healthTimeTreshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">next</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c._waitForNextIteration"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">_waitForNextIteration</span><span class="p">(</span><span class="n">elosEventDispatcher_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventDispatcher</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">worker</span><span class="p">.</span><span class="n">pollTimeout</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">pollfd</span><span class="w"> </span><span class="n">fds</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">{.</span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">worker</span><span class="p">.</span><span class="n">trigger</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POLLIN</span><span class="p">},</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ppoll</span><span class="p">(</span><span class="n">fds</span><span class="p">,</span><span class="w"> </span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">fds</span><span class="p">),</span><span class="w"> </span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_CASE_EWOULDBLOCK</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">EAGAIN</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">EINTR</span><span class="p">:</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                </span><span class="n">atomic_fetch_and</span><span class="p">(</span><span class="o">&amp;</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="o">~</span><span class="n">ELOS_EVENTDISPATCHER_FLAG_ACTIVE</span><span class="p">);</span>
+<span class="w">                </span><span class="n">safuLogErrErrnoValue</span><span class="p">(</span><span class="s">&quot;ppoll failed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">retVal</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">eventfd_t</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eventfd_read</span><span class="p">(</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">worker</span><span class="p">.</span><span class="n">trigger</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">value</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">atomic_fetch_and</span><span class="p">(</span><span class="o">&amp;</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="o">~</span><span class="n">ELOS_EVENTDISPATCHER_FLAG_ACTIVE</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogErrErrnoValue</span><span class="p">(</span><span class="s">&quot;eventfd_read failed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">retVal</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosEventDispatcherWorker"><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">elosEventDispatcherWorker</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosEventDispatcher_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventDispatcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">elosEventDispatcher_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">data</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">atomic_fetch_or</span><span class="p">(</span><span class="o">&amp;</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">ELOS_EVENTDISPATCHER_FLAG_ACTIVE</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eventfd_write</span><span class="p">(</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">sync</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">atomic_fetch_and</span><span class="p">(</span><span class="o">&amp;</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="o">~</span><span class="n">ELOS_EVENTDISPATCHER_FLAG_ACTIVE</span><span class="p">);</span>
+<span class="w">        </span><span class="n">safuLogErrErrnoValue</span><span class="p">(</span><span class="s">&quot;eventfd_write failed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">retVal</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">ELOS_EVENTDISPATCHER_FLAG_HAS_ACTIVE_BIT</span><span class="p">(</span><span class="o">&amp;</span><span class="n">eventDispatcher</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_waitForNextIteration</span><span class="p">(</span><span class="n">eventDispatcher</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosEventDispatcherDispatch</span><span class="p">(</span><span class="n">eventDispatcher</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Dispatching Events failed!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">_handleHealthEvent</span><span class="p">(</span><span class="n">eventDispatcher</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

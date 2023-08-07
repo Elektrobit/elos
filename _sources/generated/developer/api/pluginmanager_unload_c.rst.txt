@@ -1,0 +1,4 @@
+pluginmanager_unload.c
+======================
+
+.. autocmodule:: pluginmanager_unload.c

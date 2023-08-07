@@ -57,7 +57,7 @@ from unauthorized clients can be classified as :
 
       {
         "date": [42,0],
-        "Source": {
+        "source": {
           "appName": "elosd",
           "pid": 1234
         },
@@ -77,7 +77,7 @@ from unauthorized clients can be classified as :
 
       {
         "date": [42,0],
-        "Source": {
+        "source": {
           "appName": "elosd",
           "pid": 1234
         },

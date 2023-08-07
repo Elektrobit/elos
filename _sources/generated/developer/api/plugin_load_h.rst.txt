@@ -1,0 +1,5 @@
+plugin_load.h
+=============
+
+.. autocmodule:: plugin_load.h
+    :members:

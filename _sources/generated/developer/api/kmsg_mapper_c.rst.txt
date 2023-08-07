@@ -1,0 +1,4 @@
+kmsg_mapper.c
+=============
+
+.. autocmodule:: kmsg_mapper.c
