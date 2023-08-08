@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
     elosScannerManagerParam_t scannerManagerParam = {
         .config = context.config,
         .logAggregator = &context.logAggregator,
-        .eventProcessor = &context.eventProcessor,
+        .eventDispatcher = &context.eventDispatcher,
     };
     retval = elosScannerManagerStart(&context.scannerManagerContext, &scannerManagerParam);
     if ((retval != NO_ERROR) && (retval != NO_FATAL_ERRORS)) {

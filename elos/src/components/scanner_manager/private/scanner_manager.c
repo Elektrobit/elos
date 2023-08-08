@@ -17,6 +17,8 @@
 #include <string.h>
 
 #include "elos/config/config.h"
+#include "elos/eventbuffer/eventbuffer.h"
+#include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventlogging/LogAggregator.h"
 #include "elos/scanner/scanner.h"
 #include "safu/common.h"
@@ -124,9 +126,22 @@ static elosScannerManagerErrorCodeE_t _parsePath(elosScannerManagerContext_t *co
     return errorCode;
 }
 
-static elosScannerManagerErrorCodeE_t _entryFree(elosScannerEntry_t *entry) {
+static elosScannerManagerErrorCodeE_t _entryFree(elosScannerManagerContext_t *context, elosScannerEntry_t *entry) {
     elosScannerManagerErrorCodeE_t errorCode = NO_ERROR;
+    safuResultE_t result;
     int ret;
+
+    result = elosEventDispatcherBufferRemove(context->eventDispatcher, &entry->session.eventBuffer);
+    if (result != SAFU_RESULT_OK) {
+        safuLogWarn("Removing EventBuffer from EventDispatcher failed");
+        errorCode = ERROR_FUNCTION_CALL;
+    }
+
+    result = elosEventBufferDeleteMembers(&entry->session.eventBuffer);
+    if (result != SAFU_RESULT_OK) {
+        safuLogWarn("Deleting EventBuffer members failed");
+        errorCode = ERROR_FUNCTION_CALL;
+    }
 
     if (entry->file != NULL) {
         free(entry->file);
@@ -148,11 +163,11 @@ static elosScannerManagerErrorCodeE_t _entryFree(elosScannerEntry_t *entry) {
 static safuResultE_t _eventPublish(elosScannerCallbackData_t *data, const elosEvent_t *event) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((data == NULL) || (data->eventProcessor == NULL) || (event == NULL)) {
+    if ((data == NULL) || (data->eventBuffer == NULL) || (event == NULL)) {
         safuLogErr("invalid parameter");
     } else {
         safuLogDebug("publish event");
-        result = elosEventProcessorPublish(data->eventProcessor, event);
+        result = elosEventBufferWrite(data->eventBuffer, event);
         safuLogDebug("publish event done");
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosEventProcessorPublish failed!");
@@ -195,7 +210,7 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
         safuLogErr("'param' has invalid values");
         errorCode = ERROR_ZERO_POINTER;
     } else {
-        context->eventProcessor = param->eventProcessor;
+        context->eventDispatcher = param->eventDispatcher;
         context->logAggregator = param->logAggregator;
         context->config = param->config;
     }
@@ -291,7 +306,9 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
         uint32_t i;
         for (i = 0; i < scannerCount; i++) {
             elosScannerParam_t scannerParam = {.config = context->config};
+            elosEventBufferParam_t bufferParam = {.limitEventCount = ELOS_EVENTBUFFER_DEFAULT_LIMIT};
             elosScannerEntry_t *entry;
+            safuResultE_t result;
             const char *fileName = NULL;
 
             entry = safuVecGet(&context->scannerEntry, i);
@@ -309,9 +326,23 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
             fileName = strrchr(entry->file, '/') + 1;
             safuLogDebugF("initialize scanner '%s' ...", fileName);
 
+            result = elosEventBufferInitialize(&entry->session.eventBuffer, &bufferParam);
+            if (result != SAFU_RESULT_OK) {
+                safuLogErrValue("Creating EventBuffer failed", result);
+                errorCode = ERROR_FUNCTION_CALL;
+                break;
+            } else {
+                result = elosEventDispatcherBufferAdd(context->eventDispatcher, &entry->session.eventBuffer);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErrValue("Adding EventBuffer to EventDispatcher failed", result);
+                    errorCode = ERROR_FUNCTION_CALL;
+                    break;
+                }
+            }
+
             entry->session.callback.eventPublish = _eventPublish;
             entry->session.callback.eventLog = _eventLog;
-            entry->session.callback.scannerCallbackData.eventProcessor = context->eventProcessor;
+            entry->session.callback.scannerCallbackData.eventBuffer = &entry->session.eventBuffer;
             entry->session.callback.scannerCallbackData.logAggregator = context->logAggregator;
 
             ret = entry->funcInitialize(&entry->session, &scannerParam);
@@ -410,7 +441,7 @@ int elosScannerManagerStop(elosScannerManagerContext_t *context) {
                 errorCode = NO_FATAL_ERRORS;
             }
 
-            ret = _entryFree(entry);
+            ret = _entryFree(context, entry);
             if (ret != NO_ERROR) {
                 safuLogErrF("scanner_free[%d] failed", i);
                 errorCode = ret;
