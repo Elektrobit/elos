@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "elos/event/event.h"
+#include "elos/eventbuffer/types.h"
 
 #define UNUSED            __attribute__((unused))
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
@@ -21,7 +22,7 @@ typedef struct elosScannerParam {
 } elosScannerParam_t;
 
 typedef struct elosScannerCallbackData {
-    void *eventProcessor;
+    elosEventBuffer_t *eventBuffer;
     void *logAggregator;
 } elosScannerCallbackData_t;
 
@@ -34,6 +35,7 @@ typedef struct elosScannerCallback {
 typedef struct elosScannerSession {
     const char *name;
     void *context;
+    elosEventBuffer_t eventBuffer;
     elosScannerCallback_t callback;
     const samconfConfig_t *config;
     uint32_t dispatcherSourceid;

@@ -22,7 +22,8 @@ target_link_libraries(
   PUBLIC
     version
     elos_event_static
-    eventprocessor_static
+    eventbuffer_static
+    eventdispatcher_static
     eventlogging_static
     config_static
     eventlogging_static
@@ -40,7 +41,8 @@ create_weak_library(
     scanner_manager_static
   WEAKEN_DEPENDENCIES
     elos_event_static
-    eventprocessor_static
+    eventbuffer_static
+    eventdispatcher_static
     eventlogging_static
     config_static
     eventlogging_static

@@ -32,6 +32,7 @@ typedef enum elosScannerManagerErrorCodeE {
     ERROR_SCANNER_PATH_INVALID = -4,
     ERROR_SCANNER_PATH_EMPTY = -5,
     ERROR_ZERO_POINTER = -6,
+    ERROR_FUNCTION_CALL = -7,
 } elosScannerManagerErrorCodeE_t;
 
 typedef struct elosScannerEntry {
@@ -50,13 +51,13 @@ typedef struct elosScannerManagerContext {
     safuVec_t scannerEntry;
     samconfConfig_t *config;
     elosLogAggregator_t *logAggregator;
-    elosEventProcessor_t *eventProcessor;
+    elosEventDispatcher_t *eventDispatcher;
 } elosScannerManagerContext_t;
 
 typedef struct elosScannerManagerParam {
     samconfConfig_t *config;
     elosLogAggregator_t *logAggregator;
-    elosEventProcessor_t *eventProcessor;
+    elosEventDispatcher_t *eventDispatcher;
 } elosScannerManagerParam_t;
 
 int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerManagerParam_t const *param);
