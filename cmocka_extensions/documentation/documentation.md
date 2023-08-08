@@ -84,7 +84,7 @@ The mocking header need to be included `#include <[mock_package]/[mock_library].
 And before the mock is used mocking needs to be activated by call to the macro `MOCK_FUNC_AFTER_CALL(<the function to be mocked>, 0)` or something equivalent (detailed description in [conditonal mocking](#conditional-mocking-api)).
 Then `expect_value(...)` and all the other cmocka functions can be used normally with the function name `__wrap_<the mocked function>` for the mocked version of the function and `__real_<the mocked function>` for the original.
 
-#### example
+#### Example (normal mocking)
 ```c
 #include <safu/mock_safu.h>
 
@@ -108,6 +108,55 @@ void elosTestElosJsonBackendPersistExterrWriteExactly(void **state) {
 The safu mocks `safu/mock_safu.h` are included for the header with `__wrap_safuWriteExactly` and `__real_safuWriteExactly`.
 And mocking for `safuWriteExactly` is activated with `MOCK_FUNC_AFTER_CALL(safuWriteExactly, 0)` after that all the usual cmocka functions are used with `__wrap_safuWriteExactly`.
 
+#### Example (with function overloading)
+```c
+#include <safu/mock_safu.h>
+
+[...]
+
+typedef struct mockData {
+    ssize_t totalBytesWritten;
+    ssize_t functionCalls;
+} mockData_t;
+
+ssize_t _customWriteExactly(UNUSED int fd, UNUSED const void *buf, size_t len) {
+	ssize_t result = len;
+	MOCK_FUNC_DATA_NEW(mockData, mockData_t, safuWriteExactly);
+
+	mockData->totalBytesWritten += len;
+	mockData->functionCalls += 1;
+
+	return len;
+}
+
+void elosTestElosJsonBackendPersistExterrWriteExactly(void **state) {
+	elosTestState_t *testState = *state;
+	mockData_t mockData = {0};
+	safuResultE_t result;
+
+	MOCK_FUNC_ALWAYS_WITH(safuWriteExactly, _customWriteExactly, &mockData);
+	result = testState->backend->persist(testState->backend, &testState->event);
+	assert_int_equal(result, SAFU_RESULT_FAILED);
+	assert_int_equal(mockData->totalBytesWritten, 42);
+	assert_int_equal(mockData->functionCalls, 4);
+
+	MOCK_FUNC_NEVER(safuWriteExactly);
+}
+```
+Fundamentally works the same as with normal mocking, but here we can define a custom function that is called by the mocking library
+instead of the normal cmocka based parameter checks. This has a few key advantages in certain situations, like more dynamic error
+injection (e.g. fail if an Event has a certain combination of values), simulation of more complex function calls
+(e.g. state changes, return values depending on parameters and so on), or, like in the example above,
+simply collect data from the calls to compare against expected values after the test case ran its course.
+
+The syntax of the call is either of the following:
+- `MOCK_FUNC_ALWAYS_WITH(<functionToBeMocked>, <customMockFunction>, <&mockData>);`
+- `MOCK_FUNC_AFTER_CALL_WITH(<functionToBeMocked>, <numberOfCalls>, <customMockFunction>, <&mockData>);`
+
+To access the mockData (which can be any variable type) within the overloaded function:
+- `MOCK_FUNC_DATA_NEW(<variableName>, <variableType>, <functionToBeMocked>);`
+
+Note that mockData is optional for the function overloading, it can be set to NULL in the MOCK_FUNC_ calls if it isn't needed.
 
 ## Use weak Mocking
 
@@ -253,15 +302,15 @@ Parameter of `create_weak_library`:
 	The name of the library to make weak. Needs to be a static library
 - `TO`:
 	The output name for the week library to be generated. Defaults to `<FROM>_weak`
-- `HELPER_SCRIP`:
-	The path to `create_weak_library.sh` necessary when the script can't be found in its default location.
+- `HELPER_SCRIPT`:
+	The path to `create_weak_library.sh`. Necessary when the script can't be found in its default location.
 - `WEAKEN_DEPENDENCIES`:
 	A list of dependencies that will be replaced by there weak version.
 
 
 ### create the mock library
 
-Include the cmake file `create_mock_lib.cmake` wich defines the function `crate_mock_lib` that takes the mocking code, some build options and dependencies and generates a static mock library utilising weak mocking and a shared mock library using wrap mocking.
+Include the cmake file `create_mock_lib.cmake` wich defines the function `create_mock_lib` that takes the mocking code, some build options and dependencies and generates a static mock library utilising weak mocking and a shared mock library using wrap mocking.
 
 Parameters of `create_mock_lib`:
 - `NAME`:
@@ -271,9 +320,9 @@ Parameters of `create_mock_lib`:
 - `INCLUDES`:
 	A list of include directories to be included `PUBLIC`
 - `INCLUDES_DYNAMIC`:
-	Not in use
+	A list of include directories only used for the dynamic library (currently unused)
 - `INCLUDES_STATIC`:
-	Not in use
+	A list of include directories only used for the static library (currently unused)
 - `LIBRARIES`:
 	A list of libraries to be used with the static weak mock library as well as the dynamic wrap mock library.
 - `LIBRARIES_DYNAMIC`:
@@ -287,12 +336,11 @@ Parameters of `create_mock_lib`:
 - `DEFINITIONS_STATIC`:
 	A list of `PRIVATE` compile definitions only for both the static weak and the dynamic wrap target.
 - `WRAP_FLAG`:
-	The compile flag to compile with wrap definitoins.
+	The compile flag to compile with wrap definitions.
 - `WRAPS`:
-	A list of all functins that should be linked with `--wrap`.
-
-Additionally for the dynamic wrap mocking library the variable wich sets the header for the library to use wrap mocking definitions needs to be set.
-And for all functions that are mocked a `PUBLIC` compile definition of `-Wl,--wrap=<function name>` needs to be added.
+	A list of all functions that should be linked with `--wrap`. Only used for dynamic libraries.
+- `NO_DYNAMIC_LIBRARY`:
+	Do not generate a shared object (.so) for the mock library. Use this for testing project components that are used only internally.
 
 An example of this can be found in `cmocka_examples/test/utest/mocks/extref_dependency/CMakeList.txt`
 
@@ -334,9 +382,15 @@ MOCK_FUNC_PROTOTYPE(dependency, int, int a, int b)
 
 ## Write mock source
 
-Use `MOCK_FUNC_BODY(<function name>, <return valeu>, <list of parameters...>)` followed by the body for the mock function.
-In the function body the macro `MOCK_IS_ACTIVE(<function name>)` should be used to test if the function is to be mocked or if the original version needs to be called.
-To call the original the macro `MOCK_FUNC_REAL(<function name)(<function parameter list...>)` can be used.
+Use `MOCK_FUNC_BODY(<function name>, <return value>, <list of parameters...>)` followed by the body for the mock function.
+In the function body the macro `MOCK_GET_TYPE(<function name>)` should be used to get details about the current mode the mocking is in.
+This can be one of the following:
+- `CMOCKA_MOCK_ENABLED_WITH_FUNC`: mocking with a manually defined mock function is active.
+- `CMOCKA_MOCK_ENABLED`: normal cmocka based mocking with `check_expected()` and `mock_type()`.
+- `CMOCKA_MOCK_DISABLED`: no mocking, call the normal function.
+
+To call the original the macro `MOCK_FUNC_REAL(<function name)(<function parameter list...>)` can be used, for the manually defined mock
+function use `MOCK_FUNC_WITH(<function name)(<function parameter list...>)` instead
 
 Inside the active mock part of the function the cmock way of handling parameters and return values should be used.
 
@@ -350,14 +404,24 @@ Found in `cmocka_examples/test/utest/mocks/extref_dependency/mock_extref_depende
 
 #include <stdio.h>
 
-MOCK_FUNC_BODY(dependency, int, int a, int b) {
-	if (MOCK_IS_ACTIVE(dependency)) {
-		printf("   mocked: dependency(%d, %d) {\n", a, b);
-		printf("      return %d - %d; // = %d\n", a, b, a - b);
-		printf("   }\n");
-		return a - b;
-	}
-	return MOCK_FUNC_REAL(dependency)(a, b);
+MOCK_FUNC_BODY(functionToMock, int, int a, int b) {
+    int result;
+
+    switch (MOCK_GET_TYPE(functionToMock)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(functionToMock)(a, b);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected(a);
+            check_expected(b);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(functionToMock)(a, b);
+            break;
+    }
+
+    return result;
 }
 ```
 
