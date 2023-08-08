@@ -7,7 +7,21 @@
 #include <string.h>
 #include <sys/socket.h>
 
-safuResultE_t safuStringIsEmpty(const char *stringToCheck); 
+/*******************************************************************
+ * Checks if the given string argument is empty. The given string
+ * is treated as empty if it is NULL or if it consists only of white spaces.
+ * White space characters are defined by libc's `isspace()` function
+ * like spaces ` `, tab `\t`, carriage return `\r`, form feed `\f`
+ * newline `\n`, vertical tab `\v` etc.
+ *
+ * Parameters:
+ *      stringToCheck (const char *): string to be checked.
+ * Returns:
+ *      - `SAFU_RESULT_OK` when the stringToCheck is empty
+ *      - `SAFU_RESULT_FAILED` when the stringToCheck is not empty
+ ******************************************************************/
+safuResultE_t safuStringIsEmpty(const char *stringToCheck);
+
 void *safuAllocMem(void *oldptr, size_t newlen);
 ssize_t safuTransferExactly(int fd, void *buf, size_t len, int flags, safuTransferFunc_t *transferFunc);
 ssize_t safuRecvExactly(int fd, void *buf, size_t len);

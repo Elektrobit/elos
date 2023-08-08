@@ -6,6 +6,7 @@ create_unit_test(
   test_common_safuStringIsEmpty_utest
   SOURCES
     case_success_string_is_empty.c
+    case_success_string_is_not_empty.c
     safuStringIsEmpty_utest.c
   LIBRARIES
     safu_static

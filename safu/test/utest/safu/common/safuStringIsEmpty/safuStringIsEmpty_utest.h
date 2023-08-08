@@ -9,5 +9,6 @@
 #include "safu/common.h"
 
 TEST_CASE_FUNC_PROTOTYPES(safuTestSafuStringIsEmptySuccessStringIsEmpty)
+TEST_CASE_FUNC_PROTOTYPES(safuTestSafuStringIsEmptySuccessStringIsNotEmpty)
 
 #endif /* SAFU_STRING_IS_EMPTY_UTEST_H */

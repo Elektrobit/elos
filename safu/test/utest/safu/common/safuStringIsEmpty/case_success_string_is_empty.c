@@ -12,14 +12,14 @@ int safuTestSafuStringIsEmptySuccessStringIsEmptyTeardown(UNUSED void **state) {
 }
 
 void safuTestSafuStringIsEmptySuccessStringIsEmpty(UNUSED void **state) {
-    const char *testString[] = {NULL, "", "  ","	", "\t", "\n", "\f", "\r", "\v"};
-    safuResultE_t result = SAFU_RESULT_OK;
+    const char *testStrings[] = {NULL, "", "  ", "	", "\t", "\n", "\f", "\r", "\v"};
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
     TEST("safuStringIsEmpty");
-    SHOULD("%s", "return SAFU_RESULT_FAILED since test string is empty");
+    SHOULD("%s", "return SAFU_RESULT_OK since test string is empty");
 
-    for (int i = 0; i < ARRAY_SIZE(testString); i++) {
-        result = safuStringIsEmpty(testString);
-        assert_int_equal(result, SAFU_RESULT_FAILED);
+    for (size_t i = 0; i < ARRAY_SIZE(testStrings); i++) {
+        result = safuStringIsEmpty(testStrings[i]);
+        assert_int_equal(result, SAFU_RESULT_OK);
     }
 }
