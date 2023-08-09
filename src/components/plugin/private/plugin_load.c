@@ -27,6 +27,8 @@ safuResultE_t elosPluginLoadHelperSearchFile(elosPlugin_t const *plugin, char **
     configResult = samconfConfigGetString(plugin->config, "File", &fileName);
     if (configResult != SAMCONF_CONFIG_OK) {
         safuLogErrF("samconfConfigGet 'File' failed : %d", configResult);
+    } else if (fileName == NULL) {
+        *file = NULL;
     } else {
         char *newFile = NULL;
         int retVal;
@@ -63,17 +65,13 @@ safuResultE_t elosPluginLoadHelperGetFunctions(elosPlugin_t *plugin) {
             safuLogErrF("dlopen failed with: '%s'", errStr);
             result = SAFU_RESULT_FAILED;
         } else {
-            elosFuncTableEntry_t funcTable[ELOS_FUNCTABLEENTRIES] = {
-                {.name = "elosPluginLoad", .func = (void **)&plugin->func.load},
-                {.name = "elosPluginStart", .func = (void **)&plugin->func.start},
-                {.name = "elosPluginStop", .func = (void **)&plugin->func.stop},
-                {.name = "elosPluginUnload", .func = (void **)&plugin->func.unload},
-            };
+            for (size_t i = 0; i < ELOS_PLUGIN_FUNC_COUNT; i += 1) {
+                elosPluginFuncEntry_t *func = &plugin->func[i];
+                void **ptr = (void **)&(func->ptr);
 
-            for (size_t i = 0; i < ELOS_FUNCTABLEENTRIES; i += 1) {
-                *funcTable[i].func = dlsym(plugin->dlHandle, funcTable[i].name);
+                *ptr = dlsym(plugin->dlHandle, func->name);
                 errStr = dlerror();
-                if ((funcTable[i].func == NULL) || (errStr != NULL)) {
+                if ((*ptr == NULL) || (errStr != NULL)) {
                     safuLogErrF("dlsym failed with: '%s'", errStr);
                     result = SAFU_RESULT_FAILED;
                     break;
