@@ -137,7 +137,7 @@ configuration file.
 In order to log with a log4c framework, a category, a priority
 and an appender for the logged message should be set in the config file.
 
-.. literalinclude:: ../../../elos/src/demo/elos_log4c_demo/log4crc
+.. literalinclude:: ../../../elos/src/demos/elos_log4c_demo/log4crc
    :language: xml
 
 More information about how to use log4c framework can be found here : 
