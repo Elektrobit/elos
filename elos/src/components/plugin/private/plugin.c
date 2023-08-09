@@ -80,17 +80,22 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
         int eventFdSync;
         int eventFdStop;
 
+        memset(plugin, 0, sizeof(elosPlugin_t));
+        plugin->stop = -1;
+        plugin->sync = -1;
+        plugin->worker.sync = -1;
+
         eventFdStop = eventfd(0, 0);
-        if (eventFdStop < 0) {
-            safuLogErrErrno("eventfd failed");
+        if (eventFdStop == -1) {
+            safuLogErrErrnoValue("eventfd failed", eventFdStop);
         } else {
             eventFdSync = eventfd(0, 0);
-            if (eventFdSync < 0) {
-                safuLogErrErrno("eventfd failed");
+            if (eventFdSync == -1) {
+                safuLogErrErrnoValue("eventfd failed", eventFdSync);
             } else {
                 eventFdWorker = eventfd(0, 0);
-                if (eventFdWorker < 0) {
-                    safuLogErrErrno("eventfd (worker) failed");
+                if (eventFdWorker == -1) {
+                    safuLogErrErrnoValue("eventfd (worker) failed", eventFdWorker);
                 } else {
                     plugin->id = param->id;
                     plugin->path = param->path;
@@ -334,22 +339,28 @@ safuResultE_t elosPluginDeleteMembers(elosPlugin_t *plugin) {
 
             free(plugin->file);
 
-            retVal = close(plugin->stop);
-            if (retVal < 0) {
-                safuLogWarnF("close (stop) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
-                result = SAFU_RESULT_FAILED;
+            if (plugin->stop != -1) {
+                retVal = close(plugin->stop);
+                if (retVal < 0) {
+                    safuLogWarnF("close (stop) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
+                    result = SAFU_RESULT_FAILED;
+                }
             }
 
-            retVal = close(plugin->sync);
-            if (retVal < 0) {
-                safuLogWarnF("close (sync) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
-                result = SAFU_RESULT_FAILED;
+            if (plugin->sync != -1) {
+                retVal = close(plugin->sync);
+                if (retVal < 0) {
+                    safuLogWarnF("close (sync) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
+                    result = SAFU_RESULT_FAILED;
+                }
             }
 
-            retVal = close(plugin->worker.sync);
-            if (retVal < 0) {
-                safuLogWarnF("close (worker.sync) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
-                result = SAFU_RESULT_FAILED;
+            if (plugin->worker.sync != -1) {
+                retVal = close(plugin->worker.sync);
+                if (retVal < 0) {
+                    safuLogWarnF("close (worker.sync) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
+                    result = SAFU_RESULT_FAILED;
+                }
             }
 
             _funcTableDeleteMembers(plugin);
