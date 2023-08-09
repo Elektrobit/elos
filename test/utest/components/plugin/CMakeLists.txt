@@ -1,2 +1,2 @@
 # SPDX-License-Identifier: MIT
-add_subdirectory(plugin)
+add_subdirectory(elosPluginGetName)
