@@ -103,11 +103,11 @@ for utest in $UTESTS; do
   TMP_STRING=elos${utest##*_elos}
   METHODNAME=${TMP_STRING%%_utest}
   set +e
-  objdump ${utest} -t | grep "__genuine_"${METHODNAME}
+  objdump ${utest} -t | grep "__real_"${METHODNAME}
   re=$?
   set -e
   if [ ${re} -eq 0 ]; then
-    run_test "__genuine_"${METHODNAME}  $utest
+    run_test "__real_"${METHODNAME}  $utest
   else
     run_test ${METHODNAME}  $utest
   fi
