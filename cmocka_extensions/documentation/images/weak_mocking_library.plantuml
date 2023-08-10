@@ -6,7 +6,7 @@ package library as l {
 
 package library_weak as lw {
 	rectangle "weak <global symbol>" as wgs
-	rectangle "__genuine_<global symbol>" as ggs
+	rectangle "__real_<global symbol>" as ggs
 	'rectangle "_<object name><--static-- symbol>" as gss
 }
 
@@ -15,7 +15,7 @@ rectangle objdump {
 	--weaken_symbols
 	]
 	file genuine [
-	--add-symbol __genuine_<...>
+	--add-symbol __real_<...>
 	]
 	'file globalize [
 	'--globalize-symbols

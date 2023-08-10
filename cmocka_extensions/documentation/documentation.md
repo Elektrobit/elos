@@ -191,7 +191,7 @@ First the `_weak` version of the `elosd_lib_static` library needs to be used so 
 The mocking header for the specific function that should be mocked need to bee included (`#include "mock_[specific header].h"`).
 And before the mock is used mocking needs to be activated by a call to the macro `MOCK_FUNC_AFTER_CALL(<the function to be mocked>, 0)` or something equivalent (detailed description in [conditonal mocking](#conditional-mocking-api)).
 Then all cmocka functions can be used with the original function name.
-If in some instance the original function needs to be called this is possible by calling `__genuine_<the mocked function>`.
+If in some instance the original function needs to be called this is possible by calling `__real_<the mocked function>`.
 
 #### Example
 ```c
@@ -434,7 +434,7 @@ will_return_and_set_errno(<mocked function name>, <errno value>);
 
 ![Weak Library Creation](images/weak_mocking_library.png "Weak Library Creation")
 
-An exact copy of the libraries object file is created with `objcopy`, with just a symbol alias, with the prefix `__genuine`, for all global symbols added.
+An exact copy of the libraries object file is created with `objcopy`, with just a symbol alias, with the prefix `__real`, for all global symbols added.
 Then in a second step all the original global symbols are marked as weak, so they will be replaced if in the linking step there is another definition of that symbol, instead of throwing an error.
 
 The symbol table of the original library:
@@ -451,8 +451,8 @@ and the symbol table of the weak version of the library:
 ```
 000000000000004a W dependency
 0000000000000000 W function
-000000000000004a T __genuine_dependency
-0000000000000000 T __genuine_function
+000000000000004a T __real_dependency
+0000000000000000 T __real_function
                  U printf
                  U puts
 ```
@@ -507,8 +507,8 @@ The resulting symbol table of the test binary:
 0000000000003dd0 d __frame_dummy_init_array_entry
 00000000000021a0 r __FRAME_END__
 <strong>0000000000001174 W function</strong>
-<strong>00000000000011be T __genuine_dependency</strong>
-<strong>0000000000001174 T __genuine_function</strong>
+<strong>00000000000011be T __real_dependency</strong>
+<strong>0000000000001174 T __real_function</strong>
 0000000000003fe8 d _GLOBAL_OFFSET_TABLE_
                  w __gmon_start__
 000000000000207c r __GNU_EH_FRAME_HDR
@@ -555,8 +555,8 @@ The resulting symbol table of the test binary:
 0000000000003dd0 d __frame_dummy_init_array_entry
 0000000000002218 r __FRAME_END__
 <strong>00000000000011d9 W function</strong>
-<strong>0000000000001223 T __genuine_dependency</strong>
-<strong>00000000000011d9 T __genuine_function</strong>
+<strong>0000000000001223 T __real_dependency</strong>
+<strong>00000000000011d9 T __real_function</strong>
 0000000000003fe8 d _GLOBAL_OFFSET_TABLE_
                  w __gmon_start__
 00000000000020cc r __GNU_EH_FRAME_HDR
@@ -601,8 +601,8 @@ The resulting symbol table of the test binary:
 0000000000003dd0 d __frame_dummy_init_array_entry
 00000000000021a0 r __FRAME_END__
 <strong>0000000000001174 W function</strong>
-<strong>00000000000011be T __genuine_dependency</strong>
-<strong>0000000000001174 T __genuine_function</strong>
+<strong>00000000000011be T __real_dependency</strong>
+<strong>0000000000001174 T __real_function</strong>
 0000000000003fe8 d _GLOBAL_OFFSET_TABLE_
                  w __gmon_start__
 000000000000207c r __GNU_EH_FRAME_HDR

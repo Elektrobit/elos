@@ -39,7 +39,7 @@ do
     if [ -s $sym_global ]; then param_global=" --globalize-symbols=$sym_global"; fi
     if [ -s $sym_rename ]; then param_rename=" --redefine-syms=$sym_rename"; fi
 
-    param_add="$(echo "$sym_gfunc" | sed -e 's/\(\S\+\)\s\(.\+\)/--add-symbol __genuine_\2=.text:0x\1,function,global/g')"
+    param_add="$(echo "$sym_gfunc" | sed -e 's/\(\S\+\)\s\(.\+\)/--add-symbol __real_\2=.text:0x\1,function,global/g')"
 
     # We need to check if we can properly feed objcopy via a pipe from a file
     $do_objcopy $param_rename $param_add $param_global $object $object_weak

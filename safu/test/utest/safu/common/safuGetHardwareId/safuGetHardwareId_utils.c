@@ -6,7 +6,7 @@
 // The contents of this file should be moved into a generic mock interface at some point
 
 MOCK_FUNC_VAR_NEW(safuReadFileToString);
-ssize_t __genuine_safuReadFileToString(const char *fileName, ssize_t maxLength, char **string);
+ssize_t __real_safuReadFileToString(const char *fileName, ssize_t maxLength, char **string);
 ssize_t safuReadFileToString(const char *fileName, ssize_t maxLength, char **string) {
     if (MOCK_IS_ACTIVE(safuReadFileToString)) {
         check_expected_ptr(fileName);
@@ -14,5 +14,5 @@ ssize_t safuReadFileToString(const char *fileName, ssize_t maxLength, char **str
         check_expected_ptr(string);
         return mock_type(ssize_t);
     }
-    return __genuine_safuReadFileToString(fileName, maxLength, string);
+    return __real_safuReadFileToString(fileName, maxLength, string);
 }
