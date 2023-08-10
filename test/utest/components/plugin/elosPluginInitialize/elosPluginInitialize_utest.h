@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+// SPDX-License-Identifier: MIT
 #pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
@@ -9,7 +9,7 @@ typedef struct elosUnitTestState {
     elosPlugin_t plugin;
 } elosUnitTestState_t;
 
-extern char const *_funcDefaultName[ELOS_PLUGIN_FUNC_COUNT];
+extern char const *elosPluginFuncDefaultName[ELOS_PLUGIN_FUNC_COUNT];
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginInitializeErrFunc)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginInitializeErrParam)
