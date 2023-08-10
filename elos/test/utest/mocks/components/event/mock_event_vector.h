@@ -29,6 +29,11 @@ MOCK_FUNC_PROTOTYPE(elosEventVectorFromJsonObject, safuResultE_t, json_object *e
 MOCK_FUNC_PROTOTYPE(elosEventVectorFromJsonArray, safuResultE_t, json_object const *jEventArray,
                     elosEventVector_t **eventVector)
 
+MOCK_FUNC_PROTOTYPE(elosEventVectorPush, safuResultE_t, elosEventVector_t *eventVector, elosEvent_t const *event)
+
+MOCK_FUNC_PROTOTYPE(elosEventVectorPushDeepCopy, safuResultE_t, elosEventVector_t *eventVector,
+                    elosEvent_t const *event)
+
 MOCK_FUNC_PROTOTYPE(elosEventVectorDeleteMembers, void, elosEventVector_t *eventVector)
 
 MOCK_FUNC_PROTOTYPE(elosEventVectorDelete, void, elosEventVector_t *eventVector)

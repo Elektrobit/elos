@@ -73,6 +73,46 @@ MOCK_FUNC_BODY(elosEventVectorFromJsonArray, safuResultE_t, json_object const *j
     return MOCK_FUNC_REAL(elosEventVectorFromJsonArray)(jEventArray, eventVector);
 }
 
+MOCK_FUNC_BODY(elosEventVectorPush, safuResultE_t, elosEventVector_t *eventVector, elosEvent_t const *event) {
+    safuResultE_t result;
+
+    switch (MOCK_GET_TYPE(elosEventVectorPush)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventVectorPush)(eventVector, event);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventVector);
+            check_expected_ptr(event);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventVectorPush)(eventVector, event);
+            break;
+    }
+
+    return result;
+}
+
+MOCK_FUNC_BODY(elosEventVectorPushDeepCopy, safuResultE_t, elosEventVector_t *eventVector, elosEvent_t const *event) {
+    safuResultE_t result;
+
+    switch (MOCK_GET_TYPE(elosEventVectorPushDeepCopy)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(elosEventVectorPushDeepCopy)(eventVector, event);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(eventVector);
+            check_expected_ptr(event);
+            result = mock_type(safuResultE_t);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(elosEventVectorPushDeepCopy)(eventVector, event);
+            break;
+    }
+
+    return result;
+}
+
 MOCK_FUNC_BODY(elosEventVectorDeleteMembers, void, elosEventVector_t *eventVector) {
     if (MOCK_IS_ACTIVE(elosEventVectorDeleteMembers)) {
         check_expected_ptr(eventVector);

@@ -40,6 +40,8 @@ target_link_options(
    -Wl,--wrap=elosEventVectorFromJsonArray
    -Wl,--wrap=elosEventVectorToJsonArray
    -Wl,--wrap=elosEventVectorToJsonObject
+   -Wl,--wrap=elosEventVectorPush
+   -Wl,--wrap=elosEventVectorPushDeepCopy
    -Wl,--wrap=elosEventVectorDeleteMembers
    -Wl,--wrap=elosEventVectorDelete
 )
