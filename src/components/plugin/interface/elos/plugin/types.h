@@ -40,6 +40,7 @@ typedef struct elosPluginParam {
     samconfConfig_t const *config;
     elosPluginParamFuncOverride_t funcOverride;
     char const *path;
+    char const *file;
     void *data;
 } elosPluginParam_t;
 
