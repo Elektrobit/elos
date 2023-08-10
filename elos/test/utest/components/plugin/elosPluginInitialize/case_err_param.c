@@ -22,6 +22,10 @@ int elosTestElosPluginInitializeErrParamTeardown(void **state) {
 void elosTestElosPluginInitializeErrParam(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     elosPluginParam_t const param = {0};
+    elosPluginParam_t const invalidParamA = {.path = "123", .file = "456"};
+    elosPluginParam_t const invalidParamB = {.path = "123"};
+    elosPlugin_t zeroedPlugin = {0};
+
     safuResultE_t result;
 
     TEST("elosPluginInitialize");
@@ -35,11 +39,19 @@ void elosTestElosPluginInitializeErrParam(void **state) {
     result = elosPluginInitialize(NULL, &param);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
-    PARAM("%s", "initializedPlugin, NULL");
+    PARAM("%s", "zeroedPlugin, NULL");
+    result = elosPluginInitialize(&zeroedPlugin, NULL);
+    assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    PARAM("%s", "plugin, NULL");
     result = elosPluginInitialize(&test->plugin, NULL);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
-    PARAM("%s", "initializedPlugin, param");
-    result = elosPluginInitialize(&test->plugin, &param);
+    PARAM("%s", "plugin, invalidParamA");
+    result = elosPluginInitialize(&test->plugin, &invalidParamA);
+    assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    PARAM("%s", "plugin, invalidParamB");
+    result = elosPluginInitialize(&test->plugin, &invalidParamB);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }

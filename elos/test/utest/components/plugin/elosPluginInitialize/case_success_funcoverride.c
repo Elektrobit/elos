@@ -66,7 +66,7 @@ void elosTestElosPluginInitializeSuccessFuncOverride(void **state) {
 
         for (size_t o = 0; o < ELOS_PLUGIN_FUNC_COUNT; o += 1) {
             elosPluginFuncEntry_t *func = test->plugin.func;
-            char const *testFuncName = _funcDefaultName[o];
+            char const *testFuncName = elosPluginFuncDefaultName[o];
             size_t const nameBit = (1 << o);
 
             if (i & nameBit) {

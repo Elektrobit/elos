@@ -33,7 +33,7 @@ static int _testSuiteTeardown(void **state) {
     return 0;
 }
 
-char const *_funcDefaultName[ELOS_PLUGIN_FUNC_COUNT] = {
+char const *elosPluginFuncDefaultName[ELOS_PLUGIN_FUNC_COUNT] = {
     [ELOS_PLUGIN_FUNC_LOAD] = "elosPluginLoad",
     [ELOS_PLUGIN_FUNC_START] = "elosPluginStart",
     [ELOS_PLUGIN_FUNC_STOP] = "elosPluginStop",
