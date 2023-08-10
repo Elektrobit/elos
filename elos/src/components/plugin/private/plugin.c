@@ -55,7 +55,7 @@ static inline safuResultE_t _funcTableInitialize(elosPlugin_t *plugin, elosPlugi
         func->ptr = NULL;
         func->name = strdup(funcName);
         if (func->name == NULL) {
-            safuLogErr("Memory allocation failed");
+            safuLogErr("String duplication failed");
             result = SAFU_RESULT_FAILED;
             break;
         }
@@ -73,6 +73,8 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
 
     if ((plugin == NULL) || (param == NULL)) {
         safuLogErr("Invalid parameter");
+    } else if ((param->path != NULL) && ((param->config == NULL) || (param->file != NULL))) {
+        safuLogErr("Invalid value combination in parameter struct");
     } else if (plugin->state != PLUGIN_STATE_INVALID) {
         safuLogErr("The given plugin struct is not in state 'PLUGIN_STATE_INVALID'");
     } else {
@@ -91,22 +93,34 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
         } else {
             eventFdSync = eventfd(0, 0);
             if (eventFdSync == -1) {
-                safuLogErrErrnoValue("eventfd failed", eventFdSync);
+                safuLogErrErrnoValue("eventfd (sync) failed", eventFdSync);
             } else {
                 eventFdWorker = eventfd(0, 0);
                 if (eventFdWorker == -1) {
                     safuLogErrErrnoValue("eventfd (worker) failed", eventFdWorker);
                 } else {
-                    plugin->id = param->id;
-                    plugin->path = param->path;
-                    plugin->config = param->config;
-                    plugin->data = param->data;
-                    plugin->stop = eventFdStop;
-                    plugin->sync = eventFdSync;
-                    plugin->worker.sync = eventFdWorker;
-                    plugin->worker.isThreadRunning = false;
+                    result = SAFU_RESULT_OK;
 
-                    result = _funcTableInitialize(plugin, param);
+                    if (param->file != NULL) {
+                        plugin->file = strdup(param->file);
+                        if (plugin->file == NULL) {
+                            safuLogErr("String duplication failed");
+                            result = SAFU_RESULT_FAILED;
+                        }
+                    }
+
+                    if (result == SAFU_RESULT_OK) {
+                        plugin->id = param->id;
+                        plugin->path = param->path;
+                        plugin->config = param->config;
+                        plugin->data = param->data;
+                        plugin->stop = eventFdStop;
+                        plugin->sync = eventFdSync;
+                        plugin->worker.sync = eventFdWorker;
+                        plugin->worker.isThreadRunning = false;
+
+                        result = _funcTableInitialize(plugin, param);
+                    }
                 }
             }
         }
