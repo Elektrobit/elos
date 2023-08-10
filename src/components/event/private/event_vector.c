@@ -339,6 +339,19 @@ safuResultE_t elosEventVectorFromJsonObject(json_object *eventVecJobj, elosEvent
     return result;
 }
 
+safuResultE_t elosEventVectorPush(elosEventVector_t *eventVector, elosEvent_t const *event) {
+    return safuVecPush(eventVector, event);
+}
+
+safuResultE_t elosEventVectorPushDeepCopy(elosEventVector_t *eventVector, elosEvent_t const *event) {
+    elosEvent_t *newEvent = {0};
+    safuResultE_t result = elosEventDeepCopy(newEvent, event);
+    if (result == SAFU_RESULT_OK) {
+        result = safuVecPush(eventVector, newEvent);
+    }
+    return result;
+}
+
 void elosEventVectorDeleteMembers(elosEventVector_t *eventVector) {
     if (eventVector != NULL) {
         for (uint32_t idx = 0; idx < eventVector->elementCount; idx++) {
