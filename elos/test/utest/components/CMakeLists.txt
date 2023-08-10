@@ -2,6 +2,7 @@
 
 add_subdirectory(clientmanager)
 add_subdirectory(config)
+add_subdirectory(eloslog)
 add_subdirectory(event)
 add_subdirectory(eventbuffer)
 add_subdirectory(eventdispatcher)
