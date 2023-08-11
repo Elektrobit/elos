@@ -195,11 +195,18 @@ int main(int argc, char **argv) {
         .eventProcessor = &context.eventProcessor,
         .eventDispatcher = &context.eventDispatcher,
     };
-    retval = elosClientManagerStart(&context.clientManagerContext, &cmParams);
-    if (retval < 0) {
-        safuLogErr("elosClientManagerStart");
+    result = elosClientManagerInitialize(&context.clientManagerContext, &cmParams);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosClientManagerInitialize");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
+    } else {
+        retval = elosClientManagerStart(&context.clientManagerContext);
+        if (retval < 0) {
+            safuLogErr("elosClientManagerStart");
+            elosServerShutdown(&context);
+            return EXIT_FAILURE;
+        }
     }
 
     safuLogDebug("Start scanner manager");

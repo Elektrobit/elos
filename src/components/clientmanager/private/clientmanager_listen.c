@@ -25,7 +25,7 @@ static inline void _calculateTvSeconds(struct timespec *ts) {
     TIMEVAL_TO_TIMESPEC(&tmpResult, ts);
 }
 
-safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManagerContext_t *ctx, int *slot) {
+safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *ctx, int *slot) {
     sem_t *connectionSemaphore = &ctx->sharedData.connectionSemaphore;
     struct timespec semTimeOut = {0};
     safuResultE_t result = SAFU_RESULT_OK;
@@ -78,7 +78,7 @@ safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManagerCont
     return result;
 }
 
-safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManagerContext_t *ctx, int slot) {
+safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *ctx, int slot) {
     elosClientManagerConnection_t *conn = &ctx->connection[slot];
     struct timespec timeOut = {.tv_sec = CONNECTION_PSELECT_TIMEOUT_SEC, .tv_nsec = CONNECTION_PSELECT_TIMEOUT_NSEC};
     socklen_t addrLen = sizeof(conn->addr);
