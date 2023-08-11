@@ -143,7 +143,7 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
 }
 
 void *elosClientManagerThreadListen(void *ptr) {
-    elosClientManagerContext_t *ctx = (elosClientManagerContext_t *)ptr;
+    elosClientManager_t *ctx = (elosClientManager_t *)ptr;
     uint32_t status = 0;
     safuResultE_t result = SAFU_RESULT_FAILED;
 

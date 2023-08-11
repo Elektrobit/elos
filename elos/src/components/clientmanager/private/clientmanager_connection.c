@@ -150,7 +150,7 @@ void *elosClientManagerThreadConnection(void *ptr) {
     while (result == SAFU_RESULT_OK) {
         uint32_t status = 0;
 
-        result = elosClientManagerGetStatus((elosClientManagerContext_t *)conn, &status);
+        result = elosClientManagerGetStatus((elosClientManager_t *)conn, &status);
         if (result == SAFU_RESULT_OK) {
             if (status & CLIENT_MANAGER_CONNECTION_ACTIVE) {
                 result = elosMessageHandlerHandleMessage(conn);

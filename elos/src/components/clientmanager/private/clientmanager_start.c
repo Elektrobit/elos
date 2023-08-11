@@ -13,9 +13,9 @@
 
 void *elosClientManagerThreadListen(void *ptr);
 
-static int _initContext(elosClientManagerContext_t *ctx, elosClientManagerParam_t *parameters) {
+static int _initContext(elosClientManager_t *ctx, elosClientManagerParam_t *parameters) {
     int retval = -1;
-    memset(ctx, 0, sizeof(elosClientManagerContext_t));
+    memset(ctx, 0, sizeof(elosClientManager_t));
 
     samconfConfig_t *config = parameters->config;
     ctx->sharedData.logAggregator = parameters->logAggregator;
@@ -34,7 +34,7 @@ static int _initContext(elosClientManagerContext_t *ctx, elosClientManagerParam_
     return retval;
 }
 
-static int _initConnections(elosClientManagerContext_t *ctx, elosClientManagerParam_t *parameters) {
+static int _initConnections(elosClientManager_t *ctx, elosClientManagerParam_t *parameters) {
     safuResultE_t status = SAFU_RESULT_OK;
     int retval = -1, contextLockInit = -1, semLockInit = -1, connectionLockInit = -1;
 
@@ -84,7 +84,7 @@ static int _initConnections(elosClientManagerContext_t *ctx, elosClientManagerPa
     return retval;
 }
 
-static int _listenOnNewSocket(elosClientManagerContext_t *ctx) {
+static int _listenOnNewSocket(elosClientManager_t *ctx) {
     int retval = -1, sockOpt = -1, bindSock = -1, listenSock = -1;
 
     ctx->fd = socket(ctx->addr.sin_family, SOCK_STREAM, 0);
@@ -115,7 +115,7 @@ static int _listenOnNewSocket(elosClientManagerContext_t *ctx) {
     return retval;
 }
 
-int elosClientManagerStart(elosClientManagerContext_t *ctx, elosClientManagerParam_t *parameters) {
+int elosClientManagerStart(elosClientManager_t *ctx, elosClientManagerParam_t *parameters) {
     int retval = -1, initContext = -1, initThreadLocks = -1, listenOnNewSocket = -1;
 
     // TODO: Detect multiple uses of elosClientManagerStart properly?
