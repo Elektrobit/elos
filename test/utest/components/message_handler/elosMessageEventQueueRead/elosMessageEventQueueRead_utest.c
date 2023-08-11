@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #include "elosMessageEventQueueRead_utest.h"
 
+#include "elos/eventprocessor/eventprocessor.h"
+
 TEST_SUITE_FUNC_PROTOTYPES(_messageEventQueueReadUtest)
 
 int main() {

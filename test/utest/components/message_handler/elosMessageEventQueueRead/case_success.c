@@ -4,6 +4,7 @@
 #define _GNU_SOURCE
 #endif
 
+#include "elos/eventprocessor/eventprocessor.h"
 #include "elosMessageEventQueueRead_utest.h"
 #include "mock_message_handler.h"
 
