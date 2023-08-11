@@ -388,6 +388,18 @@ safuResultE_t elosPluginDeleteMembers(elosPlugin_t *plugin) {
     return result;
 }
 
+safuResultE_t elosPluginDelete(elosPlugin_t **plugin) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    if ((plugin != NULL) && (*plugin != NULL)) {
+        result = elosPluginDeleteMembers(*plugin);
+        free(*plugin);
+        *plugin = NULL;
+    }
+
+    return result;
+}
+
 safuResultE_t elosPluginGetName(const elosPlugin_t *plugin, const char **name) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
