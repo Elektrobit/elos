@@ -4,7 +4,7 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
-MOCK_FUNC_BODY(elosClientManagerGetStatus, safuResultE_t, elosClientManagerContext_t *context, uint32_t *status) {
+MOCK_FUNC_BODY(elosClientManagerGetStatus, safuResultE_t, elosClientManager_t *context, uint32_t *status) {
     if (MOCK_IS_ACTIVE(elosClientManagerGetStatus)) {
         check_expected_ptr(context);
         check_expected_ptr(status);
@@ -14,8 +14,7 @@ MOCK_FUNC_BODY(elosClientManagerGetStatus, safuResultE_t, elosClientManagerConte
     return MOCK_FUNC_REAL(elosClientManagerGetStatus)(context, status);
 }
 
-MOCK_FUNC_BODY(elosClientManagerThreadGetFreeConnectionSlot, safuResultE_t, elosClientManagerContext_t *ctx,
-               int *slot) {
+MOCK_FUNC_BODY(elosClientManagerThreadGetFreeConnectionSlot, safuResultE_t, elosClientManager_t *ctx, int *slot) {
     if (MOCK_IS_ACTIVE(elosClientManagerThreadGetFreeConnectionSlot)) {
         check_expected_ptr(ctx);
         check_expected_ptr(slot);
@@ -25,8 +24,7 @@ MOCK_FUNC_BODY(elosClientManagerThreadGetFreeConnectionSlot, safuResultE_t, elos
     return MOCK_FUNC_REAL(elosClientManagerThreadGetFreeConnectionSlot)(ctx, slot);
 }
 
-MOCK_FUNC_BODY(elosClientManagerThreadWaitForIncomingConnection, safuResultE_t, elosClientManagerContext_t *ctx,
-               int slot) {
+MOCK_FUNC_BODY(elosClientManagerThreadWaitForIncomingConnection, safuResultE_t, elosClientManager_t *ctx, int slot) {
     if (MOCK_IS_ACTIVE(elosClientManagerThreadWaitForIncomingConnection)) {
         check_expected_ptr(ctx);
         check_expected(slot);

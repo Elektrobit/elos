@@ -11,7 +11,7 @@
 #include "elos/clientmanager/clientblacklist.h"
 #include "elos/clientmanager/clientmanager.h"
 
-safuResultE_t elosClientManagerGetStatus(elosClientManagerContext_t *context, uint32_t *status) {
+safuResultE_t elosClientManagerGetStatus(elosClientManager_t *context, uint32_t *status) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     SAFU_PTHREAD_MUTEX_LOCK(&context->lock, result = SAFU_RESULT_FAILED);
@@ -22,7 +22,7 @@ safuResultE_t elosClientManagerGetStatus(elosClientManagerContext_t *context, ui
     return result;
 }
 
-static void _stopListeningThread(elosClientManagerContext_t *ctx) {
+static void _stopListeningThread(elosClientManager_t *ctx) {
     safuLogDebug("stop listening thread...");
     pthread_mutex_lock(&ctx->lock);
     ctx->status &= ~CLIENT_MANAGER_LISTEN_ACTIVE;
@@ -32,7 +32,7 @@ static void _stopListeningThread(elosClientManagerContext_t *ctx) {
     ctx->status &= ~CLIENT_MANAGER_THREAD_NOT_JOINED;
 }
 
-static void _stopConnectionThreads(elosClientManagerContext_t *ctx) {
+static void _stopConnectionThreads(elosClientManager_t *ctx) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
         pthread_mutex_lock(&ctx->connection[i].lock);
@@ -53,7 +53,7 @@ static void _stopConnectionThreads(elosClientManagerContext_t *ctx) {
     }
 }
 
-int elosClientManagerStop(elosClientManagerContext_t *ctx) {
+int elosClientManagerStop(elosClientManager_t *ctx) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     uint32_t status = 0;
     int retval = -1;

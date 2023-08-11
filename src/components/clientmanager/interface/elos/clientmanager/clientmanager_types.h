@@ -66,7 +66,7 @@ typedef struct elosClientManagerContext {
     pthread_t listenThread;
     elosClientManagerSharedData_t sharedData;
     elosClientAuthorization_t clientAuth;
-} elosClientManagerContext_t;
+} elosClientManager_t;
 
 typedef struct elosClientManagerParam {
     samconfConfig_t *config;

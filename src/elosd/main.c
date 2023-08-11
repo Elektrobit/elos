@@ -26,7 +26,7 @@
 
 struct serverContext {
     samconfConfig_t *config;
-    elosClientManagerContext_t clientManagerContext;
+    elosClientManager_t clientManagerContext;
     elosScannerManagerContext_t scannerManagerContext;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
