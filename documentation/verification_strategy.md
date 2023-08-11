@@ -288,7 +288,7 @@ The fundamental components required for integration tests are as given below, ap
 * The host system has the elos-integration-test packages and a test-runner script.
 * The robot container where  the robot test framework is installed. The test package directory is mounted on to this container.
 * The elos container where elosd is installed and running serves as the target.
-* The test results are stored in ```test/integration/report```
+* The test results are stored in ```build/[Debug|Release]/result/integration```
 
 New tests are added directly in the elos-integration-test package. Starting the container with robot framework installed, mounts the test-package automatically. The test runner script is found in ```integration/scripts```. The target container should be started before running the test runner script. Starting the target container installs elosd from source and runs it. The test-runner script requires the target credentials like username, password and target ip address in order to run the tests.
 

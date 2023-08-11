@@ -4,11 +4,13 @@
 #
 
 CMD_PATH=$(cd $(dirname $0) && pwd)
-BASE_DIR=${CMD_PATH%/*}
+BASE_DIR=$(cd ${CMD_PATH%/*}/../.. && pwd)
 PROJECT="${PROJECT-${BASE_DIR##*/}}"
 TEST_SOURCE=${TEST_SOURCE-${CMD_PATH%/*}}
 VARIABLE_FILE="${VARIABLE_FILE-${TEST_SOURCE}/robot_variables.py}"
-TEST_OUTPUT="${TEST_OUTPUT-${TEST_SOURCE}/report}"
+BUILD_TYPE=${BUILD_TYPE:-Debug}
+BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
+TEST_OUTPUT="${TEST_OUTPUT-${BUILD_DIR}/result/integration}"
 TEST_DIR="_test"
 TARGET_NAME="${TARGET_NAME-${PROJECT}-target}"
 TARGET_IP=$(grep ${TARGET_NAME} /etc/hosts | cut -f 1)
