@@ -26,6 +26,7 @@ add_library(
     ./private/clientmanager_listen.c
     ./private/clientmanager_start.c
     ./private/clientmanager_stop.c
+    ./private/clientmanager.c
 )
 
 target_include_directories(
