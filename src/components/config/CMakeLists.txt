@@ -23,6 +23,7 @@ target_include_directories(
 
 add_compile_definitions(ELOSD_PORT=${ELOSD_PORT})
 add_compile_definitions(ELOSD_INTERFACE="${ELOSD_INTERFACE}")
+add_compile_definitions(ELOSD_CONNECTION_LIMIT=${ELOSD_CONNECTION_LIMIT})
 add_compile_definitions(ELOSD_CONFIG_PATH="${ELOSD_CONFIG_PATH}")
 add_compile_definitions(ELOSD_CONFIG_FILE="${ELOSD_CONFIG_FILE}")
 add_compile_definitions(ELOSD_SCANNER_PATH="${ELOSD_SCANNER_PATH}")

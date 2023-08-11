@@ -9,6 +9,7 @@
 
 int elosConfigLoad(samconfConfig_t **config);
 int elosConfigGetElosdPort(const samconfConfig_t *config);
+int elosConfigGetElosdConnectionLimit(const samconfConfig_t *config);
 const char *elosConfigGetElosdInterface(const samconfConfig_t *config);
 const char *elosConfigGetElosdLogFilter(const samconfConfig_t *config);
 safuLogLevelE_t elosConfigGetElosdLogLevel(const samconfConfig_t *config);

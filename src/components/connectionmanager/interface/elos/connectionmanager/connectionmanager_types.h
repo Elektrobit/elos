@@ -39,7 +39,6 @@
  *   syncFd: eventfd used for synchronization with the worker thread
  *   addr: Address information of the listener socket
  *   connection: Array of ClientConnections
- *   connectionLimit: Size of the ClientConnections array
  *   listenThread: worker thread used by pthread_* functions
  *   sharedData: Data shared between all ClientConnections
  *   clientAuth: Client authorization functionality

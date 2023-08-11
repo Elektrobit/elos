@@ -51,10 +51,11 @@ static inline int32_t elosConfigGetElosdOptionInt(const samconfConfig_t *config,
 
     if (useEnv) {
         const char *getEnvValue = safuGetEnvOr(envVarName, NULL);
+        char *endPtr;
         if (getEnvValue) {
             errno = 0;
-            result = strtol(getEnvValue, NULL, 10);
-            validValNotPresent = errno == EINVAL || errno == ERANGE;
+            result = strtol(getEnvValue, &endPtr, 10);
+            validValNotPresent = endPtr == getEnvValue || errno == ERANGE || errno == EINVAL;
         }
     }
 
@@ -84,6 +85,11 @@ static inline const char *elosConfigGetElosdOptionString(const samconfConfig_t *
 
 int elosConfigGetElosdPort(const samconfConfig_t *config) {
     return elosConfigGetElosdOptionInt(config, ELOS_CONFIG_ROOT "Port", "ELOSD_PORT", ELOSD_PORT);
+}
+
+int elosConfigGetElosdConnectionLimit(const samconfConfig_t *config) {
+    return elosConfigGetElosdOptionInt(config, ELOS_CONFIG_ROOT "ConnectionLimit", "ELOSD_CONNECTION_LIMIT",
+                                       ELOSD_CONNECTION_LIMIT);
 }
 
 const char *elosConfigGetElosdInterface(const samconfConfig_t *config) {
