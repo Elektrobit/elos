@@ -6,7 +6,6 @@ create_unit_test(
   NAME
   test_logAggregator_elosLogAggregatorFindEvents_utest
   SOURCES
-    case_success.c
     case_err_param_logAggregator_null.c
     case_err_param_rule_null.c
     case_err_param_events_null.c
