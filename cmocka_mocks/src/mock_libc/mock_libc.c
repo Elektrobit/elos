@@ -508,14 +508,25 @@ int MOCK_FUNC_WRAP(raise)(int __sig) {
 MOCK_FUNC_VAR_NEW(pthread_create);
 int MOCK_FUNC_WRAP(pthread_create)(pthread_t *__newthread, const pthread_attr_t *__attr,
                                    void *(*__start_routine)(void *), void *__arg) {
-    if (MOCK_IS_ACTIVE(pthread_create)) {
-        check_expected_ptr(__newthread);
-        check_expected_ptr(__attr);
-        check_expected_ptr(__start_routine);
-        check_expected_ptr(__arg);
-        return mock_type(int);
+    int result;
+
+    switch (MOCK_GET_TYPE(pthread_create)) {
+        case CMOCKA_MOCK_ENABLED_WITH_FUNC:
+            result = MOCK_FUNC_WITH(pthread_create)(__newthread, __attr, __start_routine, __arg);
+            break;
+        case CMOCKA_MOCK_ENABLED:
+            check_expected_ptr(__newthread);
+            check_expected_ptr(__attr);
+            check_expected_ptr(__start_routine);
+            check_expected_ptr(__arg);
+            result = mock_type(int);
+            break;
+        default:
+            result = MOCK_FUNC_REAL(pthread_create)(__newthread, __attr, __start_routine, __arg);
+            break;
     }
-    return MOCK_FUNC_REAL(pthread_create)(__newthread, __attr, __start_routine, __arg);
+
+    return result;
 }
 
 MOCK_FUNC_VAR_NEW(pthread_join);
