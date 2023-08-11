@@ -2,6 +2,7 @@
 #include "elosMessageEventUnsubscribe_utest.h"
 
 #include "cmocka_mocks/mock_jsonc.h"
+#include "elos/eventprocessor/eventprocessor.h"
 
 TEST_SUITE_FUNC_PROTOTYPES(elosMessageEventUnsubscribeUtest)
 

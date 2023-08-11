@@ -3,10 +3,11 @@
 #define __ELOS_MESSAGEEVENTSUBSCRIBE_H__
 
 #include <cmocka_extensions/cmocka_extensions.h>
+#include <json-c/json.h>
+#include <safu/common.h>
 
 #include "elos/clientmanager/clientmanager.h"
 #include "elos/common/message.h"
-#include "safu/common.h"
 
 typedef struct elosArrayStringTestData {
     const char **strings;

@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 
 #include <errno.h>
+#include <safu/log.h>
+#include <safu/mutex.h>
 #include <unistd.h>
 
+#include "clientmanager_private.h"
 #include "elos/clientmanager/clientauthorization.h"
 #include "elos/clientmanager/clientauthorizedprocesses.h"
 #include "elos/clientmanager/clientblacklist.h"
 #include "elos/clientmanager/clientmanager.h"
-#include "safu/log.h"
 
 safuResultE_t elosClientManagerGetStatus(elosClientManagerContext_t *context, uint32_t *status) {
     safuResultE_t result = SAFU_RESULT_OK;

@@ -4,19 +4,22 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <safu/common.h>
+#include <safu/log.h>
+#include <safu/mutex.h>
 #include <signal.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
+#include "clientmanager_private.h"
 #include "elos/clientmanager/clientauthorization.h"
 #include "clientmanager_private.h"
 #include "elos/clientmanager/clientmanager.h"
 #include "elos/eventbuffer/eventbuffer.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
+#include "elos/eventprocessor/eventprocessor.h"
 #include "elos/messages/message_handler.h"
-#include "safu/common.h"
-#include "safu/log.h"
 
 static safuResultE_t _createConnectionData(elosClientManagerConnection_t *conn) {
     safuResultE_t result = SAFU_RESULT_FAILED;

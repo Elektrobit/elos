@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+#include "elos/eventprocessor/eventprocessor.h"
 #include "elosMessageEventUnsubscribe_utest.h"
 
 int elosTestElosMessageEventUnsubscribeErrFilterDeleteSetup(void **state) {

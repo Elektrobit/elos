@@ -3,6 +3,7 @@
 
 #include <netinet/in.h>
 #include <pthread.h>
+#include <safu/flags.h>
 #include <samconf/samconf_types.h>
 #include <semaphore.h>
 #include <stddef.h>
