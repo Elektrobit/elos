@@ -267,6 +267,7 @@ safuResultE_t elosPluginUnload(elosPlugin_t *plugin) {
         bool unloadNeeded = true;
 
         switch (plugin->state) {
+            case PLUGIN_STATE_LOADED:
             case PLUGIN_STATE_STOPPED:
             case PLUGIN_STATE_ERROR:
                 break;
@@ -319,6 +320,7 @@ safuResultE_t elosPluginDeleteMembers(elosPlugin_t *plugin) {
         bool cleanupNeeded = false;
 
         switch (plugin->state) {
+            case PLUGIN_STATE_LOADED:
             case PLUGIN_STATE_STARTED:
             case PLUGIN_STATE_STOPPED:
             case PLUGIN_STATE_ERROR:
