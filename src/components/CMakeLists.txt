@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-add_subdirectory(client_manager)
+add_subdirectory(clientmanager)
 add_subdirectory(config)
 add_subdirectory(event)
 add_subdirectory(eventbuffer)

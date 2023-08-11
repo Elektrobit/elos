@@ -4,7 +4,7 @@ TESTS=$(find /usr/local/lib/test/elos -type f -executable)
 
 #skip failing test case
 #FAILTESTPATH="
-# /opt/emlix/lib/test/elos/client_manager/test_clientManager_elosClientManagerStart_utest
+# /opt/emlix/lib/test/elos/clientmanager/test_clientManager_elosClientManagerStart_utest
 #"
 #
 #for i in $FAILTESTPATH; do
