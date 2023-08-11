@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "elos/client_manager/client_manager.h"
+#include "elos/clientmanager/clientmanager.h"
 #include "elos/config/config.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventlogging/LogAggregator.h"

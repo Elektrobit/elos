@@ -4,7 +4,7 @@
 
 #include <json-c/json.h>
 
-#include "elos/client_manager/types.h"
+#include "elos/clientmanager/types.h"
 #include "elos/common/message.h"
 #include "safu/common.h"
 
