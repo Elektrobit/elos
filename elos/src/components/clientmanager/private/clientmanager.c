@@ -123,30 +123,25 @@ static safuResultE_t _initializeAuthorization(elosClientManager_t *clientmanager
 safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientmanager, elosClientManagerParam_t *param) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    // TODO: Detect multiple uses of elosClientManagerStart properly?
-
     if ((clientmanager == NULL) || (param == NULL)) {
         safuLogErr("Invalid parameter NULL");
     } else if ((param->config == NULL) || (param->eventDispatcher == NULL) || (param->eventProcessor == NULL) ||
                (param->logAggregator == NULL)) {
         safuLogErr("Invalid value NULL in parameter struct");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientmanager->flags) == true) {
+        safuLogErr("The given ClientManager is already initialized");
     } else {
-        int retVal;
-
         memset(clientmanager, 0, sizeof(elosClientManager_t));
 
-        retVal = pthread_mutex_init(&clientmanager->lock, NULL);
-        if (retVal != 0) {
-            safuLogErrErrnoValue("pthread_mutex_init failed", retVal);
-        } else {
-            result = _initializeSharedData(clientmanager, param);
+        result = _initializeSharedData(clientmanager, param);
+        if (result == SAFU_RESULT_OK) {
+            result = _initializeListener(clientmanager, param->config);
             if (result == SAFU_RESULT_OK) {
-                result = _initializeListener(clientmanager, param->config);
+                result = _initializeConnections(clientmanager, param->config);
                 if (result == SAFU_RESULT_OK) {
-                    result = _initializeConnections(clientmanager, param->config);
-                    if (result == SAFU_RESULT_OK) {
-                        _initializeAuthorization(clientmanager, param->config);
-                    }
+                    _initializeAuthorization(clientmanager, param->config);
+
+                    atomic_store(&clientmanager->flags, SAFU_FLAG_INITIALIZED_BIT);
                 }
             }
         }
@@ -158,8 +153,10 @@ safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientmanager, el
 safuResultE_t elosClientManagerDeleteMembers(elosClientManager_t *clientmanager) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (clientmanager == NULL) {
-        safuLogErr("Invalid parameter");
+    if (clientmanager != NULL) {
+        if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientmanager->flags) == true) {
+            result = SAFU_RESULT_OK;
+        }
     }
 
     return result;

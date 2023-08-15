@@ -17,9 +17,10 @@
 
 #define CLIENT_MANAGER_MAX_CONNECTIONS     200
 #define CLIENT_MANAGER_LISTEN_QUEUE_LENGTH 200
-#define CLIENT_MANAGER_LISTEN_ACTIVE       1
-#define CLIENT_MANAGER_CONNECTION_ACTIVE   1
-#define CLIENT_MANAGER_THREAD_NOT_JOINED   2
+
+#define CLIENT_MANAGER_LISTEN_ACTIVE     (SAFU_FLAG_CUSTOM_START_BIT << 0)
+#define CLIENT_MANAGER_CONNECTION_ACTIVE (SAFU_FLAG_CUSTOM_START_BIT << 1)
+#define CLIENT_MANAGER_THREAD_NOT_JOINED (SAFU_FLAG_CUSTOM_START_BIT << 2)
 
 #ifndef CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE
 #define CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE 4
@@ -58,8 +59,7 @@ typedef struct elosClientManagerConnection {
 } elosClientManagerConnection_t;
 
 typedef struct elosClientManagerContext {
-    pthread_mutex_t lock;
-    uint32_t status;
+    safuFlags_t flags;
     int fd;
     struct sockaddr_in addr;
     elosClientManagerConnection_t connection[CLIENT_MANAGER_MAX_CONNECTIONS];
