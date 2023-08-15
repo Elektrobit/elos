@@ -21,10 +21,10 @@ int main() {
 void elosMessageLogFindEventUtestCreateConnection(void **state) {
     elosUteststateT_t *testState = *state;
 
-    testState->connection = safuAllocMem(NULL, sizeof(elosClientManagerConnection_t));
+    testState->connection = safuAllocMem(NULL, sizeof(elosClientConnection_t));
     assert_non_null(testState->connection);
 
-    testState->connection->sharedData = safuAllocMem(NULL, sizeof(elosClientManagerSharedData_t));
+    testState->connection->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(testState->connection->sharedData);
 
     testState->connection->sharedData->logAggregator = safuAllocMem(NULL, sizeof(elosLogAggregator_t));

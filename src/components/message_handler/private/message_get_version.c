@@ -4,7 +4,7 @@
 #include "safu/json.h"
 #include "version.h"
 
-safuResultE_t elosMessageGetVersion(elosClientManagerConnection_t *conn, UNUSED elosMessage_t const *const msg) {
+safuResultE_t elosMessageGetVersion(elosClientConnection_t *conn, UNUSED elosMessage_t const *const msg) {
     struct json_object *jobj;
 
     jobj = elosMessageHandlerResponseCreate(NULL);

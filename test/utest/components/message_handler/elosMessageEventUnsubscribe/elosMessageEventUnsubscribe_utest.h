@@ -14,8 +14,8 @@
 #define _ERRSTR(__errstr)        "{\"error\":\"" __errstr "\"}"
 
 typedef struct elosUnitTestState {
-    elosClientManagerConnection_t connection;
-    elosClientManagerSharedData_t sharedData;
+    elosClientConnection_t connection;
+    elosClientConnectionSharedData_t sharedData;
     elosEventQueueId_t eventQueueId;
     elosEventVector_t *eventVector;
     elosEventProcessor_t eventProcessor;
@@ -23,7 +23,7 @@ typedef struct elosUnitTestState {
     elosMessage_t *message;
 } elosUnitTestState_t;
 
-extern safuResultE_t elosMessageEventUnsubscribe(elosClientManagerConnection_t *conn, elosMessage_t const *const msg);
+extern safuResultE_t elosMessageEventUnsubscribe(elosClientConnection_t *conn, elosMessage_t const *const msg);
 
 void elosMessageEventUnsubscribeUtestSetupEventProcessor(void **state);
 void elosMessageEventUnsubscribeUtestSetupMessage(void **state, char const *message);

@@ -15,7 +15,7 @@
 
 static safuResultE_t _initializeSharedData(elosClientManager_t *clientmanager, elosClientManagerParam_t *param) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    elosClientManagerSharedData_t *sharedData = &clientmanager->sharedData;
+    elosClientConnectionSharedData_t *sharedData = &clientmanager->sharedData;
     int retVal;
 
     retVal = sem_init(&sharedData->connectionSemaphore, 0, CLIENT_MANAGER_MAX_CONNECTIONS);
@@ -76,7 +76,7 @@ static safuResultE_t _initializeConnections(elosClientManager_t *clientmanager, 
     safuResultE_t result = SAFU_RESULT_OK;
 
     for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
-        elosClientManagerConnection_t *connection = &clientmanager->connection[i];
+        elosClientConnection_t *connection = &clientmanager->connection[i];
         int retVal;
 
         retVal = pthread_mutex_init(&connection->lock, NULL);

@@ -8,7 +8,7 @@
 #include "elos/eventprocessor/eventqueuemanager.h"
 #include "elos/messages/message_handler.h"
 
-safuResultE_t elosMessageEventUnsubscribe(elosClientManagerConnection_t *conn, elosMessage_t const *const msg) {
+safuResultE_t elosMessageEventUnsubscribe(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     json_object *request = NULL;
     json_object *response = NULL;

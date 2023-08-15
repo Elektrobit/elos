@@ -13,8 +13,8 @@
 #define _ERRSTR(__errstr)        "{\"error\":\"" __errstr "\"}"
 
 typedef struct elosUnitTestState {
-    elosClientManagerConnection_t connection;
-    elosClientManagerSharedData_t sharedData;
+    elosClientConnection_t connection;
+    elosClientConnectionSharedData_t sharedData;
     elosEventQueueId_t eventQueueId;
     elosEventVector_t *eventVector;
     elosEventProcessor_t eventProcessor;
@@ -30,6 +30,6 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageEventQueueReadSuccess)
 
 void elosMessageEventQueueReadUtestSetupEventProcessor(void **state);
 void elosMessageEventQueueReadUtestSetupMessage(void **state, char const *message);
-extern safuResultE_t elosMessageEventQueueRead(elosClientManagerConnection_t *conn, elosMessage_t const *const msg);
+extern safuResultE_t elosMessageEventQueueRead(elosClientConnection_t *conn, elosMessage_t const *const msg);
 
 #endif /* __ELOS_MESSAGE_EVENTQUEUE_READ_H__ */

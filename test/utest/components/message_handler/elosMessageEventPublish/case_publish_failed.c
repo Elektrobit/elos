@@ -8,15 +8,15 @@
 #include "mock_message_handler.h"
 #include "safu/mock_log.h"
 
-extern int elosMessageEventPublish(elosClientManagerConnection_t const *const conn, elosMessage_t const *const msg);
+extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
 int elosTestElosMessageEventPublishPublishFailedSetup(void **state) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));
     assert_non_null(data);
-    data->conn = safuAllocMem(NULL, sizeof(elosClientManagerConnection_t));
+    data->conn = safuAllocMem(NULL, sizeof(elosClientConnection_t));
     assert_non_null(data->conn);
     data->conn->isTrusted = true;
-    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientManagerSharedData_t));
+    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(data->conn->sharedData);
     data->conn->sharedData->eventProcessor = safuAllocMem(NULL, sizeof(elosEventProcessor_t));
     assert_non_null(data->conn->sharedData->eventProcessor);

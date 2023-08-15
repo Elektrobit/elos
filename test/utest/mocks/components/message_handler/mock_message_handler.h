@@ -15,19 +15,19 @@
 #include "elos/messages/message_handler.h"
 #include "json-c/json.h"
 
-MOCK_FUNC_PROTOTYPE(elosMessageHandlerSend, safuResultE_t, elosClientManagerConnection_t const *const conn,
-                    uint8_t messageId, const char *jsonStr)
+MOCK_FUNC_PROTOTYPE(elosMessageHandlerSend, safuResultE_t, elosClientConnection_t const *const conn, uint8_t messageId,
+                    const char *jsonStr)
 
-MOCK_FUNC_PROTOTYPE(elosMessageHandlerSendJson, safuResultE_t, elosClientManagerConnection_t const *const conn,
+MOCK_FUNC_PROTOTYPE(elosMessageHandlerSendJson, safuResultE_t, elosClientConnection_t const *const conn,
                     uint8_t messageId, json_object *jobj)
 
-MOCK_FUNC_PROTOTYPE(elosMessageEventPublish, safuResultE_t, elosClientManagerConnection_t const *const conn,
+MOCK_FUNC_PROTOTYPE(elosMessageEventPublish, safuResultE_t, elosClientConnection_t const *const conn,
                     elosMessage_t const *const msg)
 
-MOCK_FUNC_PROTOTYPE(elosMessageGetVersion, safuResultE_t, elosClientManagerConnection_t const *const conn,
+MOCK_FUNC_PROTOTYPE(elosMessageGetVersion, safuResultE_t, elosClientConnection_t const *const conn,
                     elosMessage_t const *const msg)
 
-MOCK_FUNC_PROTOTYPE(elosMessageLogFindEvent, safuResultE_t, elosClientManagerConnection_t const *const conn,
+MOCK_FUNC_PROTOTYPE(elosMessageLogFindEvent, safuResultE_t, elosClientConnection_t const *const conn,
                     elosMessage_t const *const msg)
 
 MOCK_FUNC_PROTOTYPE(elosMessageHandlerResponseCreate, json_object *, const char *errstr)

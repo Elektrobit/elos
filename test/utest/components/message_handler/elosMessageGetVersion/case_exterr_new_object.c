@@ -2,23 +2,23 @@
 
 #include "elosMessageGetVersion_utest.h"
 
-extern int elosMessageGetVersion(elosClientManagerConnection_t *conn, UNUSED elosMessage_t const *const msg);
+extern int elosMessageGetVersion(elosClientConnection_t *conn, UNUSED elosMessage_t const *const msg);
 
 int elosTestElosMessageGetVersionExtErrNewObjectSetup(void **state) {
-    elosClientManagerConnection_t *connection = elosMessageGetVersionCreateConnection();
+    elosClientConnection_t *connection = elosMessageGetVersionCreateConnection();
     *state = connection;
     return 0;
 }
 
 int elosTestElosMessageGetVersionExtErrNewObjectTeardown(void **state) {
-    elosClientManagerConnection_t *connection = *state;
+    elosClientConnection_t *connection = *state;
     free(connection->sharedData);
     free(connection);
     return 0;
 }
 
 void elosTestElosMessageGetVersionExtErrNewObject(void **state) {
-    elosClientManagerConnection_t *connection = *state;
+    elosClientConnection_t *connection = *state;
     int ret;
 
     TEST("elosMessageGetVersion");

@@ -9,7 +9,7 @@
 #include "mock_eventprocessor.h"
 
 typedef struct elosUtestState {
-    elosClientManagerConnection_t *conn;
+    elosClientConnection_t *conn;
     elosMessage_t *msg;
     json_object *response;
     elosEvent_t *event;

@@ -8,7 +8,7 @@
 #include "safu/mock_safu.h"
 
 typedef struct {
-    elosClientManagerConnection_t *connection;
+    elosClientConnection_t *connection;
     elosMessage_t *message;
     size_t messagePayloadLen;
 } elosUteststateT_t;
@@ -18,7 +18,7 @@ void elosMessageHandlerHandleMessageUtestFreeConnection(void **state);
 void elosMessageHandlerHandleMessageUtestCreateMessage(void **state);
 void elosMessageHandlerHandleMessageUtestDeleteMessage(void **state);
 
-extern int elosMessageGetVersion(elosClientManagerConnection_t const *const conn, elosMessage_t const *const msg);
+extern int elosMessageGetVersion(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrConnection)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageExterrFirstAllocMem)

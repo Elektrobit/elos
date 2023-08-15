@@ -9,16 +9,16 @@
 #include "elosMessageGetVersion_utest.h"
 #include "version.h"
 
-extern int elosMessageGetVersion(elosClientManagerConnection_t *conn, UNUSED elosMessage_t const *const msg);
+extern int elosMessageGetVersion(elosClientConnection_t *conn, UNUSED elosMessage_t const *const msg);
 
 int elosTestElosMessageGetVersionSuccessSetup(void **state) {
-    elosClientManagerConnection_t *conn = elosMessageGetVersionCreateConnection();
+    elosClientConnection_t *conn = elosMessageGetVersionCreateConnection();
     *state = conn;
     return 0;
 }
 
 int elosTestElosMessageGetVersionSuccessTeardown(void **state) {
-    elosClientManagerConnection_t *conn = *(elosClientManagerConnection_t **)state;
+    elosClientConnection_t *conn = *(elosClientConnection_t **)state;
     free(conn->sharedData);
     free(conn);
     return 0;
@@ -40,7 +40,7 @@ static int _check_version(const long unsigned int json, const long unsigned int 
 }
 
 void elosTestElosMessageGetVersionSuccess(void **state) {
-    elosClientManagerConnection_t *conn = *state;
+    elosClientConnection_t *conn = *state;
     int ret;
 
     TEST("elosMessageGetVersion");

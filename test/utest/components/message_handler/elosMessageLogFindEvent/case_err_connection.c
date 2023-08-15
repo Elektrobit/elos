@@ -2,7 +2,7 @@
 
 #include "elosMessageLogFindEvent_utest.h"
 
-extern safuResultE_t elosMessageLogFindEvent(elosClientManagerConnection_t *conn, elosMessage_t const *const msg);
+extern safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_t const *const msg);
 
 int elosTestElosMessageLogFindEventErrConnectionSetup(void **state) {
     static elosUteststateT_t testState = {0};

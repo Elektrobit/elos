@@ -15,23 +15,23 @@ int elosTestElosMessageHandlerHandleMessageSuccessTeardown(void **state) {
     return 0;
 }
 
-typedef void elosSetupExpectedFunctionCall_t(elosClientManagerConnection_t const *const conn);
+typedef void elosSetupExpectedFunctionCall_t(elosClientConnection_t const *const conn);
 
-static void _expectMessageGetVersionCalled(elosClientManagerConnection_t const *const conn) {
+static void _expectMessageGetVersionCalled(elosClientConnection_t const *const conn) {
     expect_value(elosMessageGetVersion, conn, conn);
     expect_not_value(elosMessageGetVersion, msg, NULL);
     will_return(elosMessageGetVersion, 0);
     MOCK_FUNC_AFTER_CALL(elosMessageGetVersion, 0);
 }
 
-static void _expectMessageEventPublish(elosClientManagerConnection_t const *const conn) {
+static void _expectMessageEventPublish(elosClientConnection_t const *const conn) {
     expect_value(elosMessageEventPublish, conn, conn);
     expect_not_value(elosMessageEventPublish, msg, NULL);
     will_return(elosMessageEventPublish, 0);
     MOCK_FUNC_AFTER_CALL(elosMessageEventPublish, 0);
 }
 
-static void _expectMessageLogFindEvent(elosClientManagerConnection_t const *const conn) {
+static void _expectMessageLogFindEvent(elosClientConnection_t const *const conn) {
     expect_value(elosMessageLogFindEvent, conn, conn);
     expect_not_value(elosMessageLogFindEvent, msg, NULL);
     will_return(elosMessageLogFindEvent, 0);
@@ -41,7 +41,7 @@ static void _expectMessageLogFindEvent(elosClientManagerConnection_t const *cons
 static void _testElosMessageHandlerHandleMessageSuccessParam(
     void **state, elosSetupExpectedFunctionCall_t setupExpectedFunctionCall) {
     elosUteststateT_t *testState = *state;
-    elosClientManagerConnection_t *conn = testState->connection;
+    elosClientConnection_t *conn = testState->connection;
     elosMessage_t *msg = testState->message;
     safuResultE_t retval;
 

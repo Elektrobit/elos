@@ -10,7 +10,7 @@
 #include "safu/common.h"
 
 typedef struct {
-    elosClientManagerConnection_t *connection;
+    elosClientConnection_t *connection;
     elosMessage_t *msg;
     json_object *response;
 } elosUteststateT_t;
