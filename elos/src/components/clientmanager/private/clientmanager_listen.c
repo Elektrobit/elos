@@ -4,8 +4,10 @@
 
 #include <safu/mutex.h>
 #include <sys/time.h>
+
 #include "clientmanager_private.h"
 #include "elos/clientmanager/clientauthorization.h"
+#include "elos/clientmanager/clientconnection.h"
 #include "elos/clientmanager/clientmanager.h"
 
 #define CONNECTION_SEMAPHORE_TIMEOUT_SEC  0
@@ -172,17 +174,9 @@ void *elosClientManagerThreadListen(void *ptr) {
             continue;
         }
 
-        // send and receive messages over each connection in a separate thread
-        int retval = pthread_create(&connection->thread, 0, elosClientManagerThreadConnection, (void *)connection);
-        if (retval != 0) {
-            safuLogErrErrno("pthread_create failed");
-            result = SAFU_RESULT_FAILED;
-            close(connection->fd);
-            connection->fd = -1;
-            connection->status &= ~CLIENT_MANAGER_CONNECTION_ACTIVE;
-            SAFU_SEM_UNLOCK(&ctx->sharedData.connectionSemaphore, break);
-        } else {
-            connection->status |= CLIENT_MANAGER_CONNECTION_ACTIVE;
+        result = elosClientConnectionStart(connection);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("Starting client connection failed");
         }
 
         SAFU_PTHREAD_MUTEX_UNLOCK(&connection->lock, result = SAFU_RESULT_FAILED);

@@ -5,10 +5,10 @@
 #include <pthread.h>
 #include <safu/flags.h>
 #include <samconf/samconf_types.h>
-#include <semaphore.h>
 #include <stddef.h>
 
 #include "elos/clientmanager/clientauthorization_types.h"
+#include "elos/clientmanager/clientconnection_types.h"
 #include "elos/eventbuffer/types.h"
 #include "elos/eventdispatcher/types.h"
 #include "elos/eventfilter/eventfilter_types.h"
@@ -29,34 +29,6 @@
 #ifndef CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE
 #define CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE 4
 #endif
-
-typedef safuVec_t elosEventFilterNodeIdVector_t;
-typedef safuVec_t elosEventQueueIdVector_t;
-
-typedef struct elosClientConnectionSharedData {
-    elosLogAggregator_t *logAggregator;
-    sem_t connectionSemaphore;
-    elosEventDispatcher_t *eventDispatcher;
-    elosEventProcessor_t *eventProcessor;
-} elosClientConnectionSharedData_t;
-
-typedef struct elosClientConnectionData {
-    elosEventFilterNodeIdVector_t eventFilterNodeIdVector;
-    elosEventQueueIdVector_t eventQueueIdVector;
-} elosClientConnectionData_t;
-
-typedef struct elosClientConnection {
-    pthread_mutex_t lock;
-    uint32_t status;
-    int fd;
-    struct sockaddr_in addr;
-    pthread_t thread;
-    elosClientConnectionSharedData_t *sharedData;
-    elosClientConnectionData_t data;
-    bool isTrusted;
-    elosEventFilter_t blacklist;
-    elosEventBuffer_t eventBuffer;
-} elosClientConnection_t;
 
 typedef struct elosClientManager {
     safuFlags_t flags;

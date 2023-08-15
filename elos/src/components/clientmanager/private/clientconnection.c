@@ -14,12 +14,14 @@
 
 #include "clientmanager_private.h"
 #include "elos/clientmanager/clientauthorization.h"
-#include "clientmanager_private.h"
 #include "elos/clientmanager/clientmanager.h"
 #include "elos/eventbuffer/eventbuffer.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/messages/message_handler.h"
+#include "elos/clientmanager/clientblacklist.h"
+
+#include "elos/clientmanager/clientconnection.h"
 
 safuResultE_t _getStatus(elosClientConnection_t *connection, uint32_t *status) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -60,6 +62,44 @@ static safuResultE_t _createConnectionData(elosClientConnection_t *conn) {
                     safuLogErrValue("Adding EventBuffer to EventDispatcher failed", result);
                 }
             }
+        }
+    }
+
+    return result;
+}
+
+safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConnection,
+                                             elosClientConnectionParam_t *param) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if ((clientConnection == NULL) || (param == NULL)) {
+        safuLogErr("Invalid parameter NULL");
+    } else if (param->sharedData == NULL) {
+        safuLogErr("Invalid value NULL in parameter struct");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientConnection->flags) == true) {
+        safuLogErr("The given ClientConnection is already initialized");
+    } else {
+        int retVal;
+
+        memset(clientConnection, 0, sizeof(elosClientConnection_t));
+
+        retVal = pthread_mutex_init(&clientConnection->lock, NULL);
+        if (retVal != 0) {
+            safuLogErrErrnoValue("Mutex intialization failed", retVal);
+        } else {
+            safuResultE_t subResult;
+
+            clientConnection->sharedData = param->sharedData;
+            clientConnection->fd = -1;
+
+            clientConnection->isTrusted = false;
+            subResult = elosBlacklistInitialize(&clientConnection->blacklist, clientConnection->sharedData->config);
+            if (subResult == SAFU_RESULT_FAILED) {
+                safuLogWarn("blacklist initialization failed");
+            }
+
+            atomic_store(&clientConnection->flags, SAFU_FLAG_INITIALIZED_BIT);
+            result = SAFU_RESULT_OK;
         }
     }
 
@@ -153,25 +193,79 @@ static void _closeConnection(elosClientConnection_t *conn) {
     pthread_mutex_unlock(&conn->lock);
 }
 
-void *elosClientManagerThreadConnection(void *ptr) {
-    elosClientConnection_t *conn = (elosClientConnection_t *)ptr;
-    safuResultE_t result;
+safuResultE_t elosClientConnectionDeleteMembers(elosClientConnection_t *clientConnection) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
+    if (clientConnection != NULL) {
+        if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientConnection->flags) == true) {
+            _closeConnection(clientConnection);
+        }
+    }
+
+    return result;
+}
+
+void *elosClientConnectionWorker(void *ptr) {
+    elosClientConnection_t *connection = (elosClientConnection_t *)ptr;
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    connection->status |= CLIENT_MANAGER_CONNECTION_ACTIVE;
+
+    result = _createConnectionData(connection);
     // send and receive messages over the connection
-    result = _createConnectionData(conn);
     while (result == SAFU_RESULT_OK) {
         uint32_t status = 0;
 
-        result = _getStatus(conn, &status);
+        result = _getStatus(connection, &status);
         if (result == SAFU_RESULT_OK) {
-            if (status & CLIENT_MANAGER_CONNECTION_ACTIVE) {
-                result = elosMessageHandlerHandleMessage(conn);
+            if (status & ELOS_CLIENTCONNECTION_ACTIVE) {
+                result = elosMessageHandlerHandleMessage(connection);
             } else {
                 result = SAFU_RESULT_FAILED;
             }
         }
     }
 
-    _closeConnection(conn);
-    pthread_exit(NULL);
+    _closeConnection(connection);
+    return NULL;
+}
+
+safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (clientConnection == NULL) {
+        safuLogErr("Invalid parameter NULL");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientConnection->flags) == false) {
+        safuLogErr("The given ClientConnection is not initialized");
+    } else {
+        int retVal;
+
+        retVal = pthread_create(&clientConnection->thread, 0, elosClientConnectionWorker, (void *)clientConnection);
+        if (retVal != 0) {
+            safuLogErrErrno("pthread_create failed");
+            close(clientConnection->fd);
+            clientConnection->fd = -1;
+            clientConnection->status &= ~CLIENT_MANAGER_CONNECTION_ACTIVE;
+            SAFU_SEM_UNLOCK(&(clientConnection->sharedData->connectionSemaphore), result = SAFU_RESULT_FAILED);
+        } else {
+            clientConnection->status |= CLIENT_MANAGER_CONNECTION_ACTIVE;
+            result = SAFU_RESULT_OK;
+        }
+    }
+
+    return result;
+}
+
+safuResultE_t elosClientConnectionStop(elosClientConnection_t *clientConnection) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (clientConnection == NULL) {
+        safuLogErr("Invalid parameter NULL");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientConnection->flags) == false) {
+        safuLogErr("The given ClientConnection is not initialized");
+    } else {
+        result = SAFU_RESULT_OK;
+    }
+
+    return result;
 }
