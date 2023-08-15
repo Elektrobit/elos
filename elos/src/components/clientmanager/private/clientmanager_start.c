@@ -5,16 +5,23 @@
 #include "clientmanager_private.h"
 #include "elos/clientmanager/clientmanager.h"
 
-int elosClientManagerStart(elosClientManager_t *ctx) {
-    int retval = -1;
+safuResultE_t elosClientManagerStart(elosClientManager_t *clientmanager) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    int retVal;
 
-    ctx->status |= CLIENT_MANAGER_LISTEN_ACTIVE;
-    retval = pthread_create(&(ctx->listenThread), 0, elosClientManagerThreadListen, ctx);
-    if (retval != 0) {
-        safuLogErrErrno("pthread_create failed");
+    if (clientmanager == NULL) {
+        safuLogErr("Invalid parameter NULL");
     } else {
-        safuLogDebug("listen thread active");
+        clientmanager->status |= CLIENT_MANAGER_LISTEN_ACTIVE;
+
+        retVal = pthread_create(&(clientmanager->listenThread), 0, elosClientManagerThreadListen, clientmanager);
+        if (retVal != 0) {
+            safuLogErrErrnoValue("pthread_create failed", retVal);
+        } else {
+            safuLogDebug("listen thread active");
+            result = SAFU_RESULT_OK;
+        }
     }
 
-    return retval;
+    return result;
 }

@@ -53,35 +53,41 @@ static void _stopConnectionThreads(elosClientManager_t *ctx) {
     }
 }
 
-int elosClientManagerStop(elosClientManager_t *ctx) {
+safuResultE_t elosClientManagerStop(elosClientManager_t *clientmanager) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    uint32_t status = 0;
-    int retval = -1;
 
-    if (ctx == NULL) {
-        safuLogErr("Called elosClientManagerStop with parameter being NULL");
+    if (clientmanager == NULL) {
+        safuLogErr("Invalid parameter NULL");
     } else {
-        result = elosClientManagerGetStatus(ctx, &status);
+        uint32_t status = 0;
+
+        result = elosClientManagerGetStatus(clientmanager, &status);
+        if (result == SAFU_RESULT_OK) {
+            int retVal;
+
+            if (status & CLIENT_MANAGER_LISTEN_ACTIVE) {
+                _stopListeningThread(clientmanager);
+            }
+
+            _stopConnectionThreads(clientmanager);
+
+            retVal = sem_destroy(&clientmanager->sharedData.connectionSemaphore);
+            if (retVal != 0) {
+                safuLogWarnF("sem_destroy failed! - returned:%d, %s", retVal, strerror(errno));
+            }
+
+            elosClientAuthorizationDelete(&clientmanager->clientAuth);
+
+            if (clientmanager->fd != -1) {
+                retVal = close(clientmanager->fd);
+                if (retVal != 0) {
+                    safuLogWarnF("close failed! - returned:%d, %s", retVal, strerror(errno));
+                }
+            }
+
+            safuLogDebug("done");
+        }
     }
 
-    if (result == SAFU_RESULT_OK) {
-        if (status & CLIENT_MANAGER_LISTEN_ACTIVE) {
-            _stopListeningThread(ctx);
-        }
-
-        _stopConnectionThreads(ctx);
-
-        if (sem_destroy(&ctx->sharedData.connectionSemaphore) < 0) {
-            safuLogWarnF("sem_destroy failed! - %s", strerror(errno));
-        }
-
-        elosClientAuthorizationDelete(&ctx->clientAuth);
-
-        close(ctx->fd);
-
-        safuLogDebug("done");
-        retval = 0;
-    }
-
-    return retval;
+    return result;
 }
