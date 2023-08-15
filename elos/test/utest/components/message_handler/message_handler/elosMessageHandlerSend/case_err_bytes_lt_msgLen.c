@@ -8,7 +8,7 @@
 void elosTestElosMessageHandlerSendErrBytesLtMsgLen(UNUSED void **state) {
     safuResultE_t ret;
     const int mockFd = 666;
-    const elosClientManagerConnection_t conn = {.fd = mockFd};
+    const elosClientConnection_t conn = {.fd = mockFd};
 
     const uint8_t messageId = ELOS_MESSAGE_EVENT_PUBLISH;
     const char *jsonStr = "{\"payload\":\"this is payload\"}";

@@ -4,8 +4,8 @@
 
 #include <stdbool.h>
 
-MOCK_FUNC_BODY(elosMessageHandlerSend, safuResultE_t, elosClientManagerConnection_t const *const conn,
-               uint8_t messageId, const char *jsonStr) {
+MOCK_FUNC_BODY(elosMessageHandlerSend, safuResultE_t, elosClientConnection_t const *const conn, uint8_t messageId,
+               const char *jsonStr) {
     safuResultE_t result;
 
     if (MOCK_IS_ACTIVE(elosMessageHandlerSend)) {
@@ -20,8 +20,8 @@ MOCK_FUNC_BODY(elosMessageHandlerSend, safuResultE_t, elosClientManagerConnectio
     return result;
 }
 
-MOCK_FUNC_BODY(elosMessageHandlerSendJson, safuResultE_t, elosClientManagerConnection_t const *const conn,
-               uint8_t messageId, json_object *jobj) {
+MOCK_FUNC_BODY(elosMessageHandlerSendJson, safuResultE_t, elosClientConnection_t const *const conn, uint8_t messageId,
+               json_object *jobj) {
     if (MOCK_IS_ACTIVE(elosMessageHandlerSendJson)) {
         check_expected_ptr(conn);
         check_expected(messageId);
@@ -31,7 +31,7 @@ MOCK_FUNC_BODY(elosMessageHandlerSendJson, safuResultE_t, elosClientManagerConne
     return MOCK_FUNC_REAL(elosMessageHandlerSendJson)(conn, messageId, jobj);
 }
 
-MOCK_FUNC_BODY(elosMessageEventPublish, safuResultE_t, elosClientManagerConnection_t const *const conn,
+MOCK_FUNC_BODY(elosMessageEventPublish, safuResultE_t, elosClientConnection_t const *const conn,
                elosMessage_t const *const msg) {
     if (MOCK_IS_ACTIVE(elosMessageEventPublish)) {
         check_expected_ptr(conn);
@@ -41,7 +41,7 @@ MOCK_FUNC_BODY(elosMessageEventPublish, safuResultE_t, elosClientManagerConnecti
     return MOCK_FUNC_REAL(elosMessageEventPublish)(conn, msg);
 }
 
-MOCK_FUNC_BODY(elosMessageGetVersion, safuResultE_t, elosClientManagerConnection_t const *const conn,
+MOCK_FUNC_BODY(elosMessageGetVersion, safuResultE_t, elosClientConnection_t const *const conn,
                elosMessage_t const *const msg) {
     if (MOCK_IS_ACTIVE(elosMessageGetVersion)) {
         check_expected_ptr(conn);
@@ -51,7 +51,7 @@ MOCK_FUNC_BODY(elosMessageGetVersion, safuResultE_t, elosClientManagerConnection
     return MOCK_FUNC_REAL(elosMessageGetVersion)(conn, msg);
 }
 
-MOCK_FUNC_BODY(elosMessageLogFindEvent, safuResultE_t, elosClientManagerConnection_t const *const conn,
+MOCK_FUNC_BODY(elosMessageLogFindEvent, safuResultE_t, elosClientConnection_t const *const conn,
                elosMessage_t const *const msg) {
     if (MOCK_IS_ACTIVE(elosMessageLogFindEvent)) {
         check_expected_ptr(conn);

@@ -13,10 +13,10 @@
 int elosTestElosMessageEventSubscribeSuccessSetup(void **state) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));
     memset(data, 0, sizeof(elosUtestState_t));
-    data->conn = safuAllocMem(NULL, sizeof(elosClientManagerConnection_t));
+    data->conn = safuAllocMem(NULL, sizeof(elosClientConnection_t));
     __real_safuVecCreate(&data->conn->data.eventFilterNodeIdVector, 1, sizeof(int));
     __real_safuVecCreate(&data->conn->data.eventQueueIdVector, 1, sizeof(int));
-    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientManagerSharedData_t));
+    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     data->conn->sharedData->eventProcessor = safuAllocMem(NULL, sizeof(elosEventProcessor_t));
     data->response = elosMessageHandlerResponseCreate(NULL);
     *state = (void *)data;

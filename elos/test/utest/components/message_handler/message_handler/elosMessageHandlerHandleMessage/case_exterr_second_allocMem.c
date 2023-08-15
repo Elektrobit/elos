@@ -19,7 +19,7 @@ int elosTestElosMessageHandlerHandleMessageExterrSecondAllocMemTeardown(void **s
 
 void elosTestElosMessageHandlerHandleMessageExterrSecondAllocMem(void **state) {
     elosUteststateT_t *testState = *state;
-    elosClientManagerConnection_t *conn = testState->connection;
+    elosClientConnection_t *conn = testState->connection;
     safuResultE_t retval;
 
     TEST("elosMessageHandlerHandleMessage");

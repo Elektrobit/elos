@@ -10,7 +10,7 @@
 
 #define MOCK_DISPATCH_ID 42
 
-elosClientManagerConnection_t *elosMessageGetVersionCreateConnection();
+elosClientConnection_t *elosMessageGetVersionCreateConnection();
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageGetVersionExtErrNewObject)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageGetVersionExtErrAddNewString)

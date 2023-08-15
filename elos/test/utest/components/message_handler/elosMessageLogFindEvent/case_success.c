@@ -5,7 +5,7 @@
 #include "mock_event_vector.h"
 #include "mock_message_handler.h"
 
-extern safuResultE_t elosMessageLogFindEvent(elosClientManagerConnection_t *conn, elosMessage_t const *const msg);
+extern safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_t const *const msg);
 
 int elosTestElosMessageLogFindEventSuccessSetup(void **state) {
     static elosUteststateT_t testState = {0};
@@ -59,7 +59,7 @@ static int _checkJsonObject(const long unsigned int jsonParam, const long unsign
 void elosTestElosMessageLogFindEventSuccess(void **state) {
     elosUteststateT_t *testState = *state;
     safuResultE_t result = SAFU_RESULT_OK;
-    elosClientManagerConnection_t *connection = testState->connection;
+    elosClientConnection_t *connection = testState->connection;
     elosMessage_t *msg = testState->msg;
 
     TEST("elosMessageLogFindEvent");

@@ -50,7 +50,7 @@ safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *
             }
         } else {
             for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
-                elosClientManagerConnection_t *conn = &ctx->connection[i];
+                elosClientConnection_t *conn = &ctx->connection[i];
                 SAFU_PTHREAD_MUTEX_LOCK(&conn->lock, result = SAFU_RESULT_FAILED);
                 if (result == SAFU_RESULT_FAILED) {
                     break;
@@ -79,7 +79,7 @@ safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *
 }
 
 safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *ctx, int slot) {
-    elosClientManagerConnection_t *conn = &ctx->connection[slot];
+    elosClientConnection_t *conn = &ctx->connection[slot];
     struct timespec timeOut = {.tv_sec = CONNECTION_PSELECT_TIMEOUT_SEC, .tv_nsec = CONNECTION_PSELECT_TIMEOUT_NSEC};
     socklen_t addrLen = sizeof(conn->addr);
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -143,7 +143,7 @@ void *elosClientManagerThreadListen(void *ptr) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     for (;;) {
-        elosClientManagerConnection_t *connection = NULL;
+        elosClientConnection_t *connection = NULL;
         int slot;
 
         if (!(atomic_load(&ctx->flags) & CLIENT_MANAGER_LISTEN_ACTIVE)) {

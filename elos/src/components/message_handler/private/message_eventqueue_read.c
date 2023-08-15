@@ -7,7 +7,7 @@
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/messages/message_handler.h"
 
-safuResultE_t elosMessageEventQueueRead(elosClientManagerConnection_t *conn, elosMessage_t const *const msg) {
+safuResultE_t elosMessageEventQueueRead(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     struct json_object *jRequest = NULL;
     struct json_object *jResponse = NULL;
     struct json_object *jEventArray = NULL;

@@ -13,7 +13,7 @@
 #include "safu/mock_log.h"
 #include "safu/mock_safu.h"
 
-extern int elosMessageEventPublish(elosClientManagerConnection_t const *const conn, elosMessage_t const *const msg);
+extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
 int elosTestElosMessageEventPublishConnectionNullErrorSetup(void **state UNUSED) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));

@@ -14,8 +14,8 @@ int elosTestElosMessageEventSubscribeStrdupFailedSetup(void **state) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));
     memset(data, 0, sizeof(elosUtestState_t));
     data->response = __real_json_object_new_object();
-    data->conn = safuAllocMem(NULL, sizeof(elosClientManagerConnection_t));
-    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientManagerSharedData_t));
+    data->conn = safuAllocMem(NULL, sizeof(elosClientConnection_t));
+    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     data->conn->sharedData->eventProcessor = safuAllocMem(NULL, sizeof(elosEventProcessor_t));
     *state = (void *)data;
     return 0;

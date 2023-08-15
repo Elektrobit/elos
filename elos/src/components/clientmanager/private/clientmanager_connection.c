@@ -21,7 +21,7 @@
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/messages/message_handler.h"
 
-safuResultE_t _getStatus(elosClientManagerConnection_t *connection, uint32_t *status) {
+safuResultE_t _getStatus(elosClientConnection_t *connection, uint32_t *status) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     SAFU_PTHREAD_MUTEX_LOCK(&connection->lock, result = SAFU_RESULT_FAILED);
@@ -33,7 +33,7 @@ safuResultE_t _getStatus(elosClientManagerConnection_t *connection, uint32_t *st
     return result;
 }
 
-static safuResultE_t _createConnectionData(elosClientManagerConnection_t *conn) {
+static safuResultE_t _createConnectionData(elosClientConnection_t *conn) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     int retVal;
 
@@ -66,7 +66,7 @@ static safuResultE_t _createConnectionData(elosClientManagerConnection_t *conn) 
     return result;
 }
 
-static safuResultE_t _cleanupConnectionData(elosClientManagerConnection_t *conn) {
+static safuResultE_t _cleanupConnectionData(elosClientConnection_t *conn) {
     safuResultE_t result = SAFU_RESULT_OK;
     safuResultE_t stepResult;
     uint32_t elements;
@@ -131,7 +131,7 @@ static safuResultE_t _cleanupConnectionData(elosClientManagerConnection_t *conn)
     return result;
 }
 
-static void _closeConnection(elosClientManagerConnection_t *conn) {
+static void _closeConnection(elosClientConnection_t *conn) {
     safuLogDebug("closing connection thread...");
     fflush(stdout);
 
@@ -154,7 +154,7 @@ static void _closeConnection(elosClientManagerConnection_t *conn) {
 }
 
 void *elosClientManagerThreadConnection(void *ptr) {
-    elosClientManagerConnection_t *conn = (elosClientManagerConnection_t *)ptr;
+    elosClientConnection_t *conn = (elosClientConnection_t *)ptr;
     safuResultE_t result;
 
     // send and receive messages over the connection

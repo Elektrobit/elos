@@ -9,7 +9,7 @@
 #include "elos/eventprocessor/eventqueuemanager.h"
 #include "elos/messages/message_handler.h"
 
-safuResultE_t elosMessageEventSubscribe(elosClientManagerConnection_t *conn, elosMessage_t const *const msg) {
+safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     const uint8_t messageId = ELOS_MESSAGE_RESPONSE_EVENT_SUBSCRIBE;
     json_object *request = NULL;
     json_object *jResponse = NULL;

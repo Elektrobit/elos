@@ -55,7 +55,7 @@ static void _create_blacklist_error_event(elosEvent_t *event, elosMessage_t cons
     event->payload = strdup(msg->json);
 }
 
-safuResultE_t elosMessageEventPublish(elosClientManagerConnection_t *conn, elosMessage_t const *const msg) {
+safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     const uint8_t messageId = ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH;
     struct json_object *jresponse;
     const char *errstr = NULL;

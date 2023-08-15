@@ -33,38 +33,38 @@
 typedef safuVec_t elosEventFilterNodeIdVector_t;
 typedef safuVec_t elosEventQueueIdVector_t;
 
-typedef struct elosClientManagerSharedData {
+typedef struct elosClientConnectionSharedData {
     elosLogAggregator_t *logAggregator;
     sem_t connectionSemaphore;
     elosEventDispatcher_t *eventDispatcher;
     elosEventProcessor_t *eventProcessor;
-} elosClientManagerSharedData_t;
+} elosClientConnectionSharedData_t;
 
-typedef struct elosClientManagerData {
+typedef struct elosClientConnectionData {
     elosEventFilterNodeIdVector_t eventFilterNodeIdVector;
     elosEventQueueIdVector_t eventQueueIdVector;
-} elosClientManagerData_t;
+} elosClientConnectionData_t;
 
-typedef struct elosClientManagerConnection {
+typedef struct elosClientConnection {
     pthread_mutex_t lock;
     uint32_t status;
     int fd;
     struct sockaddr_in addr;
     pthread_t thread;
-    elosClientManagerSharedData_t *sharedData;
-    elosClientManagerData_t data;
+    elosClientConnectionSharedData_t *sharedData;
+    elosClientConnectionData_t data;
     bool isTrusted;
     elosEventFilter_t blacklist;
     elosEventBuffer_t eventBuffer;
-} elosClientManagerConnection_t;
+} elosClientConnection_t;
 
-typedef struct elosClientManagerContext {
+typedef struct elosClientManager {
     safuFlags_t flags;
     int fd;
     struct sockaddr_in addr;
-    elosClientManagerConnection_t connection[CLIENT_MANAGER_MAX_CONNECTIONS];
+    elosClientConnection_t connection[CLIENT_MANAGER_MAX_CONNECTIONS];
     pthread_t listenThread;
-    elosClientManagerSharedData_t sharedData;
+    elosClientConnectionSharedData_t sharedData;
     elosClientAuthorization_t clientAuth;
 } elosClientManager_t;
 

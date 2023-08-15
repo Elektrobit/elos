@@ -23,7 +23,7 @@ int main() {
 void elosMessageHandlerHandleMessageUtestCreateConnection(void **state) {
     elosUteststateT_t *testState = *state;
 
-    testState->connection = calloc(1, sizeof(elosClientManagerConnection_t));
+    testState->connection = calloc(1, sizeof(elosClientConnection_t));
     int retval = testState->connection == NULL ? -1 : 0;
     assert_int_equal(retval, 0);
 

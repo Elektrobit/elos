@@ -7,8 +7,9 @@
 #include <safu/log.h>
 #include <stdlib.h>
 
-typedef safuResultE_t elosMessageHandler_t(elosClientManagerConnection_t const *const conn,
-                                           elosMessage_t const *const msg);
+#include "elos/clientmanager/clientconnection_types.h"
+
+typedef safuResultE_t elosMessageHandler_t(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
 extern elosMessageHandler_t elosMessageGetVersion;
 extern elosMessageHandler_t elosMessageEventPublish;
@@ -28,8 +29,7 @@ static elosMessageHandler_t * const elosMessageHandler[] = {
 };
 // clang-format on
 
-safuResultE_t elosMessageHandlerSend(elosClientManagerConnection_t const *const conn, uint8_t messageId,
-                                     const char *jsonStr) {
+safuResultE_t elosMessageHandlerSend(elosClientConnection_t const *const conn, uint8_t messageId, const char *jsonStr) {
     safuResultE_t result = SAFU_RESULT_OK;
     const int jsonLen = strlen(jsonStr) + 1;
     const int msgLen = sizeof(elosMessage_t) + jsonLen;
@@ -69,7 +69,7 @@ safuResultE_t elosMessageHandlerSend(elosClientManagerConnection_t const *const 
     return result;
 }
 
-safuResultE_t elosMessageHandlerSendJson(elosClientManagerConnection_t const *const conn, uint8_t messageId,
+safuResultE_t elosMessageHandlerSendJson(elosClientConnection_t const *const conn, uint8_t messageId,
                                          json_object *jobj) {
     const char *jobjStr;
     int retval;
@@ -114,8 +114,7 @@ struct json_object *elosMessageHandlerResponseCreate(const char *errstr) {
     return jresponse;
 }
 
-static safuResultE_t elosMessageHandlerReadHeader(elosClientManagerConnection_t const *const conn,
-                                                  elosMessage_t *const msg) {
+static safuResultE_t elosMessageHandlerReadHeader(elosClientConnection_t const *const conn, elosMessage_t *const msg) {
     safuResultE_t retVal = SAFU_RESULT_FAILED;
     ssize_t const msgHdrLen = sizeof(elosMessage_t);
     ssize_t bytes;
@@ -135,8 +134,7 @@ static safuResultE_t elosMessageHandlerReadHeader(elosClientManagerConnection_t 
     return retVal;
 }
 
-static safuResultE_t elosMessageHandlerReadPayload(elosClientManagerConnection_t const *const conn,
-                                                   elosMessage_t **msg) {
+static safuResultE_t elosMessageHandlerReadPayload(elosClientConnection_t const *const conn, elosMessage_t **msg) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     ssize_t const jsonLength = (*msg)->length;
 
@@ -170,7 +168,7 @@ static safuResultE_t elosMessageHandlerReadPayload(elosClientManagerConnection_t
     return result;
 }
 
-safuResultE_t elosMessageHandlerHandleMessage(elosClientManagerConnection_t const *const conn) {
+safuResultE_t elosMessageHandlerHandleMessage(elosClientConnection_t const *const conn) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosMessage_t *msg = NULL;
 

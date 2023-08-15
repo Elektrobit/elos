@@ -4,7 +4,7 @@
 
 #include "elosMessageLogFindEvent_utest.h"
 
-extern safuResultE_t elosMessageLogFindEvent(elosClientManagerConnection_t *conn, elosMessage_t const *const msg);
+extern safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_t const *const msg);
 
 int elosTestElosMessageLogFindEventExtErrRuleFrmMsgStrdupSetup(void **state) {
     static elosUteststateT_t testState = {0};
@@ -26,7 +26,7 @@ int elosTestElosMessageLogFindEventExtErrRuleFrmMsgStrdupTeardown(void **state) 
 void elosTestElosMessageLogFindEventExtErrRuleFrmMsgStrdup(void **state) {
     elosUteststateT_t *testState = *state;
     safuResultE_t result = SAFU_RESULT_OK;
-    elosClientManagerConnection_t *conn = testState->connection;
+    elosClientConnection_t *conn = testState->connection;
     elosMessage_t *msg = testState->msg;
 
     TEST("elosMessageLogFindEvent");

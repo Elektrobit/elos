@@ -16,7 +16,7 @@ void elosTestElosMessageHandlerSendJsonExterrSend(UNUSED void **state) {
     elosUnitTestState_t *data = *(elosUnitTestState_t **)state;
     safuResultE_t ret;
     const int mockFd = 666;
-    const elosClientManagerConnection_t conn = {.fd = mockFd};
+    const elosClientConnection_t conn = {.fd = mockFd};
     const uint8_t messageId = ELOS_MESSAGE_EVENT_PUBLISH;
 
     TEST("elosMessageHandlerSendJson");
