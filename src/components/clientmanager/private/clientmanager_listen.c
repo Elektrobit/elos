@@ -82,7 +82,6 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
     elosClientManagerConnection_t *conn = &ctx->connection[slot];
     struct timespec timeOut = {.tv_sec = CONNECTION_PSELECT_TIMEOUT_SEC, .tv_nsec = CONNECTION_PSELECT_TIMEOUT_NSEC};
     socklen_t addrLen = sizeof(conn->addr);
-    uint32_t status = 0;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     for (;;) {
@@ -91,12 +90,7 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
         FD_ZERO(&readFds);
         FD_SET(ctx->fd, &readFds);
 
-        result = elosClientManagerGetStatus(ctx, &status);
-        if (result != SAFU_RESULT_OK) {
-            break;
-        }
-
-        if (!(status & CLIENT_MANAGER_LISTEN_ACTIVE)) {
+        if (!(atomic_load(&ctx->flags) & CLIENT_MANAGER_LISTEN_ACTIVE)) {
             break;
         }
 
@@ -127,6 +121,8 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
                 result = SAFU_RESULT_FAILED;
                 break;
             }
+        } else {
+            result = SAFU_RESULT_OK;
         }
 
         safuLogDebug("Accepted new connection");
@@ -144,19 +140,13 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
 
 void *elosClientManagerThreadListen(void *ptr) {
     elosClientManager_t *ctx = (elosClientManager_t *)ptr;
-    uint32_t status = 0;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     for (;;) {
         elosClientManagerConnection_t *connection = NULL;
         int slot;
 
-        result = elosClientManagerGetStatus(ctx, &status);
-        if (result != SAFU_RESULT_OK) {
-            break;
-        }
-
-        if (!(status & CLIENT_MANAGER_LISTEN_ACTIVE)) {
+        if (!(atomic_load(&ctx->flags) & CLIENT_MANAGER_LISTEN_ACTIVE)) {
             break;
         }
 
@@ -202,9 +192,8 @@ void *elosClientManagerThreadListen(void *ptr) {
     }
 
     safuLogDebug("closing...");
-    pthread_mutex_lock(&ctx->lock);
-    ctx->status &= ~CLIENT_MANAGER_LISTEN_ACTIVE;
-    ctx->status |= CLIENT_MANAGER_THREAD_NOT_JOINED;
-    pthread_mutex_unlock(&ctx->lock);
+    atomic_fetch_and(&ctx->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
+    atomic_fetch_or(&ctx->flags, CLIENT_MANAGER_THREAD_NOT_JOINED);
+
     return (void *)result;
 }

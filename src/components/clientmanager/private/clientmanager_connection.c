@@ -21,6 +21,18 @@
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/messages/message_handler.h"
 
+safuResultE_t _getStatus(elosClientManagerConnection_t *connection, uint32_t *status) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    SAFU_PTHREAD_MUTEX_LOCK(&connection->lock, result = SAFU_RESULT_FAILED);
+    if (result != SAFU_RESULT_FAILED) {
+        *status = connection->status;
+        SAFU_PTHREAD_MUTEX_UNLOCK(&connection->lock, result = SAFU_RESULT_FAILED);
+    }
+
+    return result;
+}
+
 static safuResultE_t _createConnectionData(elosClientManagerConnection_t *conn) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     int retVal;
@@ -150,7 +162,7 @@ void *elosClientManagerThreadConnection(void *ptr) {
     while (result == SAFU_RESULT_OK) {
         uint32_t status = 0;
 
-        result = elosClientManagerGetStatus((elosClientManager_t *)conn, &status);
+        result = _getStatus(conn, &status);
         if (result == SAFU_RESULT_OK) {
             if (status & CLIENT_MANAGER_CONNECTION_ACTIVE) {
                 result = elosMessageHandlerHandleMessage(conn);

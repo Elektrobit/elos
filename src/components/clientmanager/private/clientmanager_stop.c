@@ -11,25 +11,12 @@
 #include "elos/clientmanager/clientblacklist.h"
 #include "elos/clientmanager/clientmanager.h"
 
-safuResultE_t elosClientManagerGetStatus(elosClientManager_t *context, uint32_t *status) {
-    safuResultE_t result = SAFU_RESULT_OK;
-
-    SAFU_PTHREAD_MUTEX_LOCK(&context->lock, result = SAFU_RESULT_FAILED);
-    if (result != SAFU_RESULT_FAILED) {
-        *status = context->status;
-        SAFU_PTHREAD_MUTEX_UNLOCK(&context->lock, result = SAFU_RESULT_FAILED);
-    }
-    return result;
-}
-
 static void _stopListeningThread(elosClientManager_t *ctx) {
     safuLogDebug("stop listening thread...");
-    pthread_mutex_lock(&ctx->lock);
-    ctx->status &= ~CLIENT_MANAGER_LISTEN_ACTIVE;
-    pthread_mutex_unlock(&ctx->lock);
+
+    atomic_fetch_and(&ctx->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
     pthread_join(ctx->listenThread, NULL);
-    pthread_mutex_destroy(&ctx->lock);
-    ctx->status &= ~CLIENT_MANAGER_THREAD_NOT_JOINED;
+    atomic_fetch_and(&ctx->flags, ~CLIENT_MANAGER_THREAD_NOT_JOINED);
 }
 
 static void _stopConnectionThreads(elosClientManager_t *ctx) {
@@ -58,35 +45,32 @@ safuResultE_t elosClientManagerStop(elosClientManager_t *clientmanager) {
 
     if (clientmanager == NULL) {
         safuLogErr("Invalid parameter NULL");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientmanager->flags) == false) {
+        safuLogErr("The given ClientManager is not initialized");
     } else {
-        uint32_t status = 0;
+        int retVal;
 
-        result = elosClientManagerGetStatus(clientmanager, &status);
-        if (result == SAFU_RESULT_OK) {
-            int retVal;
-
-            if (status & CLIENT_MANAGER_LISTEN_ACTIVE) {
-                _stopListeningThread(clientmanager);
-            }
-
-            _stopConnectionThreads(clientmanager);
-
-            retVal = sem_destroy(&clientmanager->sharedData.connectionSemaphore);
-            if (retVal != 0) {
-                safuLogWarnF("sem_destroy failed! - returned:%d, %s", retVal, strerror(errno));
-            }
-
-            elosClientAuthorizationDelete(&clientmanager->clientAuth);
-
-            if (clientmanager->fd != -1) {
-                retVal = close(clientmanager->fd);
-                if (retVal != 0) {
-                    safuLogWarnF("close failed! - returned:%d, %s", retVal, strerror(errno));
-                }
-            }
-
-            safuLogDebug("done");
+        if (atomic_load(&clientmanager->flags) & CLIENT_MANAGER_LISTEN_ACTIVE) {
+            _stopListeningThread(clientmanager);
         }
+
+        _stopConnectionThreads(clientmanager);
+
+        retVal = sem_destroy(&clientmanager->sharedData.connectionSemaphore);
+        if (retVal != 0) {
+            safuLogWarnF("sem_destroy failed! - returned:%d, %s", retVal, strerror(errno));
+        }
+
+        elosClientAuthorizationDelete(&clientmanager->clientAuth);
+
+        if (clientmanager->fd != -1) {
+            retVal = close(clientmanager->fd);
+            if (retVal != 0) {
+                safuLogWarnF("close failed! - returned:%d, %s", retVal, strerror(errno));
+            }
+        }
+
+        safuLogDebug("done");
     }
 
     return result;
