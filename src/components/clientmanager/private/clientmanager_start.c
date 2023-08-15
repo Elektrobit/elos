@@ -16,7 +16,7 @@ safuResultE_t elosClientManagerStart(elosClientManager_t *clientmanager) {
     } else {
         atomic_fetch_or(&clientmanager->flags, CLIENT_MANAGER_LISTEN_ACTIVE);
 
-        retVal = pthread_create(&(clientmanager->listenThread), 0, elosClientManagerThreadListen, clientmanager);
+        retVal = pthread_create(&clientmanager->listenThread, 0, elosClientManagerThreadListen, clientmanager);
         if (retVal != 0) {
             safuLogErrErrnoValue("pthread_create failed", retVal);
         } else {

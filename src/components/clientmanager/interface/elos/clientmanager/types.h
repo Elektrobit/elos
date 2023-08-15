@@ -2,4 +2,5 @@
 #pragma once
 
 #include "elos/clientmanager/clientauthorization_types.h"
+#include "elos/clientmanager/clientconnection_types.h"
 #include "elos/clientmanager/clientmanager_types.h"

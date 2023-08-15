@@ -11,6 +11,7 @@
 #include "elos/clientmanager/clientauthorization.h"
 #include "elos/clientmanager/clientauthorizedprocesses.h"
 #include "elos/clientmanager/clientblacklist.h"
+#include "elos/clientmanager/clientconnection.h"
 #include "elos/config/config.h"
 
 static safuResultE_t _initializeSharedData(elosClientManager_t *clientmanager, elosClientManagerParam_t *param) {
@@ -25,6 +26,7 @@ static safuResultE_t _initializeSharedData(elosClientManager_t *clientmanager, e
         sharedData->logAggregator = param->logAggregator;
         sharedData->eventProcessor = param->eventProcessor;
         sharedData->eventDispatcher = param->eventDispatcher;
+        sharedData->config = param->config;
         result = SAFU_RESULT_OK;
     }
 
@@ -72,30 +74,17 @@ static safuResultE_t _initializeListener(elosClientManager_t *clientmanager, sam
     return result;
 }
 
-static safuResultE_t _initializeConnections(elosClientManager_t *clientmanager, samconfConfig_t const *config) {
+static safuResultE_t _initializeConnections(elosClientManager_t *clientmanager) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
         elosClientConnection_t *connection = &clientmanager->connection[i];
-        int retVal;
+        elosClientConnectionParam_t param = {.sharedData = &clientmanager->sharedData};
 
-        retVal = pthread_mutex_init(&connection->lock, NULL);
-        if (retVal != 0) {
-            safuLogErrF("pthread_mutex_init failed on slot:%d; returned:%d / %s", i, retVal, strerror(errno));
+        result = elosClientConnectionInitialize(connection, &param);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErrF("Iniitialization of connection data structure [%d] failed", i);
             break;
-        } else {
-            safuResultE_t iterResult;
-
-            connection->sharedData = &clientmanager->sharedData;
-            connection->status = 0;
-            connection->fd = -1;
-
-            // TODO: Does this really have to be initialized 200+ times?! Looks more like a sharedData entry
-            connection->isTrusted = false;
-            iterResult = elosBlacklistInitialize(&connection->blacklist, config);
-            if (iterResult == SAFU_RESULT_FAILED) {
-                safuLogWarn("blacklist initialization failed");
-            }
         }
     }
 
@@ -137,7 +126,7 @@ safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientmanager, el
         if (result == SAFU_RESULT_OK) {
             result = _initializeListener(clientmanager, param->config);
             if (result == SAFU_RESULT_OK) {
-                result = _initializeConnections(clientmanager, param->config);
+                result = _initializeConnections(clientmanager);
                 if (result == SAFU_RESULT_OK) {
                     _initializeAuthorization(clientmanager, param->config);
 
