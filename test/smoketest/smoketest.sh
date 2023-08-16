@@ -320,7 +320,7 @@ smoketest_publish_poll() {
     \"fileName\": \"$ELOSC_FILE_NAME\",
     \"pid\": 42
   },
-  \"severity\": 1,
+  \"severity\": %d,
   \"hardwareid\": \"$HOSTNAME\",
   \"classification\": $(printf %u 0x0000BEEFCAFFEE00),
   \"messageCode\": %d,
@@ -344,7 +344,7 @@ smoketest_publish_poll() {
     sleep 0.5s
 
     for i in `seq 1 10`; do
-        local MESSAGE=$(printf "$MESSAGE_TEMPLATE" `date "+%s,0"` $i $i )
+        local MESSAGE=$(printf "$MESSAGE_TEMPLATE" `date "+%s,0"` $i $i $i )
         log "Publish \"$MESSAGE\""
         elosc -p "$MESSAGE" >> $RESULT_DIR/elosc_publish.log 2>&1
     done
@@ -362,7 +362,7 @@ smoketest_publish_poll() {
         && check_for_attribute "date" "" \
         && check_for_attribute "appName" "\"publish_poll\"" \
         && check_for_attribute "pid" "42" \
-        && check_for_attribute "severity" "1" \
+        && check_for_attribute "severity" "$i" \
         && check_for_attribute "hardwareid" "\"$HOSTNAME\"" \
         && check_for_attribute "classification" "$(printf %u 0x0000BEEFCAFFEE00)" \
         && check_for_attribute "fileName" "\"${ELOSC_FILE_NAME_ESCAPED}\"" \
