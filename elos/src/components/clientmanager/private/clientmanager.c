@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <safu/log.h>
 #include <samconf/samconf.h>
+#include <sys/eventfd.h>
 
 #include "clientmanager_private.h"
 #include "elos/clientmanager/clientauthorization.h"
@@ -59,13 +60,7 @@ static safuResultE_t _initializeListener(elosClientManager_t *clientmanager, sam
                 if (retVal != 0) {
                     safuLogErrErrnoValue("bind failed", retVal);
                 } else {
-                    // TODO: Move into Start()
-                    retVal = listen(clientmanager->fd, CLIENT_MANAGER_LISTEN_QUEUE_LENGTH);
-                    if (retVal != 0) {
-                        safuLogErrErrnoValue("bind failed", retVal);
-                    } else {
-                        result = SAFU_RESULT_OK;
-                    }
+                    result = SAFU_RESULT_OK;
                 }
             }
         }
@@ -128,9 +123,14 @@ safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientmanager, el
             if (result == SAFU_RESULT_OK) {
                 result = _initializeConnections(clientmanager);
                 if (result == SAFU_RESULT_OK) {
-                    _initializeAuthorization(clientmanager, param->config);
+                    clientmanager->syncFd = eventfd(0, 0);
+                    if (clientmanager->syncFd == -1) {
+                        safuLogErrErrnoValue("Creating eventfd failed", clientmanager->syncFd);
+                    } else {
+                        _initializeAuthorization(clientmanager, param->config);
 
-                    atomic_store(&clientmanager->flags, SAFU_FLAG_INITIALIZED_BIT);
+                        atomic_store(&clientmanager->flags, SAFU_FLAG_INITIALIZED_BIT);
+                    }
                 }
             }
         }
@@ -139,12 +139,52 @@ safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientmanager, el
     return result;
 }
 
-safuResultE_t elosClientManagerDeleteMembers(elosClientManager_t *clientmanager) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
+safuResultE_t elosClientManagerDeleteMembers(elosClientManager_t *clientManager) {
+    safuResultE_t result = SAFU_RESULT_OK;
+    int retVal;
 
-    if (clientmanager != NULL) {
-        if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientmanager->flags) == true) {
-            result = SAFU_RESULT_OK;
+    if (clientManager != NULL) {
+        if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientManager->flags) == true) {
+            safuResultE_t iterResult;
+
+            iterResult = elosClientManagerStop(clientManager);
+            if (iterResult != SAFU_RESULT_OK) {
+                safuLogWarn("Stopping ClientManager failed (possible memory leak)");
+                result = SAFU_RESULT_FAILED;
+            }
+
+            for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
+                elosClientConnection_t *connection = &clientManager->connection[i];
+
+                iterResult = elosClientConnectionDeleteMembers(connection);
+                if (iterResult != SAFU_RESULT_OK) {
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+
+            retVal = sem_destroy(&clientManager->sharedData.connectionSemaphore);
+            if (retVal != 0) {
+                safuLogWarnErrnoValue("Destroying semaphore failed (possible memory leak)", retVal);
+                result = SAFU_RESULT_FAILED;
+            }
+
+            elosClientAuthorizationDelete(&clientManager->clientAuth);
+
+            if (clientManager->fd != -1) {
+                retVal = close(clientManager->fd);
+                if (retVal != 0) {
+                    safuLogWarnErrnoValue("Closing listenFd failed (possible memory leak)", retVal);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+
+            if (clientManager->syncFd != -1) {
+                retVal = close(clientManager->syncFd);
+                if (retVal != 0) {
+                    safuLogWarnErrnoValue("Closing eventfd failed (possible memory leak)", retVal);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
         }
     }
 

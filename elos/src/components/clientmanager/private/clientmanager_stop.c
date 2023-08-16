@@ -9,68 +9,32 @@
 #include "elos/clientmanager/clientauthorization.h"
 #include "elos/clientmanager/clientauthorizedprocesses.h"
 #include "elos/clientmanager/clientblacklist.h"
+#include "elos/clientmanager/clientconnection.h"
 #include "elos/clientmanager/clientmanager.h"
 
-static void _stopListeningThread(elosClientManager_t *ctx) {
-    safuLogDebug("stop listening thread...");
-
-    atomic_fetch_and(&ctx->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
-    pthread_join(ctx->listenThread, NULL);
-    atomic_fetch_and(&ctx->flags, ~CLIENT_MANAGER_THREAD_NOT_JOINED);
-}
-
-static void _stopConnectionThreads(elosClientManager_t *ctx) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
-    for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
-        pthread_mutex_lock(&ctx->connection[i].lock);
-        result = elosBlacklistDelete(&ctx->connection[i].blacklist);
-        if (result != SAFU_RESULT_OK) {
-            safuLogErr("not able to delete blacklist filter");
-        }
-        if (ctx->connection[i].status & CLIENT_MANAGER_CONNECTION_ACTIVE) {
-            safuLogInfoF("stop connection thread '%d'", i);
-            ctx->connection[i].status &= ~CLIENT_MANAGER_CONNECTION_ACTIVE;
-            pthread_mutex_unlock(&ctx->connection[i].lock);
-            pthread_join(ctx->connection[i].thread, NULL);
-            pthread_mutex_destroy(&ctx->connection[i].lock);
-            ctx->connection[i].status &= ~CLIENT_MANAGER_THREAD_NOT_JOINED;
-        } else {
-            pthread_mutex_unlock(&ctx->connection[i].lock);
-        }
-    }
-}
-
-safuResultE_t elosClientManagerStop(elosClientManager_t *clientmanager) {
+safuResultE_t elosClientManagerStop(elosClientManager_t *clientManager) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (clientmanager == NULL) {
+    if (clientManager == NULL) {
         safuLogErr("Invalid parameter NULL");
-    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientmanager->flags) == false) {
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientManager->flags) == false) {
         safuLogErr("The given ClientManager is not initialized");
     } else {
         int retVal;
 
-        if (atomic_load(&clientmanager->flags) & CLIENT_MANAGER_LISTEN_ACTIVE) {
-            _stopListeningThread(clientmanager);
-        }
-
-        _stopConnectionThreads(clientmanager);
-
-        retVal = sem_destroy(&clientmanager->sharedData.connectionSemaphore);
-        if (retVal != 0) {
-            safuLogWarnF("sem_destroy failed! - returned:%d, %s", retVal, strerror(errno));
-        }
-
-        elosClientAuthorizationDelete(&clientmanager->clientAuth);
-
-        if (clientmanager->fd != -1) {
-            retVal = close(clientmanager->fd);
+        if (atomic_load(&clientManager->flags) & CLIENT_MANAGER_LISTEN_ACTIVE) {
+            safuLogDebug("Stop ClientManager worker...");
+            atomic_fetch_and(&clientManager->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
+            retVal = pthread_join(clientManager->listenThread, NULL);
             if (retVal != 0) {
-                safuLogWarnF("close failed! - returned:%d, %s", retVal, strerror(errno));
+                safuLogWarnErrnoValue("Joining ClientManager worker failed (possible memory leak)", retVal);
+            } else {
+                result = SAFU_RESULT_FAILED;
             }
+            atomic_fetch_and(&clientManager->flags, ~CLIENT_MANAGER_THREAD_NOT_JOINED);
         }
 
-        safuLogDebug("done");
+        safuLogDebug("ClientManager worker stopped");
     }
 
     return result;

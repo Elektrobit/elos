@@ -3,6 +3,7 @@
 #define _GNU_SOURCE
 
 #include <safu/mutex.h>
+#include <sys/eventfd.h>
 #include <sys/time.h>
 
 #include "clientmanager_private.h"
@@ -52,43 +53,35 @@ safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *
             }
         } else {
             for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
-                elosClientConnection_t *conn = &ctx->connection[i];
-                SAFU_PTHREAD_MUTEX_LOCK(&conn->lock, result = SAFU_RESULT_FAILED);
-                if (result == SAFU_RESULT_FAILED) {
+                elosClientConnection_t *connection = &ctx->connection[i];
+                bool active = false;
+
+                result = elosClientConnectionIsActive(connection, &active);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErrF("elosClientConnectionIsTaken failed for connection slot:%d", i);
+                    break;
+                } else if (active == false) {
+                    *slot = i;
                     break;
                 }
-                if (conn->status & CLIENT_MANAGER_CONNECTION_ACTIVE) {
-                    SAFU_PTHREAD_MUTEX_UNLOCK(&conn->lock, result = SAFU_RESULT_FAILED);
-                    if (result == SAFU_RESULT_FAILED) {
-                        break;
-                    }
-                    continue;
-                }
-                if (conn->status & CLIENT_MANAGER_THREAD_NOT_JOINED) {
-                    pthread_join(conn->thread, NULL);
-                    conn->status &= ~CLIENT_MANAGER_THREAD_NOT_JOINED;
-                }
-                SAFU_PTHREAD_MUTEX_UNLOCK(&conn->lock, result = SAFU_RESULT_FAILED);
-                if (result == SAFU_RESULT_FAILED) {
-                    break;
-                }
-                *slot = i;
-                break;
             }
         }
     }
+
     return result;
 }
 
-safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *ctx, int slot) {
+safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *ctx, int slot, int *socketFd) {
     elosClientConnection_t *conn = &ctx->connection[slot];
     struct timespec timeOut = {.tv_sec = CONNECTION_PSELECT_TIMEOUT_SEC, .tv_nsec = CONNECTION_PSELECT_TIMEOUT_NSEC};
-    socklen_t addrLen = sizeof(conn->addr);
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     for (;;) {
+        socklen_t addrLen = sizeof(struct sockaddr_in);
+        // struct sockaddr_in addr = {0};
         int retval;
         fd_set readFds;
+
         FD_ZERO(&readFds);
         FD_SET(ctx->fd, &readFds);
 
@@ -114,8 +107,8 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
             continue;
         }
 
-        conn->fd = accept(ctx->fd, (struct sockaddr *)&conn->addr, &addrLen);
-        if (conn->fd < 0) {
+        *socketFd = accept(ctx->fd, (struct sockaddr *)&conn->addr, &addrLen);
+        if (*socketFd == -1) {
             if (errno == EINTR) {
                 continue;
             } else {
@@ -141,53 +134,64 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
 }
 
 void *elosClientManagerThreadListen(void *ptr) {
-    elosClientManager_t *ctx = (elosClientManager_t *)ptr;
-    safuResultE_t result = SAFU_RESULT_FAILED;
+    elosClientManager_t *clientManager = (elosClientManager_t *)ptr;
+    bool active = false;
+    int retVal;
 
-    for (;;) {
-        elosClientConnection_t *connection = NULL;
-        int slot;
-
-        if (!(atomic_load(&ctx->flags) & CLIENT_MANAGER_LISTEN_ACTIVE)) {
-            break;
+    retVal = eventfd_write(clientManager->syncFd, _SYNCFD_VALUE);
+    if (retVal < 0) {
+        safuLogErrErrnoValue("eventfd_write failed", retVal);
+    } else {
+        retVal = listen(clientManager->fd, CLIENT_MANAGER_LISTEN_QUEUE_LENGTH);
+        if (retVal != 0) {
+            safuLogErrErrnoValue("listen failed", retVal);
+        } else {
+            atomic_fetch_or(&clientManager->flags, CLIENT_MANAGER_LISTEN_ACTIVE);
+            active = true;
         }
+    }
+
+    while (active == true) {
+        elosClientConnection_t *connection = NULL;
+        safuResultE_t result = SAFU_RESULT_FAILED;
+        int socketFd = -1;
+        int slot = -1;
 
         // wait until we have a free connection slot available
-        result = elosClientManagerThreadGetFreeConnectionSlot(ctx, &slot);
+        result = elosClientManagerThreadGetFreeConnectionSlot(clientManager, &slot);
         if (result != SAFU_RESULT_OK) {
             break;
         } else if (slot < 0) {
             continue;
         } else {
-            connection = &ctx->connection[slot];
+            connection = &clientManager->connection[slot];
+
+            result = elosClientManagerThreadWaitForIncomingConnection(clientManager, slot, &socketFd);
+            if (result != SAFU_RESULT_OK) {
+                SAFU_SEM_UNLOCK(&clientManager->sharedData.connectionSemaphore, break);
+            } else {
+                result = elosClientConnectionStart(connection, socketFd);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErr("Starting client connection failed");
+                    continue;
+                }
+            }
         }
 
-        SAFU_PTHREAD_MUTEX_LOCK(&connection->lock, result = SAFU_RESULT_FAILED);
-        if (result == SAFU_RESULT_FAILED) {
-            break;
-        }
-
-        result = elosClientManagerThreadWaitForIncomingConnection(ctx, slot);
-        if (result != SAFU_RESULT_OK) {
-            SAFU_PTHREAD_MUTEX_UNLOCK(&connection->lock, break);
-            SAFU_SEM_UNLOCK(&ctx->sharedData.connectionSemaphore, break);
-            continue;
-        }
-
-        result = elosClientConnectionStart(connection);
-        if (result != SAFU_RESULT_OK) {
-            safuLogErr("Starting client connection failed");
-        }
-
-        SAFU_PTHREAD_MUTEX_UNLOCK(&connection->lock, result = SAFU_RESULT_FAILED);
-        if (result == SAFU_RESULT_FAILED) {
-            break;
+        if (!(atomic_load(&clientManager->flags) & CLIENT_MANAGER_LISTEN_ACTIVE)) {
+            active = false;
         }
     }
 
-    safuLogDebug("closing...");
-    atomic_fetch_and(&ctx->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
-    atomic_fetch_or(&ctx->flags, CLIENT_MANAGER_THREAD_NOT_JOINED);
+    if (clientManager->fd != -1) {
+        retVal = close(clientManager->fd);
+        if (retVal != 0) {
+            safuLogWarnErrnoValue("Closing listenFd failed (possible memory leak)", retVal);
+        }
+    }
 
-    return (void *)result;
+    atomic_fetch_and(&clientManager->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
+    atomic_fetch_or(&clientManager->flags, CLIENT_MANAGER_THREAD_NOT_JOINED);
+
+    return NULL;
 }
