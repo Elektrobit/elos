@@ -22,6 +22,7 @@ add_library(
     ./private/clientauthorization.c
     ./private/clientauthorizedprocesses.c
     ./private/clientblacklist.c
+    ./private/clientconnection_worker.c
     ./private/clientconnection.c
     ./private/clientmanager_listen.c
     ./private/clientmanager_start.c

@@ -33,6 +33,7 @@
 typedef struct elosClientManager {
     safuFlags_t flags;
     int fd;
+    int syncFd;
     struct sockaddr_in addr;
     elosClientConnection_t connection[CLIENT_MANAGER_MAX_CONNECTIONS];
     pthread_t listenThread;
