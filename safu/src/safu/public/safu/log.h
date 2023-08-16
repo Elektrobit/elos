@@ -73,6 +73,9 @@ safuLogStatusE_t safuLogFunc(safuLogLevelE_t level, const char *file, const char
 #define safuLogWarn(__message) safuLogFunc(SAFU_LOG_LEVEL_WARN, __FILE__, __func__, __LINE__, __message)
 #define safuLogWarnF(__message, ...) \
     safuLogFuncF(SAFU_LOG_LEVEL_WARN, __FILE__, __func__, __LINE__, __message, __VA_ARGS__)
+#define safuLogWarnErrnoValue(__message, __value)                                                              \
+    safuLogFuncF(SAFU_LOG_LEVEL_WARN, __FILE__, __func__, __LINE__, __message " (returned: %d - %s)", __value, \
+                 strerror(errno))
 #define safuLogInfo(__message) safuLogFunc(SAFU_LOG_LEVEL_INFO, __FILE__, __func__, __LINE__, __message)
 #define safuLogInfoF(__message, ...) \
     safuLogFuncF(SAFU_LOG_LEVEL_INFO, __FILE__, __func__, __LINE__, __message, __VA_ARGS__)
