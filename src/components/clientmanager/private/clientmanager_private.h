@@ -5,8 +5,9 @@
 
 #include "elos/clientmanager/types.h"
 
-safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *ctx, int *slot);
-safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *ctx, int slot, int *socketFd);
+safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *clientManager, int *slot);
+safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *clientManager, int slot,
+                                                               int *socketFd);
 
 void *elosClientManagerThreadListen(void *ptr);
 

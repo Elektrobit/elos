@@ -15,9 +15,9 @@
 #include "elos/clientmanager/clientconnection.h"
 #include "elos/config/config.h"
 
-static safuResultE_t _initializeSharedData(elosClientManager_t *clientmanager, elosClientManagerParam_t *param) {
+static safuResultE_t _initializeSharedData(elosClientManager_t *clientManager, elosClientManagerParam_t *param) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    elosClientConnectionSharedData_t *sharedData = &clientmanager->sharedData;
+    elosClientConnectionSharedData_t *sharedData = &clientManager->sharedData;
     int retVal;
 
     retVal = sem_init(&sharedData->connectionSemaphore, 0, ELOS_CLIENTMANAGER_CONNECTION_LIMIT);
@@ -34,9 +34,9 @@ static safuResultE_t _initializeSharedData(elosClientManager_t *clientmanager, e
     return result;
 }
 
-static safuResultE_t _initializeListener(elosClientManager_t *clientmanager, samconfConfig_t const *config) {
+static safuResultE_t _initializeListener(elosClientManager_t *clientManager, samconfConfig_t const *config) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    struct sockaddr_in *addr = &clientmanager->addr;
+    struct sockaddr_in *addr = &clientManager->addr;
     char const *interface = elosConfigGetElosdInterface(config);
     int const port = elosConfigGetElosdPort(config);
     int retVal;
@@ -48,15 +48,15 @@ static safuResultE_t _initializeListener(elosClientManager_t *clientmanager, sam
     if (retVal != 1) {
         safuLogErrErrnoValue("inet_pton failed", retVal);
     } else {
-        clientmanager->fd = socket(addr->sin_family, SOCK_STREAM, 0);
-        if (clientmanager->fd == -1) {
-            safuLogErrErrnoValue("socket failed", clientmanager->fd);
+        clientManager->fd = socket(addr->sin_family, SOCK_STREAM, 0);
+        if (clientManager->fd == -1) {
+            safuLogErrErrnoValue("socket failed", clientManager->fd);
         } else {
-            retVal = setsockopt(clientmanager->fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
+            retVal = setsockopt(clientManager->fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
             if (retVal != 0) {
                 safuLogErrErrnoValue("setsocketopt SO_REUSEADDR failed", retVal);
             } else {
-                retVal = bind(clientmanager->fd, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
+                retVal = bind(clientManager->fd, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
                 if (retVal != 0) {
                     safuLogErrErrnoValue("bind failed", retVal);
                 } else {
@@ -69,12 +69,12 @@ static safuResultE_t _initializeListener(elosClientManager_t *clientmanager, sam
     return result;
 }
 
-static safuResultE_t _initializeConnections(elosClientManager_t *clientmanager) {
+static safuResultE_t _initializeConnections(elosClientManager_t *clientManager) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     for (int i = 0; i < ELOS_CLIENTMANAGER_CONNECTION_LIMIT; i += 1) {
-        elosClientConnection_t *connection = &clientmanager->connection[i];
-        elosClientConnectionParam_t param = {.sharedData = &clientmanager->sharedData};
+        elosClientConnection_t *connection = &clientManager->connection[i];
+        elosClientConnectionParam_t param = {.sharedData = &clientManager->sharedData};
 
         result = elosClientConnectionInitialize(connection, &param);
         if (result != SAFU_RESULT_OK) {
@@ -86,15 +86,15 @@ static safuResultE_t _initializeConnections(elosClientManager_t *clientmanager) 
     return result;
 }
 
-static safuResultE_t _initializeAuthorization(elosClientManager_t *clientmanager, samconfConfig_t const *config) {
+static safuResultE_t _initializeAuthorization(elosClientManager_t *clientManager, samconfConfig_t const *config) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    result = elosClientAuthorizationInitialize(&clientmanager->clientAuth);
+    result = elosClientAuthorizationInitialize(&clientManager->clientAuth);
     if (result != SAFU_RESULT_OK) {
         safuLogWarn("elosClientAuthorizationInitialize failed");
     }
 
-    result = elosAuthorizedProcessInitialize(&clientmanager->clientAuth.authorizedProcessFilters, config);
+    result = elosAuthorizedProcessInitialize(&clientManager->clientAuth.authorizedProcessFilters, config);
     if (result != SAFU_RESULT_OK) {
         safuLogWarn("authorized process filter initialization failed");
     } else {
@@ -104,32 +104,32 @@ static safuResultE_t _initializeAuthorization(elosClientManager_t *clientmanager
     return result;
 }
 
-safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientmanager, elosClientManagerParam_t *param) {
+safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientManager, elosClientManagerParam_t *param) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((clientmanager == NULL) || (param == NULL)) {
+    if ((clientManager == NULL) || (param == NULL)) {
         safuLogErr("Invalid parameter NULL");
     } else if ((param->config == NULL) || (param->eventDispatcher == NULL) || (param->eventProcessor == NULL) ||
                (param->logAggregator == NULL)) {
         safuLogErr("Invalid value NULL in parameter struct");
-    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientmanager->flags) == true) {
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientManager->flags) == true) {
         safuLogErr("The given ClientManager is already initialized");
     } else {
-        memset(clientmanager, 0, sizeof(elosClientManager_t));
+        memset(clientManager, 0, sizeof(elosClientManager_t));
 
-        result = _initializeSharedData(clientmanager, param);
+        result = _initializeSharedData(clientManager, param);
         if (result == SAFU_RESULT_OK) {
-            result = _initializeListener(clientmanager, param->config);
+            result = _initializeListener(clientManager, param->config);
             if (result == SAFU_RESULT_OK) {
-                result = _initializeConnections(clientmanager);
+                result = _initializeConnections(clientManager);
                 if (result == SAFU_RESULT_OK) {
-                    clientmanager->syncFd = eventfd(0, 0);
-                    if (clientmanager->syncFd == -1) {
-                        safuLogErrErrnoValue("Creating eventfd failed", clientmanager->syncFd);
+                    clientManager->syncFd = eventfd(0, 0);
+                    if (clientManager->syncFd == -1) {
+                        safuLogErrErrnoValue("Creating eventfd failed", clientManager->syncFd);
                     } else {
-                        _initializeAuthorization(clientmanager, param->config);
+                        _initializeAuthorization(clientManager, param->config);
 
-                        atomic_store(&clientmanager->flags, SAFU_FLAG_INITIALIZED_BIT);
+                        atomic_store(&clientManager->flags, SAFU_FLAG_INITIALIZED_BIT);
                     }
                 }
             }
