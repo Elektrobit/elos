@@ -52,7 +52,7 @@ safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *
                 raise(SIGTERM);
             }
         } else {
-            for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
+            for (int i = 0; i < ELOS_CLIENTMANAGER_CONNECTION_LIMIT; i += 1) {
                 elosClientConnection_t *connection = &ctx->connection[i];
                 bool active = false;
 
@@ -85,7 +85,7 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
         FD_ZERO(&readFds);
         FD_SET(ctx->fd, &readFds);
 
-        if (!(atomic_load(&ctx->flags) & CLIENT_MANAGER_LISTEN_ACTIVE)) {
+        if (!(atomic_load(&ctx->flags) & ELOS_CLIENTMANAGER_LISTEN_ACTIVE)) {
             break;
         }
 
@@ -142,11 +142,11 @@ void *elosClientManagerThreadListen(void *ptr) {
     if (retVal < 0) {
         safuLogErrErrnoValue("eventfd_write failed", retVal);
     } else {
-        retVal = listen(clientManager->fd, CLIENT_MANAGER_LISTEN_QUEUE_LENGTH);
+        retVal = listen(clientManager->fd, ELOS_CLIENTMANAGER_LISTEN_QUEUE_LENGTH);
         if (retVal != 0) {
             safuLogErrErrnoValue("listen failed", retVal);
         } else {
-            atomic_fetch_or(&clientManager->flags, CLIENT_MANAGER_LISTEN_ACTIVE);
+            atomic_fetch_or(&clientManager->flags, ELOS_CLIENTMANAGER_LISTEN_ACTIVE);
             active = true;
         }
     }
@@ -178,7 +178,7 @@ void *elosClientManagerThreadListen(void *ptr) {
             }
         }
 
-        if (!(atomic_load(&clientManager->flags) & CLIENT_MANAGER_LISTEN_ACTIVE)) {
+        if (!(atomic_load(&clientManager->flags) & ELOS_CLIENTMANAGER_LISTEN_ACTIVE)) {
             active = false;
         }
     }
@@ -190,8 +190,8 @@ void *elosClientManagerThreadListen(void *ptr) {
         }
     }
 
-    atomic_fetch_and(&clientManager->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
-    atomic_fetch_or(&clientManager->flags, CLIENT_MANAGER_THREAD_NOT_JOINED);
+    atomic_fetch_and(&clientManager->flags, ~ELOS_CLIENTMANAGER_LISTEN_ACTIVE);
+    atomic_fetch_or(&clientManager->flags, ELOS_CLIENTMANAGER_THREAD_NOT_JOINED);
 
     return NULL;
 }

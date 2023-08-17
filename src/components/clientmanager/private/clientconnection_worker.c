@@ -26,8 +26,8 @@
 static safuResultE_t _workerDataInitialize(elosClientConnection_t *clientConnection) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosClientConnectionData_t *workerData = &clientConnection->data;
-    uint32_t const eqIdElements = CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE;
-    uint32_t const efnIdElements = CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE;
+    uint32_t const eqIdElements = ELOS_CLIENTMANAGER_EVENTQUEUEIDVECTOR_SIZE;
+    uint32_t const efnIdElements = ELOS_CLIENTMANAGER_EVENTFILTERNODEIDVECTOR_SIZE;
     int retVal;
 
     retVal = safuVecCreate(&workerData->eventQueueIdVector, eqIdElements, sizeof(elosEventQueueId_t));
