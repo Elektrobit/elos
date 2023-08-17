@@ -28,8 +28,8 @@ static inline void _calculateTvSeconds(struct timespec *ts) {
     TIMEVAL_TO_TIMESPEC(&tmpResult, ts);
 }
 
-safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *ctx, int *slot) {
-    sem_t *connectionSemaphore = &ctx->sharedData.connectionSemaphore;
+safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *clientManager, int *slot) {
+    sem_t *connectionSemaphore = &clientManager->sharedData.connectionSemaphore;
     struct timespec semTimeOut = {0};
     safuResultE_t result = SAFU_RESULT_OK;
 
@@ -53,7 +53,7 @@ safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *
             }
         } else {
             for (int i = 0; i < ELOS_CLIENTMANAGER_CONNECTION_LIMIT; i += 1) {
-                elosClientConnection_t *connection = &ctx->connection[i];
+                elosClientConnection_t *connection = &clientManager->connection[i];
                 bool active = false;
 
                 result = elosClientConnectionIsActive(connection, &active);
@@ -71,8 +71,9 @@ safuResultE_t elosClientManagerThreadGetFreeConnectionSlot(elosClientManager_t *
     return result;
 }
 
-safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *ctx, int slot, int *socketFd) {
-    elosClientConnection_t *conn = &ctx->connection[slot];
+safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager_t *clientManager, int slot,
+                                                               int *socketFd) {
+    elosClientConnection_t *conn = &clientManager->connection[slot];
     struct timespec timeOut = {.tv_sec = CONNECTION_PSELECT_TIMEOUT_SEC, .tv_nsec = CONNECTION_PSELECT_TIMEOUT_NSEC};
     safuResultE_t result = SAFU_RESULT_FAILED;
 
@@ -83,13 +84,13 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
         fd_set readFds;
 
         FD_ZERO(&readFds);
-        FD_SET(ctx->fd, &readFds);
+        FD_SET(clientManager->fd, &readFds);
 
-        if (!(atomic_load(&ctx->flags) & ELOS_CLIENTMANAGER_LISTEN_ACTIVE)) {
+        if (!(atomic_load(&clientManager->flags) & ELOS_CLIENTMANAGER_LISTEN_ACTIVE)) {
             break;
         }
 
-        retval = pselect((ctx->fd + 1), &readFds, NULL, NULL, &timeOut, NULL);
+        retval = pselect((clientManager->fd + 1), &readFds, NULL, NULL, &timeOut, NULL);
         if (retval < 0) {
             if (errno == EINTR) {
                 continue;
@@ -99,7 +100,7 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
                 break;
             }
         } else if (retval > 0) {
-            if (!FD_ISSET(ctx->fd, &readFds)) {
+            if (!FD_ISSET(clientManager->fd, &readFds)) {
                 safuLogWarn("pselect returned with value > 0, but the selected fd has no new data!");
                 continue;
             }
@@ -107,7 +108,7 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
             continue;
         }
 
-        *socketFd = accept(ctx->fd, (struct sockaddr *)&conn->addr, &addrLen);
+        *socketFd = accept(clientManager->fd, (struct sockaddr *)&conn->addr, &addrLen);
         if (*socketFd == -1) {
             if (errno == EINTR) {
                 continue;
@@ -121,7 +122,7 @@ safuResultE_t elosClientManagerThreadWaitForIncomingConnection(elosClientManager
         }
 
         safuLogDebug("Accepted new connection");
-        conn->isTrusted = elosClientAuthorizationIsTrustedConnection(&ctx->clientAuth, &conn->addr);
+        conn->isTrusted = elosClientAuthorizationIsTrustedConnection(&clientManager->clientAuth, &conn->addr);
         if (conn->isTrusted) {
             safuLogDebug("connection is trusted");
         } else {
