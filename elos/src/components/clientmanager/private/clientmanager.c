@@ -20,7 +20,7 @@ static safuResultE_t _initializeSharedData(elosClientManager_t *clientmanager, e
     elosClientConnectionSharedData_t *sharedData = &clientmanager->sharedData;
     int retVal;
 
-    retVal = sem_init(&sharedData->connectionSemaphore, 0, CLIENT_MANAGER_MAX_CONNECTIONS);
+    retVal = sem_init(&sharedData->connectionSemaphore, 0, ELOS_CLIENTMANAGER_CONNECTION_LIMIT);
     if (retVal != 0) {
         safuLogErrErrnoValue("sem_init failed!", retVal);
     } else {
@@ -72,7 +72,7 @@ static safuResultE_t _initializeListener(elosClientManager_t *clientmanager, sam
 static safuResultE_t _initializeConnections(elosClientManager_t *clientmanager) {
     safuResultE_t result = SAFU_RESULT_OK;
 
-    for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
+    for (int i = 0; i < ELOS_CLIENTMANAGER_CONNECTION_LIMIT; i += 1) {
         elosClientConnection_t *connection = &clientmanager->connection[i];
         elosClientConnectionParam_t param = {.sharedData = &clientmanager->sharedData};
 
@@ -153,7 +153,7 @@ safuResultE_t elosClientManagerDeleteMembers(elosClientManager_t *clientManager)
                 result = SAFU_RESULT_FAILED;
             }
 
-            for (int i = 0; i < CLIENT_MANAGER_MAX_CONNECTIONS; i += 1) {
+            for (int i = 0; i < ELOS_CLIENTMANAGER_CONNECTION_LIMIT; i += 1) {
                 elosClientConnection_t *connection = &clientManager->connection[i];
 
                 iterResult = elosClientConnectionDeleteMembers(connection);

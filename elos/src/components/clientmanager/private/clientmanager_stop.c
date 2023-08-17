@@ -22,16 +22,16 @@ safuResultE_t elosClientManagerStop(elosClientManager_t *clientManager) {
     } else {
         int retVal;
 
-        if (atomic_load(&clientManager->flags) & CLIENT_MANAGER_LISTEN_ACTIVE) {
+        if (atomic_load(&clientManager->flags) & ELOS_CLIENTMANAGER_LISTEN_ACTIVE) {
             safuLogDebug("Stop ClientManager worker...");
-            atomic_fetch_and(&clientManager->flags, ~CLIENT_MANAGER_LISTEN_ACTIVE);
+            atomic_fetch_and(&clientManager->flags, ~ELOS_CLIENTMANAGER_LISTEN_ACTIVE);
             retVal = pthread_join(clientManager->listenThread, NULL);
             if (retVal != 0) {
                 safuLogWarnErrnoValue("Joining ClientManager worker failed (possible memory leak)", retVal);
             } else {
                 result = SAFU_RESULT_FAILED;
             }
-            atomic_fetch_and(&clientManager->flags, ~CLIENT_MANAGER_THREAD_NOT_JOINED);
+            atomic_fetch_and(&clientManager->flags, ~ELOS_CLIENTMANAGER_THREAD_NOT_JOINED);
         }
 
         safuLogDebug("ClientManager worker stopped");

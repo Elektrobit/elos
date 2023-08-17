@@ -15,7 +15,7 @@ safuResultE_t elosClientManagerStart(elosClientManager_t *clientManager) {
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientManager->flags) == false) {
         safuLogErr("The given ClientManager is not initialized");
     } else {
-        atomic_fetch_or(&clientManager->flags, CLIENT_MANAGER_LISTEN_ACTIVE);
+        atomic_fetch_or(&clientManager->flags, ELOS_CLIENTMANAGER_LISTEN_ACTIVE);
 
         retVal = pthread_create(&clientManager->listenThread, 0, elosClientManagerThreadListen, clientManager);
         if (retVal != 0) {
