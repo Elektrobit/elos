@@ -67,7 +67,7 @@ int elosServerShutdown(struct serverContext *ctx) {
         safuLogErr("Shutting down log aggregator failed!");
         result = EXIT_FAILURE;
     }
-    if (elosClientManagerStop(&ctx->clientManagerContext) != 0) {
+    if (elosClientManagerDeleteMembers(&ctx->clientManagerContext) != SAFU_RESULT_OK) {
         safuLogErr("Stoping client manager failed!");
         result = EXIT_FAILURE;
     }
