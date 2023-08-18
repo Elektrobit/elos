@@ -263,27 +263,14 @@ pipeline {
           }
           environment {
             DOCKER_BUILDKIT = 0
+	    BUILD_ARG = "--build-arg USER=jenkins"
+
           }
           steps {
-            gitlabCommitStatus("integration test") {
-              script {
-                def elosdImage = docker.build("elosd", "-f ci/Dockerfile.elosd --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) --build-arg SOURCES_URI=${SOURCES_URI} .")
-                def robotImage = docker.build("robot", "-f ci/Dockerfile.robot --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) .")
-                withDockerNetwork{ networkId ->
-                  elosdImage.withRun("-t --network ${networkId} --name elos-target-${BUILD_ID}-${GIT_COMMIT} --cap-add=SYS_ADMIN --security-opt apparmor=unconfined") { elosdContainer ->
-                    robotImage.inside("--network ${networkId} -e ELOSD_CONTAINER_NAME=elos-target-${BUILD_ID}-${GIT_COMMIT}") {
-                      sh 'echo ######### Container Debug Info In Pipeline ############'
-                      sh 'env | sort'
-                      sh 'ls -lah /home/jenkins/.local/bin'
-                      sh 'robot --version || true'
-                      sh 'ping -w 1 $ELOSD_CONTAINER_NAME'
-                      sh 'echo ############ Starting Robot Integration Tests #############'
-                      sh 'mkdir -p build/Release/result/IntegrationTest'
-                      sh 'PROJECT=elos TARGET_NAME=$ELOSD_CONTAINER_NAME TEST_SOURCE=./test/integration TEST_OUTPUT=./build/Release/result/IntegrationTest ./test/integration/scripts/run_integration_tests.sh'
-                    }
-                  }
-                }
-              }
+            gitlabCommitStatus("elos: integration test") {
+              sh '''#!/bin/bash -xe
+                ./ci/run_integration_tests.sh Release
+              '''
             }
           }
           post {
@@ -293,7 +280,7 @@ pipeline {
                   step(
                         [
                           $class              : 'RobotPublisher',
-                          outputPath          : 'build/Release/result/IntegrationTest/',
+                          outputPath          : 'build/Release/result/integration/',
                           outputFileName      : '**/*.xml',
                           reportFileName      : '**/*test.html',
                           logFileName         : '**/log.html',
