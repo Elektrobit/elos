@@ -36,13 +36,11 @@ void elosTestElosMessageHandlerHandleMessageExterrSecondAllocMem(void **state) {
     expect_not_value(__wrap_safuAllocMem, oldptr, NULL);
     expect_value(__wrap_safuAllocMem, newlen, sizeof(elosMessage_t) + testState->messagePayloadLen + 1);
     will_return(__wrap_safuAllocMem, NULL);
-    MOCK_FUNC_AFTER_CALL(safuAllocMem, 5);
+    MOCK_FUNC_AFTER_CALL(safuAllocMem, 1);
 
     expect_any(__wrap_free, ptr);
-    MOCK_FUNC_AFTER_CALL(free, 7);
+    MOCK_FUNC_AFTER_CALL(free, 0);
 
     retval = elosMessageHandlerHandleMessage(conn);
     assert_int_equal(retval, SAFU_RESULT_FAILED);
-
-    MOCK_FUNC_NEVER(safuAllocMem);
 }

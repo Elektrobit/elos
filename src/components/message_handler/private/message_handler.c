@@ -175,7 +175,6 @@ safuResultE_t elosMessageHandlerHandleMessage(elosClientConnection_t const *cons
         }
     }
 
-    elosLog(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_ELOS, "recieved incoming message");
     if (result == SAFU_RESULT_OK) {
         result = elosMessageHandlerReadHeader(conn, msg);
         if (result == SAFU_RESULT_OK) {

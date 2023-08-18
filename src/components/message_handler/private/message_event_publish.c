@@ -8,6 +8,7 @@
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventlogging/LogAggregator.h"
 #include "elos/eventprocessor/eventprocessor.h"
+#include "elos/logger/logger.h"
 #include "elos/messages/message_handler.h"
 #include "safu/common.h"
 #include "safu/json.h"

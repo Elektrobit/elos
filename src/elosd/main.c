@@ -32,6 +32,7 @@ struct serverContext {
     elosLogAggregator_t logAggregator;
     elosEventDispatcher_t eventDispatcher;
     elosEventProcessor_t eventProcessor;
+    elosLogger_t *logger;
 };
 
 static int elosActive = 1;
@@ -87,6 +88,10 @@ int elosServerShutdown(struct serverContext *ctx) {
         safuLogErr("Deleting plugin processor members failed!");
         result = EXIT_FAILURE;
     }
+    if (elosLoggerDeleteMembers(ctx->logger) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting logger members failed!");
+        result = EXIT_FAILURE;
+    }
     if (samconfConfigDelete(ctx->config) != SAMCONF_CONFIG_OK) {
         safuLogErr("Deleting config failed!");
         result = EXIT_FAILURE;
@@ -118,6 +123,10 @@ int main(int argc, char **argv) {
         safuLogErrErrno("signal(SIGTERM)");
         return EXIT_FAILURE;
     }
+
+    elosLoggerGetDefaultLogger(&context.logger);
+
+    elosLog(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_ELOS, "internal logger initialized");
 
     safuLogDebug("Load configuration");
     safuResultE_t result = elosConfigLoad(&context.config);
@@ -184,9 +193,8 @@ int main(int argc, char **argv) {
             elosServerShutdown(&context);
             return EXIT_FAILURE;
         }
+        elosEventDispatcherBufferAdd(&context.eventDispatcher, context.logger->logEventBuffer);
     }
-
-    elosLogSetEventProcessor(&context.eventProcessor);
 
     safuLogDebug("Start client manager");
     elosClientManagerParam_t cmParams = {

@@ -1,29 +1,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "elos/eloslog/types.h"
+#include <safu/common.h>
+#include <safu/log.h>
 
-/*******************************************************************
- * Pack given messageCode, severity, classification and logMessage
- * into the provided logdata variable of type `elosLogData_t`
- *
- * Parameters:
- *      messageCode (elosEventMessageCodeE_t) :  message code for the message to be logged
- *      severity (elosSeverityE_t) : severity of message to be logged
- *      classification (uint64_t) : classification of message to be logged
- *      logMessage (const char *) : the message to be packed into logdata
- *      logdata (elosLogData_t **) : the log data variable to pack other values into.
- ******************************************************************/
-void elosLogCreateLogData(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity, uint64_t classification,
-                          const char *logMessage, elosLogData_t **logdata);
-
-/*******************************************************************
- * Free Memory of all members of logData
- *
- * Parameters:
- *      logData (elosLogData_t *) : logData whos' allocated memory needs to be freed.
- ******************************************************************/
-void elosLogDeleteLogData(elosLogData_t *logData);
+#include "elos/event/event.h"
+#include "elos/event/event_types.h"
 
 /*******************************************************************
  * A fallback function is to be used when the log event creation fails.
@@ -32,20 +14,20 @@ void elosLogDeleteLogData(elosLogData_t *logData);
  * log data to console.
  *
  * Parameters:
- *      logData (elosLogData_t *) : log data to be logged via safulog
+ *      event (elosEvent_t *) : log event to be logged
  ******************************************************************/
-void elosLogSafuFallback(elosLogData_t *logData);
+void elosLogSafuFallback(elosEvent_t *event);
 
 /*******************************************************************
  * Create an new elos event and assign value from logData to it. Pass
  * this new event to output varaiable event.
  *
  * Parameters:
- *      logData (elosLogData_t *) : log data containing data to be logged.
- *      event (elosEvent_t **) : elos event created from logData.
- *
- * Returns:
- *      - `ELOS_LOG_STATUS_SUCCESS` on success
- *      - `ELOS_LOG_STATUS_ERROR` on failure
+ *      messageCode (elosEventMessageCodeE_t) : message code for the message to be logged.
+ *      severity (elosSeverityE_t) : severity of the message which is to be logged.
+ *      classification (uint64_t) : classification of the message to be logged.
+ *      logMessage (const char *) : the message to be logged.
+ *      event (elosEvent_t *) : the elos event to which the above parameters are assigned.
  ******************************************************************/
-elosLogStatusE_t elosLogCreateElosEventFromLog(elosLogData_t *logData, elosEvent_t **event);
+void elosLogCreateElosEventFromLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity,
+                                   uint64_t classification, const char *logMessage, elosEvent_t *event);

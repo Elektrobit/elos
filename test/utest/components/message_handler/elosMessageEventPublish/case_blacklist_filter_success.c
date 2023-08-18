@@ -136,7 +136,7 @@ void elosTestelosMessageEventPublishBlacklistFilterSuccess(void **state) {
     MOCK_FUNC_ENABLE(safuGetHardwareId);
     will_return(__wrap_safuGetHardwareId, "localhost");
 
-    MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 0);
+    MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 1);
     expect_value(elosEventBufferWrite, eventBuffer, &data->conn->eventBuffer);
     expect_check(elosEventBufferWrite, event, _check_event, &securityEvent);
     will_return(elosEventBufferWrite, SAFU_RESULT_OK);
