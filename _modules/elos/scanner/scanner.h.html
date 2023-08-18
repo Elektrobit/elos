@@ -41,6 +41,7 @@
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventbuffer/types.h&quot;</span>
 
 <div class="viewcode-block" id="c.UNUSED"><span class="cp">#define UNUSED            __attribute__((unused))</span></div>
 <div class="viewcode-block" id="c.ARRAY_SIZE"><span class="cp">#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))</span></div>
@@ -55,7 +56,7 @@
 <span class="p">}</span><span class="w"> </span><span class="n">elosScannerParam_t</span><span class="p">;</span></div></div>
 
 <div class="viewcode-block" id="c.elosScannerCallbackData"><div class="viewcode-block" id="c.elosScannerCallbackData_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosScannerCallbackData</span><span class="w"> </span><span class="p">{</span>
-<div class="viewcode-block" id="c.elosScannerCallbackData.eventProcessor"><div class="viewcode-block" id="c.elosScannerCallbackData_t.eventProcessor"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">eventProcessor</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosScannerCallbackData.eventBuffer"><div class="viewcode-block" id="c.elosScannerCallbackData_t.eventBuffer"><span class="w">    </span><span class="n">elosEventBuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventBuffer</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosScannerCallbackData.logAggregator"><div class="viewcode-block" id="c.elosScannerCallbackData_t.logAggregator"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">;</span></div></div>
 <span class="p">}</span><span class="w"> </span><span class="n">elosScannerCallbackData_t</span><span class="p">;</span></div></div>
 
@@ -68,6 +69,7 @@
 <div class="viewcode-block" id="c.elosScannerSession"><div class="viewcode-block" id="c.elosScannerSession_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosScannerSession</span><span class="w"> </span><span class="p">{</span>
 <div class="viewcode-block" id="c.elosScannerSession.name"><div class="viewcode-block" id="c.elosScannerSession_t.name"><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosScannerSession.context"><div class="viewcode-block" id="c.elosScannerSession_t.context"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosScannerSession.eventBuffer"><div class="viewcode-block" id="c.elosScannerSession_t.eventBuffer"><span class="w">    </span><span class="n">elosEventBuffer_t</span><span class="w"> </span><span class="n">eventBuffer</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosScannerSession.callback"><div class="viewcode-block" id="c.elosScannerSession_t.callback"><span class="w">    </span><span class="n">elosScannerCallback_t</span><span class="w"> </span><span class="n">callback</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosScannerSession.config"><div class="viewcode-block" id="c.elosScannerSession_t.config"><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosScannerSession.dispatcherSourceid"><div class="viewcode-block" id="c.elosScannerSession_t.dispatcherSourceid"><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">dispatcherSourceid</span><span class="p">;</span></div></div>

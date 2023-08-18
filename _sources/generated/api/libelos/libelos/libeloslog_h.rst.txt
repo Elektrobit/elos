@@ -1,0 +1,5 @@
+libeloslog.h
+============
+
+.. autocmodule:: libelos/libeloslog.h
+    :members:

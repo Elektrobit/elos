@@ -5,3 +5,4 @@ libelos
     :maxdepth: 4
 
     libelos_h
+    libeloslog_h

@@ -1,0 +1,5 @@
+clientmanager.h
+===============
+
+.. autocmodule:: elos/clientmanager/clientmanager.h
+    :members:

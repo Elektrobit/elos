@@ -73,6 +73,8 @@ Example:
   -f &lt;filter&gt;      event log find
   -c &lt;count&gt;       set event count
   -r &lt;events/sec&gt;  set event rate
+  -H &lt;Host-Ip&gt;     set host ip address
+  -P &lt;Port&gt;        set host port
   -h               print this help
   -v               get version
 
@@ -82,7 +84,7 @@ Example:
 </div>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -v
-elosc-0.45.8.fd31cf7d
+elosc-0.46.11.8c603f03
 </pre></div>
 </div>
 <p>To subscribe on any event :</p>
@@ -134,12 +136,26 @@ ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, e
 ERROR: Connection to elosd failed!
 </pre></div>
 </div>
+<p>To set host ip :</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -H 127.0.0.1 -f &quot;1 1 Q&quot;
+Connecting to elosd...
+ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
+ERROR: Connection to elosd failed!
+</pre></div>
+</div>
+<p>To set host connection port :</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -H 127.0.0.10 -P 9876 -f &quot;1 1 Q&quot;
+Connecting to elosd...
+ERROR: connect to 127.0.0.10:9876 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
+ERROR: Connection to elosd failed!
+</pre></div>
+</div>
 </section>
 <section id="demo-libelos-v2-publish-subscrie-demo-using-libelos">
 <h2>demo_libelos_v2 – publish subscrie demo using libelos<a class="headerlink" href="#demo-libelos-v2-publish-subscrie-demo-using-libelos" title="Permalink to this heading">¶</a></h2>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ demo_libelos_v2 -v
-libelos_demo-0.45.8.fd31cf7d
+libelos_demo-0.46.11.8c603f03
 </pre></div>
 </div>
 </section>
@@ -167,18 +183,18 @@ consumer: 4
 messageCount: 1000
 
 messagesPublished: 4000
-messagesConsumed: 4000
+messagesConsumed: 3982
 messagesLostByLimit: 0
 
-publishTimes.min: 0.000581msec
-publishTimes.avg: 0.002606msec
-publishTimes.max: 0.038390msec
-publishTimes.sum: 10.425081msec
+publishTimes.min: 0.000015msec
+publishTimes.avg: 0.001693msec
+publishTimes.max: 0.032798msec
+publishTimes.sum: 6.772641msec
 
-consumerTimes.min: 0.000304msec
-consumerTimes.avg: 0.002521msec
-consumerTimes.max: 0.037965msec
-consumerTimes.sum: 10.085757msec
+consumerTimes.min: 0.000277msec
+consumerTimes.avg: 0.001638msec
+consumerTimes.max: 0.042268msec
+consumerTimes.sum: 6.551446msec
 </pre></div>
 </div>
 <p>To benchmark the event buffers on a target to find optimal configuration :</p>
@@ -189,18 +205,18 @@ consumer: 10
 messageCount: 1000
 
 messagesPublished: 100000
-messagesConsumed: 100000
-messagesLostByLimit: 12775
+messagesConsumed: 99974
+messagesLostByLimit: 1244
 
-publishTimes.min: 0.000096msec
-publishTimes.avg: 0.002658msec
-publishTimes.max: 0.050775msec
-publishTimes.sum: 265.769070msec
+publishTimes.min: 0.000000msec
+publishTimes.avg: 0.002631msec
+publishTimes.max: 0.055487msec
+publishTimes.sum: 263.075344msec
 
-consumerTimes.min: 0.000369msec
-consumerTimes.avg: 0.004349msec
-consumerTimes.max: 0.049581msec
-consumerTimes.sum: 43.489962msec
+consumerTimes.min: 0.000373msec
+consumerTimes.avg: 0.004957msec
+consumerTimes.max: 0.046533msec
+consumerTimes.sum: 49.574808msec
 </pre></div>
 </div>
 </section>

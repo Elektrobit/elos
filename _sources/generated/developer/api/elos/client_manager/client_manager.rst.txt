@@ -1,9 +1,0 @@
-client_manager
-==============
-
-.. toctree::
-    :maxdepth: 4
-
-    client_authorization_types_h
-    client_manager_types_h
-    types_h

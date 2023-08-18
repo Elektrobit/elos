@@ -619,7 +619,7 @@ look like this:
                "UseEnv": false,
                "Port": 54321,
                "Interface": "127.0.0.1",
-               "LogFilter": "client_manager.c;dispatcher.c;message_handler.c;message_event_create.c;message_event_push.c",
+               "LogFilter": "clientmanager.c;dispatcher.c;message_handler.c;message_event_create.c;message_event_push.c",
                "LogLevel": "DEBUG",
                "EventBlacklist": ".event.messageCode 2000 EQ",
                "authorizedProcesses": [

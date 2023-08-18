@@ -1,4 +1,0 @@
-client_manager_threads.c
-========================
-
-.. autocmodule:: client_manager_threads.c

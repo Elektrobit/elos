@@ -1,4 +1,0 @@
-client_authorization.c
-======================
-
-.. autocmodule:: client_authorization.c

@@ -6,26 +6,29 @@ Elos API
   :maxdepth: 1
   :caption: Contents:
 
+  elos/common/message_h.rst
   elos/common/process_h.rst
   elos/common/types_h.rst
-  elos/common/message_h.rst
   elos/common/common.rst
-  elos/client_manager/client_authorization_h.rst
-  elos/client_manager/client_authorized_processes_h.rst
-  elos/client_manager/client_blacklist_h.rst
-  elos/client_manager/client_manager_h.rst
-  elos/client_manager/client_manager.rst
-  elos/client_manager/client_authorization_types_h.rst
-  elos/client_manager/client_manager_types_h.rst
-  elos/client_manager/types_h.rst
+  elos/clientmanager/clientauthorization_h.rst
+  elos/clientmanager/clientauthorizedprocesses_h.rst
+  elos/clientmanager/clientblacklist_h.rst
+  elos/clientmanager/clientmanager_h.rst
+  elos/clientmanager/clientmanager.rst
+  elos/clientmanager/clientauthorization_types_h.rst
+  elos/clientmanager/clientmanager_types_h.rst
+  elos/clientmanager/types_h.rst
+  elos/eloslog/eloslog_h.rst
+  elos/eloslog/eloslog.rst
+  elos/eloslog/types_h.rst
   elos/event/event_h.rst
   elos/event/event_source_h.rst
   elos/event/event_vector_h.rst
   elos/event/event.rst
+  elos/event/event_message_codes_h.rst
   elos/event/event_types_h.rst
   elos/event/eventqueue_types_h.rst
   elos/event/types_h.rst
-  elos/event/event_message_codes_h.rst
   elos/eventbuffer/eventbuffer_h.rst
   elos/eventbuffer/eventbuffer.rst
   elos/eventbuffer/defines_h.rst
@@ -88,15 +91,16 @@ Elos API
   elos/rpnfilter/vector_types_h.rst
   elos/scanner/scanner_h.rst
   elos/scanner/scanner.rst
-  client_authorization_c.rst
-  client_authorized_processes_c.rst
-  client_blacklist_c.rst
-  client_manager_start_c.rst
-  client_manager_stop_c.rst
-  client_manager_threads_c.rst
+  clientauthorization_c.rst
+  clientauthorizedprocesses_c.rst
+  clientblacklist_c.rst
+  clientmanager_start_c.rst
+  clientmanager_stop_c.rst
+  clientmanager_threads_c.rst
+  eloslog_c.rst
+  event_c.rst
   event_source_c.rst
   event_vector_c.rst
-  event_c.rst
   eventbuffer_c.rst
   eventdispatcher_c.rst
   eventdispatcher_dispatch_c.rst
@@ -149,8 +153,8 @@ Elos API
   logline_mapper_c.rst
   syslog_c.rst
   JsonBackend_h.rst
-  JsonBackendPlugin_c.rst
   JsonBackend_c.rst
+  JsonBackendPlugin_c.rst
   NoSqlBackend_h.rst
   NoSqlBackend_c.rst
   SqlBackend_h.rst
