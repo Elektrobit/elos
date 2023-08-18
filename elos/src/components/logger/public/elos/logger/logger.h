@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "elos/eventprocessor/types.h"
+#include <safu/common.h>
+#include <safu/flags.h>
 
-// loggerNew()
-// loggerDelet()
+#include "elos/eloslog/eloslog.h"
+#include "elos/eventbuffer/eventbuffer.h"
 
-void elosLogSetEventProcessor(elosEventProcessor_t *lep);
+typedef struct elosLogger {
+    elosEventBuffer_t *logEventBuffer;
+    safuFlags_t flags;
+} elosLogger_t;
+
+safuResultE_t elosLoggerInitialize(elosLogger_t *logger);
+safuResultE_t elosLoggerDeleteMembers(elosLogger_t *logger);
+safuResultE_t elosLoggerGetDefaultLogger(elosLogger_t **logger);
 void elosLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity, uint64_t classification,
              const char *logMessage);
