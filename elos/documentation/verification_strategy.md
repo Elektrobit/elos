@@ -308,8 +308,16 @@ The host in base os lab is a container with the robot framework, labgrid and pyt
 
 #### Usage
 
-To run the tests locally in the elos tools repository
+The integration tests can be run by calling:
+```
+cd elos
+./ci/run_integration_tests.sh [Release]   # start target container in a terminal
+```
+This will start two docker containers and execute the tests.
 
+The results will be stored in ```build/[Debug|Release]/result/integration```.
+
+In order to manually run the integration tests in the local repository
 
 ```
 cd elos
@@ -321,8 +329,10 @@ cd elos
 ./ci/docker-integration-run.sh    # start test container in a separate terminal
 PROJECT="elos" ./scripts/run_integration_tests.sh    # inside the container set project variable and run the test runner script
 ```
+When doing this, the result storage path can be configured by setting the enviroment variable
+```TEST_OUTPUT``` for the ```run_inetgration_tests.sh``` script.
 
-To run the test in base os lab
+To manually run the test in base os lab
 
 
 ```
