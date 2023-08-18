@@ -89,6 +89,26 @@ elos isan  integrated part of EB corbos Linux – built on Ubuntu is an open-sou
 * Wolfgang Gehrhardt wolfgang.gehrhardt@emlix.com [@gehwolf](https://github.com/gehwolf)
 * Thomas Brinker thomas.brinker@emlix.com [@ThomasBrinker](https://github.com/ThomasBrinker)
 
+## Credits
+
+* Andreas Schickedanz
+* Andreas Zdziarstek
+* Anja Lehwess-Litzmann
+* Annika Schmitt
+* Anton Hillerband
+* Benedikt Braunger
+* Christian Steiger
+* Daniel Glöckner
+* Fabian Godehardt
+* Friedrich Schwedler
+* Joerg Vehlow
+* Maryniuk Bogdan
+* Rainer Müller
+* Sabrina Otto
+* Thomas Brinker
+* Vignesh Jayaraman
+* Wolfgang Gehrhardt
+
 ## Artwork
 
 The elos logo is the Vombatus ursinus, also known as the bare-nosed wombat,
