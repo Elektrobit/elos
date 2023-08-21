@@ -122,10 +122,10 @@ BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh vector
 ## only run the all tests for the compilation unit vector.c and event.c
 BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh vector event
 
-## run all test that match the pattern `test_*_utest` and located in $BUILD_DIR/test/utest
+## run all test that match the pattern `test_*_utest` and located in elos/build/${BUILD_TYPE}/cmake/test/utest
 BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh
 ```
-The results can be found in `$BUILD_DIR/coverage_results`
+The results can be found in `elos/build/${BUILD_TYPE}/coverage_results`
 
 To use a custom install location of asmcov set `ASMCOV_DIR` and point to the
 location where the asmcov binaries are installed.
@@ -144,8 +144,7 @@ Details:
 * Runs all composed artifacts to ensure a basic expected functionality
 * Make usage of the demo project to check expected behavior of elosd
 * Executed by CI-pipeline
-* Based on the sharness framework ([sharness](http://chriscool.github.io/sharness/))
-* Output format is TAP ([test anything](https://testanything.org/))
+* Written in pure Bash
 
 #### how to run the smoke test from git project root:
 
@@ -165,26 +164,27 @@ elos build system itself.
 
 * Elos is installed on target system
 
-* At least a write able directory to store results and for intermediate files
+* At least a writeable directory to store results and for intermediate files
 
 
 ##### HOWTO
 
-To execute the smoketests run the installed smoketest.t script. Here an example
+To execute the smoketests run the installed smoketest.sh script. Here an example
 script to for smoketest integration (taken form baseos-lab)
 
 ```shell
 
-##!/bin/sh -xe
+#!/bin/sh -xe
 
 export ELOS_SCANNER_PATH=/usr/lib/elos/scanner
+export ELOS_BACKEND_PATH=/usr/lib/elos/backend
 export SMOKETEST_DIR=/usr/lib/test/baseos-elos/smoketest/
 export SMOKETEST_RESULT_DIR=/tmp/test-baseos-elos-smoketest
 
 
 ## make sure to stop elosd instances before
 
-/usr/lib/test/baseos-elos/smoketest/smoketest.t
+/usr/lib/test/baseos-elos/smoketest/smoketest.sh
 
 ```
 
@@ -197,25 +197,25 @@ some settings. The following Environment variables can be used :
 
 `export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/some/location`
 
-default is : $BUILD_DIR/dist/usr/local/lib
+default is : elos/build/${BUILD_TYPE}/dist/usr/local/lib
 
 * Use PATH to include custom locations for elos
 
 `export PATH=${PATH}:/some/location`
 
-default is: $BUILD_DIR/cmake/src/elosd:$BUILD_DIR/cmake/src/demo"
+default is: ${PATH}:${DIST_DIR}/usr/local/bin"
 
 * Use SMOKETEST_DIR to point to the location where elos-smoketests are installed
 
 `export SMOKETEST_DIR=/some/location`
 
-default is : $BASE_DIR/test/smoketest/
+default is : elos/test/smoketest/
 
 * Use SMOKETEST_RESULT_DIR to define where to store smoke tests results
 
 `export SMOKETEST_RESULT_DIR=/some/write/able/location`
 
-default is : "$BUILD_DIR/result/smoketest_results"
+default is : "elos/build/${BUILD_TYPE}/result/smoketest_results"
 
 * Use SMOKETEST_TMP_DIR to define where to store intermediate results and or runtime files like sockets, pipes etc.
 
@@ -235,18 +235,25 @@ default is: `${SMOKETEST_TMP_DIR}/elosd.syslog.socket`
 
 default is: ${SMOKETEST_TMP_DIR}/elosd.kmsg"
 
-* Use ELOS_SCANNER_PATH to define where elos shall look for scanner plugins (`*.so` files)
+* Use ELOS_SCANNER_PATH to define where elos shall look for scanner plugins (`\*.so` files)
 
 `export ELOS_SCANNER_PATH=/some/location`
 
-default is: $BUILD_DIR/cmake/src/scanner
+default is: `$DIST_DIR/usr/local/lib/elos/scanner`
 
-* Use ELOS_STORAGE_BACKEND_JSON_FILE where to store the elos event log. (persistent event storage if JSON backend enabled)
+* Use ELOS_BACKEND_PATH to define where elos shall look for backend plusings (`\*.so` files)
 
-`export ELOS_STORAGE_BACKEND_JSON_FILE=/some/write/able/location/elosd_event.log`
+`export ELOS_BACKEND_PATH=/some/location`
 
-default is: ${SMOKETEST_TMP_DIR}/elosd_event.log
+default is: `$DIST_DIR/usr/local/lib/elos/backend`
 
+ * Use ELOS_CONFIG_PATH to define where the elosd configuration is stored. 
+
+`export ELOS_CONFIG_PATH=/a/readable/elosd/json/configuration`
+
+default is: `$SMOKETEST_DIR/config.json`
+
+For the purpose of the smoketests, the elosd config is mostly relevant to configure the storage location of the backend and scanner plugins.
 
 ### Integration Test
 
