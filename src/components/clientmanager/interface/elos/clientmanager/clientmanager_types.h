@@ -30,6 +30,20 @@
 #define ELOS_CLIENTMANAGER_EVENTQUEUEIDVECTOR_SIZE 4
 #endif
 
+/*******************************************************************
+ * Data structure of a ClientManager
+
+ * Members:
+ *   flags: State bits of the component (e.g. initialized, active, e.t.c.)
+ *   fd: listener socket used for waiting for new connections
+ *   syncFd: eventfd used for synchronization with the worker thread
+ *   addr: Address information of the listener socket
+ *   connection: Array of ClientConnections
+ *   connectionLimit: Size of the ClientConnections array
+ *   listenThread: worker thread used by pthread_* functions
+ *   sharedData: Data shared between all ClientConnections
+ *   clientAuth: Client authorization functionality
+ ******************************************************************/
 typedef struct elosClientManager {
     safuFlags_t flags;
     int fd;
@@ -41,6 +55,15 @@ typedef struct elosClientManager {
     elosClientAuthorization_t clientAuth;
 } elosClientManager_t;
 
+/*******************************************************************
+ * Initialization parameters for a new ClientManager
+ *
+ * Members:
+ *   config: Static configuration variables
+ *   eventDispatcher: Used for registering the EventBuffers of each ClientConnection
+ *   eventProcessor: Used for FilterNode/EventQueue handling
+ *   logAggregator: Used for persistent logging of Events
+ ******************************************************************/
 typedef struct elosClientManagerParam {
     samconfConfig_t *config;
     elosEventDispatcher_t *eventDispatcher;
