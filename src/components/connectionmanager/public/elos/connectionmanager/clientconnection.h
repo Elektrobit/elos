@@ -45,12 +45,12 @@ safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection
 safuResultE_t elosClientConnectionStop(elosClientConnection_t *clientConnection);
 
 /*******************************************************************
- * Frees member resources used be the given ClientConnection.
+ * Frees all resources used be the given ClientConnection.
  * Will also automatically Stop an active worker thread
  * before freeing up the resources.
  *
  * Parameters:
- *      clientConnection: ClientConnection whose members shall be freed
+ *      clientConnection: The ClientConnection to be freed
  * Returns:
  *      - SAFU_RESULT_FAILED on error
  *      - SAFU_RESULT_OK on success
