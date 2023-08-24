@@ -16,8 +16,12 @@ void elosLogCreateElosEventFromLogExtErrEvent(UNUSED void **state) {
     elosLogData_t *testLog = NULL;
     const char *testMessage = "testMessage";
 
+    TEST("elosLogCreateElosEventFromLog");
+    SHOULD("%s", "elos event creation fail as new event is not created");
+
     elosLogCreateLogData(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_PROCESS, testMessage,
                          &testLog);
+    assert_non_null(testLog);
 
     MOCK_FUNC_AFTER_CALL(elosEventNew, 0);
     expect_not_value(elosEventNew, event, NULL);
