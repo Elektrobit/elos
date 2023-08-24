@@ -95,6 +95,8 @@ safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_
                     _create_security_event(&event, msg);
                     errstr = "unauthorized publishing attempt";
                     safuLogErr(errstr);
+                    elosLog(ELOS_MSG_CODE_UNAUTHORIZED_PUBLISHING, ELOS_SEVERITY_WARN,
+                            ELOS_CLASSIFICATION_SECURITY | ELOS_CLASSIFICATION_ELOS | ELOS_CLASSIFICATION_IPC, errstr);
                 }
             } else {
                 _create_blacklist_error_event(&event, msg);
