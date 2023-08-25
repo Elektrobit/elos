@@ -11,8 +11,11 @@ function printHelp() {
 }
 
 PARAM=""
+OPTION_CLEAN=0
 for element in $@; do
     case $element in
+        --clean|-c)
+            OPTION_CLEAN=1 ;;
         --help|-h)
             printHelp
 			exit 0 ;;
@@ -40,8 +43,6 @@ SPHINX_HTML_OUTPUT_DIR=${SPHINX_BUILD_DIR}/html
 
 . ${SPHINX_VENV-${BASE_DIR}/.venv/}/bin/activate
 
-rm -rf ${SPHINX_GENERATED_SOURCE_DIR}
-mkdir -p ${SPHINX_BUILD_DIR} ${SPHINX_GENERATED_SOURCE_DIR}/ADRs ${SPHINX_GENERATED_SOURCE_DIR}/developer
 
 function createApiDocu() {
     sphinx-c-apidoc --force \
@@ -183,6 +184,12 @@ ${ADR_INDEX_TABLE}
 " > ${SPHINX_GENERATED_SOURCE_DIR}/ADRs/adrs.rst
 }
 
+if [ ${OPTION_CLEAN} -eq 1 ]; then
+    echo "Delete ${SPHINX_GENERATED_SOURCE_DIR} ${SPHINX_BUILD_DIR}"
+    rm -rf ${SPHINX_GENERATED_SOURCE_DIR} ${SPHINX_BUILD_DIR}
+fi
+
+mkdir -p ${SPHINX_BUILD_DIR} ${SPHINX_GENERATED_SOURCE_DIR}/ADRs ${SPHINX_GENERATED_SOURCE_DIR}/developer
 
 createUserDocu
 createApiDocu
