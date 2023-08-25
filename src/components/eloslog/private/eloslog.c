@@ -53,8 +53,8 @@ elosLogStatusE_t elosLogCreateElosEventFromLog(elosLogData_t *logData, elosEvent
                 logEvent->source.fileName = NULL;
             } else {
                 executableName[retVal] = 0;
-                logEvent->source.appName = executableName;
-                logEvent->source.fileName = strdup(strrchr(executableName, '/'));
+                logEvent->source.appName = strdup(strrchr(executableName, '/'));
+                logEvent->source.fileName = executableName;
             }
 
             logEvent->severity = logData->severity;
