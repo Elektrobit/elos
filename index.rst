@@ -9,7 +9,7 @@ Welcome to elos's documentation!
 
 |elos_title| [#elos_artwork]_
 
-.. include:: ./elos_paper.rst
+.. include:: ./doc/elos_paper.rst
 
 .. [#elos_artwork] The elos logo is the Vombatus ursinus, also known as the bare-nosed wombat,
    designed from the handwriting word elos. Originator is Anja Lehwess-Litzmann
@@ -20,11 +20,11 @@ Welcome to elos's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   Users <generated/UserManual>
-   demo
-   elos API <generated/api/index>
+   Users <doc/generated/UserManual>
+   Demos <src/demos>
+   elos API <doc/generated/api/index>
    Developers <generated/developer/index>
-   generated/ADRs/adrs
+   ADR <doc/generated/ADRs/adrs>
 
 
 Indices and tables
@@ -34,4 +34,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. |elos_title| image:: _static/elos_black.png
+.. |elos_title| image:: doc/_static/elos_black.png
