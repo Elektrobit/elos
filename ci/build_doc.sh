@@ -3,6 +3,10 @@
 CMD_PATH=$(cd $(dirname $0) && pwd)
 BASE_DIR=${CMD_PATH%/*}
 
+BUILD_TYPE="${1:-Debug}"
+BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
+DIST_DIR="$BUILD_DIR/dist"
+
 MD_DOCUMENTAION_DIR="${BASE_DIR}/documentation"
 ELOS_SOURCE_SOURCE_DIR=${BASE_DIR}/src
 
@@ -161,6 +165,6 @@ createDeveloperDocu
 createDeveloperApiDocu
 createADRs
 
-export PATH="${PATH}:${BASE_DIR}/build/Debug/dist/usr/local/bin"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-"./"}:${BASE_DIR}/build/Debug/dist/usr/local/lib"
+export PATH="${PATH}:${DIST_DIR}/usr/local/bin"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-"./"}:${DIST_DIR}/usr/local/lib"
 sphinx-build -b html ${SPHINX_SOURCE_DIR} ${SPHINX_BUILD_DIR}
