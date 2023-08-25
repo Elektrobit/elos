@@ -11,13 +11,14 @@ MD_DOCUMENTAION_DIR="${BASE_DIR}/documentation"
 ELOS_SOURCE_SOURCE_DIR=${BASE_DIR}/src
 
 SPHINX_SOURCE_DIR=${BASE_DIR}/doc/source
-SPHINX_BUILD_DIR=${BASE_DIR}/doc/build
+SPHINX_BUILD_DIR=${BUILD_DIR}/doc
 SPHINX_GENERATED_SOURCE_DIR=${BASE_DIR}/doc/source/generated
+SPHINX_HTML_OUTPUT_DIR=${SPHINX_BUILD_DIR}/html
 
 . ${SPHINX_VENV-${BASE_DIR}/.venv/}/bin/activate
 
 rm -rf ${SPHINX_GENERATED_SOURCE_DIR}
-mkdir -p ${SPHINX_GENERATED_SOURCE_DIR}/ADRs ${SPHINX_GENERATED_SOURCE_DIR}/developer
+mkdir -p ${SPHINX_BUILD_DIR} ${SPHINX_GENERATED_SOURCE_DIR}/ADRs ${SPHINX_GENERATED_SOURCE_DIR}/developer
 
 function createApiDocu() {
     sphinx-c-apidoc --force \
@@ -167,4 +168,16 @@ createADRs
 
 export PATH="${PATH}:${DIST_DIR}/usr/local/bin"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-"./"}:${DIST_DIR}/usr/local/lib"
-sphinx-build -b html ${SPHINX_SOURCE_DIR} ${SPHINX_BUILD_DIR}
+sphinx-build -b html ${SPHINX_SOURCE_DIR} ${SPHINX_HTML_OUTPUT_DIR} 2> ${SPHINX_BUILD_DIR}/html_doc_error.log
+if [ $? -ne 0 ]; then
+    echo "Build failed, fr details see ${SPHINX_BUILD_DIR}/html_doc_error.log"
+    exit 1
+fi
+
+WARNINGS=$(grep -e ": WARNING:" -e ": ERROR:" ${SPHINX_BUILD_DIR}/html_doc_error.log | wc -l)
+if [ ${WARNINGS} -ne 0 ]; then
+    echo ""
+    echo "Build warnings ${WARNINGS}"
+    echo ""
+    cat ${SPHINX_BUILD_DIR}/html_doc_error.log
+fi
