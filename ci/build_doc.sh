@@ -3,6 +3,29 @@
 CMD_PATH=$(cd $(dirname $0) && pwd)
 BASE_DIR=${CMD_PATH%/*}
 
+function printHelp() {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo -e "\t -c\t\tclean output directory and generated files before building"
+    echo -e "\t -h\t\tprint this help and exit"
+}
+
+PARAM=""
+for element in $@; do
+    case $element in
+        --help|-h)
+            printHelp
+			exit 0 ;;
+        -*)
+            echo "error: unknown option: ${element}"
+            printHelp
+            exit 1 ;;
+        *)  PARAM="$PARAM $element" ;;
+    esac
+done
+
+set -- $PARAM
+
 BUILD_TYPE="${1:-Debug}"
 BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
 DIST_DIR="$BUILD_DIR/dist"
@@ -159,6 +182,7 @@ Architecture Design Records
 ${ADR_INDEX_TABLE}
 " > ${SPHINX_GENERATED_SOURCE_DIR}/ADRs/adrs.rst
 }
+
 
 createUserDocu
 createApiDocu
