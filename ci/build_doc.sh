@@ -38,7 +38,7 @@ ELOS_SOURCE_SOURCE_DIR=${BASE_DIR}/src
 
 SPHINX_SOURCE_DIR=${BASE_DIR}
 SPHINX_BUILD_DIR=${BUILD_DIR}/doc
-SPHINX_GENERATED_SOURCE_DIR=${BASE_DIR}/doc/source/generated
+SPHINX_GENERATED_SOURCE_DIR=${SPHINX_BUILD_DIR}/source_generated
 SPHINX_HTML_OUTPUT_DIR=${SPHINX_BUILD_DIR}/html
 
 . ${SPHINX_VENV-${BASE_DIR}/.venv/}/bin/activate
@@ -104,7 +104,7 @@ function createDeveloperApiDocu() {
     # remove generated but unsued files
     rm -r ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/elos/elos.rst
 
-    for DOC in $(find "${SPHINX_GENERATED_SOURCE_DIR}/doc/source/generated/developer/api/" -name "*.rst" -and -not -name "index.rst"); do
+    for DOC in $(find ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/ -name "*.rst" -and -not -name "index.rst"); do
         CHAPTER_DOC_PATH="${DOC##"${SPHINX_GENERATED_SOURCE_DIR}/developer/api/"}"
         echo "----> ${CHAPTER_DOC_PATH}"
         API_INDEX_TABLE="${API_INDEX_TABLE}  ${CHAPTER_DOC_PATH}\n"
