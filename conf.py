@@ -39,8 +39,8 @@ language = 'en'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
-html_static_path = ['doc/source/_static']
-html_logo = 'doc/source/_static/elos_blue.png'
+html_static_path = ['doc/static']
+html_logo = 'doc/static/elos_blue.png'
 
 favicons = [
     "favicon_16x16.png",

@@ -34,4 +34,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. |elos_title| image:: doc/_static/elos_black.png
+.. |elos_title| image:: doc/static/elos_black.png
