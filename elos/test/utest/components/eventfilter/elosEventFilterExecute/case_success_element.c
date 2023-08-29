@@ -13,34 +13,12 @@
 
 #define REGEX_COUNT 11
 
-static regex_t elosRegex[11];
-static size_t elosRegexOffset;
-pthread_mutex_t elosRegexLock;
-
 int elosTestEloEventFilterExecuteSuccessElementSetup(void **state) {
     static elosStateTestExecute_t test = {0};
 
     *state = &test;
 
     return 0;
-}
-
-static regex_t *elosTestSetupRegex(const char *pattern) {
-    int res;
-
-    pthread_mutex_lock(&elosRegexLock);
-
-    res = regcomp(&elosRegex[elosRegexOffset], pattern, REG_EXTENDED);
-    if (res != 0) {
-        regfree(&elosRegex[elosRegexOffset]);
-        return NULL;
-    }
-
-    elosRegexOffset++;
-
-    pthread_mutex_unlock(&elosRegexLock);
-
-    return &elosRegex[elosRegexOffset - 1];
 }
 
 void elosTestEloEventFilterExecuteSuccessElement(void **state) {
@@ -168,37 +146,37 @@ void elosTestEloEventFilterExecuteSuccessElement(void **state) {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("testApp"))},
+                     .param = {ELOS_STACK_REGEX("testApp")},
                  },
                  {
                      .result = RPNFILTER_RESULT_NO_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("testApp2"))},
+                     .param = {ELOS_STACK_REGEX("testApp2")},
                  },
                  {
                      .result = RPNFILTER_RESULT_NO_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("otherApp"))},
+                     .param = {ELOS_STACK_REGEX("otherApp")},
                  },
                  {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("^test.*"))},
+                     .param = {ELOS_STACK_REGEX("^test.*")},
                  },
                  {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("^test[a-zA-Z]*"))},
+                     .param = {ELOS_STACK_REGEX("^test[a-zA-Z]*")},
                  },
                  {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex(""))},
+                     .param = {ELOS_STACK_REGEX("")},
                  },
              }},
         {.filter = ".event.source.fileName .1 STRCMP",
@@ -240,31 +218,31 @@ void elosTestEloEventFilterExecuteSuccessElement(void **state) {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("/tmp/test\\.elf"))},
+                     .param = {ELOS_STACK_REGEX("/tmp/test\\.elf")},
                  },
                  {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("/test\\.elf"))},
+                     .param = {ELOS_STACK_REGEX("/test\\.elf")},
                  },
                  {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("test\\.elf"))},
+                     .param = {ELOS_STACK_REGEX("test\\.elf")},
                  },
                  {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex("\\.elf"))},
+                     .param = {ELOS_STACK_REGEX("\\.elf")},
                  },
                  {
                      .result = RPNFILTER_RESULT_MATCH,
                      .event = {.source = eventSourceSet[0]},
                      .paramCount = 1,
-                     .param = {ELOS_STACK_REGEX(elosTestSetupRegex(".*elf"))},
+                     .param = {ELOS_STACK_REGEX(".*elf")},
                  },
              }},
         {.filter = ".event.severity .1 EQ",
