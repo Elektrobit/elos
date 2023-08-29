@@ -23,6 +23,7 @@ RUN apt-get update \
     jq \
     libcmocka-dev \
     libcsv-dev \
+	libcurl4-openssl-dev \
     libesmtp-dev \
     libiberty-dev \
     libjson-c-dev \

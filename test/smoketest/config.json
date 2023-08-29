@@ -41,6 +41,13 @@
                         "File": "backend_dummy.so",
                         "Run": "never"
                     },
+                    "InfluxBackend": {
+                        "File": "backend_influxdb.so",
+                        "Run": "always",
+                        "Filter": [
+                            "1 1 EQ"
+                        ]
+		    },
                     "JsonBackend": {
                         "File": "backend_json.so",
                         "Run": "always",
