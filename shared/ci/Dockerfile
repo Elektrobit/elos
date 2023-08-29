@@ -47,6 +47,7 @@ RUN apt-get update \
     sudo \
     wget \
     zlib1g-dev \
+    libcurl4-openssl-dev \
  && rm -rf /var/lib/apt/lists/* \
  && rm /usr/bin/perf \
  && find /usr/lib/linux-tools -name "perf" -executable -exec ln -s {} /usr/bin/perf \;
@@ -102,6 +103,8 @@ ENV SPHINX_VENV="/home/$USER/.venv/"
 ENV LOG4C_RCPATH="/base/elos/src/demo/elos_log4c_demo"
 
 WORKDIR /build
+
+EXPOSE 8086
 
 CMD /bin/bash
 
