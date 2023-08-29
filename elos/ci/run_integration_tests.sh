@@ -13,6 +13,15 @@ TEST_IMAGE_NAME="${PROJECT}-robot"
 TEST_DOCKER_NAME="${PROJECT}-runner"
 BUILD_ARG=${BUILD_ARG:-}
 
+if [ -n "${CI}" ]; then
+    BUILD_ID="${BUILD_ID:-'none'}"
+    GIT_COMMIT="${GIT_COMMIT:-'none'}"
+    ELOSD_IMAGE_NAME="${ELOSD_IMAGE_NAME}-${BUILD_ID}-${GIT_COMMIT}"
+    ELOSD_DOCKER_NAME="${ELOSD_DOCKER_NAME}-${BUILD_ID}-${GIT_COMMIT}"
+    TEST_IMAGE_NAME="${TEST_IMAGE_NAME}-${BUILD_ID}-${GIT_COMMIT}"
+    TEST_DOCKER_NAME="${TEST_DOCKER_NAME}-${BUILD_ID}-${GIT_COMMIT}"
+fi
+
 rm -rf $BUILD_DIR/result/integration
 mkdir -p $BUILD_DIR/result/integration
 

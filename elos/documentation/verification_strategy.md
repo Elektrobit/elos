@@ -332,6 +332,24 @@ PROJECT="elos" ./scripts/run_integration_tests.sh    # inside the container set 
 When doing this, the result storage path can be configured by setting the enviroment variable
 ```TEST_OUTPUT``` for the ```run_inetgration_tests.sh``` script.
 
+##### CI integration
+
+The ./ci/docker-integration-run.sh can be used to run in some CI environment,
+however to ensure that used docker container and image names are uniwue and not
+interfer with different parallel runs of these test suite the follwoing
+variabeles shall be set.
+
+```bash
+CI="true"
+BUILD_ID="42"
+GIT_COMMIT="0000000000000000000000000000000000000000"
+```
+
+These will be used to generate unique docker-container and image names. The
+pattern look like `${ELOSD_IMAGE_NAME}-${BUILD_ID}-${GIT_COMMIT}`.
+
+##### (yocto-) baseos-lab integration
+
 To manually run the test in base os lab
 
 
