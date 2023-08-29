@@ -35,10 +35,7 @@ static elosRpnFilterResultE_t _deleteMembers(elosRpnFilterBuilder_t *data) {
             case RPNFILTER_VALUE_UNDEFINED:
             case RPNFILTER_VALUE_BINARY:
             case RPNFILTER_VALUE_STRING:
-                free(entry->data.ptr);
-                break;
             case RPNFILTER_VALUE_REGEX:
-                regfree(entry->data.ptr);
                 free(entry->data.ptr);
                 break;
             default:
