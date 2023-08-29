@@ -113,38 +113,21 @@ static elosRpnFilterResultE_t _processRegex(elosRpnFilterBuilderTokenEntry_t con
                                             elosRpnFilterBuilder_t *data) {
     elosRpnFilterResultE_t result = RPNFILTER_RESULT_ERROR;
     elosRpnFilterBuilderStepEntry_t step = {.type = RPNFILTER_STEP_LDV, .token = token};
-    int retval;
-    regex_t regex;
-    char errbuf[200];
+    int retVal;
 
-    retval = safuVecPush(&data->step, &step);
-    if (retval < 0) {
+    retVal = safuVecPush(&data->step, &step);
+    if (retVal < 0) {
         safuLogErr("safuVecPush failed");
     } else {
-        char *pattern = strndup((char *)token->string, token->length);
-        if (pattern != NULL) {
-            retval = regcomp(&regex, pattern, REG_EXTENDED);
-            if (retval == 0) {
-                elosRpnFilterStackEntry_t const entry = {
-                    .type = RPNFILTER_VALUE_REGEX,
-                    .bytes = sizeof(regex_t),
-                    .data.ptr = &regex,
-                };
+        elosRpnFilterStackEntry_t const entry = {
+            .type = RPNFILTER_VALUE_REGEX,
+            .bytes = token->length,
+            .data.str = (char *)token->string,  // String is not modified, so the typecast is safe
+        };
 
-                result = elosRpnFilterBuilderStackAppend(&entry, data);
-                if (result == RPNFILTER_RESULT_ERROR) {
-                    safuLogErr("_stackPush failed");
-                }
-            } else {
-                regerror(retval, &regex, errbuf, sizeof(errbuf));
-                safuLogErrF("Processing regex failed: %s", errbuf);
-                result = RPNFILTER_RESULT_ERROR;
-            }
-
-            free(pattern);
-        } else {
-            safuLogErr("Copying of pattern string failed.");
-            result = RPNFILTER_RESULT_ERROR;
+        result = elosRpnFilterBuilderStackAppend(&entry, data);
+        if (result == RPNFILTER_RESULT_ERROR) {
+            safuLogErr("_stackPush failed");
         }
     }
 
