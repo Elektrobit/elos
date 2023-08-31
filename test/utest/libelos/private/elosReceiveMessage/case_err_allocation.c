@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-#include <errno.h>
-
 #include "elosReceiveMessage_utest.h"
 #include "safu/mock_safu.h"
 

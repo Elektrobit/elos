@@ -72,13 +72,27 @@ void elosMockReceiveExactlySetup(elosReceiveValues_t const *header, elosReceiveV
     expect_not_value(__wrap_safuRecvExactly, buf, NULL);
     expect_value(__wrap_safuRecvExactly, len, header->len);
     will_set_parameter(__wrap_safuRecvExactly, buf, header->buf);
-    will_return(__wrap_safuRecvExactly, header->result);
+    will_set_parameter(__wrap_safuRecvExactly, transferred, header->result);
+    if (header->result == 0) {
+        will_return(__wrap_safuRecvExactly, SAFU_RESULT_CLOSED);
+    } else if (header->result == header->len) {
+        will_return(__wrap_safuRecvExactly, SAFU_RESULT_OK);
+    } else {
+        will_return(__wrap_safuRecvExactly, SAFU_RESULT_FAILED);
+    }
 
     if (body != NULL) {
         expect_value(__wrap_safuRecvExactly, fd, body->fd);
         expect_not_value(__wrap_safuRecvExactly, buf, NULL);
         expect_value(__wrap_safuRecvExactly, len, body->len);
         will_set_parameter(__wrap_safuRecvExactly, buf, body->buf);
-        will_return(__wrap_safuRecvExactly, body->result);
+        will_set_parameter(__wrap_safuRecvExactly, transferred, body->result);
+        if (body->result == 0) {
+            will_return(__wrap_safuRecvExactly, SAFU_RESULT_CLOSED);
+        } else if (body->result == body->len) {
+            will_return(__wrap_safuRecvExactly, SAFU_RESULT_OK);
+        } else {
+            will_return(__wrap_safuRecvExactly, SAFU_RESULT_FAILED);
+        }
     }
 }

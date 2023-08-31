@@ -29,7 +29,8 @@ void elosTestElosMessageHandlerHandleMessageExterrSecondAllocMem(void **state) {
     expect_not_value(__wrap_safuRecvExactly, buf, NULL);
     expect_value(__wrap_safuRecvExactly, len, sizeof(elosMessage_t));
     will_set_parameter(__wrap_safuRecvExactly, buf, testState->message);
-    will_return(__wrap_safuRecvExactly, sizeof(elosMessage_t));
+    will_set_parameter(__wrap_safuRecvExactly, transferred, sizeof(elosMessage_t));
+    will_return(__wrap_safuRecvExactly, SAFU_RESULT_OK);
     MOCK_FUNC_AFTER_CALL(safuRecvExactly, 0);
 
     expect_not_value(__wrap_safuAllocMem, oldptr, NULL);

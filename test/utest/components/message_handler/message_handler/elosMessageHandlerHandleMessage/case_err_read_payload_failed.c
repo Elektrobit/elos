@@ -26,13 +26,15 @@ void elosTestElosMessageHandlerHandleMessageErrReadPayloadFailed(void **state) {
     expect_not_value(__wrap_safuRecvExactly, buf, NULL);
     expect_value(__wrap_safuRecvExactly, len, sizeof(elosMessage_t));
     will_set_parameter(__wrap_safuRecvExactly, buf, testState->message);
-    will_return(__wrap_safuRecvExactly, sizeof(elosMessage_t));
+    will_set_parameter(__wrap_safuRecvExactly, transferred, sizeof(elosMessage_t));
+    will_return(__wrap_safuRecvExactly, SAFU_RESULT_OK);
 
     expect_value(__wrap_safuRecvExactly, fd, conn->fd);
     expect_not_value(__wrap_safuRecvExactly, buf, NULL);
     expect_value(__wrap_safuRecvExactly, len, testState->messagePayloadLen);
     will_set_parameter(__wrap_safuRecvExactly, buf, testState->message->json);
-    will_return(__wrap_safuRecvExactly, -1);
+    will_set_parameter(__wrap_safuRecvExactly, transferred, 0);
+    will_return(__wrap_safuRecvExactly, SAFU_RESULT_FAILED);
 
     retval = elosMessageHandlerHandleMessage(conn);
     assert_int_equal(retval, SAFU_RESULT_FAILED);

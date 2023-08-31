@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-#include <errno.h>
-
 #include "elosReceiveMessage_utest.h"
 #include "safu/mock_safu.h"
 
@@ -26,8 +24,7 @@ void elosTestElosReceiveMessageErrReceiveHeader(void **state) {
 
     PARAM("%s", "safuRecvExactly header failed");
     testSet = test->receiveNoJson;
-    testSet.header.result = -1;
-    errno = ENETDOWN;
+    testSet.header.result = 0;
     elosMockReceiveExactlySetup(&testSet.header, NULL);
     result = elosReceiveMessage(&test->session, &test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
@@ -39,7 +36,6 @@ void elosTestElosReceiveMessageErrReceiveHeader(void **state) {
     PARAM("%s", "safuRecvExactly header with unexpected connection close");
     testSet = test->receiveNoJson;
     testSet.header.result = 0;
-    errno = 0;
     elosMockReceiveExactlySetup(&testSet.header, NULL);
     result = elosReceiveMessage(&test->session, &test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
@@ -51,7 +47,6 @@ void elosTestElosReceiveMessageErrReceiveHeader(void **state) {
     PARAM("%s", "safuRecvExactly header with zero bytes and errno set");
     testSet = test->receiveNoJson;
     testSet.header.result = 0;
-    errno = ENETDOWN;
     elosMockReceiveExactlySetup(&testSet.header, NULL);
     result = elosReceiveMessage(&test->session, &test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
@@ -62,8 +57,7 @@ void elosTestElosReceiveMessageErrReceiveHeader(void **state) {
 
     PARAM("%s", "safuRecvExactly header with too few bytes");
     testSet = test->receiveNoJson;
-    testSet.header.result -= 1;
-    errno = ENETDOWN;
+    testSet.header.result = 0;
     elosMockReceiveExactlySetup(&testSet.header, NULL);
     result = elosReceiveMessage(&test->session, &test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);
@@ -74,8 +68,7 @@ void elosTestElosReceiveMessageErrReceiveHeader(void **state) {
 
     PARAM("%s", "safuRecvExactly header with too many bytes");
     testSet = test->receiveNoJson;
-    testSet.header.result += 1;
-    errno = 0;
+    testSet.header.result = testSet.header.len * 2;
     elosMockReceiveExactlySetup(&testSet.header, NULL);
     result = elosReceiveMessage(&test->session, &test->message);
     assert_int_equal(result, SAFU_RESULT_FAILED);

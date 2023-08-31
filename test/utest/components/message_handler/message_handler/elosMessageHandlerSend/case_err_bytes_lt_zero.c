@@ -20,7 +20,8 @@ void elosTestElosMessageHandlerSendErrBytesLtZero(UNUSED void **state) {
     expect_value(__wrap_safuSendExactly, fd, mockFd);
     expect_any(__wrap_safuSendExactly, buf);
     expect_value(__wrap_safuSendExactly, len, msgLen);
-    will_return(__wrap_safuSendExactly, -1);
+    will_set_parameter(__wrap_safuSendExactly, transferred, 0);
+    will_return(__wrap_safuSendExactly, SAFU_RESULT_FAILED);
     MOCK_FUNC_AFTER_CALL(safuSendExactly, 0);
 
     ret = elosMessageHandlerSend(&conn, messageId, jsonStr);
