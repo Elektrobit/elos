@@ -5,6 +5,7 @@ typedef enum safuResultE {
     SAFU_RESULT_FAILED = -1,
     SAFU_RESULT_OK = 0,
     SAFU_RESULT_NOT_FOUND = 1,
+    SAFU_RESULT_CLOSED = 2,
 } safuResultE_t;
 
 // Converts between safuResultE_t and old style int return values (0==OK, -1==FAILURE)

@@ -7,23 +7,6 @@
 #include "elos/libelos/libelos.h"
 #include "safu/log.h"
 
-// This unfortunately has to be a macro, otherwise safuLogErrF will only report the location
-// of the static function which does not help at all with understanding the problem at hand
-#define _sendReceiveErrorCheck(__result, __bytes, __messageLen, __strPrefix)                  \
-    if ((__bytes) <= 0) {                                                                     \
-        if (((__bytes) == 0) && (errno == 0)) {                                               \
-            safuLogErrF("%s failed, connection has been closed unexpectedly", __strPrefix);   \
-        } else {                                                                              \
-            safuLogErrF("%s failed (errno=%d -> '%s')", __strPrefix, errno, strerror(errno)); \
-        }                                                                                     \
-        (__result) = SAFU_RESULT_FAILED;                                                      \
-    } else if ((__bytes) != (__messageLen)) {                                                 \
-        safuLogErrF("%s failed (%ld of %ld bytes)", __strPrefix, __bytes, __messageLen);      \
-        (__result) = SAFU_RESULT_FAILED;                                                      \
-    } else {                                                                                  \
-        (__result) = SAFU_RESULT_OK;                                                          \
-    }
-
 safuResultE_t elosCreateMessage(uint8_t id, char const *jsonStr, elosMessage_t **message) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
@@ -31,7 +14,7 @@ safuResultE_t elosCreateMessage(uint8_t id, char const *jsonStr, elosMessage_t *
         safuLogErr("Invalid parameter");
     } else {
         elosMessage_t *newMessage;
-        ssize_t messageLen = sizeof(elosMessage_t);
+        size_t messageLen = sizeof(elosMessage_t);
         ssize_t jsonLen = 0;
 
         if (message != NULL) {
@@ -71,12 +54,18 @@ safuResultE_t elosSendMessage(elosSession_t *session, elosMessage_t const *messa
     } else if (message == NULL) {
         safuLogErr("Invalid parameter");
     } else {
-        ssize_t const messageLen = sizeof(elosMessage_t) + message->length;
-        ssize_t bytes;
+        size_t const messageLen = sizeof(elosMessage_t) + message->length;
+        size_t bytes;
 
-        bytes = safuSendExactly(session->fd, message, messageLen);
-        _sendReceiveErrorCheck(result, bytes, messageLen, "Sending message");
-        if (result == SAFU_RESULT_FAILED) {
+        result = safuSendExactly(session->fd, message, messageLen, &bytes);
+        if (result != SAFU_RESULT_OK) {
+            if (result != SAFU_RESULT_CLOSED) {
+                safuLogErrF("Sending message failed with %d, %ld of %ld bytes sent.", result, bytes, messageLen);
+            } else {
+                safuLogDebug("Connection has been closed");
+            }
+
+            result = SAFU_RESULT_FAILED;
             session->connected = false;
         }
     }
@@ -94,18 +83,24 @@ safuResultE_t elosReceiveMessage(elosSession_t *session, elosMessage_t **message
     } else if (message == NULL) {
         safuLogErr("Invalid parameter");
     } else {
-        ssize_t messageLen = sizeof(elosMessage_t);
+        size_t messageLen = sizeof(elosMessage_t);
         elosMessage_t *newMessage;
 
         newMessage = safuAllocMem(NULL, messageLen);
         if (newMessage == NULL) {
             safuLogDebug("Memory allocation failed");
         } else {
-            ssize_t bytes;
+            size_t bytes;
 
-            bytes = safuRecvExactly(session->fd, newMessage, messageLen);
-            _sendReceiveErrorCheck(result, bytes, messageLen, "Receiving message header");
-            if ((result == SAFU_RESULT_OK) && (newMessage->length > 0)) {
+            result = safuRecvExactly(session->fd, newMessage, messageLen, &bytes);
+            if (result != SAFU_RESULT_OK) {
+                if (result != SAFU_RESULT_CLOSED) {
+                    safuLogErrF("Receiving message header failed with %d, %ld of %ld bytes received.", result, bytes,
+                                messageLen);
+                } else {
+                    safuLogDebug("Connection has been closed");
+                }
+            } else if (newMessage->length > 0) {
                 messageLen += newMessage->length;
 
                 newMessage = safuAllocMem(newMessage, messageLen);
@@ -113,14 +108,22 @@ safuResultE_t elosReceiveMessage(elosSession_t *session, elosMessage_t **message
                     safuLogErr("Memory allocation failed");
                     result = SAFU_RESULT_FAILED;
                 } else {
-                    bytes = safuRecvExactly(session->fd, newMessage->json, newMessage->length);
-                    _sendReceiveErrorCheck(result, bytes, (ssize_t)newMessage->length, "Receiving message body");
+                    result = safuRecvExactly(session->fd, newMessage->json, newMessage->length, &bytes);
+                    if (result != SAFU_RESULT_OK) {
+                        if (result != SAFU_RESULT_CLOSED) {
+                            safuLogErrF("Receiving message body failed with %d, %ld of %d bytes received.", result,
+                                        bytes, newMessage->length);
+                        } else {
+                            safuLogDebug("Connection has been closed");
+                        }
+                    }
                 }
             }
 
             if (result == SAFU_RESULT_OK) {
                 *message = newMessage;
             } else {
+                result = SAFU_RESULT_FAILED;
                 session->connected = false;
                 free(newMessage);
             }

@@ -37,7 +37,7 @@ MOCK_FUNC_BODY(safuWriteExactly, ssize_t, int fd, const void *buf, size_t len) {
     return MOCK_FUNC_REAL(safuWriteExactly)(fd, buf, len);
 }
 
-MOCK_FUNC_BODY(safuRecvExactly, ssize_t, int fd, void *buf, size_t len) {
+MOCK_FUNC_BODY(safuRecvExactly, safuResultE_t, int fd, void *buf, size_t len, size_t *transferred) {
     if (MOCK_IS_ACTIVE(safuRecvExactly)) {
         check_expected(fd);
         check_expected_ptr(buf);
@@ -45,19 +45,21 @@ MOCK_FUNC_BODY(safuRecvExactly, ssize_t, int fd, void *buf, size_t len) {
         if (buf != NULL) {
             memcpy(buf, mock_ptr_type(void *), len);
         }
-        return mock_type(ssize_t);
+        *transferred = mock_type(size_t);
+        return mock_type(safuResultE_t);
     }
-    return MOCK_FUNC_REAL(safuRecvExactly)(fd, buf, len);
+    return MOCK_FUNC_REAL(safuRecvExactly)(fd, buf, len, transferred);
 }
 
-MOCK_FUNC_BODY(safuSendExactly, ssize_t, int fd, const void *buf, size_t len) {
+MOCK_FUNC_BODY(safuSendExactly, safuResultE_t, int fd, const void *buf, size_t len, size_t *transferred) {
     if (MOCK_IS_ACTIVE(safuSendExactly)) {
         check_expected(fd);
         check_expected_ptr(buf);
         check_expected(len);
-        return mock_type(ssize_t);
+        *transferred = mock_type(size_t);
+        return mock_type(safuResultE_t);
     }
-    return MOCK_FUNC_REAL(safuSendExactly)(fd, buf, len);
+    return MOCK_FUNC_REAL(safuSendExactly)(fd, buf, len, transferred);
 }
 
 MOCK_FUNC_BODY(safuAllocMem, void *, void *oldptr, size_t newlen) {

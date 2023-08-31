@@ -18,8 +18,8 @@
 MOCK_FUNC_PROTOTYPE(safuGetEnvOr, const char *, const char *key, const char *defaultValue)
 MOCK_FUNC_PROTOTYPE(safuReadFileToString, ssize_t, const char *fileName, ssize_t maxLength, char **string)
 MOCK_FUNC_PROTOTYPE(safuWriteExactly, ssize_t, int fd, const void *buf, size_t len)
-MOCK_FUNC_PROTOTYPE(safuRecvExactly, ssize_t, int fd, void *buf, size_t len)
-MOCK_FUNC_PROTOTYPE(safuSendExactly, ssize_t, int fd, const void *buf, size_t len)
+MOCK_FUNC_PROTOTYPE(safuRecvExactly, safuResultE_t, int fd, void *buf, size_t len, size_t *transferred)
+MOCK_FUNC_PROTOTYPE(safuSendExactly, safuResultE_t, int fd, const void *buf, size_t len, size_t *transferred)
 MOCK_FUNC_PROTOTYPE(safuAllocMem, void *, void *oldptr, size_t newlen)
 MOCK_FUNC_PROTOTYPE(safuJsonAddNewInt, struct json_object *, struct json_object *jobj, const char *name, int32_t val)
 MOCK_FUNC_PROTOTYPE(safuJsonAddNewString, struct json_object *, struct json_object *jobj, const char *name,

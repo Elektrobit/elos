@@ -47,21 +47,20 @@ void *safuAllocMem(void *oldptr, size_t newlen) {
     return newptr;
 }
 
-ssize_t safuTransferExactly(int fd, void *buf, size_t len, int flags,
-                            ssize_t (*transferFunc)(int, void *, size_t, int)) {
-    ssize_t status;
+safuResultE_t safuTransferExactly(int fd, void *buf, size_t len, int flags,
+                                  ssize_t (*transferFunc)(int, void *, size_t, int), size_t *transferred) {
+    safuResultE_t status = SAFU_RESULT_OK;
     size_t initialLen = len;
 
-    if ((fd < 0) || (buf == NULL) || (len < 1)) {
-        errno = EINVAL;
-        status = -1;
+    if ((fd < 0) || (buf == NULL) || (len < 1) || (transferred == NULL)) {
+        status = SAFU_RESULT_FAILED;
     } else {
-        size_t bytesTransferred = 0;
         char *msgBuffer = buf;
+        *transferred = 0;
 
-        while (bytesTransferred < initialLen) {
+        while (*transferred < initialLen) {
             int bytes;
-            bytes = transferFunc(fd, &msgBuffer[bytesTransferred], len, flags);
+            bytes = transferFunc(fd, &msgBuffer[*transferred], len, flags);
             if (bytes < 0) {
                 switch (errno) {
                     case EINTR:
@@ -73,15 +72,21 @@ ssize_t safuTransferExactly(int fd, void *buf, size_t len, int flags,
 #endif
                         continue;
                     default:
+                        status = SAFU_RESULT_FAILED;
                         break;
                 }
             } else if (bytes == 0) {
+                status = SAFU_RESULT_CLOSED;
                 break;
             }
-            len -= bytes;
-            bytesTransferred += bytes;
+
+            if (status != SAFU_RESULT_OK) {
+                break;
+            } else {
+                len -= bytes;
+                *transferred += bytes;
+            }
         }
-        status = bytesTransferred;
     }
     return status;
 }
@@ -153,13 +158,13 @@ ssize_t safuWriteExactly(int fd, const void *buf, size_t len) {
     return status;
 }
 
-ssize_t safuRecvExactly(int fd, void *buf, size_t len) {
-    return safuTransferExactly(fd, buf, len, 0, recv);
+safuResultE_t safuRecvExactly(int fd, void *buf, size_t len, size_t *transferred) {
+    return safuTransferExactly(fd, buf, len, 0, recv, transferred);
 }
 
-ssize_t safuSendExactly(int fd, const void *buf, size_t len) {
+safuResultE_t safuSendExactly(int fd, const void *buf, size_t len, size_t *transferred) {
     // We ensure by tests and guarantee that transferExactly will not modify buf
-    return safuTransferExactly(fd, (void *)buf, len, MSG_NOSIGNAL, (safuTransferFunc_t *)send);
+    return safuTransferExactly(fd, (void *)buf, len, MSG_NOSIGNAL, (safuTransferFunc_t *)send, transferred);
 }
 
 ssize_t safuGetFileSize(int fd) {

@@ -48,11 +48,15 @@ void *safuAllocMem(void *oldptr, size_t newlen);
  *      flags (int): flags for transfer method.
  *      transferFunc (safuTransferFunc_t *): function to be called to actually
  *                                           interact with file descriptor.
+ *      transfered (size_t *): length/amount of data which has been transferred.
  * Returns:
  *      - length of transferred data
- *      - `-1` on invalid parameters and set `errno` to `EINVAL`
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_CLOSED` if connection was closed by remote peer
+ *      - `SAFU_RESULT_FAILED' on error, the connection state `fd` , `buf` and `transfered` is undefined
  ******************************************************************/
-ssize_t safuTransferExactly(int fd, void *buf, size_t len, int flags, safuTransferFunc_t *transferFunc);
+safuResultE_t safuTransferExactly(int fd, void *buf, size_t len, int flags, safuTransferFunc_t *transferFunc,
+                                  size_t *transferred);
 
 /*******************************************************************
  * Obtain data from a file descriptor(socket) using `recv`.
@@ -63,11 +67,14 @@ ssize_t safuTransferExactly(int fd, void *buf, size_t len, int flags, safuTransf
  *      buf (void *): buffer to store the received data.
  *      len (size_t): length/amount of data to be transferred.
  *      flags (int): recv flags
+ *      transfered (size_t *): length/amount of data which has been transferred.
  * Returns:
  *      - length of received data
- *      - `-1` on invalid parameters and set `errno` to `EINVAL`
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_CLOSED` if connection was closed by remote peer
+ *      - `SAFU_RESULT_FAILED' on error, the connection state `fd` , `buf` and `transfered` is undefined
  ******************************************************************/
-ssize_t safuRecvExactly(int fd, void *buf, size_t len);
+safuResultE_t safuRecvExactly(int fd, void *buf, size_t len, size_t *transferred);
 
 /*******************************************************************
  * Send data to a file descriptor(socket) using `send`.
@@ -78,11 +85,14 @@ ssize_t safuRecvExactly(int fd, void *buf, size_t len);
  *      buf (void *): pointer to data that should be transferred.
  *      len (size_t): length/amount of data to be transferred.
  *      flags (int): send flags
+ *      transfered (size_t *): length/amount of data which has been transferred.
  * Returns:
  *      - length of send data
- *      - `-1` on invalid parameters and set `errno` to `EINVAL`
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_CLOSED` if connection was closed by remote peer
+ *      - `SAFU_RESULT_FAILED' on error, the connection state `fd` , `buf` and `transfered` is undefined
  ******************************************************************/
-ssize_t safuSendExactly(int fd, const void *buf, size_t len);
+safuResultE_t safuSendExactly(int fd, const void *buf, size_t len, size_t *transferred);
 
 /*******************************************************************
  * Get a string representing the hardware the system runs on from a file.

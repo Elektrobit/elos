@@ -6,7 +6,8 @@ void safuTestSafuRecvExactly(UNUSED void **state) {
     int fileDescriptor = 0;
     char buffer[] = "Hello cruel world!";
     size_t length = 0;
-    ssize_t result;
+    size_t transferred = 0xdeadb33f;
+    safuResultE_t result;
 
     TEST("safuRecvExactly");
     SHOULD("%s", "call safuRecvExactly successfully");
@@ -15,9 +16,11 @@ void safuTestSafuRecvExactly(UNUSED void **state) {
     expect_value(safuTransferExactly, buf, buffer);
     expect_value(safuTransferExactly, len, length);
     expect_value(safuTransferExactly, flags, 0);
-    will_return(safuTransferExactly, sizeof(buffer));
+    will_set_parameter(safuTransferExactly, transferred, 0);
+    will_return(safuTransferExactly, SAFU_RESULT_OK);
 
-    result = safuRecvExactly(fileDescriptor, buffer, length);
-    assert_int_equal(result, sizeof(buffer));
+    result = safuRecvExactly(fileDescriptor, buffer, length, &transferred);
+    assert_int_equal(transferred, 0);
+    assert_int_equal(result, SAFU_RESULT_OK);
     assert_string_equal(buffer, "Hello cruel world!");
 }

@@ -10,6 +10,7 @@ void safuTestSafuTransferExactlySuccessInOneLoop(UNUSED void **state) {
     int fileDescriptor = TEST_FD, result;
     char buffer[] = "Hello cruel world!";
     size_t length = TEST_LENGTH;
+    size_t transferred = 0xdeadb33f;
 
     TEST("safuTransferExactly");
     SHOULD("%s %d %s", "transfer successfully", TEST_LENGTH, "bytes in one loop");
@@ -20,6 +21,7 @@ void safuTestSafuTransferExactlySuccessInOneLoop(UNUSED void **state) {
     expect_value(safuMockTransferFunc, flags, 0);
     will_return(safuMockTransferFunc, TEST_LENGTH);
 
-    result = safuTransferExactly(fileDescriptor, buffer, length, 0, safuMockTransferFunc);
-    assert_int_equal(result, TEST_LENGTH);
+    result = safuTransferExactly(fileDescriptor, buffer, length, 0, safuMockTransferFunc, &transferred);
+    assert_int_equal(transferred, length);
+    assert_int_equal(result, SAFU_RESULT_OK);
 }

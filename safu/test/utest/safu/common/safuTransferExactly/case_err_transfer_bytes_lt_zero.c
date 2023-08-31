@@ -12,6 +12,7 @@ void safuTestSafuTransferExactlyErrSendBytesLtZero(UNUSED void **state) {
     int fileDescriptor = TEST_FD, result;
     char buffer[] = "Hello cruel world!";
     size_t length = TEST_LENGTH;
+    size_t transferred = 0xdeadb33f;
     errno = EINVAL;
 
     TEST("safuTransferExactly");
@@ -23,6 +24,7 @@ void safuTestSafuTransferExactlyErrSendBytesLtZero(UNUSED void **state) {
     expect_value(safuMockTransferFunc, flags, MSG_NOSIGNAL);
     will_return(safuMockTransferFunc, -1);
 
-    result = safuTransferExactly(fileDescriptor, buffer, length, MSG_NOSIGNAL, safuMockTransferFunc);
-    assert_int_not_equal(result, TEST_LENGTH);
+    result = safuTransferExactly(fileDescriptor, buffer, length, MSG_NOSIGNAL, safuMockTransferFunc, &transferred);
+    assert_int_equal(transferred, 0);
+    assert_int_equal(result, SAFU_RESULT_FAILED);
 }

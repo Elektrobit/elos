@@ -10,10 +10,12 @@ void safuTestSafuTransferExactlyErrLenLtOne(UNUSED void **state) {
     int fileDescriptor = TEST_FD, result;
     char buffer[] = "Hello cruel world!";
     size_t length = TEST_LENGTH;
+    size_t transferred = 0xdeadb33f;
 
     TEST("safuTransferExactly");
-    SHOULD("%s", "return -1 if len is lower than one");
+    SHOULD("%s", "return SAFU_RESULT_FAILED if len is lower than one");
 
-    result = safuTransferExactly(fileDescriptor, buffer, length, 0, safuMockTransferFunc);
-    assert_int_equal(result, -1);
+    result = safuTransferExactly(fileDescriptor, buffer, length, 0, safuMockTransferFunc, &transferred);
+    assert_int_equal(transferred, 0xdeadb33f);
+    assert_int_equal(result, SAFU_RESULT_FAILED);
 }
