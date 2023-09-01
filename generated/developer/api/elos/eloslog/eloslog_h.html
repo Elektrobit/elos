@@ -38,6 +38,75 @@
   <section id="eloslog-h">
 <h1>eloslog.h<a class="headerlink" href="#eloslog-h" title="Permalink to this heading">¶</a></h1>
 <p>// SPDX-License-Identifier: MIT</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosLogCreateElosEventFromLog">
+<span class="n"><span class="pre">elosLogStatusE_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosLogCreateElosEventFromLog</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">elosLogData_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">logData</span></span>, <a class="reference internal" href="../event/event_types_h.html#c.elosEvent_t" title="elosEvent_t"><span class="n"><span class="pre">elosEvent_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">event</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosLogCreateElosEventFromLog" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eloslog/eloslog.h.html#c.elosLogCreateElosEventFromLog"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Create an new elos event and assign value from logData to it. Pass
+this new event to output varaiable event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logData</strong> (<span><span class="c-expr sig sig-inline c"><span class="n">elosLogData_t</span><span class="p">*</span></span></span>) – log data containing data to be logged.</p></li>
+<li><p><strong>event</strong> (<span><span class="c-expr sig sig-inline c"><a class="reference internal" href="../event/event_types_h.html#c.elosEvent_t" title="elosEvent_t"><span class="n">elosEvent_t</span></a><span class="p">*</span><span class="p">*</span></span></span>) – elos event created from logData.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><cite>ELOS_LOG_STATUS_SUCCESS</cite> on success</p></li>
+<li><p><cite>ELOS_LOG_STATUS_ERROR</cite> on failure</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosLogCreateLogData">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosLogCreateLogData</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="../event/event_message_codes_h.html#c.elosEventMessageCodeE_t" title="elosEventMessageCodeE_t"><span class="n"><span class="pre">elosEventMessageCodeE_t</span></span></a><span class="w"> </span><span class="n"><span class="pre">messageCode</span></span>, <a class="reference internal" href="../event/event_types_h.html#c.elosSeverityE_t" title="elosSeverityE_t"><span class="n"><span class="pre">elosSeverityE_t</span></span></a><span class="w"> </span><span class="n"><span class="pre">severity</span></span>, <span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="n"><span class="pre">classification</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">logMessage</span></span>, <span class="n"><span class="pre">elosLogData_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">logdata</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosLogCreateLogData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eloslog/eloslog.h.html#c.elosLogCreateLogData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Pack given messageCode, severity, classification and logMessage
+into the provided logdata variable of type <cite>elosLogData_t</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>messageCode</strong> (<span><span class="c-expr sig sig-inline c"><a class="reference internal" href="../event/event_message_codes_h.html#c.elosEventMessageCodeE_t" title="elosEventMessageCodeE_t"><span class="n">elosEventMessageCodeE_t</span></a></span></span>) – message code for the message to be logged</p></li>
+<li><p><strong>severity</strong> (<span><span class="c-expr sig sig-inline c"><a class="reference internal" href="../event/event_types_h.html#c.elosSeverityE_t" title="elosSeverityE_t"><span class="n">elosSeverityE_t</span></a></span></span>) – severity of message to be logged</p></li>
+<li><p><strong>classification</strong> (<span><span class="c-expr sig sig-inline c"><span class="n">uint64_t</span></span></span>) – classification of message to be logged</p></li>
+<li><p><strong>logMessage</strong> (<span><span class="c-expr sig sig-inline c"><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="p">*</span></span></span>) – the message to be packed into logdata</p></li>
+<li><p><strong>logdata</strong> (<span><span class="c-expr sig sig-inline c"><span class="n">elosLogData_t</span><span class="p">*</span><span class="p">*</span></span></span>) – the log data variable to pack other values into.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosLogDeleteLogData">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosLogDeleteLogData</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">elosLogData_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">logData</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosLogDeleteLogData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eloslog/eloslog.h.html#c.elosLogDeleteLogData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Free Memory of all members of logData</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logData</strong> (<span><span class="c-expr sig sig-inline c"><span class="n">elosLogData_t</span><span class="p">*</span></span></span>) – logData whos’ allocated memory needs to be freed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosLogSafuFallback">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosLogSafuFallback</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">elosLogData_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">logData</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosLogSafuFallback" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eloslog/eloslog.h.html#c.elosLogSafuFallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>A fallback function is to be used when the log event creation fails.
+In this case the when log event creation fails, the elos log
+uses this function to pass logData to safulog in order to output
+log data to console.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logData</strong> (<span><span class="c-expr sig sig-inline c"><span class="n">elosLogData_t</span><span class="p">*</span></span></span>) – log data to be logged via safulog</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

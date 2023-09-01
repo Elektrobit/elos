@@ -123,6 +123,30 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorFromJsonArray</span><span class="p">(</span><span class="n">json_object</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">jEventArray</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventVector</span><span class="p">);</span></div>
 
+<div class="viewcode-block" id="c.elosEventVectorPush"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorPush">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Push an elosEvent to an elosEventVector</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to push into.</span>
+<span class="cm"> *      event (elosEvent_t const *): The event to be pushed.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorPush</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">,</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosEventVectorPushDeepCopy"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorPushDeepCopy">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Push a newly allocated deep copy of an elosEvent to an elosEventVector</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      eventVector (elosEventVector_t *): the event vector to push into.</span>
+<span class="cm"> *      event (elosEvent_t const *): The event to be copied.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `SAFU_RESULT_OK` on success,</span>
+<span class="cm"> *      - `SAFU_RESULT_FAILED` on failure.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventVectorPushDeepCopy</span><span class="p">(</span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventVector</span><span class="p">,</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span></div>
+
 <div class="viewcode-block" id="c.elosEventVectorDeleteMembers"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_vector_h.html#c.elosEventVectorDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Free the memomry of all members of an :c:type:`elosEventVector_t`.</span>
 <span class="cm"> *</span>

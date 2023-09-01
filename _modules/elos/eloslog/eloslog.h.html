@@ -37,11 +37,52 @@
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eloslog/types.h&quot;</span>
 
-<div class="viewcode-block" id="c.elosLogCreateLogData"><span class="kt">void</span><span class="w"> </span><span class="nf">elosLogCreateLogData</span><span class="p">(</span><span class="n">elosEventMessageCodeE_t</span><span class="w"> </span><span class="n">messageCode</span><span class="p">,</span><span class="w"> </span><span class="n">elosSeverityE_t</span><span class="w"> </span><span class="n">severity</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">classification</span><span class="p">,</span>
+<div class="viewcode-block" id="c.elosLogCreateLogData"><a class="viewcode-back" href="../../../generated/developer/api/elos/eloslog/eloslog_h.html#c.elosLogCreateLogData">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Pack given messageCode, severity, classification and logMessage</span>
+<span class="cm"> * into the provided logdata variable of type `elosLogData_t`</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      messageCode (elosEventMessageCodeE_t) :  message code for the message to be logged</span>
+<span class="cm"> *      severity (elosSeverityE_t) : severity of message to be logged</span>
+<span class="cm"> *      classification (uint64_t) : classification of message to be logged</span>
+<span class="cm"> *      logMessage (const char *) : the message to be packed into logdata</span>
+<span class="cm"> *      logdata (elosLogData_t **) : the log data variable to pack other values into.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">elosLogCreateLogData</span><span class="p">(</span><span class="n">elosEventMessageCodeE_t</span><span class="w"> </span><span class="n">messageCode</span><span class="p">,</span><span class="w"> </span><span class="n">elosSeverityE_t</span><span class="w"> </span><span class="n">severity</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">classification</span><span class="p">,</span>
 <span class="w">                          </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">logMessage</span><span class="p">,</span><span class="w"> </span><span class="n">elosLogData_t</span><span class="w"> </span><span class="o">**</span><span class="n">logdata</span><span class="p">);</span></div>
-<div class="viewcode-block" id="c.elosLogDeleteLogData"><span class="kt">void</span><span class="w"> </span><span class="nf">elosLogDeleteLogData</span><span class="p">(</span><span class="n">elosLogData_t</span><span class="w"> </span><span class="o">*</span><span class="n">logData</span><span class="p">);</span></div>
-<div class="viewcode-block" id="c.elosLogSafuFallback"><span class="kt">void</span><span class="w"> </span><span class="nf">elosLogSafuFallback</span><span class="p">(</span><span class="n">elosLogData_t</span><span class="w"> </span><span class="o">*</span><span class="n">logData</span><span class="p">);</span></div>
-<div class="viewcode-block" id="c.elosLogCreateElosEventFromLog"><span class="n">elosLogStatusE_t</span><span class="w"> </span><span class="nf">elosLogCreateElosEventFromLog</span><span class="p">(</span><span class="n">elosLogData_t</span><span class="w"> </span><span class="o">*</span><span class="n">logData</span><span class="p">,</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">**</span><span class="n">event</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosLogDeleteLogData"><a class="viewcode-back" href="../../../generated/developer/api/elos/eloslog/eloslog_h.html#c.elosLogDeleteLogData">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Free Memory of all members of logData</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      logData (elosLogData_t *) : logData whos&#39; allocated memory needs to be freed.</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">elosLogDeleteLogData</span><span class="p">(</span><span class="n">elosLogData_t</span><span class="w"> </span><span class="o">*</span><span class="n">logData</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosLogSafuFallback"><a class="viewcode-back" href="../../../generated/developer/api/elos/eloslog/eloslog_h.html#c.elosLogSafuFallback">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * A fallback function is to be used when the log event creation fails.</span>
+<span class="cm"> * In this case the when log event creation fails, the elos log</span>
+<span class="cm"> * uses this function to pass logData to safulog in order to output</span>
+<span class="cm"> * log data to console.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      logData (elosLogData_t *) : log data to be logged via safulog</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">elosLogSafuFallback</span><span class="p">(</span><span class="n">elosLogData_t</span><span class="w"> </span><span class="o">*</span><span class="n">logData</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosLogCreateElosEventFromLog"><a class="viewcode-back" href="../../../generated/developer/api/elos/eloslog/eloslog_h.html#c.elosLogCreateElosEventFromLog">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Create an new elos event and assign value from logData to it. Pass</span>
+<span class="cm"> * this new event to output varaiable event.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      logData (elosLogData_t *) : log data containing data to be logged.</span>
+<span class="cm"> *      event (elosEvent_t **) : elos event created from logData.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - `ELOS_LOG_STATUS_SUCCESS` on success</span>
+<span class="cm"> *      - `ELOS_LOG_STATUS_ERROR` on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">elosLogStatusE_t</span><span class="w"> </span><span class="nf">elosLogCreateElosEventFromLog</span><span class="p">(</span><span class="n">elosLogData_t</span><span class="w"> </span><span class="o">*</span><span class="n">logData</span><span class="p">,</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">**</span><span class="n">event</span><span class="p">);</span></div>
 </pre></div>
 
           </div>

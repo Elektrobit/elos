@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
     <link rel="next" title="types.h" href="types_h.html" />
-    <link rel="prev" title="clientauthorization_types.h" href="clientauthorization_types_h.html" />
+    <link rel="prev" title="clientconnection_types.h" href="clientconnection_types_h.html" />
    
   <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
   
@@ -38,6 +38,186 @@
   <section id="clientmanager-types-h">
 <h1>clientmanager_types.h<a class="headerlink" href="#clientmanager-types-h" title="Permalink to this heading">¶</a></h1>
 <p>// SPDX-License-Identifier: MIT</p>
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.elosClientManager">
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManager</span></span></span><a class="headerlink" href="#c.elosClientManager" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Data structure of a ClientManager</p>
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.flags">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosClientManager.flags" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>State bits of the component (e.g. initialized, active, e.t.c.)</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.fd">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fd</span></span></span><a class="headerlink" href="#c.elosClientManager.fd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.fd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>listener socket used for waiting for new connections</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.syncFd">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">syncFd</span></span></span><a class="headerlink" href="#c.elosClientManager.syncFd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.syncFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>eventfd used for synchronization with the worker thread</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.addr">
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">addr</span></span></span><a class="headerlink" href="#c.elosClientManager.addr" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Address information of the listener socket</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.connection">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connection</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">200</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#c.elosClientManager.connection" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Array of ClientConnections</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c">
+<span class="sig-name descname"><span class="pre">connectionLimit</span></span></dt>
+<dd><p>Size of the ClientConnections array</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.listenThread">
+<span class="n"><span class="pre">pthread_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">listenThread</span></span></span><a class="headerlink" href="#c.elosClientManager.listenThread" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.listenThread"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>worker thread used by pthread_* functions</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.sharedData">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientManager.sharedData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Data shared between all ClientConnections</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager.clientAuth">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">clientAuth</span></span></span><a class="headerlink" href="#c.elosClientManager.clientAuth" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager.clientAuth"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Client authorization functionality</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.elosClientManagerParam">
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManagerParam</span></span></span><a class="headerlink" href="#c.elosClientManagerParam" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Initialization parameters for a new ClientManager</p>
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam.config">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">config</span></span></span><a class="headerlink" href="#c.elosClientManagerParam.config" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam.config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Static configuration variables</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam.eventDispatcher">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventDispatcher</span></span></span><a class="headerlink" href="#c.elosClientManagerParam.eventDispatcher" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam.eventDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Used for registering the EventBuffers of each ClientConnection</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam.eventProcessor">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventProcessor</span></span></span><a class="headerlink" href="#c.elosClientManagerParam.eventProcessor" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam.eventProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Used for FilterNode/EventQueue handling</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam.logAggregator">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">logAggregator</span></span></span><a class="headerlink" href="#c.elosClientManagerParam.logAggregator" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam.logAggregator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Used for persistent logging of Events</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.elosClientManagerParam_t">
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManagerParam_t</span></span></span><a class="headerlink" href="#c.elosClientManagerParam_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Initialization parameters for a new ClientManager</p>
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam_t.config">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">config</span></span></span><a class="headerlink" href="#c.elosClientManagerParam_t.config" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam_t.config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Static configuration variables</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam_t.eventDispatcher">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventDispatcher</span></span></span><a class="headerlink" href="#c.elosClientManagerParam_t.eventDispatcher" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam_t.eventDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Used for registering the EventBuffers of each ClientConnection</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam_t.eventProcessor">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventProcessor</span></span></span><a class="headerlink" href="#c.elosClientManagerParam_t.eventProcessor" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam_t.eventProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Used for FilterNode/EventQueue handling</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManagerParam_t.logAggregator">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">logAggregator</span></span></span><a class="headerlink" href="#c.elosClientManagerParam_t.logAggregator" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManagerParam_t.logAggregator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Used for persistent logging of Events</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.elosClientManager_t">
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManager_t</span></span></span><a class="headerlink" href="#c.elosClientManager_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Data structure of a ClientManager</p>
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.flags">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosClientManager_t.flags" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>State bits of the component (e.g. initialized, active, e.t.c.)</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.fd">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fd</span></span></span><a class="headerlink" href="#c.elosClientManager_t.fd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.fd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>listener socket used for waiting for new connections</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.syncFd">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">syncFd</span></span></span><a class="headerlink" href="#c.elosClientManager_t.syncFd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.syncFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>eventfd used for synchronization with the worker thread</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.addr">
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">addr</span></span></span><a class="headerlink" href="#c.elosClientManager_t.addr" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Address information of the listener socket</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.connection">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connection</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">200</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#c.elosClientManager_t.connection" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Array of ClientConnections</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c">
+<span class="sig-name descname"><span class="pre">connectionLimit</span></span></dt>
+<dd><p>Size of the ClientConnections array</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.listenThread">
+<span class="n"><span class="pre">pthread_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">listenThread</span></span></span><a class="headerlink" href="#c.elosClientManager_t.listenThread" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.listenThread"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>worker thread used by pthread_* functions</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.sharedData">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientManager_t.sharedData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Data shared between all ClientConnections</p>
+</dd></dl>
+
+<dl class="c member">
+<dt class="sig sig-object c" id="c.elosClientManager_t.clientAuth">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">clientAuth</span></span></span><a class="headerlink" href="#c.elosClientManager_t.clientAuth" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager_types.h.html#c.elosClientManager_t.clientAuth"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Client authorization functionality</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -84,7 +264,7 @@
   <li><a href="../../../index.html">Developer documentation</a><ul>
   <li><a href="../../index.html">Elos API</a><ul>
   <li><a href="clientmanager.html">clientmanager</a><ul>
-      <li>Previous: <a href="clientauthorization_types_h.html" title="previous chapter">clientauthorization_types.h</a></li>
+      <li>Previous: <a href="clientconnection_types_h.html" title="previous chapter">clientconnection_types.h</a></li>
       <li>Next: <a href="types_h.html" title="next chapter">types.h</a></li>
   </ul></li>
   </ul></li>

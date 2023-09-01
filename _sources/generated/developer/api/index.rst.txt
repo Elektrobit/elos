@@ -10,29 +10,18 @@ Elos API
   elos/common/process_h.rst
   elos/common/types_h.rst
   elos/common/common.rst
-  elos/clientmanager/clientauthorization_h.rst
-  elos/clientmanager/clientauthorizedprocesses_h.rst
-  elos/clientmanager/clientblacklist_h.rst
-  elos/clientmanager/clientmanager_h.rst
-  elos/clientmanager/clientmanager.rst
-  elos/clientmanager/clientauthorization_types_h.rst
-  elos/clientmanager/clientmanager_types_h.rst
-  elos/clientmanager/types_h.rst
-  elos/eloslog/eloslog_h.rst
-  elos/eloslog/eloslog.rst
-  elos/eloslog/types_h.rst
   elos/event/event_h.rst
   elos/event/event_source_h.rst
   elos/event/event_vector_h.rst
   elos/event/event.rst
-  elos/event/event_message_codes_h.rst
   elos/event/event_types_h.rst
   elos/event/eventqueue_types_h.rst
   elos/event/types_h.rst
+  elos/event/event_message_codes_h.rst
   elos/eventbuffer/eventbuffer_h.rst
   elos/eventbuffer/eventbuffer.rst
-  elos/eventbuffer/defines_h.rst
   elos/eventbuffer/types_h.rst
+  elos/eventbuffer/defines_h.rst
   elos/eventdispatcher/eventdispatcher_h.rst
   elos/eventdispatcher/eventdispatcher.rst
   elos/eventdispatcher/defines_h.rst
@@ -62,9 +51,9 @@ Elos API
   elos/eventprocessor/eventfilter_types_h.rst
   elos/eventprocessor/eventqueue_types_h.rst
   elos/eventprocessor/types_h.rst
-  elos/plugin/plugin_h.rst
   elos/plugin/thread_h.rst
   elos/plugin/vector_h.rst
+  elos/plugin/plugin_h.rst
   elos/plugin/plugin.rst
   elos/plugin/types_h.rst
   elos/pluginmanager/pluginmanager_h.rst
@@ -78,28 +67,35 @@ Elos API
   elos/processfilter/processfilter_types_h.rst
   elos/processfilter/step_types_h.rst
   elos/processfilter/types_h.rst
-  elos/rpnfilter/builder_h.rst
   elos/rpnfilter/execute_h.rst
   elos/rpnfilter/rpnfilter_h.rst
   elos/rpnfilter/vector_h.rst
+  elos/rpnfilter/builder_h.rst
   elos/rpnfilter/rpnfilter.rst
-  elos/rpnfilter/builder_types_h.rst
   elos/rpnfilter/execute_types_h.rst
   elos/rpnfilter/rpnfilter_types_h.rst
   elos/rpnfilter/step_types_h.rst
   elos/rpnfilter/types_h.rst
   elos/rpnfilter/vector_types_h.rst
+  elos/rpnfilter/builder_types_h.rst
   elos/scanner/scanner_h.rst
   elos/scanner/scanner.rst
-  clientauthorization_c.rst
-  clientauthorizedprocesses_c.rst
-  clientblacklist_c.rst
-  clientmanager_start_c.rst
-  clientmanager_stop_c.rst
-  clientmanager_threads_c.rst
-  eloslog_c.rst
-  event_c.rst
+  elos/clientmanager/clientauthorization_h.rst
+  elos/clientmanager/clientauthorizedprocesses_h.rst
+  elos/clientmanager/clientblacklist_h.rst
+  elos/clientmanager/clientconnection_h.rst
+  elos/clientmanager/clientmanager_h.rst
+  elos/clientmanager/clientmanager.rst
+  elos/clientmanager/clientauthorization_types_h.rst
+  elos/clientmanager/clientconnection_defines_h.rst
+  elos/clientmanager/clientconnection_types_h.rst
+  elos/clientmanager/clientmanager_types_h.rst
+  elos/clientmanager/types_h.rst
+  elos/eloslog/eloslog_h.rst
+  elos/eloslog/eloslog.rst
+  elos/eloslog/types_h.rst
   event_source_c.rst
+  event_c.rst
   event_vector_c.rst
   eventbuffer_c.rst
   eventdispatcher_c.rst
@@ -110,25 +106,25 @@ Elos API
   eventfilter_builder_compile_c.rst
   eventfilter_builder_tokenize_c.rst
   eventfilter_execute_c.rst
-  LogAggregator_c.rst
   PluginFilterLoader_c.rst
   StorageBackend_c.rst
+  LogAggregator_c.rst
   eventfiltermanager/eventfiltermanager_c.rst
-  eventfiltermanager/eventfilternode_c.rst
   eventfiltermanager/eventfilternodevector_c.rst
+  eventfiltermanager/eventfilternode_c.rst
   eventfiltermanager/eventfiltermanager.rst
   eventprocessor/eventfilternodevector_h.rst
-  eventprocessor/eventprocessor_c.rst
   eventprocessor/eventqueuevector_h.rst
+  eventprocessor/eventprocessor_c.rst
   eventprocessor/eventprocessor.rst
-  eventqueue/eventqueue_c.rst
   eventqueue/eventqueuemanager_c.rst
   eventqueue/eventqueuevector_c.rst
+  eventqueue/eventqueue_c.rst
   eventqueue/eventqueue.rst
-  plugin_c.rst
-  plugin_load_c.rst
   plugin_load_h.rst
   plugin_vector_c.rst
+  plugin_c.rst
+  plugin_load_c.rst
   plugin_workerthread_c.rst
   pluginmanager_c.rst
   pluginmanager_entry_c.rst
@@ -140,12 +136,23 @@ Elos API
   processfilter_builder_tokenize_c.rst
   processfilter_execute_c.rst
   rpnfilter_c.rst
-  rpnfilter_builder_c.rst
-  rpnfilter_builder_compile_c.rst
   rpnfilter_builder_finalize_c.rst
   rpnfilter_builder_tokenize_c.rst
-  rpnfilter_execute_c.rst
   rpnfilter_vector_c.rst
+  rpnfilter_builder_c.rst
+  rpnfilter_builder_compile_c.rst
+  rpnfilter_execute_c.rst
+  clientauthorization_c.rst
+  clientauthorizedprocesses_c.rst
+  clientblacklist_c.rst
+  clientconnection_c.rst
+  clientconnection_worker_c.rst
+  clientmanager_c.rst
+  clientmanager_listen_c.rst
+  clientmanager_private_h.rst
+  clientmanager_start_c.rst
+  clientmanager_stop_c.rst
+  eloslog_c.rst
   kmsg_mapper_h.rst
   kmsg_c.rst
   kmsg_mapper_c.rst
@@ -153,13 +160,13 @@ Elos API
   logline_mapper_c.rst
   syslog_c.rst
   JsonBackend_h.rst
-  JsonBackend_c.rst
   JsonBackendPlugin_c.rst
-  NoSqlBackend_h.rst
-  NoSqlBackend_c.rst
+  JsonBackend_c.rst
   SqlBackend_h.rst
   SqlBackend_c.rst
   SqlBackendPlugin_c.rst
   SqlQueries_h.rst
+  NoSqlBackend_h.rst
+  NoSqlBackend_c.rst
 
 

@@ -1,0 +1,4 @@
+clientmanager.c
+===============
+
+.. autocmodule:: clientmanager.c

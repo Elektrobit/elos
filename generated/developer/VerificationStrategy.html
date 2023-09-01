@@ -356,7 +356,8 @@ test-runner script.</p></li>
 test package directory is mounted on to this container.</p></li>
 <li><p>The elos container where elosd is installed and running serves as the
 target.</p></li>
-<li><p>The test results are stored in <code class="docutils literal notranslate"><span class="pre">test/integration/report</span></code></p></li>
+<li><p>The test results are stored in
+<code class="docutils literal notranslate"><span class="pre">build/[Debug|Release]/result/integration</span></code></p></li>
 </ul>
 <p>New tests are added directly in the elos-integration-test package.
 Starting the container with robot framework installed, mounts the
@@ -397,7 +398,15 @@ host system.</p>
 </section>
 <section id="usage-1">
 <span id="id3"></span><h4>Usage<a class="headerlink" href="#usage-1" title="Permalink to this heading">¶</a></h4>
-<p>To run the tests locally in the elos tools repository</p>
+<p>The integration tests can be run by calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">elos</span>
+<span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">run_integration_tests</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">Release</span><span class="p">]</span>   <span class="c1"># start target container in a terminal</span>
+</pre></div>
+</div>
+<p>This will start two docker containers and execute the tests.</p>
+<p>The results will be stored in
+<code class="docutils literal notranslate"><span class="pre">build/[Debug|Release]/result/integration</span></code>.</p>
+<p>In order to manually run the integration tests in the local repository</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">elos</span>
 <span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">target</span><span class="o">-</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>    <span class="c1"># start target container in a terminal</span>
 </pre></div>
@@ -407,7 +416,26 @@ host system.</p>
 <span class="n">PROJECT</span><span class="o">=</span><span class="s2">&quot;elos&quot;</span> <span class="o">./</span><span class="n">scripts</span><span class="o">/</span><span class="n">run_integration_tests</span><span class="o">.</span><span class="n">sh</span>    <span class="c1"># inside the container set project variable and run the test runner script</span>
 </pre></div>
 </div>
-<p>To run the test in base os lab</p>
+<p>When doing this, the result storage path can be configured by setting
+the enviroment variable <code class="docutils literal notranslate"><span class="pre">TEST_OUTPUT</span></code> for the
+<code class="docutils literal notranslate"><span class="pre">run_inetgration_tests.sh</span></code> script.</p>
+<section id="ci-integration">
+<h5>CI integration<a class="headerlink" href="#ci-integration" title="Permalink to this heading">¶</a></h5>
+<p>The ./ci/docker-integration-run.sh can be used to run in some CI
+environment, however to ensure that used docker container and image
+names are uniwue and not interfer with different parallel runs of these
+test suite the follwoing variabeles shall be set.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CI</span><span class="o">=</span><span class="s2">&quot;true&quot;</span>
+<span class="nv">BUILD_ID</span><span class="o">=</span><span class="s2">&quot;42&quot;</span>
+<span class="nv">GIT_COMMIT</span><span class="o">=</span><span class="s2">&quot;0000000000000000000000000000000000000000&quot;</span>
+</pre></div>
+</div>
+<p>These will be used to generate unique docker-container and image names.
+The pattern look like <code class="docutils literal notranslate"><span class="pre">${ELOSD_IMAGE_NAME}-${BUILD_ID}-${GIT_COMMIT}</span></code>.</p>
+</section>
+<section id="yocto-baseos-lab-integration">
+<h5>(yocto-) baseos-lab integration<a class="headerlink" href="#yocto-baseos-lab-integration" title="Permalink to this heading">¶</a></h5>
+<p>To manually run the test in base os lab</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">eb</span><span class="o">-</span><span class="n">baseos</span><span class="o">-</span><span class="n">lab</span>
 <span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>                     <span class="c1"># start host container</span>
                                        <span class="c1"># Inside container</span>
@@ -417,6 +445,7 @@ host system.</p>
                                        <span class="c1"># To test on all images use --build-all and no image name instead of -i</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="writing-a-robot-test">
 <h4>Writing a Robot Test<a class="headerlink" href="#writing-a-robot-test" title="Permalink to this heading">¶</a></h4>

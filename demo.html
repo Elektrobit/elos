@@ -84,7 +84,7 @@ Example:
 </div>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -v
-elosc-0.46.11.8c603f03
+elosc-0.47.8.b5a09d69
 </pre></div>
 </div>
 <p>To subscribe on any event :</p>
@@ -155,7 +155,7 @@ ERROR: Connection to elosd failed!
 <h2>demo_libelos_v2 – publish subscrie demo using libelos<a class="headerlink" href="#demo-libelos-v2-publish-subscrie-demo-using-libelos" title="Permalink to this heading">¶</a></h2>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ demo_libelos_v2 -v
-libelos_demo-0.46.11.8c603f03
+libelos_demo-0.47.8.b5a09d69
 </pre></div>
 </div>
 </section>
@@ -183,18 +183,18 @@ consumer: 4
 messageCount: 1000
 
 messagesPublished: 4000
-messagesConsumed: 3982
+messagesConsumed: 4000
 messagesLostByLimit: 0
 
-publishTimes.min: 0.000015msec
-publishTimes.avg: 0.001693msec
-publishTimes.max: 0.032798msec
-publishTimes.sum: 6.772641msec
+publishTimes.min: 0.000408msec
+publishTimes.avg: 0.001839msec
+publishTimes.max: 0.032341msec
+publishTimes.sum: 7.355093msec
 
-consumerTimes.min: 0.000277msec
-consumerTimes.avg: 0.001638msec
-consumerTimes.max: 0.042268msec
-consumerTimes.sum: 6.551446msec
+consumerTimes.min: 0.000279msec
+consumerTimes.avg: 0.001646msec
+consumerTimes.max: 0.026376msec
+consumerTimes.sum: 6.582888msec
 </pre></div>
 </div>
 <p>To benchmark the event buffers on a target to find optimal configuration :</p>
@@ -205,18 +205,18 @@ consumer: 10
 messageCount: 1000
 
 messagesPublished: 100000
-messagesConsumed: 99974
-messagesLostByLimit: 1244
+messagesConsumed: 99966
+messagesLostByLimit: 1095
 
 publishTimes.min: 0.000000msec
-publishTimes.avg: 0.002631msec
-publishTimes.max: 0.055487msec
-publishTimes.sum: 263.075344msec
+publishTimes.avg: 0.002565msec
+publishTimes.max: 0.088846msec
+publishTimes.sum: 256.468213msec
 
-consumerTimes.min: 0.000373msec
-consumerTimes.avg: 0.004957msec
-consumerTimes.max: 0.046533msec
-consumerTimes.sum: 49.574808msec
+consumerTimes.min: 0.000392msec
+consumerTimes.avg: 0.004805msec
+consumerTimes.max: 0.053478msec
+consumerTimes.sum: 48.054230msec
 </pre></div>
 </div>
 </section>

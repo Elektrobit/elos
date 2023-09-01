@@ -33,28 +33,58 @@
             
   <h1>Source code for elos/clientmanager/clientmanager.h</h1><div class="highlight"><pre>
 <span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
-<span class="cp">#ifndef ELOS_CLIENT_MANAGER_H_</span>
-<div class="viewcode-block" id="c.ELOS_CLIENT_MANAGER_H_"><span class="cp">#define ELOS_CLIENT_MANAGER_H_</span></div>
-
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+<span class="cp">#pragma once</span>
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/clientmanager/types.h&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/common/message.h&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/config/config.h&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventfilter/eventfilter.h&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventlogging/LogAggregator.h&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventprocessor/eventprocessor.h&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/common.h&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;safu/mutex.h&quot;</span>
 
-<div class="viewcode-block" id="c.elosClientManagerGetStatus"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientManagerGetStatus</span><span class="p">(</span><span class="n">elosClientManagerContext_t</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="n">status</span><span class="p">);</span></div>
-<div class="viewcode-block" id="c.elosClientManagerStart"><span class="kt">int</span><span class="w"> </span><span class="nf">elosClientManagerStart</span><span class="p">(</span><span class="n">elosClientManagerContext_t</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">elosClientManagerParam_t</span><span class="w"> </span><span class="o">*</span><span class="n">parameters</span><span class="p">);</span></div>
-<div class="viewcode-block" id="c.elosClientManagerStop"><span class="kt">int</span><span class="w"> </span><span class="nf">elosClientManagerStop</span><span class="p">(</span><span class="n">elosClientManagerContext_t</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="p">);</span></div>
+<div class="viewcode-block" id="c.elosClientManagerInitialize"><a class="viewcode-back" href="../../../generated/developer/api/elos/clientmanager/clientmanager_h.html#c.elosClientManagerInitialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Initializes a new ClientManager.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientManager: ClientManager structure that will be initialized</span>
+<span class="cm"> *      param: Parameters for initialization. Also see clientmanager_types.h</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientManagerInitialize</span><span class="p">(</span><span class="n">elosClientManager_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientManager</span><span class="p">,</span><span class="w"> </span><span class="n">elosClientManagerParam_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosClientManagerThreadGetFreeConnectionSlot"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientManagerThreadGetFreeConnectionSlot</span><span class="p">(</span><span class="n">elosClientManagerContext_t</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">slot</span><span class="p">);</span></div>
-<div class="viewcode-block" id="c.elosClientManagerThreadWaitForIncomingConnection"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientManagerThreadWaitForIncomingConnection</span><span class="p">(</span><span class="n">elosClientManagerContext_t</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">slot</span><span class="p">);</span></div>
+<div class="viewcode-block" id="c.elosClientManagerDeleteMembers"><a class="viewcode-back" href="../../../generated/developer/api/elos/clientmanager/clientmanager_h.html#c.elosClientManagerDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Frees member resources used by the given ClientManager data structure.</span>
+<span class="cm"> * Will also automatically stop an active worker thread before</span>
+<span class="cm"> * freeing up the used resources.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientManager: ClientManager whose members shall be freed</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientManagerDeleteMembers</span><span class="p">(</span><span class="n">elosClientManager_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientManager</span><span class="p">);</span></div>
 
-<span class="cp">#endif</span>
+<div class="viewcode-block" id="c.elosClientManagerStart"><a class="viewcode-back" href="../../../generated/developer/api/elos/clientmanager/clientmanager_h.html#c.elosClientManagerStart">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Creates a worker thread waiting for incoming connections.</span>
+<span class="cm"> * Each ClientManager can only handle one worker thread,</span>
+<span class="cm"> * calling Start a second time will result in an error.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientManager: ClientManager structure to started</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientManagerStart</span><span class="p">(</span><span class="n">elosClientManager_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientManager</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosClientManagerStop"><a class="viewcode-back" href="../../../generated/developer/api/elos/clientmanager/clientmanager_h.html#c.elosClientManagerStop">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Stops a currently active worker thread.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientManager: ClientManager structure to stopped</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientManagerStop</span><span class="p">(</span><span class="n">elosClientManager_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientManager</span><span class="p">);</span></div>
 </pre></div>
 
           </div>

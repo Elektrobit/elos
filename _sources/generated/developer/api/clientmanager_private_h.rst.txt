@@ -1,0 +1,5 @@
+clientmanager_private.h
+=======================
+
+.. autocmodule:: clientmanager_private.h
+    :members:

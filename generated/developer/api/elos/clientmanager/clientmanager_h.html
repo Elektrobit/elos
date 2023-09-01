@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
     <link rel="next" title="clientmanager" href="clientmanager.html" />
-    <link rel="prev" title="clientblacklist.h" href="clientblacklist_h.html" />
+    <link rel="prev" title="clientconnection.h" href="clientconnection_h.html" />
    
   <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
   
@@ -38,6 +38,91 @@
   <section id="clientmanager-h">
 <h1>clientmanager.h<a class="headerlink" href="#clientmanager-h" title="Permalink to this heading">¶</a></h1>
 <p>// SPDX-License-Identifier: MIT</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosClientManagerDeleteMembers">
+<span class="n"><span class="pre">safuResultE_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManagerDeleteMembers</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="clientmanager_types_h.html#c.elosClientManager_t" title="elosClientManager_t"><span class="n"><span class="pre">elosClientManager_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">clientManager</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosClientManagerDeleteMembers" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager.h.html#c.elosClientManagerDeleteMembers"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Frees member resources used by the given ClientManager data structure.
+Will also automatically stop an active worker thread before
+freeing up the used resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clientManager</strong> – ClientManager whose members shall be freed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>SAFU_RESULT_FAILED on error</p></li>
+<li><p>SAFU_RESULT_OK on success</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosClientManagerInitialize">
+<span class="n"><span class="pre">safuResultE_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManagerInitialize</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="clientmanager_types_h.html#c.elosClientManager_t" title="elosClientManager_t"><span class="n"><span class="pre">elosClientManager_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">clientManager</span></span>, <a class="reference internal" href="clientmanager_types_h.html#c.elosClientManagerParam_t" title="elosClientManagerParam_t"><span class="n"><span class="pre">elosClientManagerParam_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">param</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosClientManagerInitialize" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager.h.html#c.elosClientManagerInitialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Initializes a new ClientManager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clientManager</strong> – ClientManager structure that will be initialized</p></li>
+<li><p><strong>param</strong> – Parameters for initialization. Also see clientmanager_types.h</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>SAFU_RESULT_FAILED on error</p></li>
+<li><p>SAFU_RESULT_OK on success</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosClientManagerStart">
+<span class="n"><span class="pre">safuResultE_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManagerStart</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="clientmanager_types_h.html#c.elosClientManager_t" title="elosClientManager_t"><span class="n"><span class="pre">elosClientManager_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">clientManager</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosClientManagerStart" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager.h.html#c.elosClientManagerStart"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Creates a worker thread waiting for incoming connections.
+Each ClientManager can only handle one worker thread,
+calling Start a second time will result in an error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clientManager</strong> – ClientManager structure to started</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>SAFU_RESULT_FAILED on error</p></li>
+<li><p>SAFU_RESULT_OK on success</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosClientManagerStop">
+<span class="n"><span class="pre">safuResultE_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientManagerStop</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="clientmanager_types_h.html#c.elosClientManager_t" title="elosClientManager_t"><span class="n"><span class="pre">elosClientManager_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">clientManager</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosClientManagerStop" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientmanager.h.html#c.elosClientManagerStop"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Stops a currently active worker thread.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clientManager</strong> – ClientManager structure to stopped</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>SAFU_RESULT_FAILED on error</p></li>
+<li><p>SAFU_RESULT_OK on success</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -83,7 +168,7 @@
   <li><a href="../../../../../index.html">Documentation overview</a><ul>
   <li><a href="../../../index.html">Developer documentation</a><ul>
   <li><a href="../../index.html">Elos API</a><ul>
-      <li>Previous: <a href="clientblacklist_h.html" title="previous chapter">clientblacklist.h</a></li>
+      <li>Previous: <a href="clientconnection_h.html" title="previous chapter">clientconnection.h</a></li>
       <li>Next: <a href="clientmanager.html" title="next chapter">clientmanager</a></li>
   </ul></li>
   </ul></li>
