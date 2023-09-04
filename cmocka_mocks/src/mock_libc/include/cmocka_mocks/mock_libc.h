@@ -229,6 +229,7 @@ int MOCK_FUNC_REAL(pselect)(int nfds, fd_set *readfds, fd_set *writefds, fd_set 
 MOCK_FUNC_PROTOTYPE(raise, int, int __sig)
 MOCK_FUNC_PROTOTYPE(pthread_create, int, pthread_t *__newthread, const pthread_attr_t *__attr,
                     void *(*__start_routine)(void *), void *__arg)
+MOCK_FUNC_PROTOTYPE(pthread_once, int, pthread_once_t *__once_control, void (*__init_routine)(void))
 MOCK_FUNC_PROTOTYPE(pthread_join, int, pthread_t __th, void **__thread_return)
 MOCK_FUNC_PROTOTYPE(pthread_mutex_init, int, pthread_mutex_t *__mutex, const pthread_mutexattr_t *__mutexattr)
 MOCK_FUNC_PROTOTYPE(pthread_mutex_destroy, int, pthread_mutex_t *__mutex)

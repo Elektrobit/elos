@@ -76,6 +76,7 @@ target_link_options(
     -Wl,--wrap=pselect
     -Wl,--wrap=pthread_create
     -Wl,--wrap=pthread_join
+    -Wl,--wrap=pthread_once
     -Wl,--wrap=pthread_mutex_init
     -Wl,--wrap=pthread_mutex_destroy
     -Wl,--wrap=pthread_mutex_trylock

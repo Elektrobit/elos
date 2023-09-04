@@ -2,6 +2,7 @@
 
 #include "cmocka_mocks/mock_libc.h"
 
+#include <cmocka.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -527,6 +528,16 @@ int MOCK_FUNC_WRAP(pthread_create)(pthread_t *__newthread, const pthread_attr_t 
     }
 
     return result;
+}
+
+MOCK_FUNC_VAR_NEW(pthread_once);
+int MOCK_FUNC_WRAP(pthread_once)(pthread_once_t *__once_control, void (*__init_routine)(void)) {
+    if (MOCK_IS_ACTIVE(pthread_once)) {
+        check_expected_ptr(__once_control);
+        check_expected_ptr(__init_routine);
+        return mock_type(int);
+    }
+    return MOCK_FUNC_REAL(pthread_once)(__once_control, __init_routine);
 }
 
 MOCK_FUNC_VAR_NEW(pthread_join);
