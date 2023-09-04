@@ -24,11 +24,13 @@ safuResultE_t elosLoggerInitialize(elosLogger_t *logger) {
 safuResultE_t elosLoggerDeleteMembers(elosLogger_t *logger) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (SAFU_FLAG_HAS_INITIALIZED_BIT(&logger->flags) == true) {
-        result = elosEventBufferDelete(&logger->logEventBuffer);
+    if (logger != NULL) {
+        if (SAFU_FLAG_HAS_INITIALIZED_BIT(&logger->flags) == true) {
+            result = elosEventBufferDelete(&logger->logEventBuffer);
 
-        if (result == SAFU_RESULT_OK) {
-            atomic_store(&logger->flags, SAFU_FLAG_ERROR_BIT);
+            if (result == SAFU_RESULT_OK) {
+                atomic_store(&logger->flags, SAFU_FLAG_ERROR_BIT);
+            }
         }
     }
 
