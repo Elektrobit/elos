@@ -31,7 +31,8 @@ safuResultE_t elosPluginLoad(void *pluginPtr) {
     elosStorageBackend_t *backend = (elosStorageBackend_t *)plugin->data;
     elosInfluxDbBackend_t *influxBackend = (elosInfluxDbBackend_t *)backend->backendData;
     influxBackend->host = "localhost:8086";
-    influxBackend->token = "A1R98kJUSWgSddL0Fi3pcvlfcMm2xjx_yt6tHfmwe38qJyZJP25SrKmpHn2XZ_52j9U6icLpeU96EPm4LGuUsw==";
+    influxBackend->user = "root";
+    influxBackend->pw = "emlixemlix";
     influxBackend->orgId = "emlix";
     influxBackend->db = "elosd";
 

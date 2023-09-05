@@ -10,7 +10,8 @@
 
 typedef struct elosInfluxDbBackend {
     char *host;
-    char *token;
+    char *user;
+    char *pw;
     char *orgId;
     char *db;
     int influixdPid;
