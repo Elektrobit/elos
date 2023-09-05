@@ -60,9 +60,8 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     safuResultE_t result = SAFU_RESULT_OK;
     struct curl_slist *header = NULL;
     char url[100 + strlen(cmd) + 1];
-    char token[200];
-    COND_STRING(type, 13, write, "api/v2/write", "query")
-    COND_STRING(dbType, 7, write, "bucket", "db")
+    char authUrl[200];
+    COND_STRING(type, 13, write, "write", "query")
     COND_STRING(timeFormat, 10, write, "precision", "epoch")
     int ret = 0;
     CURLcode res;
@@ -91,22 +90,6 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK) {
-        ret = sprintf(token, "Authorization: Token %s", influxBackend->token);
-        if (ret <= 0) {
-            result = SAFU_RESULT_FAILED;
-            safuLogErr("Failed to initialize curl accept header");
-        }
-    }
-
-    if (result == SAFU_RESULT_OK) {
-        header = curl_slist_append(header, token);
-        if (header == NULL) {
-            result = SAFU_RESULT_FAILED;
-            safuLogErr("Failed to initialize curl authorization header");
-        }
-    }
-
-    if (result == SAFU_RESULT_OK) {
         res = curl_easy_setopt(request, CURLOPT_HTTPHEADER, header);
         if (res != CURLE_OK) {
             result = SAFU_RESULT_FAILED;
@@ -115,7 +98,15 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK) {
-        ret = sprintf(url, "http://%s/%s?org=%s&%s=%s&%s=ns", influxBackend->host, type, influxBackend->orgId, dbType, influxBackend->db, timeFormat);
+        ret = sprintf(authUrl, "u=%s&p=%s", influxBackend->user, influxBackend->pw);
+        if (ret <= 0) {
+            result = SAFU_RESULT_FAILED;
+            safuLogErr("Failed to initialize curl accept header");
+        }
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        ret = sprintf(url, "http://%s/%s?org=%s&db=%s&%s=ns&%s", influxBackend->host, type, influxBackend->orgId, influxBackend->db, timeFormat, authUrl);
         if (ret <= 0) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to initialize url");
