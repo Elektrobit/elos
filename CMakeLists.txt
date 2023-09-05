@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.21)
 include(cmake/ConfigureLibrary.cmake)
-include(project.cmake)
+include(cmake/project.cmake)
 
 project(elos LANGUAGES C VERSION ${ELOS_VERSION})
 
@@ -34,6 +34,6 @@ endif(UNIT_TESTS)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if(PACKAGING)
-  include(Packing.cmake)
+  include(cmake/Packing.cmake)
 endif(PACKAGING)
 
