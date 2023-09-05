@@ -187,8 +187,9 @@ safuResultE_t elosInfluxDbBackendShutdown(elosStorageBackend_t *backend) {
 }
 
 static inline char * _eventToLineProtocol(const elosEvent_t *event) {
+    printf("%lu,%lu", event->date.tv_sec, event->date.tv_nsec);
     char *out = safuAllocMem(NULL, sizeof(char) * (strlen(event->payload) + 1000));
-    int ret = sprintf(out, "event,sourceAppName=%s,sourceFileName=%s,sourcePid=%i,hardwareid=%s severity=%i,classification=%lu,payload=\"%s\" %lu", event->source.appName, event->source.fileName, event->source.pid, event->hardwareid, event->severity, event->classification, event->payload, (event->date.tv_sec * 1000000000 + event->date.tv_nsec));
+    int ret = sprintf(out, "event,sourceAppName=%s,sourceFileName=%s,sourcePid=%i,hardwareid=%s severity=%i,classification=%lu,payload=\"%s\" %lu%lu", event->source.appName, event->source.fileName, event->source.pid, event->hardwareid, event->severity, event->classification, event->payload, event->date.tv_sec, event->date.tv_nsec);
     if (ret <= 0) { 
         safuLogErr("Failed to write event using line protocol");
         out = "";
@@ -227,14 +228,14 @@ safuResultE_t elosInfluxDbBackendPersist(elosStorageBackend_t *backend, const el
 static inline bool _timespecFromEpochNsec(uint64_t epochNsec, struct timespec *date) {
     char epochNsecStr[20];
     bool res = false;
-    char epochStr[10];
-    char nsecStr[11];
+    char epochStr[11];
+    char nsecStr[10];
     size_t ret = sprintf(epochNsecStr, "%lu", epochNsec);
     if (ret == 19) {
-        ret = sprintf(epochStr, "%.*s", 9, epochNsecStr);
-        if (ret == 9) {
-            ret = sprintf(nsecStr, "%.*s", 10, epochNsecStr + 8);
-            if (ret == 10) {
+        ret = sprintf(epochStr, "%.*s", 10, epochNsecStr);
+        if (ret == 10) {
+            ret = sprintf(nsecStr, "%.*s", 9, epochNsecStr + 10);
+            if (ret == 9) {
                 date->tv_nsec = strtol(nsecStr,NULL, 10);
                 date->tv_sec = strtol(epochStr, NULL, 10);
                 res = true;
