@@ -34,8 +34,9 @@ if [ "$SSH_AUTH_SOCK" ]; then
 fi
 
 docker run --rm -it $SSH_AGENT_OPTS \
-    -v $BASE_DIR/..:/base \
-    -w /base \
+    -v $BASE_DIR:/base/elos \
+    -w /base/elos \
+    -e GIT_USER_TOKEN="${GIT_USER_TOKEN}" \
     --privileged \
     --device=/dev/kmsg \
     $IMAGE_NAME $@

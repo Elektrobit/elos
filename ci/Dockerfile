@@ -101,7 +101,7 @@ deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main\n\
 ENV SPHINX_VENV="/home/$USER/.venv/"
 ENV LOG4C_RCPATH="/base/elos/src/demo/elos_log4c_demo"
 
-WORKDIR /build
+WORKDIR /build/elos
 
 CMD /bin/bash
 
