@@ -1,1 +1,1 @@
-../../../shared/cmake/unit_test.cmake
+../../cmake/unit_test.cmake
