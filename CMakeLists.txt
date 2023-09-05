@@ -1,8 +1,16 @@
 # SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.21)
+include(cmake/ConfigureLibrary.cmake)
 include(project.cmake)
 
 project(elos LANGUAGES C VERSION ${ELOS_VERSION})
+
+list(APPEND CMAKE_PREFIX_PATH "${INSTALL_DIR}/usr/local/lib/cmake")
+
+configureLibrary(cmocka_extensions ${CMOCKA_EXTENSIONS_URI} ${CMOCKA_EXTENSIONS_REF})
+configureLibrary(cmocka_mocks ${CMOCKA_MOCKS_URI} ${CMOCKA_MOCKS_REF})
+configureLibrary(safu ${SAFU_URI} ${SAFU_REF})
+configureLibrary(samconf ${SAMCONF_URI} ${SAMCONF_REF})
 
 project_set_environment()
 project_set_version_variables()
