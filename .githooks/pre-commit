@@ -1,0 +1,27 @@
+#!/bin/sh
+
+CLANG_TIDY_DIFF=""
+if [ -x /usr/share/clang/clang-tidy-diff.py ]; then
+	CLANG_TIDY_DIFF="/usr/share/clang/clang-tidy-diff.py"
+fi
+if [ -x /usr/lib/llvm-*/share/clang/clang-tidy-diff.py ]; then
+	CLANG_TIDY_DIFF="/usr/lib/llvm-*/share/clang/clang-tidy-diff.py"
+fi
+
+if [ "x$CLANG_TIDY_DIFF" = "x" ]; then
+   echo "No clang-tidy-diff.py found, skipp pre commit checks"
+   exit 0
+fi
+
+RESULT=$(git diff --staged | ${CLANG_TIDY_DIFF} -p 1 2> /dev/null)
+echo $RESULT | grep "warning: "
+if [ $? -eq 0 ]; then
+	echo "There are some coding style issues:"
+	echo "$RESULT"
+	exec < /dev/tty
+	read -p "Commit anyway? (y/N): " ANSWER
+	case $ANSWER in
+		[Yy]* ) echo "Continue with linting errors..."; break;;
+		* ) exit 1;
+	esac
+fi

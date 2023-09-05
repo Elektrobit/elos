@@ -5,9 +5,17 @@ _build
 _demo
 b
 bld
-build
-build-*
 r
 release
 ci/sshconfig
 *.swp
+
+# eclipse project files and folders
+.profile
+.cprofile
+.settings
+.asciidoctorconfig.adoc
+**/build
+**/build-*
+dist-*
+compile_commands.json
