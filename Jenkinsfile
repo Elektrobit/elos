@@ -15,7 +15,7 @@ def withDockerNetwork(Closure inner) {
   }
 }
 def stages() {
-    def stages = ["elos", "elos: build release", "elos: build debug", "elos: utest", "elos: smoke test", "elos: lint sources", "elos: Benchmarks", "elos: documentation", "elos: integration test"]
+    def stages = ["elos", "build release", "build debug", "utest", "smoke test", "lint sources", "Benchmarks", "documentation", "integration test"]
     if (env.BRANCH_NAME =~ 'story.*' || env.BRANCH_NAME =~ 'bug.*' || env.BRANCH_NAME =~ 'task.*' || env.BRANCH_NAME == 'integration' || env.BRANCH_NAME == 'master' ) {
        stages.push("baseos-lab")
     }
@@ -52,28 +52,28 @@ pipeline {
   stages {
     stage("Elos Run") {
       parallel {
-        stage('trigger baseos-lab') {
-          when { anyOf {
-            equals expected: true, actual: stages().findAll{"baseos-lab".toLowerCase().contains(it.toLowerCase())}.any{true}
-          }}
-          steps {
-            gitlabCommitStatus("baseos-lab") {
-              script {
-                echo "triggering eb-baseos-elos-baseos-lab Pipeline with elos Branch '${BRANCH_NAME}'"
-                build(job: 'eb-baseos-elos-baseos-lab',
-                      wait: true,
-                      parameters: [
-                          string(name: 'ELOS_DEV_BRANCH', value: "${BRANCH_NAME}"),
-                      ]
-                )
-              }
-            }
-          }
-        }
+        //stage('trigger baseos-lab') {
+        //  when { anyOf {
+        //    equals expected: true, actual: stages().findAll{"baseos-lab".toLowerCase().contains(it.toLowerCase())}.any{true}
+        //  }}
+        //  steps {
+        //    gitlabCommitStatus("baseos-lab") {
+        //      script {
+        //        echo "triggering eb-baseos-elos-baseos-lab Pipeline with elos Branch '${BRANCH_NAME}'"
+        //        build(job: 'eb-baseos-elos-baseos-lab',
+        //              wait: true,
+        //              parameters: [
+        //                  string(name: 'ELOS_DEV_BRANCH', value: "${BRANCH_NAME}"),
+        //              ]
+        //        )
+        //      }
+        //    }
+        //  }
+        //}
         stage("Build and test") {
             agent {
               dockerfile {
-                  filename './elos/ci/Dockerfile'
+                  filename './ci/Dockerfile'
                   reuseNode true
                   additionalBuildArgs "--build-arg USER=jenkins \
                                 --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) --build-arg ASMCOV_URI=${ASMCOV_URI}"
@@ -96,7 +96,7 @@ pipeline {
                 steps{
                   gitlabCommitStatus("elos: build release") {
                     sh '''#!/bin/bash -xe
-                      ./elos/ci/build.sh --ci Release
+                      ./ci/build.sh --ci Release
                     '''
                   }
                 }
@@ -104,9 +104,9 @@ pipeline {
 
               stage('Build debug') {
                 steps{
-                  gitlabCommitStatus("elos: build debug") {
+                  gitlabCommitStatus("build debug") {
                     sh '''#!/bin/bash -xe
-                     ./elos/ci/build.sh --ci Debug
+                     ./ci/build.sh --ci Debug
                     '''
                   }
                 }
@@ -114,33 +114,33 @@ pipeline {
 
               stage('Run UnitTest') {
                 steps {
-                  gitlabCommitStatus("elos: utest") {
+                  gitlabCommitStatus("utest") {
                     sh '''#!/bin/bash -xe
-                      ./elos/ci/run_utest.sh
-                      ./elos/ci/run_utest.sh Release
+                      ./ci/run_utest.sh
+                      ./ci/run_utest.sh Release
                     '''
                   }
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "elos/build/Debug/cmake/Testing/Temporary/,elos/build/Release/cmake/Testing/Temporary/", fingerprint: true
+                    archiveArtifacts artifacts: "build/Debug/cmake/Testing/Temporary/,elos/build/Release/cmake/Testing/Temporary/", fingerprint: true
                   }
                 }
               }
 
               stage('Run Smoke Test') {
                 steps {
-                  gitlabCommitStatus("elos: smoke test") {
+                  gitlabCommitStatus("smoke test") {
                     sh '''#!/bin/bash -xe
-                      export SMOKETEST_TMP_DIR="$(realpath ./elos/build/tmp)"
-                      ./elos/ci/run_smoketests.sh Debug
-                      ./elos/ci/run_smoketests.sh Release
+                      export SMOKETEST_TMP_DIR="$(realpath ./build/tmp)"
+                      ./ci/run_smoketests.sh Debug
+                      ./ci/run_smoketests.sh Release
                     '''
                   }
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "elos/build/Debug/result/smoketest_results/,elos/build/Release/result/smoketest_results/", fingerprint: true
+                    archiveArtifacts artifacts: "build/Debug/result/smoketest_results/,elos/build/Release/result/smoketest_results/", fingerprint: true
                     script {
                       step (
                         [$class: 'JUnitResultArchiver', testResults: '**/junit.xml']
@@ -152,65 +152,65 @@ pipeline {
 
               stage('Lint sources') {
                 steps{
-                  gitlabCommitStatus("elos: lint sources") {
+                  gitlabCommitStatus("lint sources") {
                     sh '''#!/bin/bash -xe
                       export IGNORE_SOURCES="\
-                      elos/src/plugins/storagebackends/nosqlbackend/*/*\
-                      elos/src/components/processfilter/public/elos/processfilter/vector.h \
+                      src/plugins/storagebackends/nosqlbackend/*/*\
+                      src/components/processfilter/public/elos/processfilter/vector.h \
                       "
-                      ./elos/ci/code_lint.py --ci
-                      ./elos/ci/checklicense.sh
+                      ./ci/code_lint.py --ci
+                      ./ci/checklicense.sh
                     '''
                   }
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "elos/build/Release/cmake/lint_results/**", fingerprint: true
+                    archiveArtifacts artifacts: "build/Release/cmake/lint_results/**", fingerprint: true
                   }
                 }
               }
 
               stage('Build documentation') {
                 steps{
-                  gitlabCommitStatus("elos: documentation") {
-                    sh './elos/ci/build_doc.sh'
+                  gitlabCommitStatus("documentation") {
+                    sh './ci/build_doc.sh'
                   }
                 }
                 post {
                   success {
-                    archiveArtifacts artifacts: "elos/doc/build/**", fingerprint: true
+                    archiveArtifacts artifacts: "doc/build/**", fingerprint: true
                   }
                 }
               }
 
               stage('Run Benchmarks') {
                 steps {
-                  gitlabCommitStatus("elos: Benchmarks") {
-                    sh './elos/ci/run_benchmarks.sh Release'
+                  gitlabCommitStatus("Benchmarks") {
+                    sh './ci/run_benchmarks.sh Release'
                   }
                 }
                 post {
                   success {
-                    archiveArtifacts artifacts: "elos/build/Release/result/benchmark_results/**/*.csv", fingerprint: true
-                    archiveArtifacts artifacts: "elos/build/Release/result/benchmark_results/**/*.png", fingerprint: true
+                    archiveArtifacts artifacts: "build/Release/result/benchmark_results/**/*.csv", fingerprint: true
+                    archiveArtifacts artifacts: "build/Release/result/benchmark_results/**/*.png", fingerprint: true
                   }
                   failure {
-                    archiveArtifacts artifacts: "elos/build/Release/result/benchmark_results/**", fingerprint: true
+                    archiveArtifacts artifacts: "build/Release/result/benchmark_results/**", fingerprint: true
                   }
                 }
               }
 
               stage('Create coverage report') {
                 steps {
-                  gitlabCommitStatus("elos: coverage") {
+                  gitlabCommitStatus("coverage") {
                     sh '''#!/bin/bash -xe
-                      ./elos/ci/create_coverage.sh
+                      ./ci/create_coverage.sh
                     '''
                   }
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "elos/build/Release/result/coverage_results/**", fingerprint: true
+                    archiveArtifacts artifacts: "build/Release/result/coverage_results/**", fingerprint: true
                   }
                 }
               }
@@ -224,7 +224,7 @@ pipeline {
               }
               always {
                   withCredentials([usernamePassword(credentialsId: 'kpi_creds', passwordVariable: 'KPI_API_TOKEN', usernameVariable: 'KPI_API_URL')]) {
-                    sh './elos/ci/publish_kpis.sh'
+                    sh './ci/publish_kpis.sh'
                   }
                   cleanWs(deleteDirs: true, patterns: [
                    [pattern: '*', type: 'INCLUDE'],
@@ -244,10 +244,10 @@ pipeline {
             DOCKER_BUILDKIT = 0
           }
           steps {
-            gitlabCommitStatus("elos: integration test") {
+            gitlabCommitStatus("integration test") {
               script {
-                def elosdImage = docker.build("elosd", "-f elos/ci/Dockerfile.elosd --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) .")
-                def robotImage = docker.build("robot", "-f elos/ci/Dockerfile.robot --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) .")
+                def elosdImage = docker.build("elosd", "-f ci/Dockerfile.elosd --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) .")
+                def robotImage = docker.build("robot", "-f ci/Dockerfile.robot --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) .")
                 withDockerNetwork{ networkId ->
                   elosdImage.withRun("-t --network ${networkId} --name elos-target-${BUILD_ID}-${GIT_COMMIT} --cap-add=SYS_ADMIN --security-opt apparmor=unconfined") { elosdContainer ->
                     robotImage.inside("--network ${networkId} -e ELOSD_CONTAINER_NAME=elos-target-${BUILD_ID}-${GIT_COMMIT}") {
@@ -257,8 +257,8 @@ pipeline {
                       sh 'robot --version || true'
                       sh 'ping -w 1 $ELOSD_CONTAINER_NAME'
                       sh 'echo ############ Starting Robot Integration Tests #############'
-                      sh 'mkdir -p elos/build/Release/result/IntegrationTest'
-                      sh 'PROJECT=elos TARGET_NAME=$ELOSD_CONTAINER_NAME TEST_SOURCE=./elos/test/integration TEST_OUTPUT=./elos/build/Release/result/IntegrationTest ./elos/test/integration/scripts/run_integration_tests.sh'
+                      sh 'mkdir -p build/Release/result/IntegrationTest'
+                      sh 'PROJECT=elos TARGET_NAME=$ELOSD_CONTAINER_NAME TEST_SOURCE=./test/integration TEST_OUTPUT=./build/Release/result/IntegrationTest ./test/integration/scripts/run_integration_tests.sh'
                     }
                   }
                 }
@@ -267,12 +267,12 @@ pipeline {
           }
           post {
             always {
-              archiveArtifacts artifacts: "elos/build/Release/result/**", fingerprint: true
+              archiveArtifacts artifacts: "build/Release/result/**", fingerprint: true
               script {
                   step(
                         [
                           $class              : 'RobotPublisher',
-                          outputPath          : 'elos/build/Release/result/IntegrationTest/',
+                          outputPath          : 'build/Release/result/IntegrationTest/',
                           outputFileName      : '**/*.xml',
                           reportFileName      : '**/*test.html',
                           logFileName         : '**/log.html',
