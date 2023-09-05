@@ -41,6 +41,24 @@ node {
     }
 }
 
+node {
+  SOURCES_URI = ''
+  script {
+    def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+      com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl.class,
+      Jenkins.instance,
+      null,
+      null
+    );
+    def baseos_gitlab_uri = creds.findResult { it.id == 'baseos_gitlab_uri' ? it : null }
+    if(baseos_gitlab_uri) {
+      println(baseos_gitlab_uri.id + ": " +baseos_gitlab_uri.username + ": " + baseos_gitlab_uri.password)
+      SOURCES_URI=baseos_gitlab_uri.password
+      println("Sources URI is " + SOURCES_URI)
+    }
+  }
+}
+
 properties([gitLabConnection('GitLab')])
 
 pipeline {
@@ -77,7 +95,7 @@ pipeline {
                   reuseNode true
                   additionalBuildArgs "--build-arg USER=jenkins \
                                 --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) --build-arg ASMCOV_URI=${ASMCOV_URI}"
-                  args '--privileged --userns=keep-id'
+                  args "--privileged --userns=keep-id -e SOURCES_URI=${SOURCES_URI}"
                   label "podman"
               }
             }
