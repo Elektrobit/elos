@@ -106,13 +106,14 @@ def collect_sources_used(build_dir, json_file=None):
     with open(json_file, 'r', encoding="utf-8") as json_fh:
         json_dict_list = json.loads(json_fh.read())
 
-    inc_re = re.compile('(?:-I[^ ]+)|(?:-isystem [^ ]+)')
+    inc_def_re = re.compile('(?:-I[^ ]+)|(?:-isystem [^ ]+)|(?:-D[^ ]+)')
 
     for json_dict in json_dict_list:
         source = json_dict["file"]
-        iparam = [x.group(0) for x in inc_re.finditer(json_dict["command"])]
-        iparam = ' '.join(iparam).split(" ")
-        command = ['cpp', '-MM', source, *iparam]
+        idparam = [x.group(0) for x in inc_def_re.finditer(json_dict["command"])]
+        idparam = ' '.join(idparam).split(" ")
+        cc = json_dict["command"].split(" ")[0]
+        command = [cc, '-MM', source, *idparam]
         output = sp.run(command, stdout=sp.PIPE, check=True)
         results = output.stdout.decode("utf-8").split()
         results = [
@@ -167,20 +168,46 @@ def collect_sources_diff(base_dir, target_branch):
     return source_set
 
 
+def collect_sources_list_from_env(env_var, no_match_msg="Globs that don't match anything:"):
+    """
+    Collect a list of sources from a list of globs in an enviroment variable.
+    And print all the globs not matching any files.
+    """
+    source_list = []
+    not_necessary = []
+    for x in get_env(env_var, "").split(" "):
+        if len(x) <= 1:
+            continue
+        paths = glob.glob(x)
+        if len(paths) == 0:
+            not_necessary.append(x)
+        else:
+            source_list.append(paths)
+    source_set = {
+        os.path.abspath(x) for x in flatten_list(source_list)
+    }
+    if len(not_necessary) != 0:
+        print(no_match_msg)
+        for x in sorted(not_necessary):
+            print(f"  {x}")
+        print("")
+
+    return source_set
+
+
 def collect_sources_ignored(cfg):
     """
     Collects ignored sources
     """
+    return collect_sources_list_from_env("IGNORE_SOURCES", "Not existing IGNORE_SOURCES globs:")
 
-    ignored_list = [
-        glob.glob(x) for x in get_env("IGNORE_SOURCES", "").split(" ")
-        if len(x) > 1
-    ]
-    ignored_set = {
-        os.path.abspath(x) for x in flatten_list(ignored_list)
-    }
 
-    return ignored_set
+def collect_sources_intentional_unused(cfg):
+    """
+    Collect sources that are not used
+    but shouldn't be ignored
+    """
+    return collect_sources_list_from_env("UNUSED_SOURCES", "UNUSED_SOURCES globs not matcing anything:")
 
 
 def collect_sources(cfg):
@@ -221,6 +248,8 @@ def collect_sources(cfg):
         source_set["all"] = collect_sources_all(folders)
         source_set["all"] -= ignored_set
 
+    source_set["intentionally_unused"] = collect_sources_intentional_unused(
+        cfg)
     source_set["default"] = source_set[cfg["collect_mode"]]
 
     step_tidy = sum([True for x in cfg["steps"] if x.endswith("tidy")])
@@ -253,14 +282,31 @@ def check_unused(cfg, source_set):
 
     with open(log_file, 'w', encoding='utf-8') as log_fh:
         log_line(log_fh, "check_unused: Searching for unused files...")
-        source_set_diff = source_set["all"].difference(source_set["used"])
-        unused_file_count = len(source_set_diff)
+        source_set_unused = source_set["all"].difference(source_set["used"])
+        source_set_known_unused = source_set_unused.intersection(
+            source_set["intentionally_unused"])
+        source_set_unused -= source_set["intentionally_unused"]
+        unused_file_count = len(source_set_unused)
+        should_be_unused = source_set["used"].intersection(
+            source_set["intentionally_unused"])
 
         if unused_file_count > 0:
-            log_line(log_fh, "Unused files:")
-            for file in sorted(list(source_set_diff)):
+            log_line(log_fh, "Unused sources:")
+            for file in sorted(list(source_set_unused)):
                 log_line(log_fh, "        " + file)
             log_line(log_fh, "")
+            result = os.EX_DATAERR
+            state = "FAILED"
+        if len(source_set_known_unused) > 0:
+            log_line(log_fh, f"Known and expected unused sources:")
+            for source in sorted(source_set_known_unused):
+                log_line(log_fh, f"        {source}")
+            log_line(log_fh, f"")
+        if len(should_be_unused) > 0:
+            log_line(log_fh, f"Specified as not used sources that are in use:")
+            for source in sorted(should_be_unused):
+                log_line(log_fh, f"        {source}")
+            log_line(log_fh, f"")
             result = os.EX_DATAERR
             state = "FAILED"
 
@@ -375,12 +421,12 @@ def fix_unused(cfg, source_set):
     """
     del cfg
     result = os.EX_OK
-    source_set_diff = source_set["all"].difference(source_set["used"])
-    unused_file_count = len(source_set_diff)
+    source_set_unused = source_set["all"].difference(source_set["used"])
+    unused_file_count = len(source_set_unused)
 
     if unused_file_count > 0:
         print("fix_unused: Removing files...")
-        for file in sorted(list(source_set_diff)):
+        for file in sorted(list(source_set_unused)):
             print("    " + file)
             os.unlink(file)
         print()
@@ -546,7 +592,7 @@ def parameter_process(args, cfg):
     """
     if args.ci:
         cfg["ci"] = True
-        cfg["collect_mode"] = "used"
+        cfg["collect_mode"] = "all"
     else:
         cfg["ci"] = False
         mode = {0: "diff", 1: "all", 2: "diff", 4: "used"}
@@ -586,7 +632,7 @@ def parameter_parse():
         "--ci", action="store_true",
         help="Special mode intended for use in " +
         "continuous integration, uses all tests and " +
-        "./elos/build/Release as build-dir per default.")
+        "./build/Release as build-dir per default.")
 
     grp_select = parser.add_mutually_exclusive_group(required=False)
     grp_select.add_argument(
@@ -602,14 +648,14 @@ def parameter_parse():
         help="Selects all sources in src and test")
 
     parser.add_argument(
-        "--base-dir", help="Base directory (e.g. ./elos) to use; " +
+        "--base-dir", help="Base directory (e.g. ./) to use; " +
         "Can also be set with 'export BASE_DIR'")
     parser.add_argument(
-        "--build-dir", help="Build directory (e.g. ./elos/build) to use; " +
+        "--build-dir", help="Build directory (e.g. ./build) to use; " +
         "Can also be set with 'export BUILD_DIR'")
     parser.add_argument(
         "--result-dir", help="Result directory " +
-        "(e.g. ./elos/build/lint_result) to use; " +
+        "(e.g. ./build/lint_result) to use; " +
         "Can also be set with 'export LINT_RESULT_DIR'")
 
     args = parser.parse_args()
@@ -659,9 +705,8 @@ def main():
               " Perhaps try --select-json or --select-all? (see --help)")
         sys.exit(os.EX_NOINPUT)
 
-    if not cfg["ci"]:
-        if "check_tidy" in cfg["steps"] or "fix_tidy" in cfg["steps"]:
-            prepare_compile_commands(cfg)
+    if "check_tidy" in cfg["steps"] or "fix_tidy" in cfg["steps"]:
+        prepare_compile_commands(cfg)
 
     result = execute_steps(cfg, source_set)
     sys.exit(result)
