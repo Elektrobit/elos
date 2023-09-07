@@ -14,6 +14,7 @@
 #include "mock_eventbuffer.h"
 #include "mock_eventfilter.h"
 #include "mock_eventprocessor.h"
+#include "mock_logger.h"
 #include "mock_message_handler.h"
 #include "safu/common.h"
 #include "safu/mock_safu.h"
@@ -136,7 +137,14 @@ void elosTestelosMessageEventPublishBlacklistFilterSuccess(void **state) {
     MOCK_FUNC_ENABLE(safuGetHardwareId);
     will_return(__wrap_safuGetHardwareId, "localhost");
 
-    MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 1);
+    MOCK_FUNC_AFTER_CALL(elosLog, 0);
+    expect_value(elosLog, messageCode, ELOS_MSG_CODE_UNAUTHORIZED_PUBLISHING);
+    expect_value(elosLog, severity, ELOS_SEVERITY_WARN);
+    expect_value(elosLog, classification,
+                 ELOS_CLASSIFICATION_SECURITY | ELOS_CLASSIFICATION_ELOS | ELOS_CLASSIFICATION_IPC);
+    expect_string(elosLog, logMessage, "unauthorized publishing attempt");
+
+    MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 0);
     expect_value(elosEventBufferWrite, eventBuffer, &data->conn->eventBuffer);
     expect_check(elosEventBufferWrite, event, _check_event, &securityEvent);
     will_return(elosEventBufferWrite, SAFU_RESULT_OK);

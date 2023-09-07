@@ -26,6 +26,7 @@ create_unit_test(
     mock_eventbuffer_static
     mock_eventfilter_static
     mock_eventprocessor_static
+    mock_logger_static
     mock_message_handler_static
     mock_log_aggregator_static
     safu::mock_safu
