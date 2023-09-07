@@ -264,7 +264,7 @@ pipeline {
           steps {
             gitlabCommitStatus("integration test") {
               script {
-                def elosdImage = docker.build("elosd", "-f ci/Dockerfile.elosd --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) .")
+                def elosdImage = docker.build("elosd", "-f ci/Dockerfile.elosd --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) --build-arg SOURCES_URI=${SOURCES_URI} .")
                 def robotImage = docker.build("robot", "-f ci/Dockerfile.robot --build-arg USER=jenkins --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) .")
                 withDockerNetwork{ networkId ->
                   elosdImage.withRun("-t --network ${networkId} --name elos-target-${BUILD_ID}-${GIT_COMMIT} --cap-add=SYS_ADMIN --security-opt apparmor=unconfined") { elosdContainer ->
