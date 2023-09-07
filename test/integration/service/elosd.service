@@ -12,7 +12,7 @@ start() {
     chmod 666 /tmp/elosd.log
 
     export ELOS_STORAGE_BACKEND_JSON_FILE="/tmp/elosd_event.log"
-    stdbuf -o 0 -e 0 /usr/bin/elosd > /tmp/elosd.log 2>&1 &
+    stdbuf -o 0 -e 0 /usr/local/bin/elosd > /tmp/elosd.log 2>&1 &
     ELOS_PID=$!
 
     sleep 0.2s

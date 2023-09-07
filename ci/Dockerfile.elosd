@@ -31,27 +31,6 @@ RUN mkdir /etc/elos
 COPY ./test/integration/service/config.json /etc/elos/elosd.json
 RUN chmod 644 /etc/elos/elosd.json
 
-#RUN cmake -B safu/build ./safu \
-# -DUNIT_TESTS=OFF \
-# -DCMAKE_BUILD_TYPE=Release \
-# -DCMAKE_INSTALL_PREFIX=/usr \
-# && make -C safu/build install
-#
-#RUN cmake -B samconf/build ./samconf \
-# -DUNIT_TESTS=OFF \
-# -DCMAKE_BUILD_TYPE=Release \
-# -DCMAKE_INSTALL_PREFIX=/usr \
-# && make -C samconf/build install
-#
-#RUN cmake -B build ./ \
-# -DUNIT_TESTS=OFF \
-# -DCMAKE_BUILD_TYPE=Release \
-# -DCMAKE_INSTALL_PREFIX=/usr \
-# $CMAKE_PARAM \
-# && make -C elos/build install
-
-#ENV CMAKE_INSTALL_PREFIX=/usr
-##ENV LOCAL_INSTALL_DIR=/usr
 ENV SOURCES_URI=$SOURCES_URI
 RUN env
 RUN ci/build.sh Release

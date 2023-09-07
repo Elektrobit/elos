@@ -11,7 +11,7 @@
 		    ".process.pid 1 EQ"
 	    ],
             "EventLogging": {
-                "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
+                "PluginSearchPath": "/usr/local/lib/elos/backend",
                 "Plugins": {
                     "Dummy": {
                         "File": "backend_dummy.so",
