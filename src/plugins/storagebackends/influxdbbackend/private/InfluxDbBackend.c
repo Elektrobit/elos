@@ -1,61 +1,59 @@
 // SPDX-License-Identifier: MIT
-#include "InfluxDb.h"
-
+#include <curl/curl.h>
 #include <fcntl.h>
+#include <json-c/json.h>
 #include <safu/common.h>
+#include <safu/json.h>
 #include <safu/log.h>
 #include <safu/time.h>
-#include <safu/json.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <json-c/json.h>
-#include <curl/curl.h>
 
-#include "elos/rpnfilter/rpnfilter_types.h"
+#include "InfluxDb.h"
 #include "elos/event/event_vector.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventlogging/StorageBackend.h"
+#include "elos/rpnfilter/rpnfilter_types.h"
 
 #define BACKEND_NAME "InfluxDB"
 
-
-// compare https://curl.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
 struct callbackStorage {
-  char *response;
-  size_t size;
+    char *response;
+    size_t size;
 };
 
-static inline size_t writeCallback(void *data, size_t size, size_t nmemb, void *userp)
-{
+static inline size_t elosWriteCallback(void *data, size_t size, size_t dataSize, void *userData) {
+    if (userData == NULL) {
+        return dataSize;
+    }
+    size_t realsize = size * dataSize;
+    struct callbackStorage *storage = (struct callbackStorage *)userData;
 
-  if (userp == NULL) {
-    return nmemb;
-  }
-  size_t realsize = size * nmemb;
-  struct callbackStorage *mem = (struct callbackStorage *)userp;
+    char *newData = safuAllocMem(storage->response, storage->size + realsize + 1);
+    if (newData == NULL) {
+        safuLogErr("safuAllocMem");
+        return 0;
+    }
 
-  char *ptr = safuAllocMem(mem->response, mem->size + realsize + 1);
-  if(ptr == NULL)
-    return 0;  /* out of memory! */
+    storage->response = newData;
+    memcpy(&(storage->response[storage->size]), data, realsize);
+    storage->size += realsize;
+    storage->response[storage->size] = 0;
 
-  mem->response = ptr;
-  memcpy(&(mem->response[mem->size]), data, realsize);
-  mem->size += realsize;
-  mem->response[mem->size] = 0;
-
-  return realsize;
+    return realsize;
 }
 
-#define COND_STRING(name,size,cond,val1,val2) \
-    char name[size]; \
-    if (cond) { \
-        strcpy(name, val1); \
-    } else { \
-        strcpy(name, val2); \
+#define COND_STRING(name, size, cond, val1, val2) \
+    char name[size];                              \
+    if (cond) {                                   \
+        strcpy(name, val1);                       \
+    } else {                                      \
+        strcpy(name, val2);                       \
     }
-static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool write, char *cmd, struct callbackStorage *output) {
+static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool write, char *cmd,
+                                     struct callbackStorage *output) {
     bool cleanupRequest = true;
     safuResultE_t result = SAFU_RESULT_OK;
     struct curl_slist *header = NULL;
@@ -74,7 +72,7 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK) {
-        header = curl_slist_append(header, CURL_HEADER_1);
+        header = curl_slist_append(header, ACCEPT_APP_JSON);
         if (header == NULL) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to initialize curl authorization header");
@@ -82,7 +80,7 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK) {
-        header = curl_slist_append(header, write ? CURL_HEADER_3 : CURL_HEADER_2);
+        header = curl_slist_append(header, write ? CONTENT_TYPE_TEXT_PLAIN : CONTENT_TYPE_APP_JSON);
         if (header == NULL) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to initialize curl content-type header");
@@ -106,7 +104,8 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK) {
-        ret = sprintf(url, "http://%s/%s?org=%s&db=%s&%s=ns&%s", influxBackend->host, type, influxBackend->orgId, influxBackend->db, timeFormat, authUrl);
+        ret = sprintf(url, "http://%s/%s?org=%s&db=%s&%s=ns&%s", influxBackend->host, type, influxBackend->orgId,
+                      influxBackend->db, timeFormat, authUrl);
         if (ret <= 0) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to initialize url");
@@ -119,7 +118,7 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to add query to url");
         }
-    }    
+    }
 
     if (result == SAFU_RESULT_OK) {
         safuLogDebugF("Sending request to url %s", url);
@@ -139,7 +138,7 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK && !write) {
-        res = curl_easy_setopt(request, CURLOPT_WRITEFUNCTION, writeCallback);
+        res = curl_easy_setopt(request, CURLOPT_WRITEFUNCTION, elosWriteCallback);
         if (res != CURLE_OK) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to set set callback");
@@ -158,12 +157,11 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
         char buf[500];
         curl_easy_setopt(request, CURLOPT_ERRORBUFFER, buf);
         CURLcode curlRet = curl_easy_perform(request);
-        if(curlRet != CURLE_OK) {
+        if (curlRet != CURLE_OK) {
             result = SAFU_RESULT_FAILED;
             safuLogErrF("Failed to connect to influx db via curl: %s: %s", curl_easy_strerror(curlRet), buf);
         }
     }
-
 
     if (cleanupRequest) {
         curl_easy_cleanup(request);
@@ -172,7 +170,6 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
 
     return result;
 }
-
 
 safuResultE_t elosInfluxDbBackendStart(elosStorageBackend_t *backend) {
     elosInfluxDbBackend_t *influxBackend = backend->backendData;
@@ -186,17 +183,19 @@ safuResultE_t elosInfluxDbBackendShutdown(elosStorageBackend_t *backend) {
     return SAFU_RESULT_OK;
 }
 
-static inline char * _eventToLineProtocol(const elosEvent_t *event) {
-    printf("%lu,%lu", event->date.tv_sec, event->date.tv_nsec);
+static inline char *_eventToLineProtocol(const elosEvent_t *event) {
     char *out = safuAllocMem(NULL, sizeof(char) * (strlen(event->payload) + 1000));
-    int ret = sprintf(out, "event,sourceAppName=%s,sourceFileName=%s,sourcePid=%i,hardwareid=%s severity=%i,classification=%lu,payload=\"%s\" %lu%lu", event->source.appName, event->source.fileName, event->source.pid, event->hardwareid, event->severity, event->classification, event->payload, event->date.tv_sec, event->date.tv_nsec);
-    if (ret <= 0) { 
+    int ret = sprintf(out,
+                      "event,sourceAppName=%s,sourceFileName=%s,sourcePid=%i,hardwareid=%s "
+                      "severity=%i,classification=%lu,payload=\"%s\" %lu%lu",
+                      event->source.appName, event->source.fileName, event->source.pid, event->hardwareid,
+                      event->severity, event->classification, event->payload, event->date.tv_sec, event->date.tv_nsec);
+    if (ret <= 0) {
         safuLogErr("Failed to write event using line protocol");
         out = "";
     }
-    out = safuAllocMem(out, sizeof(char) * (strlen(out)+1));
+    out = safuAllocMem(out, sizeof(char) * (strlen(out) + 1));
     return out;
-    
 }
 
 safuResultE_t elosInfluxDbBackendPersist(elosStorageBackend_t *backend, const elosEvent_t *event) {
@@ -236,7 +235,7 @@ static inline bool _timespecFromEpochNsec(uint64_t epochNsec, struct timespec *d
         if (ret == 10) {
             ret = sprintf(nsecStr, "%.*s", 9, epochNsecStr + 10);
             if (ret == 9) {
-                date->tv_nsec = strtol(nsecStr,NULL, 10);
+                date->tv_nsec = strtol(nsecStr, NULL, 10);
                 date->tv_sec = strtol(epochStr, NULL, 10);
                 res = true;
             }
@@ -311,7 +310,7 @@ static inline bool _fillEventStruct(elosEvent_t *event, json_object *value, json
         } else {
             safuLogErrF("Invalid key name in data point: '%s' at idx %i", key, idx);
         }
-        if(!filled) {
+        if (!filled) {
             safuLogErrF("Failed to parse data point at idx %i", idx);
         }
     } else {
@@ -324,7 +323,7 @@ static inline bool _fillEventStruct(elosEvent_t *event, json_object *value, json
 static inline safuResultE_t _influxJsonToEvents(json_object *dataPoint, elosEventVector_t *events) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosEvent_t *event = NULL;
-    size_t len_columns, len_values, len_value;
+    size_t lenColumns, lenValues, lenValue;
     unsigned int i, j;
     int ret;
     json_object *columns = NULL;
@@ -334,10 +333,9 @@ static inline safuResultE_t _influxJsonToEvents(json_object *dataPoint, elosEven
     json_object *series = safuJsonGetArray(dataPoint, "series", 0, NULL);
     if (series == NULL) {
         result = SAFU_RESULT_FAILED;
-        safuLogErr("Invalid Data point, failed to extract series.");   
+        safuLogErr("Invalid Data point, failed to extract series.");
     }
 
-    
     if (result != SAFU_RESULT_FAILED) {
         seriesEntry = safuJsonGetObject(series, NULL, 0);
         if (seriesEntry == NULL) {
@@ -347,30 +345,30 @@ static inline safuResultE_t _influxJsonToEvents(json_object *dataPoint, elosEven
     }
 
     if (result != SAFU_RESULT_FAILED) {
-        columns = safuJsonGetArray(seriesEntry, "columns", 0, &len_columns);
-        if (columns == NULL || len_columns <= 0) {
+        columns = safuJsonGetArray(seriesEntry, "columns", 0, &lenColumns);
+        if (columns == NULL || lenColumns <= 0) {
             result = SAFU_RESULT_FAILED;
-            safuLogErr("Invalid Data point, failed to extract columns.");   
+            safuLogErr("Invalid Data point, failed to extract columns.");
         }
     }
 
     if (result != SAFU_RESULT_FAILED) {
-        values = safuJsonGetArray(seriesEntry, "values", 0, &len_values);
-        if (values == NULL || len_values <= 0) {
+        values = safuJsonGetArray(seriesEntry, "values", 0, &lenValues);
+        if (values == NULL || lenValues <= 0) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Invalid Data point, failed to extract values.");
         }
     }
 
     if (result != SAFU_RESULT_FAILED) {
-        for (i = 0; i < len_values; i++) {
-            value = safuJsonGetArray(values, NULL, i, &len_value);
+        for (i = 0; i < lenValues; i++) {
+            value = safuJsonGetArray(values, NULL, i, &lenValue);
             if (value == NULL) {
                 result = SAFU_RESULT_FAILED;
                 safuLogErr("Invalid Data point, failed to extract value.");
             }
             if (result != SAFU_RESULT_FAILED) {
-                if (len_value != len_columns) {
+                if (lenValue != lenColumns) {
                     result = SAFU_RESULT_FAILED;
                     safuLogErr("Invalid Data point, value and columns are not equal size.");
                 }
@@ -383,10 +381,9 @@ static inline safuResultE_t _influxJsonToEvents(json_object *dataPoint, elosEven
                     safuLogErr("Failed to allocate event");
                 }
             }
-                
 
             if (result != SAFU_RESULT_FAILED) {
-                for (j = 0 ; j < len_value; j++) {
+                for (j = 0; j < lenValue; j++) {
                     if (!_fillEventStruct(event, value, columns, j)) {
                         result = SAFU_RESULT_FAILED;
                         safuLogErr("Invalid Data Point, failed to extract event");
@@ -406,12 +403,11 @@ static inline safuResultE_t _influxJsonToEvents(json_object *dataPoint, elosEven
         }
     }
 
-
     return result;
 }
 
-
-safuResultE_t elosInfluxDbBackendFindEvents(elosStorageBackend_t *backend, elosEventFilter_t *filter, safuVec_t *events) {
+safuResultE_t elosInfluxDbBackendFindEvents(elosStorageBackend_t *backend, elosEventFilter_t *filter,
+                                            safuVec_t *events) {
     int i;
     size_t arrayLength = 0;
     struct callbackStorage buf = {0};
@@ -488,13 +484,12 @@ safuResultE_t elosInfluxDbBackendFindEvents(elosStorageBackend_t *backend, elosE
     if (buf.response != NULL) {
         free(buf.response);
     }
-    if(root != NULL) {
+    if (root != NULL) {
         json_object_put(root);
     }
 
     return res;
 }
-
 
 safuResultE_t elosInfluxDbBackendNew(elosStorageBackend_t **backend) {
     safuResultE_t result = SAFU_RESULT_OK;

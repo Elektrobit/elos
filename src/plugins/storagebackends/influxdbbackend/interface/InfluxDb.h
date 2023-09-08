@@ -4,9 +4,9 @@
 #include "elos/eventlogging/StorageBackend.h"
 #include "safu/common.h"
 
-#define CURL_HEADER_1 "Accept: application/json"
-#define CURL_HEADER_2 "Content-type: application/json"
-#define CURL_HEADER_3 "Content-type: text/plain; charset=utf-8"
+#define ACCEPT_APP_JSON         "Accept: application/json"
+#define CONTENT_TYPE_APP_JSON   "Content-type: application/json"
+#define CONTENT_TYPE_TEXT_PLAIN "Content-type: text/plain; charset=utf-8"
 
 typedef struct elosInfluxDbBackend {
     char *host;
