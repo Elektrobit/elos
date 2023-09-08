@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 find_package(safu)
 find_package(samconf)
+find_package(curl)
 
 add_library(
   backend_influxdb SHARED

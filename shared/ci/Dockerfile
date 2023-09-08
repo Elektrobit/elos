@@ -23,6 +23,7 @@ RUN apt-get update \
     jq \
     libcmocka-dev \
     libcsv-dev \
+    libcurl4-openssl-dev \
     libesmtp-dev \
     libiberty-dev \
     libjson-c-dev \
@@ -47,7 +48,6 @@ RUN apt-get update \
     sudo \
     wget \
     zlib1g-dev \
-    libcurl4-openssl-dev \
  && rm -rf /var/lib/apt/lists/* \
  && rm /usr/bin/perf \
  && find /usr/lib/linux-tools -name "perf" -executable -exec ln -s {} /usr/bin/perf \;
