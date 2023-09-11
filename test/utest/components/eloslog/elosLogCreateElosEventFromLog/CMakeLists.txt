@@ -7,9 +7,7 @@ create_unit_test(
     test_eloslog_elosLogCreateElosEventFromLog_utest
   SOURCES
     case_success.c
-    case_err_param_logdata.c
     case_err_param_event.c
-    case_exterr_event.c
     elosLogCreateElosEventFromLog_utest.c
   LIBRARIES
     elos_event_static_weak

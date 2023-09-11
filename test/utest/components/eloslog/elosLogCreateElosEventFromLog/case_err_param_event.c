@@ -1,5 +1,12 @@
 // SPDX-License-Identifier: MIT
 
+#include <linux/limits.h>
+#include <safu/common.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "elosLogCreateElosEventFromLog_utest.h"
 
 int elosLogCreateElosEventFromLogErrParamEventSetup(UNUSED void **state) {
@@ -11,20 +18,22 @@ int elosLogCreateElosEventFromLogErrParamEventTeardown(UNUSED void **state) {
 }
 
 void elosLogCreateElosEventFromLogErrParamEvent(UNUSED void **state) {
-    elosLogStatusE_t result = ELOS_LOG_STATUS_ERROR;
-    elosLogData_t *testLog = NULL;
-    const char *testMessage = "testMessage";
+    elosEvent_t testEvent = {0};
+    pid_t testpid = getpid();
 
     TEST("elosLogCreateElosEventFromLog");
-    SHOULD("%s", "not create an elos event as event parameter is NULL");
+    SHOULD("%s", "create an elos event with empty payload");
 
-    elosLogCreateLogData(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_PROCESS, testMessage,
-                         &testLog);
-    assert_non_null(testLog);
+    elosLogCreateElosEventFromLog(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_PROCESS, NULL,
+                                  &testEvent);
 
-    result = elosLogCreateElosEventFromLog(testLog, NULL);
+    assert_int_not_equal(testEvent.date.tv_sec, 0);
+    assert_int_not_equal(testEvent.date.tv_nsec, 0);
+    assert_int_equal(testEvent.source.pid, testpid);
+    assert_int_equal(testEvent.messageCode, ELOS_MSG_CODE_DEBUG_LOG);
+    assert_int_equal(testEvent.severity, ELOS_SEVERITY_DEBUG);
+    assert_int_equal(testEvent.classification, ELOS_CLASSIFICATION_PROCESS);
+    assert_null(testEvent.payload);
 
-    assert_int_equal(result, ELOS_LOG_STATUS_ERROR);
-
-    elosLogDeleteLogData(testLog);
+    elosEventDeleteMembers(&testEvent);
 }
