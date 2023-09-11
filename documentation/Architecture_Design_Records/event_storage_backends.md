@@ -196,3 +196,42 @@ The build failed to varying reasons, even with the same setup.
 The amount of actual writes that happen when storing an event is unclear,
 but at least from the poc development, it seems reasonable to assume that it
 is possible to cache multiple events before actually writing them to file.
+
+### 5) Time-Series Databases
+
+As a representative for Time-Series Databases, InfluxDb was chosen.
+
+https://www.influxdata.com/products/influxdb-overview/.
+
+# Decision
+
+Creating a code poc is necessary to determine how the api performs in regards.
+Due to the unavailability of InfluxDBv2 for yocto, the poc was implemented
+against the API of InfluxDB  in version 1.8. The code does work with version 2
+as well, since version two is backwards compatible with the version 1 API.
+
+As of development of this ADR, the version 3 of InfluxDB was already released,
+but storing was only possible in an amazon cloud, which is incompatible with
+the local storing we need for elos.
+
+Further development has not been decided as of yet.
+
+# Rational
+
+It is confirmed that we can store an elos event to an InfluxDb table and
+read it again.
+
+Preliminary performance tests have given slight indication that InfluxDb might
+performance worse then Json or SQL, but currently the testing system performs
+not reliably enough to make certain statements.
+
+## Open Points
+Version 2 of InfluxDb uses a different storage format. The assumption
+is, that it could perform better in writes then the previous Storage formats.
+
+It is also unclear how the write performance changes should we decide to cache
+events and write multiple at once, which is easily possible with the InfluxDb
+API, in both versions.
+
+Lastly it is unclear how the size of the payload would influence the write
+performance, since time-series Databases usually have small 
