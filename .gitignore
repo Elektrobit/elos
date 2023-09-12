@@ -20,3 +20,4 @@ ci/sshconfig
 dist-*
 compile_commands.json
 test/integration/report/**
+doc/source/generated/

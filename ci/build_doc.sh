@@ -35,7 +35,7 @@ Elos API
 
 function createDeveloperApiDocu() {
     local API_INDEX_TABLE=""
-    local MODULE_PATHS=$(find elos/src/ -name "public" -or -name "interface" -type d -exec dirname {} \;)
+    local MODULE_PATHS=$(find ${ELOS_SOURCE_SOURCE_DIR} -name "public" -or -name "interface" -type d -exec dirname {} \;)
 
     for MODULE_PATH in $MODULE_PATHS; do
         local MODULE=$(basename ${MODULE_PATH})
