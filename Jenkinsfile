@@ -168,25 +168,28 @@ pipeline {
                 }
               }
 
-              //stage('Lint sources') {
-              //  steps{
-              //    gitlabCommitStatus("lint sources") {
-              //      sh '''#!/bin/bash -xe
-              //        export IGNORE_SOURCES="\
-              //        src/plugins/storagebackends/nosqlbackend/*/*\
-              //        src/components/processfilter/public/elos/processfilter/vector.h \
-              //        "
-              //        ./ci/code_lint.py --ci
-              //        ./ci/checklicense.sh
-              //      '''
-              //    }
-              //  }
-              //  post {
-              //    always {
-              //      archiveArtifacts artifacts: "build/Release/cmake/lint_results/**", fingerprint: true
-              //    }
-              //  }
-              //}
+              stage('Lint sources') {
+                steps{
+                  gitlabCommitStatus("lint sources") {
+                    sh '''#!/bin/bash -xe
+                      export IGNORE_SOURCES=" \
+                        src/plugins/storagebackends/nosqlbackend/*/* \
+                        src/components/processfilter/public/elos/processfilter/vector.h \
+                        src/components/plugin/public/elos/plugin/vector.h \
+                        src/components/rpnfilter/public/elos/rpnfilter/vector.h \
+                        src/components/eventfilter/public/elos/eventfilter/vector.h \
+                      "
+                      ./ci/code_lint.py --ci
+                      ./ci/checklicense.sh
+                    '''
+                  }
+                }
+                post {
+                  always {
+                    archiveArtifacts artifacts: "build/Release/cmake/lint_results/**", fingerprint: true
+                  }
+                }
+              }
 
               stage('Build documentation') {
                 steps{
