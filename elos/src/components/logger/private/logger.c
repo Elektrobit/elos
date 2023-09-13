@@ -4,8 +4,7 @@
 #include <bits/pthreadtypes.h>
 #include <stdio.h>
 
-static elosLogger_t elosDefaultLogger;
-static pthread_once_t elosDefaultLoggerInitialized = PTHREAD_ONCE_INIT;
+static elosLogger_t elosDefaultLogger = {0};
 
 safuResultE_t elosLoggerInitialize(elosLogger_t *logger) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -25,11 +24,11 @@ safuResultE_t elosLoggerDeleteMembers(elosLogger_t *logger) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (logger != NULL) {
-        if (SAFU_FLAG_HAS_INITIALIZED_BIT(&logger->flags) == true) {
+        if (SAFU_FLAG_EXCHANGE_SHUTDOWN_BIT(&logger->flags) == false) {
             result = elosEventBufferDelete(&logger->logEventBuffer);
-
             if (result == SAFU_RESULT_OK) {
-                atomic_store(&logger->flags, SAFU_FLAG_ERROR_BIT);
+                logger->logEventBuffer = NULL;
+                SAFU_FLAG_CLEAR_ALL_BITS(&logger->flags);
             }
         }
     }
@@ -37,19 +36,15 @@ safuResultE_t elosLoggerDeleteMembers(elosLogger_t *logger) {
     return result;
 }
 
-static void _initDefaultLogger() {
-    elosLoggerInitialize(&elosDefaultLogger);
-}
-
 safuResultE_t elosLoggerGetDefaultLogger(elosLogger_t **logger) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
-    int retVal = 0;
+    safuResultE_t result = SAFU_RESULT_OK;
 
-    retVal = pthread_once(&elosDefaultLoggerInitialized, _initDefaultLogger);
+    if (SAFU_FLAG_EXCHANGE_INITIALIZE_BIT(&elosDefaultLogger.flags) == false) {
+        result = elosLoggerInitialize(&elosDefaultLogger);
+    }
 
-    if (retVal == 0) {
+    if (result == SAFU_RESULT_OK) {
         *logger = &elosDefaultLogger;
-        result = SAFU_RESULT_OK;
     }
 
     return result;
@@ -71,10 +66,9 @@ void elosLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity, uint
     elosLogger_t *logger = NULL;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    elosLoggerGetDefaultLogger(&logger);
-
     elosLogCreateElosEventFromLog(messageCode, severity, classification, logMessage, &logEvent);
 
+    elosLoggerGetDefaultLogger(&logger);
     if (SAFU_FLAG_HAS_INITIALIZED_BIT(&logger->flags) == true) {
         result = elosLogPublishServerLogEvent(logger->logEventBuffer, &logEvent);
         if (result == SAFU_RESULT_FAILED) {
