@@ -15,13 +15,43 @@
             "EventLogging": {
                 "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
                 "Plugins": {
-                    "InfluxBackend": {
-                        "File": "backend_influxdb.so",
+                    "Dummy": {
+                        "File": "backend_dummy.so",
+                        "Run": "always",
+                        "Filter": [
+                            ".event.messageCode 1000 NE"
+                        ]
+                    },
+                    "SecondDummy": {
+                        "File": "backend_dummy.so",
+                        "Run": "always",
+                        "Filter": [
+                            ".event.messageCode 1000 EQ",
+                            ".event.severity 1 EQ"
+                        ]
+                    },
+                    "SQLBackend": {
+                        "File": "backend_sql.so",
+                        "Run": "always",
+			"Config": {
+			    "ConnectionPath": ""
+			}
+                    },
+                    "SkippedDummy": {
+                        "File": "backend_dummy.so",
+                        "Run": "never"
+                    },
+                    "JsonBackend": {
+                        "File": "backend_json.so",
                         "Run": "always",
                         "Filter": [
                             "1 1 EQ"
-                        ]
-		    }
+                        ],
+			"Config" : {
+				"StoragePath": "/tmp/elosd_%host%_%date%_%count%.log",
+				"Flags": ["O_SYNC"]
+			}
+                    }
                 }
             },
             "Scanner": {
