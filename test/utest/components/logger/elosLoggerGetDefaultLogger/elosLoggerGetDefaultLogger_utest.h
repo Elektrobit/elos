@@ -12,3 +12,4 @@ typedef struct elosUnitTestState {
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLoggerGetDefaultLoggerSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLoggerGetDefaultLoggerErrFunc)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosLoggerGetDefaultLoggerGetAfterLoggerInit)

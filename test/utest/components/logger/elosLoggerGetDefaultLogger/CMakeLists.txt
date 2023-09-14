@@ -5,6 +5,7 @@ create_unit_test(
     test_logger_elosLoggerGetDefaultLogger_utest
   SOURCES
     case_success.c
+    case_logger_get_after_init.c
     case_err_func.c
     elosLoggerGetDefaultLogger_utest.c
   LIBRARIES

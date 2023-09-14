@@ -10,7 +10,7 @@ int elosTestElosLoggerGetDefaultLoggerSuccessTeardown(UNUSED void **state) {
     return 0;
 }
 
-void elosTestElosLoggerGetDefaultLoggerSuccess(UNUSED void **state) {
+void elosTestElosLoggerGetDefaultLoggerSuccess(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     elosLogger_t *testLogger = NULL;
     safuResultE_t result;

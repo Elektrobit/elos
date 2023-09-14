@@ -8,6 +8,7 @@ int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosLoggerGetDefaultLoggerSuccess),
         TEST_CASE(elosTestElosLoggerGetDefaultLoggerErrFunc),
+        TEST_CASE(elosTestElosLoggerGetDefaultLoggerGetAfterLoggerInit),
     };
 
     return RUN_TEST_SUITE(tests, elosLoggerGetDefaultLoggerUtest);
