@@ -117,10 +117,18 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK && !write) {
-        ret = sprintf(url, "%s&%s", url, cmd);
+        ret = sprintf(tempUrl, "%s&%s", url, cmd);
         if (ret <= 0) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to add query to url");
+        }
+    }
+
+    if (result == SAFU_RESULT_OK && !write) {
+        strcpy(url, tempUrl);
+        if (url == NULL) {
+            result = SAFU_RESULT_FAILED;
+            safuLogErr("strcpy");
         }
     }
 
