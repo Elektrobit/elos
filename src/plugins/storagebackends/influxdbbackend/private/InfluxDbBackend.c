@@ -58,10 +58,13 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     bool cleanupRequest = true;
     safuResultE_t result = SAFU_RESULT_OK;
     struct curl_slist *header = NULL;
-    char url[100 + strlen(cmd) + 1];
-    char authUrl[200];
+    size_t authLen = strlen("u=%s&p=%s") + strlen(influxBackend->user) + strlen(influxBackend->pw);
+    char authUrl[authLen];
     COND_STRING(type, 13, write, "write", "query")
     COND_STRING(timeFormat, 10, write, "precision", "epoch")
+    size_t urlLen = strlen("http://%s/%s?org=%s&db=%s&%s=ns&%s") +  strlen(influxBackend->host) + strlen(type) + strlen(influxBackend->orgId) + strlen(influxBackend->db) + strlen(timeFormat) + authLen + strlen(cmd) + 1;
+    char url[urlLen];
+    char tempUrl[urlLen];
     int ret = 0;
     CURLcode res;
 
