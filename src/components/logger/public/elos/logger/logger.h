@@ -25,7 +25,14 @@ typedef struct elosLogger {
 /*******************************************************************
  * Initializes the event buffer member of the provided logger and sets
  * the loggers flag to initialized.
- *
+ * - If event buffer creation fails then the flag member of the provided
+ *   logger is not set and the event buffer remains uninitialized.
+ * - Since no event buffer or flags are set, clean up is not necessary.
+ * - If the provided logger is already initialized, it does not matter
+ *   the logger is initialized again.
+ * - It is required that the logger is initialized only once during the
+ *   entire time elos is running.
+
  * Parameters:
  *      logger (elosLogger_t *) : the logger which needs to be initialized.
  * Returns:
@@ -37,9 +44,15 @@ safuResultE_t elosLoggerInitialize(elosLogger_t *logger);
 /*******************************************************************
  * Deletes the event buffer member of the provided logger and resets
  * the loggers flag to not initialized.
- *
+ * - If event buffer delete fails then the flag member of the provided
+ *   logger is not set and the event buffer remains initialized
+ * - Manually set the free event buffer and clear logger flags
+ * - If the provided logger is already deleted, then the function tries
+ *   to delete the logger again but will return a `SAFU_RESULT_FAILED`
+ *   as event buffer is NULL and elosEventBufferDelete will fail.
+
  * Parameters:
- *      logger (elosLogger_t *) : the logger which needs iits members to be deleted.
+ *      logger (elosLogger_t *) : the logger which needs its members to be deleted.
  * Returns:
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
@@ -47,11 +60,22 @@ safuResultE_t elosLoggerInitialize(elosLogger_t *logger);
 safuResultE_t elosLoggerDeleteMembers(elosLogger_t *logger);
 
 /*******************************************************************
- * Initializes the given logger parameter by setting the logger flag to initialized
- * and initializing the loggers event buffer.
+ * Returns a pointer to the internal elos default logger.
+ * - On Function call it checks if the default logger initialize flag is set and
+ *   when not it sets it.
+ * - It then calls `elosLoggerInitialize` to initialize the event buffer member
+ *   of the default logger.
+ * - If the initialization fails then the logger parameter is not set to the
+ *   internal default logger.
+ * - Upon successful initialization the logger parameter is set to point at the
+ *   initialized default logger.
+ * - Clean up is to be done i.e `elosLoggerDeleteMembers` should be done once
+ *   in the lifetime of the process, so when done with the logger instance it is
+ *   better to drop the logger instance.
  *
  * Parameters:
- *      logger (elosLogger_t *) : the logger which needs its members to be deleted.
+ *      logger (elosLogger_t i**) : the logger pointer which should point
+ *                                  at the initialized default internal elos logger
  * Returns:
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
@@ -59,7 +83,7 @@ safuResultE_t elosLoggerDeleteMembers(elosLogger_t *logger);
 safuResultE_t elosLoggerGetDefaultLogger(elosLogger_t **logger);
 
 /*******************************************************************
- * Retrieves the elosd internal logger, creates the log event from provided
+ * Publishes via the elosd internal logger, creates the log event from provided
  * parameters and publishes them.
  *
  * Parameters:
