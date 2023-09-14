@@ -5,6 +5,7 @@ create_unit_test(
     test_logger_elosLog_utest
   SOURCES
     case_success.c
+    case_invalid_logger.c
     case_logger_uninitialized.c
     elosLog_utest.c
   LIBRARIES
