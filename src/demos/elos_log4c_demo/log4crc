@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE log4c SYSTEM "">
+
+<log4c version="1.2.4">
+
+	<config>
+		<bufsize>0</bufsize>
+		<debug level="2"/>
+		<nocleanup>0</nocleanup>
+		<reread>1</reread>
+	</config>
+
+	<category name="root" priority="notice"/>
+	
+	<appender name="stdout" type="stream" layout="dated"/>
+	<appender name="stderr" type="stream" layout="dated"/>
+	<appender name="syslog" type="syslog" layout="basic"/>
+	<appender name="elos" type="elos_appender" layout="elos_layout"/>
+
+	<layout name="basic" type="basic"/>
+	<layout name="dated" type="dated"/>
+	<layout name="elos_layout" type="elos_formatter"/>
+	
+        <category name="log4c.elos.demo.log4cdemo" priority="debug" appender="elos" />
+
+</log4c>

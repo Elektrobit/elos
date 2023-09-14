@@ -1,0 +1,42 @@
+@startuml
+skinparam linetype ortho
+rectangle elos-tools as "Baseos CI" {
+  node Host as "Host" {
+    together {
+      component labgrid as "Labgrid" {
+        component pytest as "Pytest Runner"
+      }
+      component robot as "Robot Framework"
+    }
+    package "Integration-Test" as IntegrationTest {
+      artifact "test runner"
+      artifact "tests" {
+        rectangle tests [
+          * .robot-files
+          * keywords.resources
+          * libraries
+        ]
+      }
+    }
+  }
+  
+  node Target as "Qemu/HW Target" {
+    component Elosd as "elosd"
+  }
+  
+  rectangle Result as "Result" {
+    artifact log as "log.html"
+    artifact output as "output.xml"
+    artifact report as "report.html"
+  }
+}
+
+Host -[hidden]left-> Target
+Host --> Target : run test
+labgrid -- Target : establish connection
+pytest ..> robot : uses
+robot  ..> labgrid : gets target information
+Host -left-> Result
+report -[hidden]right-> output
+output -[hidden]right-> log
+@enduml

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosBlacklistInitialize)
+add_subdirectory(elosBlacklistDelete)
+add_subdirectory(elosClientManagerStart)
+add_subdirectory(elosClientManagerStop)
+add_subdirectory(elosClientManagerThreadGetFreeConnectionSlot)
+add_subdirectory(elosClientManagerGetStatus)
+add_subdirectory(elosClientManagerThreadWaitForIncomingConnection)
+add_subdirectory(elosClientManagerThreadListen)

@@ -1,0 +1,34 @@
+@startuml
+
+class Event {
+  date: timespec
+  source: EventSource
+  severity: Severity
+  hardwareid: string
+  classification: uint64
+  messageCode: EventMessageCode
+  payload: bytes[]
+}
+
+class EventQueue {
+  id: EventQueueID
+  events: Event[]
+}
+
+class EventFilter {
+  id: EventFilterID
+  rule: EventFilterString
+}
+
+class EventFilterNode {
+  id: EventFilterNodeID
+  eventFilter: EventFilter[]
+  eventQueue: EventQueue
+}
+
+EventQueue "*" o-up- "*" Event
+EventFilter .l. Event
+EventFilterNode "1..*" o-up- "*" EventFilter
+EventFilterNode "1" o-left- "*" EventQueue
+
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+title Publish & Poll / Message Queue
+
+node elosd {
+  component Publisher_B<<Scanner>>
+  component EventProcessor
+  database EventFilter
+  database EventQueue_Client_1_EVENT_A as el_client_1_event_a
+  database EventQueue_Client_1_EVENT_B as el_client_1_event_b
+  database EventQueue_Client_N_EVENT_A as el_client_N_event_a
+}
+
+component Publisher_A<<Client>>
+component Subscriber_1<<Client>>
+component Subscriber_N<<Client>>
+
+Publisher_A -down-> EventProcessor: publish message for an event 'EVENT_A'
+Publisher_B -left-> EventProcessor: publish message for an event 'EVENT_B'
+
+EventProcessor --> el_client_1_event_a : dispatch message
+EventProcessor --> el_client_1_event_b : dispatch message
+EventProcessor --> el_client_N_event_a : dispatch message
+EventProcessor <-left-> EventFilter
+
+
+Subscriber_1 -up-> el_client_1_event_a : poll messages for EVENT_A
+Subscriber_1 -up-> el_client_1_event_b : poll messages for EVENT_B
+Subscriber_N -up-> el_client_N_event_a : poll messages for EVENT_A
+
+Subscriber_1 -up-> EventFilter : create filter for EVENT_A, EVENT_B
+Subscriber_N -up-> EventFilter : create filter for EVENT_A
+
+@enduml

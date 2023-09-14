@@ -1,0 +1,68 @@
+FROM ubuntu:jammy
+
+ARG USER=ci
+ARG UID=1000
+ARG GID=1000
+ARG TARGET_USER_NAME=target
+ARG TARGET_PASSWORD=target123
+ARG SOURCES_URI=https://github.com/emlix/
+ARG CMAKE_PARAM=""
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y sudo locales build-essential binutils-dev pkg-config cmake \
+ git wget curl netcat net-tools ssh libssl-dev openssl ninja-build libcmocka-dev \
+ libjson-c-dev libmnl-dev libsqlite3-0 libsqlite3-dev libesmtp-dev expat liblog4c-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN locale-gen en_US.UTF-8 \
+ && locale-gen de_DE.UTF-8 \
+ && groupadd -g $GID -o ci \
+ && useradd -m -u $UID -g $GID -o -s /bin/bash $USER \
+ && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+WORKDIR /home/elos
+
+COPY ./ /home/elos
+
+RUN git clean -dfx /home/elos
+
+RUN mkdir /etc/elos
+COPY ./test/integration/service/config.json /etc/elos/elosd.json
+RUN chmod 644 /etc/elos/elosd.json
+
+ENV SOURCES_URI=$SOURCES_URI
+RUN env
+RUN ci/build.sh Release
+
+RUN sudo cp -rnv /home/elos/build/Release/dist/usr/* /usr/
+
+COPY ./test/integration/service/elosd.service /etc/init.d/elosd
+RUN chmod a+x /etc/init.d/elosd
+
+RUN sudo ldconfig
+RUN sudo rm -rf /home/elos
+
+RUN sudo mkdir /var/run/sshd \
+ && sudo chmod 0755 /var/run/sshd \
+ && sudo useradd -p $(openssl passwd -1 $TARGET_PASSWORD) --create-home --shell /bin/bash --groups sudo $TARGET_USER_NAME
+
+EXPOSE 22
+EXPOSE 54321
+
+USER $USER
+ENV LC_ALL=en_US.UTF-8
+ENV DOCKERBUILD=1
+ENV LOG4C_RCPATH="/etc/elos/elos_log4c_demo/"
+
+WORKDIR /home/ci
+
+RUN  echo '\n\
+sudo service ssh start\n\
+if [ "$START_ELOS" == "true" ]; then\n\
+  sudo service elosd start\n\
+  export START_ELOS="false"\n\
+fi\n\
+' >> $HOME/.bashrc
+ENV START_ELOS="true"
+ENTRYPOINT /bin/bash

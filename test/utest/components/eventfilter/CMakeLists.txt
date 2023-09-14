@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosEventFilterBuilderCompile)
+add_subdirectory(elosEventFilterCreate)
+add_subdirectory(elosEventFilterExecute)

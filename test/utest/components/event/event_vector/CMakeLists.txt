@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosEventVectorDelete)
+add_subdirectory(elosEventVectorInitialize)
+add_subdirectory(elosEventVectorNew)
+add_subdirectory(elosEventVectorSerialize)
+add_subdirectory(elosEventVectorToJsonObject)
+add_subdirectory(elosEventVectorToJsonArray)
+add_subdirectory(elosEventVectorDeleteMembers)
+add_subdirectory(elosEventVectorFromJsonObject)
+add_subdirectory(elosEventVectorFromJsonArray)

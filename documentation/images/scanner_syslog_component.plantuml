@@ -1,0 +1,24 @@
+@startuml
+title "Syslog scanner"
+left to right direction
+
+node Application {
+}
+
+entity "/dev/log" as LogSocket <<unix+udp>>
+
+node Elos {
+  component ElosConfig
+  component SyslogScanner {
+    component LoglineMapper
+  }
+  component EventProcessor
+}
+
+
+Application --> LogSocket : Send syslog message
+SyslogScanner --> LogSocket: Listen for syslog messages
+SyslogScanner --> LoglineMapper: convert syslog line into a canonical event
+LoglineMapper --> ElosConfig: retrieve message mapping rules
+SyslogScanner --> EventProcessor: publish converted event
+@enduml

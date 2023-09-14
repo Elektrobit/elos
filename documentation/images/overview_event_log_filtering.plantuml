@@ -1,0 +1,97 @@
+@startuml
+title Filter Types
+left to right direction
+
+entity "Raw Input" as RawInput <<non canonical>>
+
+together {
+  node Client {
+    component InputFilter_Client as "InputFilter"
+  }
+  node Scanner {
+    component InputFilter_Scanner as "InputFilter"
+  }
+}
+
+note bottom of InputFilter_Scanner
+  **Input Filter / Event Mapper**
+  ===
+  - limiter (setLimits)
+  - application defined input filtering
+  - i.e
+  -- regex against syslog lines
+  -- threshold raw values like temperature
+end note
+
+entity DumpedInput
+
+together {
+  entity "Log" as Log.1 <<canonical>>
+  entity "Event" as Event.1 <<canonical>>
+}
+
+node elosd {
+  component LogAggregator
+  component EventProcessor
+  together {
+    database LogStorage
+    database EventQueues
+  }
+}
+
+note top of LogAggregator
+  **Log Filter**
+  ===
+  - filter by matching logging configuration against canonical log fields
+  - i.e.
+  -- drop all Logs with severity below config.LogLevel
+  -- drop all from source "appName=echo"
+  - !!possible bottleneck should we allow filtering on expensive fields like payload?
+end note
+
+together {
+  entity "Log" as Log.2 <<canonical>>
+  entity "Event" as Event.2 <<canonical>>
+}
+
+together {
+  cloud LogReader
+  cloud EventSubscriber
+}
+
+note top of LogReader
+  **Result Filter**
+  ===
+  - filter by matching canonical event data or payload
+  - i.e.
+  -- drop all Events with severity below config.LogLevel
+  -- drop all from source "appName=echo"
+  - only convenient API / utilities for client applications?
+  - filter on elosd-side or client-side => load vs. traffic
+end note
+
+RawInput --> InputFilter_Client
+RawInput --> InputFilter_Scanner
+
+InputFilter_Client --> Log.1
+InputFilter_Scanner --> Log.1
+InputFilter_Client --> Event.1
+InputFilter_Scanner --> Event.1
+InputFilter_Scanner --> DumpedInput
+InputFilter_Client --> DumpedInput
+
+Log.1 --> LogAggregator
+Event.1 --> EventProcessor
+
+LogAggregator --> LogStorage : store
+EventProcessor --> EventQueues : dispatch into
+
+LogStorage --> Log.2
+EventQueues --> Event.2
+
+Log.2 --> LogReader
+Event.2 --> EventSubscriber
+
+EventSubscriber --> EventQueues : (register) create event queue for filter
+
+@enduml

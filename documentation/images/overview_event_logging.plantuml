@@ -1,0 +1,23 @@
+@startuml
+title Event logging
+left to right direction
+
+node elos {
+  package EventLogging {
+    component LogAggregator
+    component JsonBackend <<LogBackend>>
+    database "Non volatile storage" as Storage
+  }
+
+  together {
+    component Scanner
+    component ClientManager
+  }
+}
+
+Scanner -[hidden]up-> ClientManager
+Scanner -> LogAggregator : persist
+ClientManager -> LogAggregator : persist
+LogAggregator -* JsonBackend
+JsonBackend -> Storage
+@enduml

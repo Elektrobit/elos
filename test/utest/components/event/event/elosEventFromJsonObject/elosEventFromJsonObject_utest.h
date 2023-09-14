@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: MIT
+#ifndef ELOS_EVENTFROMOBJECT_UTEST_H
+#define ELOS_EVENTFROMOBJECT_UTEST_H
+
+#include <cmocka_mocks/mock_jsonc.h>
+#include <cmocka_mocks/mock_libc.h>
+
+#include "event_utest.h"
+#include "safu/common.h"
+
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectNUllInputJobj)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectNUllInputEvent)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectClassificationError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectDateError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectHardwareIdError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectMessageCodeError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectPayloadError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectSeverityError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectSourceError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectSuccessEmptyJObject)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectSuccessNullEventSource)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectSuccessSeverityOnly)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFromJsonObjectSuccessSourceOnly)
+
+typedef struct elosTestState {
+    json_object *object;
+    elosEvent_t *result;
+} elosTestState_t;
+
+#endif /* ELOS_EVENTFROMOBJECT_UTEST_H */

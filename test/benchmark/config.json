@@ -1,0 +1,47 @@
+{
+    "root": {
+        "elos": {
+            "UseEnv": true,
+            "Port": 54321,
+            "LogLevel": "DEBUG",
+            "Interface": "127.0.0.1",
+            "EventBlacklist": ".event.messageCode 2000 EQ",
+	    "authorizedProcesses": [
+		    ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+		    ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+		    ".process.pid 1 EQ"
+	    ],
+            "EventLogging": {
+                "PluginSearchPath": "/usr/local/lib/elos/backend",
+                "Plugins": {
+                    "Dummy": {
+                        "File": "backend_dummy.so",
+                        "Run": "always",
+                        "Filter": [
+                            ".event.messageCode 1000 NE"
+                        ]
+                    },
+                    "JsonBackend": {
+                        "File": "backend_json.so",
+                        "Run": "always",
+                        "Filter": [
+                            "1 1 EQ"
+                        ]
+                    }
+                }
+            },
+            "Scanner": {
+                "Path": "/usr/local/lib/elos/scanner",
+                "SyslogScanner": {
+                    "MappingRules": {
+                        "MessageCodes": {
+                            "4000": ".event.source.appName 'ssh' STRCMP",
+                            "2000": ".event.source.appName 'crinit' STRCMP",
+                            "1000": ".event.source.appName 'login' STRCMP"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

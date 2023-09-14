@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: MIT
+
+create_mock_lib(
+  NAME
+    mock_elos_event
+  SOURCES
+    mock_event.c
+    mock_event_source.c
+    mock_event_vector.c
+  INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  LIBRARIES
+    elos_event_static_weak
+    cmocka_extensions::cmocka_extensions
+)
+target_compile_definitions(mock_elos_event PUBLIC ELOS_COMMON_FUNC_LINKER_WRAPING)
+target_link_options(
+  mock_elos_event
+  PUBLIC
+   -Wl,--wrap=elosEventSourceDeepCopy
+   -Wl,--wrap=elosEventSourceNew
+   -Wl,--wrap=elosEventSourceDeleteMembers
+   -Wl,--wrap=elosEventSourceDelete
+   -Wl,--wrap=elosEventSourceDeserialize
+   -Wl,--wrap=elosEventSourceSerialize
+   -Wl,--wrap=elosEventSourceFromJsonObject
+   -Wl,--wrap=elosEventSourceToJsonObject
+   -Wl,--wrap=elosEventSerialize
+   -Wl,--wrap=elosEventDeepCopy
+   -Wl,--wrap=elosEventNew
+   -Wl,--wrap=elosEventDeleteMembers
+   -Wl,--wrap=elosEventDelete
+   -Wl,--wrap=elosEventDeserialize
+   -Wl,--wrap=elosEventFromJsonObject
+   -Wl,--wrap=elosEventToJsonObject
+   -Wl,--wrap=elosEventIsDateEmpty
+   -Wl,--wrap=elosEventVectorNew
+   -Wl,--wrap=elosEventVectorInitialize
+   -Wl,--wrap=elosEventVectorFromJsonObject
+   -Wl,--wrap=elosEventVectorFromJsonArray
+   -Wl,--wrap=elosEventVectorToJsonArray
+   -Wl,--wrap=elosEventVectorToJsonObject
+   -Wl,--wrap=elosEventVectorDeleteMembers
+   -Wl,--wrap=elosEventVectorDelete
+)

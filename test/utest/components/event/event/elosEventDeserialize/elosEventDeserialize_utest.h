@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: MIT
+#ifndef ELOS_EVENTDESERIALIZE_UTEST_H
+#define ELOS_EVENTDESERIALIZE_UTEST_H
+
+#include "event_utest.h"
+
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeEmptyInputString)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeEmptyEvent)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeEventConversionError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeJsonParseError)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeSuccessNullEventSource)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeSuccessNullEvent)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeSuccessSeverityOnly)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventDeserializeSuccessSourceOnly)
+
+#endif /* ELOS_EVENTDESERIALIZE_UTEST_H */

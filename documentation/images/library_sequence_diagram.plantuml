@@ -1,0 +1,24 @@
+@startuml
+
+== Initialization ==
+Client -[#red]> Server: elosConnectTcpip (ip, port, session)
+Client <[#blue]-- Server: Returns session and an errorcode
+
+Client -[#red]> Server: elosGetVersion (session, versionstring)
+Client <[#blue]-- Server: Returns versionstring and an errorcode
+
+Client -[#red]> Server: elosEventSubscribe (session, filterRuleArray, filterRuleArraySize, eventqueueid)
+Client <[#blue]-- Server: Returns eventqueueid and an errorcode
+
+== Client loop ==
+Client -[#red]> Server: elosEventQueueRead (session, eventqueueid, timeout, eventcount, events)
+Client <[#blue]-- Server: Returns events, eventcount and errorcode
+... ...
+
+== Disconnect ==
+Client -[#red]> Server: elosDisconnect (session)
+Client <[#blue]-- Server: Returns errorcode
+
+@enduml
+
+
