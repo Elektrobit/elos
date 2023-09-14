@@ -141,7 +141,7 @@ pipeline {
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "build/Debug/cmake/Testing/Temporary/,elos/build/Release/cmake/Testing/Temporary/", fingerprint: true
+                    archiveArtifacts artifacts: "build/Debug/cmake/Testing/Temporary/,build/Release/cmake/Testing/Temporary/", fingerprint: true
                   }
                 }
               }
@@ -158,7 +158,7 @@ pipeline {
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "build/Debug/result/smoketest_results/,elos/build/Release/result/smoketest_results/", fingerprint: true
+                    archiveArtifacts artifacts: "build/Debug/result/smoketest_results/,build/Release/result/smoketest_results/", fingerprint: true
                     script {
                       step (
                         [$class: 'JUnitResultArchiver', testResults: '**/junit.xml']
