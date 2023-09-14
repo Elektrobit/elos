@@ -42,25 +42,30 @@ safuResultE_t elosPluginLoad(void *pluginPtr) {
 safuResultE_t elosPluginStart(void *pluginPtr) {
     elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
     safuResultE_t result = SAFU_RESULT_OK;
+    eventfd_t efdVal = 0;
+    int retVal;
 
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
         result = SAFU_RESULT_FAILED;
-    } else {
-        eventfd_t efdVal = 0;
-        int retVal;
+    }
 
+    if (result != SAFU_RESULT_FAILED) {
         result = elosInfluxDbBackendStart(plugin->data);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosInfluxDbBackendStart failed");
         }
+    }
 
+    if (result != SAFU_RESULT_FAILED) {
         retVal = eventfd_write(plugin->worker.sync, 1);
         if (retVal < 0) {
             safuLogErrErrno("eventfd_write (worker.sync) failed");
             result = SAFU_RESULT_FAILED;
         }
+    }
 
+    if (result != SAFU_RESULT_FAILED) {
         retVal = eventfd_read(plugin->stop, &efdVal);
         if (retVal < 0) {
             result = SAFU_RESULT_FAILED;

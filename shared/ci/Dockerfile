@@ -104,7 +104,5 @@ ENV LOG4C_RCPATH="/base/elos/src/demo/elos_log4c_demo"
 
 WORKDIR /build
 
-EXPOSE 8086
-
 CMD /bin/bash
 
