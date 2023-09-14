@@ -75,7 +75,7 @@ function createDeveloperApiDocu() {
     # remove generated but unsued files
     rm -r ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/elos/elos.rst
 
-    for DOC in $(find /base/elos/doc/source/generated/developer/api/ -name "*.rst" -and -not -name "index.rst"); do
+    for DOC in $(find "${SPHINX_GENERATED_SOURCE_DIR}/doc/source/generated/developer/api/" -name "*.rst" -and -not -name "index.rst"); do
         CHAPTER_DOC_PATH="${DOC##"${SPHINX_GENERATED_SOURCE_DIR}/developer/api/"}"
         echo "----> ${CHAPTER_DOC_PATH}"
         API_INDEX_TABLE="${API_INDEX_TABLE}  ${CHAPTER_DOC_PATH}\n"
