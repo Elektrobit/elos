@@ -50,16 +50,6 @@ safuResultE_t elosLoggerGetDefaultLogger(elosLogger_t **logger) {
     return result;
 }
 
-static safuResultE_t elosLogPublishServerLogEvent(elosEventBuffer_t *elosLogEventBuffer, elosEvent_t *elosLogEvent) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
-
-    if ((elosLogEventBuffer != NULL) && (elosLogEvent != NULL)) {
-        result = elosEventBufferWrite(elosLogEventBuffer, elosLogEvent);
-    }
-
-    return result;
-}
-
 void elosLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity, uint64_t classification,
              const char *logMessage) {
     elosEvent_t logEvent = {0};
@@ -70,7 +60,7 @@ void elosLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity, uint
 
     elosLoggerGetDefaultLogger(&logger);
     if (SAFU_FLAG_HAS_INITIALIZED_BIT(&logger->flags) == true) {
-        result = elosLogPublishServerLogEvent(logger->logEventBuffer, &logEvent);
+        result = elosEventBufferWrite(logger->logEventBuffer, &logEvent);
         if (result == SAFU_RESULT_FAILED) {
             elosLogSafuFallback(&logEvent);
         }
