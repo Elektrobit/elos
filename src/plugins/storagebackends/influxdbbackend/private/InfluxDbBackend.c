@@ -16,6 +16,7 @@
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventlogging/StorageBackend.h"
 #include "elos/rpnfilter/rpnfilter_types.h"
+#include "samconf/json_backend.h"
 
 #define BACKEND_NAME "InfluxDB"
 
@@ -183,13 +184,42 @@ safuResultE_t elosInfluxDbBackendShutdown(elosStorageBackend_t *backend) {
     return SAFU_RESULT_OK;
 }
 
+size_t _strlen_null(const char *str) {
+    if (str == NULL) {
+        return strlen("(NULL)");
+    } else {
+        return strlen(str);
+    }
+}
+
+#define protocolLine                                                       \
+    "event,sourceAppName=%s,sourceFileName=%s,sourcePid=%i,hardwareid=%s " \
+    "severity=%i,classification=%lu,messageCode=%i,payload=\"%s\" %lu%lu"
+size_t _predictMessageSize(const elosEvent_t *event) {
+    size_t out = strlen(protocolLine);
+    out += _strlen_null(event->source.fileName);
+    out += _strlen_null(event->source.appName);
+    out += DECIMAL_DIGITS_BOUND(event->source.pid);
+    out += _strlen_null(event->hardwareid);
+    out += DECIMAL_DIGITS_BOUND(event->severity);
+    out += DECIMAL_DIGITS_BOUND(event->classification);
+    out += DECIMAL_DIGITS_BOUND(event->messageCode);
+    out += _strlen_null(event->payload);
+    out += DECIMAL_DIGITS_BOUND(event->date.tv_sec);
+    out += DECIMAL_DIGITS_BOUND(event->date.tv_nsec);
+    return out;
+    /*return strlen(protocolLine) + strlen(event->source.fileName) + strlen(event->source.appName) +
+           DECIMAL_DIGITS_BOUND(event->source.pid) + strlen(event->hardwareid) + DECIMAL_DIGITS_BOUND(event->severity) +
+           DECIMAL_DIGITS_BOUND(event->classification) + DECIMAL_DIGITS_BOUND(event->messageCode) +
+           strlen(event->payload) + DECIMAL_DIGITS_BOUND(event->date.tv_sec) +
+           DECIMAL_DIGITS_BOUND(event->date.tv_nsec);*/
+}
+
 static inline char *_eventToLineProtocol(const elosEvent_t *event) {
-    char *out = safuAllocMem(NULL, sizeof(char) * (strlen(event->payload) + 1000));
-    int ret = sprintf(out,
-                      "event,sourceAppName=%s,sourceFileName=%s,sourcePid=%i,hardwareid=%s "
-                      "severity=%i,classification=%lu,payload=\"%s\" %lu%lu",
-                      event->source.appName, event->source.fileName, event->source.pid, event->hardwareid,
-                      event->severity, event->classification, event->payload, event->date.tv_sec, event->date.tv_nsec);
+    char *out = safuAllocMem(NULL, sizeof(char) * _predictMessageSize(event));
+    int ret = sprintf(out, protocolLine, event->source.appName, event->source.fileName, event->source.pid,
+                      event->hardwareid, event->severity, event->classification, event->messageCode, event->payload,
+                      event->date.tv_sec, event->date.tv_nsec);
     if (ret <= 0) {
         safuLogErr("Failed to write event using line protocol");
         out = "";
@@ -224,25 +254,9 @@ safuResultE_t elosInfluxDbBackendPersist(elosStorageBackend_t *backend, const el
     return result;
 }
 
-static inline bool _timespecFromEpochNsec(uint64_t epochNsec, struct timespec *date) {
-    char epochNsecStr[20];
-    bool res = false;
-    char epochStr[11];
-    char nsecStr[10];
-    size_t ret = sprintf(epochNsecStr, "%lu", epochNsec);
-    if (ret == 19) {
-        ret = sprintf(epochStr, "%.*s", 10, epochNsecStr);
-        if (ret == 10) {
-            ret = sprintf(nsecStr, "%.*s", 9, epochNsecStr + 10);
-            if (ret == 9) {
-                date->tv_nsec = strtol(nsecStr, NULL, 10);
-                date->tv_sec = strtol(epochStr, NULL, 10);
-                res = true;
-            }
-        }
-    }
-
-    return res;
+static inline void _timespecFromEpochNsec(uint64_t epochNsec, struct timespec *date) {
+    date->tv_sec = epochNsec / 1000000000;
+    date->tv_nsec = epochNsec - (date->tv_sec * 1000000000);
 }
 
 static inline bool _fillEventStruct(elosEvent_t *event, json_object *value, json_object *columns, int idx) {
@@ -255,10 +269,8 @@ static inline bool _fillEventStruct(elosEvent_t *event, json_object *value, json
         if (strcmp(key, "time") == 0) {
             ret = safuJsonGetUint64(value, NULL, idx, &epochNsec);
             if (ret == 0) {
-                filled = _timespecFromEpochNsec(epochNsec, &event->date);
-                if (!filled) {
-                    safuLogErrF("Failed to convert timestamp %lu", epochNsec);
-                }
+                _timespecFromEpochNsec(epochNsec, &event->date);
+                filled = true;
             }
         } else if (strcmp(key, "classification") == 0) {
             ret = safuJsonGetUint64(value, NULL, idx, &event->classification);
@@ -268,10 +280,10 @@ static inline bool _fillEventStruct(elosEvent_t *event, json_object *value, json
         } else if (strcmp(key, "hardwareid") == 0) {
             ret = safuJsonGetString(value, NULL, idx, (const char **)&buf);
             if (ret == 0) {
-                event->hardwareid = strdup(buf);
-                if (event->hardwareid != NULL) {
-                    filled = true;
+                if (strcmp(buf, "(null)") != 0) {
+                    event->hardwareid = strdup(buf);
                 }
+                filled = true;
             }
         } else if (strcmp(key, "severity") == 0) {
             ret = safuJsonGetInt32(value, NULL, idx, (int *)&event->severity);
@@ -281,31 +293,36 @@ static inline bool _fillEventStruct(elosEvent_t *event, json_object *value, json
         } else if (strcmp(key, "sourceAppName") == 0) {
             ret = safuJsonGetString(value, NULL, idx, (const char **)&buf);
             if (ret == 0) {
-                event->source.appName = strdup(buf);
-                if (event->source.appName != NULL) {
-                    filled = true;
+                if (strcmp(buf, "(null)") != 0) {
+                    event->source.appName = strdup(buf);
                 }
+                filled = true;
             }
         } else if (strcmp(key, "sourceFileName") == 0) {
             ret = safuJsonGetString(value, NULL, idx, (const char **)&buf);
             if (ret == 0) {
-                event->source.fileName = strdup(buf);
-                if (event->source.fileName != NULL) {
-                    filled = true;
+                if (strcmp(buf, "(null)") != 0) {
+                    event->source.fileName = strdup(buf);
                 }
+                filled = true;
             }
         } else if (strcmp(key, "sourcePid") == 0) {
             ret = safuJsonGetInt32(value, NULL, idx, &event->source.pid);
             if (ret == 0) {
                 filled = true;
             }
+        } else if (strcmp(key, "messageCode") == 0) {
+            ret = safuJsonGetInt32(value, NULL, idx, (int *)&event->messageCode);
+            if (ret == 0) {
+                filled = true;
+            }
         } else if (strcmp(key, "payload") == 0) {
             ret = safuJsonGetString(value, NULL, idx, (const char **)&buf);
             if (ret == 0) {
-                event->payload = strdup(buf);
-                if (event->payload != NULL) {
-                    filled = true;
+                if (strcmp(buf, "(null)") != 0) {
+                    event->payload = strdup(buf);
                 }
+                filled = true;
             }
         } else {
             safuLogErrF("Invalid key name in data point: '%s' at idx %i", key, idx);

@@ -234,4 +234,6 @@ events and write multiple at once, which is easily possible with the InfluxDb
 API, in both versions.
 
 Lastly it is unclear how the size of the payload would influence the write
-performance, since time-series Databases usually have small 
+performance, since time-series databases usually have small-sized variable data,
+while elosd's event payload can easily get rather big, depending on the message
+that is logged.

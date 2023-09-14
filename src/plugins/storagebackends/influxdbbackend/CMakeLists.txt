@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 find_package(safu)
 find_package(samconf)
-find_package(curl)
+find_package(CURL REQUIRED)
 
 add_library(
   backend_influxdb SHARED
@@ -35,7 +35,7 @@ target_link_libraries(
     plugin_interface
     samconf::samconf
     safu::safu
-    curl
+    CURL::libcurl
 )
 
 install(TARGETS backend_influxdb DESTINATION ${ELOSD_BACKEND_PATH})
