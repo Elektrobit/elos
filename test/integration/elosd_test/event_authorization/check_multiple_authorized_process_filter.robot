@@ -51,6 +51,10 @@ A Process Filter Is Set
 Client Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
 
+    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
+ 
+    Set Test Variable    ${PUBLISH_TIME}
+
     ${rc}    Execute And Log Based On User Permissions    elosc -p '{"messageCode": 2010}'    ${RETURN_RC}
     Executable Returns No Errors    ${rc}    Authorized client unable to publish blacklisted event
 
@@ -59,13 +63,17 @@ Blacklisted Event Is Published
     [Documentation]    Blacklisted event will be published from authorized clients
     [Teardown]         Reset Elosd Config
 
-    ${stdout}    ${rc}   Execute And Log    elosc -f ".event.messageCode 2010 EQ" | grep 2010 | tail -1    ${RETURN_STDOUT}    ${RETURN_RC}
+    ${stdout}    ${rc}   Execute And Log    elosc -f ".event.messageCode 2010 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"    ${RETURN_STDOUT}    ${RETURN_RC}
     Should Contain    ${stdout}    2010
     Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
 
 
 Client Tries To Publish A Normal Event
     [Documentation]    An elos client tries to publish a normal event and Succeeds
+
+    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
+ 
+    Set Test Variable    ${PUBLISH_TIME}
 
     ${rc}    Execute And Log    elosc -p '{"messageCode": 150}'    ${RETURN_RC}
     Executable Returns No Errors    ${rc}    Client unable to publish normal event
@@ -75,7 +83,7 @@ Event Is Published
     [Documentation]    Event not blacklisted will be published.
     [Teardown]         Reset Elosd Config
 
-    ${stdout}    ${rc}   Execute And Log    elosc -f ".event.messageCode 150 EQ" | grep 150 | tail -1    ${RETURN_STDOUT}    ${RETURN_RC}
+    ${stdout}    ${rc}   Execute And Log    elosc -f ".event.messageCode 150 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"     ${RETURN_STDOUT}    ${RETURN_RC}
     Should Contain    ${stdout}    150
     Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
 
