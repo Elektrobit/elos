@@ -46,6 +46,7 @@ RUN cmake -B elos/build ./elos \
  -DUNIT_TESTS=OFF \
  -DCMAKE_BUILD_TYPE=Release \
  -DCMAKE_INSTALL_PREFIX=/usr \
+ -DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=ON \
  && make -C elos/build install
 
 COPY ./elos/test/integration/service/elosd.service /etc/init.d/elosd
