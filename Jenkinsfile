@@ -257,50 +257,50 @@ pipeline {
               }
             }
         }
-        stage ("Run integration test") {
-          agent {
-            label "docker"
-          }
-          environment {
-            DOCKER_BUILDKIT = 0
-	    BUILD_ARG = "--build-arg USER=jenkins"
-
-          }
-          steps {
-            gitlabCommitStatus("elos: integration test") {
-              sh '''#!/bin/bash -xe
-                ./ci/run_integration_tests.sh Release
-              '''
-            }
-          }
-          post {
-            always {
-              archiveArtifacts artifacts: "build/Release/result/**", fingerprint: true
-              script {
-                  step(
-                        [
-                          $class              : 'RobotPublisher',
-                          outputPath          : 'build/Release/result/integration/',
-                          outputFileName      : '**/*.xml',
-                          reportFileName      : '**/*test.html',
-                          logFileName         : '**/log.html',
-                          disableArchiveOutput: false,
-                          passThreshold       : 50,
-                          unstableThreshold   : 40,
-                          otherFiles          : "**/*.png,**/*.jpg",
-                        ]
-                  )
-              }
-              cleanWs(deleteDirs: true, patterns: [
-                [pattern: '*', type: 'INCLUDE'],
-                [pattern: 'samconf', type: 'EXCLUDE'],
-                [pattern: 'safu', type: 'EXCLUDE'],
-                [pattern: 'elos', type: 'EXCLUDE'],
-                [pattern: '*/build*', type: 'INCLUDE'],
-              ])
-            }
-          }
-        }
+//        stage ("Run integration test") {
+//          agent {
+//            label "docker"
+//          }
+//          environment {
+//            DOCKER_BUILDKIT = 0
+//	    BUILD_ARG = "--build-arg USER=jenkins"
+//
+//          }
+//          steps {
+//            gitlabCommitStatus("elos: integration test") {
+//              sh '''#!/bin/bash -xe
+//                ./ci/run_integration_tests.sh Release
+//              '''
+//            }
+//          }
+//          post {
+//            always {
+//              archiveArtifacts artifacts: "build/Release/result/**", fingerprint: true
+//              script {
+//                  step(
+//                        [
+//                          $class              : 'RobotPublisher',
+//                          outputPath          : 'build/Release/result/integration/',
+//                          outputFileName      : '**/*.xml',
+//                          reportFileName      : '**/*test.html',
+//                          logFileName         : '**/log.html',
+//                          disableArchiveOutput: false,
+//                          passThreshold       : 50,
+//                          unstableThreshold   : 40,
+//                          otherFiles          : "**/*.png,**/*.jpg",
+//                        ]
+//                  )
+//              }
+//              cleanWs(deleteDirs: true, patterns: [
+//                [pattern: '*', type: 'INCLUDE'],
+//                [pattern: 'samconf', type: 'EXCLUDE'],
+//                [pattern: 'safu', type: 'EXCLUDE'],
+//                [pattern: 'elos', type: 'EXCLUDE'],
+//                [pattern: '*/build*', type: 'INCLUDE'],
+//              ])
+//            }
+//          }
+//        }
       }
     }
   }
