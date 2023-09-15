@@ -55,6 +55,9 @@ fi
 
 BUILD_TYPE="${1:-Debug}"
 
+# enable plugins to build
+CMAKE_PARAM="${CMAKE_PARAM} -DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=ON"
+
 if [ $OPTION_PACKAGE -eq 1 ]; then
     CMAKE_PARAM="${CMAKE_PARAM} -D PACKAGING=true"
     BUILD_TYPE=Release
