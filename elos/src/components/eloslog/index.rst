@@ -1,11 +1,13 @@
 
-# eloslog
+eloslog
+=======
 
 This component contains common code as a part of the elos log API. The common code converts the given individual
 log parameters into an elos event. These log events are then stored in the elos backend and can be retrieved using
 event filters for various purposes.
 
-## CreateElosEventFromLog
+CreateElosEventFromLog
+----------------------
 
 The log parameters passed to this function is converted into an elos event. The event parameters are set as follows :
 
@@ -20,7 +22,8 @@ readlink function.
 - The event messageCode is set from the passed messageCode parameter.
 - The event payload is set from the passed logMessage parameter.
 
-## LogSafuFallback
+LogSafuFallback
+---------------
 
 The LogSafuFallback is the fallback function when event creation for logging fails. When event creation fails this fallback function is called which logs the log message using the safulog API functions. The safulog function logs the message normally on the console, which is then visible as logs based on the loglevel filter set on the elos config. The safulog API functions are mapped according to the `severity` parameter so that the message is logged with th correct log level. The mapping is as follows :
 
