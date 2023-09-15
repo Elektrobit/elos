@@ -26,12 +26,13 @@
 
 struct serverContext {
     samconfConfig_t *config;
-    elosClientManagerContext_t clientManagerContext;
+    elosClientManager_t clientManagerContext;
     elosScannerManagerContext_t scannerManagerContext;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
     elosEventDispatcher_t eventDispatcher;
     elosEventProcessor_t eventProcessor;
+    elosLogger_t *logger;
 };
 
 static int elosActive = 1;
@@ -67,7 +68,7 @@ int elosServerShutdown(struct serverContext *ctx) {
         safuLogErr("Shutting down log aggregator failed!");
         result = EXIT_FAILURE;
     }
-    if (elosClientManagerStop(&ctx->clientManagerContext) != 0) {
+    if (elosClientManagerDeleteMembers(&ctx->clientManagerContext) != SAFU_RESULT_OK) {
         safuLogErr("Stoping client manager failed!");
         result = EXIT_FAILURE;
     }
@@ -85,6 +86,10 @@ int elosServerShutdown(struct serverContext *ctx) {
     }
     if (elosPluginManagerDeleteMembers(&ctx->pluginManager) != SAFU_RESULT_OK) {
         safuLogErr("Deleting plugin processor members failed!");
+        result = EXIT_FAILURE;
+    }
+    if (elosLoggerDeleteMembers(ctx->logger) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting logger members failed!");
         result = EXIT_FAILURE;
     }
     if (samconfConfigDelete(ctx->config) != SAMCONF_CONFIG_OK) {
@@ -118,6 +123,10 @@ int main(int argc, char **argv) {
         safuLogErrErrno("signal(SIGTERM)");
         return EXIT_FAILURE;
     }
+
+    elosLoggerGetDefaultLogger(&context.logger);
+
+    elosLog(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_ELOS, "internal logger initialized");
 
     safuLogDebug("Load configuration");
     safuResultE_t result = elosConfigLoad(&context.config);
@@ -184,9 +193,8 @@ int main(int argc, char **argv) {
             elosServerShutdown(&context);
             return EXIT_FAILURE;
         }
+        elosEventDispatcherBufferAdd(&context.eventDispatcher, context.logger->logEventBuffer);
     }
-
-    elosLogSetEventProcessor(&context.eventProcessor);
 
     safuLogDebug("Start client manager");
     elosClientManagerParam_t cmParams = {
@@ -195,11 +203,18 @@ int main(int argc, char **argv) {
         .eventProcessor = &context.eventProcessor,
         .eventDispatcher = &context.eventDispatcher,
     };
-    retval = elosClientManagerStart(&context.clientManagerContext, &cmParams);
-    if (retval < 0) {
-        safuLogErr("elosClientManagerStart");
+    result = elosClientManagerInitialize(&context.clientManagerContext, &cmParams);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosClientManagerInitialize");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
+    } else {
+        retval = elosClientManagerStart(&context.clientManagerContext);
+        if (retval < 0) {
+            safuLogErr("elosClientManagerStart");
+            elosServerShutdown(&context);
+            return EXIT_FAILURE;
+        }
     }
 
     safuLogDebug("Start scanner manager");

@@ -7,8 +7,9 @@
 #include <safu/log.h>
 #include <stdlib.h>
 
-typedef safuResultE_t elosMessageHandler_t(elosClientManagerConnection_t const *const conn,
-                                           elosMessage_t const *const msg);
+#include "elos/clientmanager/clientconnection_types.h"
+
+typedef safuResultE_t elosMessageHandler_t(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
 extern elosMessageHandler_t elosMessageGetVersion;
 extern elosMessageHandler_t elosMessageEventPublish;
@@ -28,8 +29,7 @@ static elosMessageHandler_t * const elosMessageHandler[] = {
 };
 // clang-format on
 
-safuResultE_t elosMessageHandlerSend(elosClientManagerConnection_t const *const conn, uint8_t messageId,
-                                     const char *jsonStr) {
+safuResultE_t elosMessageHandlerSend(elosClientConnection_t const *const conn, uint8_t messageId, const char *jsonStr) {
     safuResultE_t result = SAFU_RESULT_OK;
     const int jsonLen = strlen(jsonStr) + 1;
     const int msgLen = sizeof(elosMessage_t) + jsonLen;
@@ -48,19 +48,14 @@ safuResultE_t elosMessageHandlerSend(elosClientManagerConnection_t const *const 
     }
 
     if (result == SAFU_RESULT_OK) {
-        ssize_t bytes;
-
-        bytes = safuSendExactly(conn->fd, msg, msgLen);
-        if (bytes < 0) {
-            safuLogErrErrno("safuSendExactly failed");
-            result = SAFU_RESULT_FAILED;
-        } else if ((bytes == 0) && (errno == 0)) {
-            safuLogDebug("Connection has been closed");
-            result = SAFU_RESULT_FAILED;
-        } else if (bytes != msgLen) {
-            char const errStr[] = "safuSendExactly failed, %ld of %d bytes sent (errno=%d -> '%s').";
-            safuLogErrF(errStr, bytes, msgLen, errno, strerror(errno));
-            result = SAFU_RESULT_FAILED;
+        size_t bytes;
+        result = safuSendExactly(conn->fd, msg, msgLen, &bytes);
+        if (result != SAFU_RESULT_OK) {
+            if (result != SAFU_RESULT_CLOSED) {
+                safuLogErrF("safuSendExactly failed with %d, %ld of %d bytes sent.", result, bytes, msgLen);
+            } else {
+                safuLogDebug("Connection has been closed");
+            }
         }
     }
 
@@ -69,7 +64,7 @@ safuResultE_t elosMessageHandlerSend(elosClientManagerConnection_t const *const 
     return result;
 }
 
-safuResultE_t elosMessageHandlerSendJson(elosClientManagerConnection_t const *const conn, uint8_t messageId,
+safuResultE_t elosMessageHandlerSendJson(elosClientConnection_t const *const conn, uint8_t messageId,
                                          json_object *jobj) {
     const char *jobjStr;
     int retval;
@@ -114,55 +109,49 @@ struct json_object *elosMessageHandlerResponseCreate(const char *errstr) {
     return jresponse;
 }
 
-static safuResultE_t elosMessageHandlerReadHeader(elosClientManagerConnection_t const *const conn,
-                                                  elosMessage_t *const msg) {
-    safuResultE_t retVal = SAFU_RESULT_FAILED;
-    ssize_t const msgHdrLen = sizeof(elosMessage_t);
-    ssize_t bytes;
+static safuResultE_t elosMessageHandlerReadHeader(elosClientConnection_t const *const conn, elosMessage_t *const msg) {
+    safuResultE_t result;
+    size_t const msgHdrLen = sizeof(elosMessage_t);
+    size_t bytes;
 
-    bytes = safuRecvExactly(conn->fd, (void *)msg, msgHdrLen);
-    if (bytes < 0) {
-        safuLogErrErrno("safuRecvExactly failed");
-    } else if ((bytes == 0) && (errno == 0)) {
-        safuLogDebug("Connection has been closed");
-    } else if (bytes != msgHdrLen) {
-        char const errStr[] = "safuRecvExactly failed, %ld of %ld bytes received (errno=%d -> '%s').";
-        safuLogErrF(errStr, bytes, msgHdrLen, errno, strerror(errno));
-    } else {
-        retVal = SAFU_RESULT_OK;
+    result = safuRecvExactly(conn->fd, (void *)msg, msgHdrLen, &bytes);
+    if (result != SAFU_RESULT_OK) {
+        if (result != SAFU_RESULT_CLOSED) {
+            safuLogErrF("safuRecvExactly failed with %d, %ld of %ld bytes received.", result, bytes, msgHdrLen);
+        } else {
+            safuLogDebug("Connection has been closed");
+        }
     }
 
-    return retVal;
+    return result;
 }
 
-static safuResultE_t elosMessageHandlerReadPayload(elosClientManagerConnection_t const *const conn,
-                                                   elosMessage_t **msg) {
+static safuResultE_t elosMessageHandlerReadPayload(elosClientConnection_t const *const conn, elosMessage_t **msg) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    ssize_t const jsonLength = (*msg)->length;
+    size_t const jsonLength = (*msg)->length;
 
     if (jsonLength == 0) {
         result = SAFU_RESULT_OK;
     } else {
-        ssize_t const msgHdrLen = sizeof(elosMessage_t);
+        size_t const msgHdrLen = sizeof(elosMessage_t);
 
         *msg = safuAllocMem(*msg, msgHdrLen + jsonLength + 1);
         if (*msg == NULL) {
             safuLogErr("safuAllocMem failed");
         } else {
             char *jsonStr = &((*msg)->json[0]);
-            ssize_t bytes;
+            size_t bytes;
 
-            bytes = safuRecvExactly(conn->fd, jsonStr, jsonLength);
-            if (bytes < 0) {
-                safuLogErrErrno("safuRecvExactly failed");
-            } else if ((bytes == 0) && (errno == 0)) {
-                safuLogDebug("Connection has been closed");
-            } else if (bytes != jsonLength) {
-                char const errStr[] = "safuRecvExactly failed, %ld of %ld bytes received (errno=%d -> '%s').";
-                safuLogErrF(errStr, bytes, msgHdrLen, errno, strerror(errno));
+            result = safuRecvExactly(conn->fd, jsonStr, jsonLength, &bytes);
+            if (result != SAFU_RESULT_OK) {
+                if (result != SAFU_RESULT_CLOSED) {
+                    safuLogErrF("safuRecvExactly failed with %d, %ld of %ld bytes received.", result, bytes,
+                                jsonLength);
+                } else {
+                    safuLogDebug("Connection has been closed");
+                }
             } else {
                 jsonStr[jsonLength] = 0;
-                result = SAFU_RESULT_OK;
             }
         }
     }
@@ -170,7 +159,7 @@ static safuResultE_t elosMessageHandlerReadPayload(elosClientManagerConnection_t
     return result;
 }
 
-safuResultE_t elosMessageHandlerHandleMessage(elosClientManagerConnection_t const *const conn) {
+safuResultE_t elosMessageHandlerHandleMessage(elosClientConnection_t const *const conn) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosMessage_t *msg = NULL;
 
@@ -186,7 +175,6 @@ safuResultE_t elosMessageHandlerHandleMessage(elosClientManagerConnection_t cons
         }
     }
 
-    elosLog(ELOS_MSG_CODE_DEBUG_LOG, ELOS_SEVERITY_DEBUG, ELOS_CLASSIFICATION_ELOS, "recieved incoming message");
     if (result == SAFU_RESULT_OK) {
         result = elosMessageHandlerReadHeader(conn, msg);
         if (result == SAFU_RESULT_OK) {

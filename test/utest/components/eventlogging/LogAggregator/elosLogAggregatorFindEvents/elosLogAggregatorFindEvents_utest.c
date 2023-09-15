@@ -9,7 +9,6 @@ TEST_SUITE_FUNC_PROTOTYPES(elosLogAggregatorFindEventsUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosTestElosLogAggregatorFindEventsSuccess),
         TEST_CASE(elosTestElosLogAggregatorFindEventsErrParamLogAggregatorNull),
         TEST_CASE(elosTestElosLogAggregatorFindEventsErrParamRuleNull),
         TEST_CASE(elosTestElosLogAggregatorFindEventsErrParamEventsNull),

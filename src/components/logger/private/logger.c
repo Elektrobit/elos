@@ -1,47 +1,70 @@
 // SPDX-License-Identifier: MIT
 #include "elos/logger/logger.h"
 
-#include "elos/eloslog/eloslog.h"
-#include "elos/eloslog/types.h"
-#include "elos/eventprocessor/eventprocessor.h"
+#include <bits/pthreadtypes.h>
+#include <stdio.h>
 
-struct elosLogContext {
-    elosEventProcessor_t *logEventProcessor;
-};
+static elosLogger_t elosDefaultLogger = {0};
 
-struct elosLogContext elosLogContext = {.logEventProcessor = NULL};
+safuResultE_t elosLoggerInitialize(elosLogger_t *logger) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
-void elosLogSetEventProcessor(elosEventProcessor_t *lep) {
-    elosLogContext.logEventProcessor = lep;
-}
+    elosEventBufferParam_t bParam = {.limitEventCount = ELOS_EVENTBUFFER_DEFAULT_LIMIT};
 
-elosLogStatusE_t elosLogPublishServerLogEvent(elosEventProcessor_t *elosLogEventProcessor, elosEvent_t *elosLogEvent) {
-    int ret = 0;
+    result = elosEventBufferNew(&logger->logEventBuffer, &bParam);
 
-    if ((elosLogEventProcessor != NULL) && (elosLogEvent != NULL)) {
-        ret = elosEventProcessorPublish(elosLogEventProcessor, elosLogEvent);
+    if (result == SAFU_RESULT_OK) {
+        atomic_store(&logger->flags, SAFU_FLAG_INITIALIZED_BIT);
     }
 
-    return (ret == 0) ? ELOS_LOG_STATUS_SUCCESS : ELOS_LOG_STATUS_ERROR;
+    return result;
+}
+
+safuResultE_t elosLoggerDeleteMembers(elosLogger_t *logger) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (logger != NULL) {
+        if (SAFU_FLAG_EXCHANGE_SHUTDOWN_BIT(&logger->flags) == false) {
+            result = elosEventBufferDelete(&logger->logEventBuffer);
+            if (result == SAFU_RESULT_OK) {
+                logger->logEventBuffer = NULL;
+                SAFU_FLAG_CLEAR_ALL_BITS(&logger->flags);
+            }
+        }
+    }
+
+    return result;
+}
+
+safuResultE_t elosLoggerGetDefaultLogger(elosLogger_t **logger) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    if (SAFU_FLAG_EXCHANGE_INITIALIZE_BIT(&elosDefaultLogger.flags) == false) {
+        result = elosLoggerInitialize(&elosDefaultLogger);
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        *logger = &elosDefaultLogger;
+    }
+
+    return result;
 }
 
 void elosLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity, uint64_t classification,
              const char *logMessage) {
-    elosEvent_t *logEvent = NULL;
-    elosLogData_t *logData = NULL;
-    elosLogStatusE_t result = ELOS_LOG_STATUS_SUCCESS;
+    elosEvent_t logEvent = {0};
+    elosLogger_t *logger = NULL;
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
-    elosLogCreateLogData(messageCode, severity, classification, logMessage, &logData);
+    elosLogCreateElosEventFromLog(messageCode, severity, classification, logMessage, &logEvent);
 
-    result = elosLogCreateElosEventFromLog(logData, &logEvent);
-    if (result == ELOS_LOG_STATUS_SUCCESS && logEvent != NULL) {
-        result = elosLogPublishServerLogEvent(elosLogContext.logEventProcessor, logEvent);
-        if (result == ELOS_LOG_STATUS_ERROR) {
-            elosLogSafuFallback(logData);
+    elosLoggerGetDefaultLogger(&logger);
+    if (SAFU_FLAG_HAS_INITIALIZED_BIT(&logger->flags) == true) {
+        result = elosEventBufferWrite(logger->logEventBuffer, &logEvent);
+        if (result == SAFU_RESULT_FAILED) {
+            elosLogSafuFallback(&logEvent);
         }
-        elosEventDelete(logEvent);
-    } else {
-        elosLogSafuFallback(logData);
     }
-    elosLogDeleteLogData(logData);
+
+    elosEventDeleteMembers(&logEvent);
 }

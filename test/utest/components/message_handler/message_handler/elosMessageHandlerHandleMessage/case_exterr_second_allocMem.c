@@ -19,7 +19,7 @@ int elosTestElosMessageHandlerHandleMessageExterrSecondAllocMemTeardown(void **s
 
 void elosTestElosMessageHandlerHandleMessageExterrSecondAllocMem(void **state) {
     elosUteststateT_t *testState = *state;
-    elosClientManagerConnection_t *conn = testState->connection;
+    elosClientConnection_t *conn = testState->connection;
     safuResultE_t retval;
 
     TEST("elosMessageHandlerHandleMessage");
@@ -29,19 +29,18 @@ void elosTestElosMessageHandlerHandleMessageExterrSecondAllocMem(void **state) {
     expect_not_value(__wrap_safuRecvExactly, buf, NULL);
     expect_value(__wrap_safuRecvExactly, len, sizeof(elosMessage_t));
     will_set_parameter(__wrap_safuRecvExactly, buf, testState->message);
-    will_return(__wrap_safuRecvExactly, sizeof(elosMessage_t));
+    will_set_parameter(__wrap_safuRecvExactly, transferred, sizeof(elosMessage_t));
+    will_return(__wrap_safuRecvExactly, SAFU_RESULT_OK);
     MOCK_FUNC_AFTER_CALL(safuRecvExactly, 0);
 
     expect_not_value(__wrap_safuAllocMem, oldptr, NULL);
     expect_value(__wrap_safuAllocMem, newlen, sizeof(elosMessage_t) + testState->messagePayloadLen + 1);
     will_return(__wrap_safuAllocMem, NULL);
-    MOCK_FUNC_AFTER_CALL(safuAllocMem, 5);
+    MOCK_FUNC_AFTER_CALL(safuAllocMem, 1);
 
     expect_any(__wrap_free, ptr);
-    MOCK_FUNC_AFTER_CALL(free, 7);
+    MOCK_FUNC_AFTER_CALL(free, 0);
 
     retval = elosMessageHandlerHandleMessage(conn);
     assert_int_equal(retval, SAFU_RESULT_FAILED);
-
-    MOCK_FUNC_NEVER(safuAllocMem);
 }

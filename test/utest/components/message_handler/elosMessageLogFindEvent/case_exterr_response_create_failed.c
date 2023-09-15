@@ -5,7 +5,7 @@
 #include "mock_event_vector.h"
 #include "mock_message_handler.h"
 
-extern safuResultE_t elosMessageLogFindEvent(elosClientManagerConnection_t *conn, elosMessage_t const *const msg);
+extern safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_t const *const msg);
 
 int elosTestElosMessageLogFindEventExtErrResponseCreateFailedSetup(void **state) {
     static elosUteststateT_t testState = {0};
@@ -27,7 +27,7 @@ int elosTestElosMessageLogFindEventExtErrResponseCreateFailedTeardown(void **sta
 void elosTestElosMessageLogFindEventExtErrResponseCreateFailed(void **state) {
     elosUteststateT_t *testState = *state;
     safuResultE_t result = SAFU_RESULT_OK;
-    elosClientManagerConnection_t *connection = testState->connection;
+    elosClientConnection_t *connection = testState->connection;
     elosMessage_t *msg = testState->msg;
 
     TEST("elosMessageLogFindEvent");

@@ -11,14 +11,14 @@ typedef struct elosReceiveValues {
     int fd;
     void *buf;
     size_t len;
-    ssize_t result;
+    size_t result;
 } elosReceiveValues_t;
 
 typedef struct elosReceiveSet {
     elosReceiveValues_t header;
     elosReceiveValues_t body;
     elosMessage_t *message;
-    ssize_t messageSize;
+    size_t messageSize;
 } elosReceiveSet_t;
 
 typedef struct elosUnitTestState {

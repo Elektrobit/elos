@@ -8,6 +8,7 @@
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventlogging/LogAggregator.h"
 #include "elos/eventprocessor/eventprocessor.h"
+#include "elos/logger/logger.h"
 #include "elos/messages/message_handler.h"
 #include "safu/common.h"
 #include "safu/json.h"
@@ -55,7 +56,7 @@ static void _create_blacklist_error_event(elosEvent_t *event, elosMessage_t cons
     event->payload = strdup(msg->json);
 }
 
-safuResultE_t elosMessageEventPublish(elosClientManagerConnection_t *conn, elosMessage_t const *const msg) {
+safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     const uint8_t messageId = ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH;
     struct json_object *jresponse;
     const char *errstr = NULL;
@@ -94,6 +95,8 @@ safuResultE_t elosMessageEventPublish(elosClientManagerConnection_t *conn, elosM
                     _create_security_event(&event, msg);
                     errstr = "unauthorized publishing attempt";
                     safuLogErr(errstr);
+                    elosLog(ELOS_MSG_CODE_UNAUTHORIZED_PUBLISHING, ELOS_SEVERITY_WARN,
+                            ELOS_CLASSIFICATION_SECURITY | ELOS_CLASSIFICATION_ELOS | ELOS_CLASSIFICATION_IPC, errstr);
                 }
             } else {
                 _create_blacklist_error_event(&event, msg);

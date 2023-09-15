@@ -400,6 +400,60 @@ static elosRpnFilterResultE_t _stepNumberOperation(elosRpnFilterExecute_t *ctx, 
     return result;
 }
 
+static elosRpnFilterResultE_t _stepRegExOperation(elosRpnFilterExecute_t *ctx, UNUSED elosRpnFilterStepType_t type) {
+    elosRpnFilterResultE_t result = RPNFILTER_RESULT_ERROR;
+
+    if ((_STACK_SUB1.type != RPNFILTER_VALUE_REGEX) || (_STACK_SUB2.type != RPNFILTER_VALUE_STRING)) {
+        safuLogErr("Step RPNFILTER_STEP_REGEX expects a regex string as first and a string as second value!");
+    } else if (_STACK_SUB1.bytes < 1) {
+        result = RPNFILTER_RESULT_MATCH;
+        ctx->stackIdx -= 2;
+        _pushBool(ctx, true);
+    } else if (_STACK_SUB2.bytes < 1) {
+        result = RPNFILTER_RESULT_NO_MATCH;
+        ctx->stackIdx -= 2;
+        _pushBool(ctx, false);
+    } else {
+        char *patternStr;
+
+        patternStr = strndup(_STACK_SUB1.data.str, _STACK_SUB1.bytes);
+        if (patternStr == NULL) {
+            safuLogErr("String duplication failed");
+        } else {
+            regex_t regex = {0};
+            char errbuf[200] = {0};
+            bool match = false;
+            int retVal;
+
+            retVal = regcomp(&regex, patternStr, REG_EXTENDED);
+            if (retVal == REG_NOERROR) {
+                retVal = regexec(&regex, _STACK_SUB2.data.str, 0, NULL, 0);
+            }
+
+            switch (retVal) {
+                case REG_NOERROR:
+                    result = RPNFILTER_RESULT_MATCH;
+                    match = true;
+                    break;
+                case REG_NOMATCH:
+                    result = RPNFILTER_RESULT_NO_MATCH;
+                    break;
+                default:
+                    regerror(retVal, &regex, errbuf, sizeof(errbuf));
+                    safuLogErrF("Processing regex failed: %s", errbuf);
+                    break;
+            }
+
+            ctx->stackIdx -= 2;
+            _pushBool(ctx, match);
+            free(patternStr);
+            regfree(&regex);
+        }
+    }
+
+    return result;
+}
+
 elosRpnFilterResultE_t elosRpnFilterExecuteStackNew(elosRpnFilterStack_t **stack, size_t stackSize) {
     elosRpnFilterResultE_t result = RPNFILTER_RESULT_ERROR;
 
@@ -487,33 +541,7 @@ elosRpnFilterResultE_t elosRpnFilterExecuteStep(elosRpnFilterExecute_t *ctx, uin
             _pushBool(ctx, result == RPNFILTER_RESULT_MATCH ? 1 : 0); /* 2nd param expects true (1) or false (0) */
             break;
         case RPNFILTER_STEP_REGEX: {
-            int res;
-            regex_t *regex;
-            char errbuf[200];
-
-            if ((_STACK_SUB1.type != RPNFILTER_VALUE_REGEX) || (_STACK_SUB2.type != RPNFILTER_VALUE_STRING)) {
-                safuLogErr("Step RPNFILTER_STEP_REGEX expects a regex string as first and a string as second value!");
-                result = RPNFILTER_RESULT_ERROR;
-            } else {
-                result = RPNFILTER_RESULT_NO_MATCH;
-                regex = _STACK_SUB1.data.ptr;
-
-                if (_STACK_SUB1.bytes > 0 && _STACK_SUB2.bytes > 0) {
-                    res = regexec(regex, _STACK_SUB2.data.str, 0, NULL, 0);
-                    if (res == 0) {
-                        result = RPNFILTER_RESULT_MATCH;
-                    } else if (res == REG_NOMATCH) {
-                        result = RPNFILTER_RESULT_NO_MATCH;
-                    } else {
-                        regerror(res, regex, errbuf, sizeof(errbuf));
-                        safuLogErrF("Step RPNFILTER_STEP_REGEX failed to match regex: %s", errbuf);
-                        result = RPNFILTER_RESULT_ERROR;
-                    }
-                }
-            }
-
-            ctx->stackIdx -= 2;
-            _pushBool(ctx, result == RPNFILTER_RESULT_MATCH ? 1 : 0); /* 2nd param expects true (1) or false (0) */
+            result = _stepRegExOperation(ctx, type);
             break;
         }
         default:

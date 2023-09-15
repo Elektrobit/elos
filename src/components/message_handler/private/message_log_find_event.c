@@ -38,7 +38,7 @@ static safuResultE_t _getFilterRuleFromJsonMessage(char **filterRule, const char
     return result;
 }
 
-safuResultE_t elosMessageLogFindEvent(elosClientManagerConnection_t *conn, elosMessage_t const *const msg) {
+safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosLogAggregator_t *logAggregator = NULL;
     char *filterRule = NULL;

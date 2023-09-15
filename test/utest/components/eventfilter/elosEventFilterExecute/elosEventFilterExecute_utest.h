@@ -20,7 +20,7 @@
 #define ELOS_STACK_STRING(__d) \
     { .type = RPNFILTER_VALUE_STRING, .bytes = strlen(__d), .data.str = (__d) }
 #define ELOS_STACK_REGEX(__d) \
-    { .type = RPNFILTER_VALUE_REGEX, .bytes = sizeof(regex_t), .data.ptr = (__d) }
+    { .type = RPNFILTER_VALUE_REGEX, .bytes = strlen(__d), .data.ptr = (__d) }
 
 #define ELOS_MAX_ENTRIES 32
 

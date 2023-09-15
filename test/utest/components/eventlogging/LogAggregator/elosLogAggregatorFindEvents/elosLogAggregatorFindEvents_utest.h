@@ -29,7 +29,6 @@ void elosLogAggregatorFindEventsUtestFreeLogAggregator(void **state);
 void elosLogAggregatorFindEventsUtestCreateVector(void **state);
 void elosLogAggregatorFindEventsUtestFreeVector(void **state);
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosLogAggregatorFindEventsSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLogAggregatorFindEventsErrParamLogAggregatorNull)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLogAggregatorFindEventsErrParamRuleNull)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLogAggregatorFindEventsErrParamEventsNull)

@@ -11,11 +11,11 @@ int main() {
     return RUN_TEST_SUITE(tests, elosMessageGetVersionUtest);
 }
 
-elosClientManagerConnection_t *elosMessageGetVersionCreateConnection() {
-    elosClientManagerSharedData_t *mockSharedData = safuAllocMem(NULL, sizeof(elosClientManagerSharedData_t));
+elosClientConnection_t *elosMessageGetVersionCreateConnection() {
+    elosClientConnectionSharedData_t *mockSharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(mockSharedData);
 
-    elosClientManagerConnection_t *connection = safuAllocMem(NULL, sizeof(elosClientManagerConnection_t));
+    elosClientConnection_t *connection = safuAllocMem(NULL, sizeof(elosClientConnection_t));
     assert_non_null(connection);
     connection->sharedData = mockSharedData;
 

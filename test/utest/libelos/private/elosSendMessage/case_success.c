@@ -27,7 +27,8 @@ void elosTestElosSendMessageSuccess(void **state) {
     expect_value(__wrap_safuSendExactly, fd, 0);
     expect_value(__wrap_safuSendExactly, buf, test->message);
     expect_value(__wrap_safuSendExactly, len, sizeof(elosMessage_t) + test->message->length);
-    will_return(__wrap_safuSendExactly, sizeof(elosMessage_t) + test->message->length);
+    will_set_parameter(__wrap_safuSendExactly, transferred, sizeof(elosMessage_t) + test->message->length);
+    will_return(__wrap_safuSendExactly, SAFU_RESULT_OK);
 
     result = elosSendMessage(&test->session, test->message);
     assert_int_equal(result, SAFU_RESULT_OK);
@@ -37,7 +38,8 @@ void elosTestElosSendMessageSuccess(void **state) {
     expect_value(__wrap_safuSendExactly, fd, 0);
     expect_value(__wrap_safuSendExactly, buf, test->messageNoJson);
     expect_value(__wrap_safuSendExactly, len, sizeof(elosMessage_t));
-    will_return(__wrap_safuSendExactly, sizeof(elosMessage_t));
+    will_set_parameter(__wrap_safuSendExactly, transferred, sizeof(elosMessage_t));
+    will_return(__wrap_safuSendExactly, SAFU_RESULT_OK);
 
     result = elosSendMessage(&test->session, test->messageNoJson);
     assert_int_equal(result, SAFU_RESULT_OK);

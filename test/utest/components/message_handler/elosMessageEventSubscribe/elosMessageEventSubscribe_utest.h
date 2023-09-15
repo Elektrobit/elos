@@ -3,10 +3,11 @@
 #define __ELOS_MESSAGEEVENTSUBSCRIBE_H__
 
 #include <cmocka_extensions/cmocka_extensions.h>
+#include <json-c/json.h>
+#include <safu/common.h>
 
 #include "elos/clientmanager/clientmanager.h"
 #include "elos/common/message.h"
-#include "safu/common.h"
 
 typedef struct elosArrayStringTestData {
     const char **strings;
@@ -20,10 +21,10 @@ typedef struct elosUtestState {
     elosMessage_t *msg;
     json_object *jobj;
     json_object *response;
-    elosClientManagerConnection_t *conn;
+    elosClientConnection_t *conn;
 } elosUtestState_t;
 
-extern safuResultE_t elosMessageEventSubscribe(elosClientManagerConnection_t *conn, elosMessage_t const *const msg);
+extern safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessage_t const *const msg);
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageEventSubscribeCompleteFailure)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageEventSubscribeFilterNodeNull)

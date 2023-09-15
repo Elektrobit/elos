@@ -2,13 +2,6 @@
 find_package(safu REQUIRED)
 find_package(samconf REQUIRED)
 
-create_interface_library(
-  FROM
-    eloslog
-  LIBRARIES
-    elos_event_interface
-)
-
 add_library(
   eloslog_static
   STATIC
@@ -26,9 +19,7 @@ target_include_directories(
 target_link_libraries(
   eloslog_static
   PUBLIC
-    eloslog_interface
-    elos_event_interface
-    eventprocessor_static
+    elos_event_static
     safu::safu
 )
 

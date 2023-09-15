@@ -3,70 +3,67 @@
 
 #include <netinet/in.h>
 #include <pthread.h>
+#include <safu/flags.h>
 #include <samconf/samconf_types.h>
-#include <semaphore.h>
 #include <stddef.h>
 
 #include "elos/clientmanager/clientauthorization_types.h"
+#include "elos/clientmanager/clientconnection_types.h"
 #include "elos/eventbuffer/types.h"
 #include "elos/eventdispatcher/types.h"
 #include "elos/eventfilter/eventfilter_types.h"
 #include "elos/eventlogging/LogAggregatorTypes.h"
 #include "elos/eventprocessor/types.h"
 
-#define CLIENT_MANAGER_MAX_CONNECTIONS     200
-#define CLIENT_MANAGER_LISTEN_QUEUE_LENGTH 200
-#define CLIENT_MANAGER_LISTEN_ACTIVE       1
-#define CLIENT_MANAGER_CONNECTION_ACTIVE   1
-#define CLIENT_MANAGER_THREAD_NOT_JOINED   2
+#define ELOS_CLIENTMANAGER_CONNECTION_LIMIT    200
+#define ELOS_CLIENTMANAGER_LISTEN_QUEUE_LENGTH 200
 
-#ifndef CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE
-#define CLIENT_MANAGER_EVENTFILTERNODEIDVECTOR_SIZE 4
+#define ELOS_CLIENTMANAGER_LISTEN_ACTIVE     (SAFU_FLAG_CUSTOM_START_BIT << 0)
+#define ELOS_CLIENTMANAGER_CONNECTION_ACTIVE (SAFU_FLAG_CUSTOM_START_BIT << 1)
+#define ELOS_CLIENTMANAGER_THREAD_NOT_JOINED (SAFU_FLAG_CUSTOM_START_BIT << 2)
+
+#ifndef ELOS_CLIENTMANAGER_EVENTFILTERNODEIDVECTOR_SIZE
+#define ELOS_CLIENTMANAGER_EVENTFILTERNODEIDVECTOR_SIZE 4
 #endif
 
-#ifndef CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE
-#define CLIENT_MANAGER_EVENTQUEUEIDVECTOR_SIZE 4
+#ifndef ELOS_CLIENTMANAGER_EVENTQUEUEIDVECTOR_SIZE
+#define ELOS_CLIENTMANAGER_EVENTQUEUEIDVECTOR_SIZE 4
 #endif
 
-typedef safuVec_t elosEventFilterNodeIdVector_t;
-typedef safuVec_t elosEventQueueIdVector_t;
+/*******************************************************************
+ * Data structure of a ClientManager
 
-typedef struct elosClientManagerSharedData {
-    elosLogAggregator_t *logAggregator;
-    sem_t connectionSemaphore;
-    elosEventDispatcher_t *eventDispatcher;
-    elosEventProcessor_t *eventProcessor;
-} elosClientManagerSharedData_t;
-
-typedef struct elosClientManagerData {
-    elosEventFilterNodeIdVector_t eventFilterNodeIdVector;
-    elosEventQueueIdVector_t eventQueueIdVector;
-} elosClientManagerData_t;
-
-typedef struct elosClientManagerConnection {
-    pthread_mutex_t lock;
-    uint32_t status;
+ * Members:
+ *   flags: State bits of the component (e.g. initialized, active, e.t.c.)
+ *   fd: listener socket used for waiting for new connections
+ *   syncFd: eventfd used for synchronization with the worker thread
+ *   addr: Address information of the listener socket
+ *   connection: Array of ClientConnections
+ *   connectionLimit: Size of the ClientConnections array
+ *   listenThread: worker thread used by pthread_* functions
+ *   sharedData: Data shared between all ClientConnections
+ *   clientAuth: Client authorization functionality
+ ******************************************************************/
+typedef struct elosClientManager {
+    safuFlags_t flags;
     int fd;
+    int syncFd;
     struct sockaddr_in addr;
-    pthread_t thread;
-    elosClientManagerSharedData_t *sharedData;
-    elosClientManagerData_t data;
-    bool isTrusted;
-    elosEventFilter_t blacklist;
-    elosEventBuffer_t eventBuffer;
-} elosClientManagerConnection_t;
-
-typedef struct elosClientManagerContext {
-    pthread_mutex_t lock;
-    uint32_t status;
-    int fd;
-    struct sockaddr_in addr;
-    elosClientManagerConnection_t connection[CLIENT_MANAGER_MAX_CONNECTIONS];
+    elosClientConnection_t connection[ELOS_CLIENTMANAGER_CONNECTION_LIMIT];
     pthread_t listenThread;
-    elosClientManagerSharedData_t sharedData;
+    elosClientConnectionSharedData_t sharedData;
     elosClientAuthorization_t clientAuth;
-} elosClientManagerContext_t;
+} elosClientManager_t;
 
+/*******************************************************************
+ * Initialization parameters for a new ClientManager
+ *
+ * Members:
+ *   config: Static configuration variables
+ *   eventDispatcher: Used for registering the EventBuffers of each ClientConnection
+ *   eventProcessor: Used for FilterNode/EventQueue handling
+ *   logAggregator: Used for persistent logging of Events
+ ******************************************************************/
 typedef struct elosClientManagerParam {
     samconfConfig_t *config;
     elosEventDispatcher_t *eventDispatcher;

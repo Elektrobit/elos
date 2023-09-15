@@ -90,6 +90,30 @@ safuResultE_t elosEventVectorFromJsonObject(json_object *eventVecJobj, elosEvent
 safuResultE_t elosEventVectorFromJsonArray(json_object const *jEventArray, elosEventVector_t **eventVector);
 
 /*******************************************************************
+ * Push an elosEvent to an elosEventVector
+ *
+ * Parameters:
+ *      eventVector (elosEventVector_t *): the event vector to push into.
+ *      event (elosEvent_t const *): The event to be pushed.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success,
+ *      - `SAFU_RESULT_FAILED` on failure.
+ ******************************************************************/
+safuResultE_t elosEventVectorPush(elosEventVector_t *eventVector, elosEvent_t const *event);
+
+/*******************************************************************
+ * Push a newly allocated deep copy of an elosEvent to an elosEventVector
+ *
+ * Parameters:
+ *      eventVector (elosEventVector_t *): the event vector to push into.
+ *      event (elosEvent_t const *): The event to be copied.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success,
+ *      - `SAFU_RESULT_FAILED` on failure.
+ ******************************************************************/
+safuResultE_t elosEventVectorPushDeepCopy(elosEventVector_t *eventVector, elosEvent_t const *event);
+
+/*******************************************************************
  * Free the memomry of all members of an :c:type:`elosEventVector_t`.
  *
  * Parameters:

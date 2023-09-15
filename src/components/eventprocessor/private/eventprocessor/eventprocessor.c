@@ -181,7 +181,6 @@ safuResultE_t elosEventProcessorQueueRead(elosEventProcessor_t *eventProcessor, 
     } else {
         elosEventQueue_t *eventQueue = NULL;
 
-        safuLogDebugF("fetch event queue %u", eventQueueId);
         result = elosEventQueueManagerEntryGet(&eventProcessor->eventQueueManager, eventQueueId, &eventQueue);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosEventQueueManagerEntryGet failed");

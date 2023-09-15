@@ -14,11 +14,12 @@
 #include "mock_eventbuffer.h"
 #include "mock_eventfilter.h"
 #include "mock_eventprocessor.h"
+#include "mock_logger.h"
 #include "mock_message_handler.h"
 #include "safu/common.h"
 #include "safu/mock_safu.h"
 
-extern int elosMessageEventPublish(elosClientManagerConnection_t const *const conn, elosMessage_t const *const msg);
+extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
 int elosTestelosMessageEventPublishBlacklistFilterSuccessSetup(void **state) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));
@@ -26,7 +27,7 @@ int elosTestelosMessageEventPublishBlacklistFilterSuccessSetup(void **state) {
 
     elosRpnFilterResultE_t result = RPNFILTER_RESULT_ERROR;
 
-    data->conn = safuAllocMem(NULL, sizeof(elosClientManagerConnection_t));
+    data->conn = safuAllocMem(NULL, sizeof(elosClientConnection_t));
     assert_non_null(data->conn);
 
     data->conn->isTrusted = false;
@@ -35,7 +36,7 @@ int elosTestelosMessageEventPublishBlacklistFilterSuccessSetup(void **state) {
     result = elosEventFilterCreate(&data->conn->blacklist, &param);
     assert_int_equal(result, RPNFILTER_RESULT_OK);
 
-    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientManagerSharedData_t));
+    data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(data->conn->sharedData);
     data->conn->sharedData->eventProcessor = safuAllocMem(NULL, sizeof(elosEventProcessor_t));
     assert_non_null(data->conn->sharedData->eventProcessor);
@@ -135,6 +136,13 @@ void elosTestelosMessageEventPublishBlacklistFilterSuccess(void **state) {
 
     MOCK_FUNC_ENABLE(safuGetHardwareId);
     will_return(__wrap_safuGetHardwareId, "localhost");
+
+    MOCK_FUNC_AFTER_CALL(elosLog, 0);
+    expect_value(elosLog, messageCode, ELOS_MSG_CODE_UNAUTHORIZED_PUBLISHING);
+    expect_value(elosLog, severity, ELOS_SEVERITY_WARN);
+    expect_value(elosLog, classification,
+                 ELOS_CLASSIFICATION_SECURITY | ELOS_CLASSIFICATION_ELOS | ELOS_CLASSIFICATION_IPC);
+    expect_string(elosLog, logMessage, "unauthorized publishing attempt");
 
     MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 0);
     expect_value(elosEventBufferWrite, eventBuffer, &data->conn->eventBuffer);

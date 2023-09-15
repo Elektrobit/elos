@@ -8,7 +8,7 @@
 #include "safu/mock_safu.h"
 
 typedef struct {
-    elosClientManagerConnection_t *connection;
+    elosClientConnection_t *connection;
     elosMessage_t *message;
     size_t messagePayloadLen;
 } elosUteststateT_t;
@@ -18,7 +18,7 @@ void elosMessageHandlerHandleMessageUtestFreeConnection(void **state);
 void elosMessageHandlerHandleMessageUtestCreateMessage(void **state);
 void elosMessageHandlerHandleMessageUtestDeleteMessage(void **state);
 
-extern int elosMessageGetVersion(elosClientManagerConnection_t const *const conn, elosMessage_t const *const msg);
+extern int elosMessageGetVersion(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrConnection)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageExterrFirstAllocMem)
@@ -29,19 +29,21 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrInvalidMessa
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrMessageFunctionReturnFailure)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageSuccess)
 
-#define _RECV_MOCK(__testState)                                                    \
-    MOCK_FUNC_ALWAYS(safuRecvExactly);                                             \
-    expect_value(__wrap_safuRecvExactly, fd, testState->connection->fd);           \
-    expect_not_value(__wrap_safuRecvExactly, buf, NULL);                           \
-    expect_value(__wrap_safuRecvExactly, len, sizeof(elosMessage_t));              \
-    will_set_parameter(__wrap_safuRecvExactly, buf, (__testState)->message);       \
-    will_return(__wrap_safuRecvExactly, sizeof(elosMessage_t));                    \
-                                                                                   \
-    expect_value(__wrap_safuRecvExactly, fd, (__testState)->connection->fd);       \
-    expect_not_value(__wrap_safuRecvExactly, buf, NULL);                           \
-    expect_value(__wrap_safuRecvExactly, len, (__testState)->messagePayloadLen);   \
-    will_set_parameter(__wrap_safuRecvExactly, buf, (__testState)->message->json); \
-    will_return(__wrap_safuRecvExactly, (__testState)->messagePayloadLen);
+#define _RECV_MOCK(__testState)                                                                \
+    MOCK_FUNC_ALWAYS(safuRecvExactly);                                                         \
+    expect_value(__wrap_safuRecvExactly, fd, testState->connection->fd);                       \
+    expect_not_value(__wrap_safuRecvExactly, buf, NULL);                                       \
+    expect_value(__wrap_safuRecvExactly, len, sizeof(elosMessage_t));                          \
+    will_set_parameter(__wrap_safuRecvExactly, buf, (__testState)->message);                   \
+    will_set_parameter(__wrap_safuRecvExactly, transferred, sizeof(elosMessage_t));            \
+    will_return(__wrap_safuRecvExactly, SAFU_RESULT_OK);                                       \
+                                                                                               \
+    expect_value(__wrap_safuRecvExactly, fd, (__testState)->connection->fd);                   \
+    expect_not_value(__wrap_safuRecvExactly, buf, NULL);                                       \
+    expect_value(__wrap_safuRecvExactly, len, (__testState)->messagePayloadLen);               \
+    will_set_parameter(__wrap_safuRecvExactly, buf, (__testState)->message->json);             \
+    will_set_parameter(__wrap_safuRecvExactly, transferred, (__testState)->messagePayloadLen); \
+    will_return(__wrap_safuRecvExactly, SAFU_RESULT_OK);
 
 #define _RECV_MOCK_CLEANUP MOCK_FUNC_NEVER(safuRecvExactly);
 

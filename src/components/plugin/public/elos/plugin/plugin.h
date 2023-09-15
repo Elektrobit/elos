@@ -18,6 +18,8 @@ safuResultE_t elosPluginStop(elosPlugin_t *plugin);
 
 safuResultE_t elosPluginDeleteMembers(elosPlugin_t *plugin);
 
+safuResultE_t elosPluginDelete(elosPlugin_t **plugin);
+
 safuResultE_t elosPluginGetName(const elosPlugin_t *plugin, const char **name);
 
 #endif /* __ELOS_PLUGIN_PLUGIN_H__ */

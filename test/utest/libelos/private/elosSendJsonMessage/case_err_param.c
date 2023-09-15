@@ -50,14 +50,14 @@ void elosTestElosSendJsonMessageErrParam(void **state) {
     result = elosSendJsonMessage(&test->session, 0, NULL);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
-    // Each call of unsubscribe will reset session.
+    // Each transmission error resets the connection state.
     test->session.connected = true;
 
     PARAM("%s", "&session, messageId, NULL");
     result = elosSendJsonMessage(&test->session, messageId, NULL);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 
-    // Each call of unsubscribe will reset session.
+    // Each transmission error resets the connection state.
     test->session.connected = true;
 
     PARAM("%s", "&session, 0, &jsonObject");

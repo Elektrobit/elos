@@ -55,7 +55,7 @@ safuResultE_t elosConnectTcpip(char const *host, uint16_t port, elosSession_t **
             struct addrinfo hints = {
                 .ai_family = AF_UNSPEC, /* Allow IPv4 or IPv6 */
                 .ai_socktype = SOCK_STREAM,
-                .ai_flags = AI_NUMERICSERV,
+                .ai_protocol = IPPROTO_TCP, /* Allow TCP/IP connections */
             };
 
             snprintf(service, ARRAY_SIZE(service), "%d", port);

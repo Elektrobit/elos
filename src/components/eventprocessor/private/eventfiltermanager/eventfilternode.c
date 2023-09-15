@@ -154,12 +154,10 @@ static int _processFunc(const void *element, const void *data) {
     elosRpnFilterResultE_t retVal;
     int result = 0;
 
-    safuLogDebugF("check queue %u", processData->eventQueue->id);
     retVal = elosEventFilterExecute(eventFilter, processData->filterStack, (elosEvent_t *)processData->event);
     if (retVal == RPNFILTER_RESULT_MATCH) {
         safuResultE_t resVal;
 
-        safuLogDebugF("add to queue %u", processData->eventQueue->id);
         resVal = elosEventQueuePush(processData->eventQueue, processData->event);
         if (resVal != SAFU_RESULT_OK) {
             safuLogErr("elosEventQueuePush failed");
