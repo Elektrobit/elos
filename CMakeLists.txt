@@ -20,7 +20,7 @@ project_add_documentation_target(
 )
 
 option(ELOSD_EVENTLOGGING_BACKEND_SQL "Build sqlite3 bakend plugin" ON)
-option(ELOSD_EVENTLOGGING_BACKEND_NOSQL "Build NoSQL backend plugin" OFF)
+option(ELOSD_EVENTLOGGING_BACKEND_NOSQL "Build NoSQL backend plugin" ON)
 option(ELOSD_EVENTLOGGING_BACKEND_INFLUXDB "Build InfluxDB backend plugin" OFF)
 option(ELOSD_EVENTLOGGING_BACKEND_DLT "Build DLT backend plugin" ON)
 option(ELOSD_LIBDLT "Build libelosdlt, a dlt protocol implementation." ON)
