@@ -46,6 +46,9 @@ static inline size_t elosWriteCallback(void *data, size_t size, size_t dataSize,
     return realsize;
 }
 
+#define AUTH_EXTENSION "u=%s&p=%s"
+#define BASE_URL       "http://%s/%s?org=%s&db=%s&%s=ns&%s"
+
 #define COND_STRING(name, size, cond, val1, val2) \
     char name[size];                              \
     if (cond) {                                   \
@@ -58,11 +61,12 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     bool cleanupRequest = true;
     safuResultE_t result = SAFU_RESULT_OK;
     struct curl_slist *header = NULL;
-    size_t authLen = strlen("u=%s&p=%s") + strlen(influxBackend->user) + strlen(influxBackend->pw);
+    size_t authLen = strlen(AUTH_EXTENSION) + strlen(influxBackend->user) + strlen(influxBackend->pw);
     char authUrl[authLen];
     COND_STRING(type, 13, write, "write", "query")
     COND_STRING(timeFormat, 10, write, "precision", "epoch")
-    size_t urlLen = strlen("http://%s/%s?org=%s&db=%s&%s=ns&%s") +  strlen(influxBackend->host) + strlen(type) + strlen(influxBackend->orgId) + strlen(influxBackend->db) + strlen(timeFormat) + authLen + strlen(cmd) + 1;
+    size_t urlLen = strlen(BASE_URL) + strlen(influxBackend->host) + strlen(type) + strlen(influxBackend->orgId) +
+                    strlen(influxBackend->db) + strlen(timeFormat) + authLen + strlen(cmd) + 2;
     char url[urlLen];
     char tempUrl[urlLen];
     int ret = 0;
@@ -100,7 +104,7 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK) {
-        ret = sprintf(authUrl, "u=%s&p=%s", influxBackend->user, influxBackend->pw);
+        ret = sprintf(authUrl, AUTH_EXTENSION, influxBackend->user, influxBackend->pw);
         if (ret <= 0) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to initialize curl accept header");
@@ -108,8 +112,8 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
     }
 
     if (result == SAFU_RESULT_OK) {
-        ret = sprintf(url, "http://%s/%s?org=%s&db=%s&%s=ns&%s", influxBackend->host, type, influxBackend->orgId,
-                      influxBackend->db, timeFormat, authUrl);
+        ret = sprintf(url, BASE_URL, influxBackend->host, type, influxBackend->orgId, influxBackend->db, timeFormat,
+                      authUrl);
         if (ret <= 0) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("Failed to initialize url");
@@ -126,7 +130,7 @@ static inline safuResultE_t _request(elosInfluxDbBackend_t *influxBackend, bool 
 
     if (result == SAFU_RESULT_OK && !write) {
         strcpy(url, tempUrl);
-        if (url == NULL) {
+        if (strcmp(url, tempUrl) != 0) {
             result = SAFU_RESULT_FAILED;
             safuLogErr("strcpy");
         }
@@ -219,11 +223,6 @@ size_t _predictMessageSize(const elosEvent_t *event) {
     out += DECIMAL_DIGITS_BOUND(event->date.tv_sec);
     out += DECIMAL_DIGITS_BOUND(event->date.tv_nsec);
     return out;
-    /*return strlen(protocolLine) + strlen(event->source.fileName) + strlen(event->source.appName) +
-           DECIMAL_DIGITS_BOUND(event->source.pid) + strlen(event->hardwareid) + DECIMAL_DIGITS_BOUND(event->severity) +
-           DECIMAL_DIGITS_BOUND(event->classification) + DECIMAL_DIGITS_BOUND(event->messageCode) +
-           strlen(event->payload) + DECIMAL_DIGITS_BOUND(event->date.tv_sec) +
-           DECIMAL_DIGITS_BOUND(event->date.tv_nsec);*/
 }
 
 static inline char *_eventToLineProtocol(const elosEvent_t *event) {
