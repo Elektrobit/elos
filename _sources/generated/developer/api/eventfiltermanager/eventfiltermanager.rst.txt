@@ -5,5 +5,5 @@ eventfiltermanager
     :maxdepth: 4
 
     eventfiltermanager_c
-    eventfilternodevector_c
     eventfilternode_c
+    eventfilternodevector_c

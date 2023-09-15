@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,15 +10,15 @@
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
     <link rel="next" title="eventqueue_types.h" href="eventqueue_types_h.html" />
-    <link rel="prev" title="event" href="event.html" />
+    <link rel="prev" title="event_message_codes.h" href="event_message_codes_h.html" />
    
   <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
   
@@ -36,39 +36,39 @@
           <div class="body" role="main">
             
   <section id="event-types-h">
-<h1>event_types.h<a class="headerlink" href="#event-types-h" title="Permalink to this heading">¶</a></h1>
+<h1>event_types.h<a class="headerlink" href="#event-types-h" title="Link to this heading">¶</a></h1>
 <p>// SPDX-License-Identifier: MIT</p>
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEvent">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEvent</span></span></span><a class="headerlink" href="#c.elosEvent" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEvent</span></span></span><a class="headerlink" href="#c.elosEvent" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Representation of an elos event</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent.date">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">timespec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">date</span></span></span><a class="headerlink" href="#c.elosEvent.date" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.date"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">timespec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">date</span></span></span><a class="headerlink" href="#c.elosEvent.date" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.date"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>unix timestamp in nano seconds resolution.</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent.source">
-<a class="reference internal" href="#c.elosEventSource_t" title="elosEventSource_t"><span class="n"><span class="pre">elosEventSource_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">source</span></span></span><a class="headerlink" href="#c.elosEvent.source" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosEventSource_t" title="elosEventSource_t"><span class="n"><span class="pre">elosEventSource_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">source</span></span></span><a class="headerlink" href="#c.elosEvent.source" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>struct containing informations about where the event originated from</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent.severity">
-<a class="reference internal" href="#c.elosSeverityE_t" title="elosSeverityE_t"><span class="n"><span class="pre">elosSeverityE_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">severity</span></span></span><a class="headerlink" href="#c.elosEvent.severity" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.severity"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosSeverityE_t" title="elosSeverityE_t"><span class="n"><span class="pre">elosSeverityE_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">severity</span></span></span><a class="headerlink" href="#c.elosEvent.severity" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.severity"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>when the message gets classified it is mapped to a severity value defined by this project.</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent.hardwareid">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">hardwareid</span></span></span><a class="headerlink" href="#c.elosEvent.hardwareid" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.hardwareid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">hardwareid</span></span></span><a class="headerlink" href="#c.elosEvent.hardwareid" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.hardwareid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>an unique identifier for the hardware which produced this particular information.</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent.classification">
-<span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">classification</span></span></span><a class="headerlink" href="#c.elosEvent.classification" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.classification"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">classification</span></span></span><a class="headerlink" href="#c.elosEvent.classification" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.classification"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>The classification attribute is used to categorize events
 to be related to a certain context of system information.
 The classification value is a 64 unsigned integer and is splitted into 3 sections.</p>
@@ -139,14 +139,14 @@ intrusion detection event can be classified as <cite>Security|Hardware</cite>.</
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent.messageCode">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">messageCode</span></span></span><a class="headerlink" href="#c.elosEvent.messageCode" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.messageCode"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">messageCode</span></span></span><a class="headerlink" href="#c.elosEvent.messageCode" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.messageCode"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>used to hide information (from security perspective),
 thus an information has a meaning without providing a payload (text).</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent.payload">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><a class="headerlink" href="#c.elosEvent.payload" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><a class="headerlink" href="#c.elosEvent.payload" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent.payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>the actual payload of the information (text, number, structs)).</p>
 </dd></dl>
 
@@ -154,23 +154,23 @@ thus an information has a meaning without providing a payload (text).</p>
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventSource">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventSource</span></span></span><a class="headerlink" href="#c.elosEventSource" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventSource</span></span></span><a class="headerlink" href="#c.elosEventSource" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Source of an <a class="reference internal" href="#c.elosEvent_t" title="elosEvent_t"><code class="xref c c-type docutils literal notranslate"><span class="pre">elosEvent_t</span></code></a></p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventSource.appName">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">appName</span></span></span><a class="headerlink" href="#c.elosEventSource.appName" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource.appName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">appName</span></span></span><a class="headerlink" href="#c.elosEventSource.appName" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource.appName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>a string containing the name of the application the event originated from</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventSource.fileName">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">fileName</span></span></span><a class="headerlink" href="#c.elosEventSource.fileName" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource.fileName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">fileName</span></span></span><a class="headerlink" href="#c.elosEventSource.fileName" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource.fileName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>a string containing the filename of the application the event originated from</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventSource.pid">
-<span class="n"><span class="pre">pid_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pid</span></span></span><a class="headerlink" href="#c.elosEventSource.pid" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource.pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">pid_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pid</span></span></span><a class="headerlink" href="#c.elosEventSource.pid" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource.pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>an integeter containing the process id of the application the event originated from</p>
 </dd></dl>
 
@@ -178,23 +178,23 @@ thus an information has a meaning without providing a payload (text).</p>
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventSource_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventSource_t</span></span></span><a class="headerlink" href="#c.elosEventSource_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventSource_t</span></span></span><a class="headerlink" href="#c.elosEventSource_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Source of an <a class="reference internal" href="#c.elosEvent_t" title="elosEvent_t"><code class="xref c c-type docutils literal notranslate"><span class="pre">elosEvent_t</span></code></a></p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventSource_t.appName">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">appName</span></span></span><a class="headerlink" href="#c.elosEventSource_t.appName" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t.appName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">appName</span></span></span><a class="headerlink" href="#c.elosEventSource_t.appName" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t.appName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>a string containing the name of the application the event originated from</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventSource_t.fileName">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">fileName</span></span></span><a class="headerlink" href="#c.elosEventSource_t.fileName" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t.fileName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">fileName</span></span></span><a class="headerlink" href="#c.elosEventSource_t.fileName" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t.fileName"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>a string containing the filename of the application the event originated from</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventSource_t.pid">
-<span class="n"><span class="pre">pid_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pid</span></span></span><a class="headerlink" href="#c.elosEventSource_t.pid" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t.pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">pid_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pid</span></span></span><a class="headerlink" href="#c.elosEventSource_t.pid" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventSource_t.pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>an integeter containing the process id of the application the event originated from</p>
 </dd></dl>
 
@@ -202,41 +202,41 @@ thus an information has a meaning without providing a payload (text).</p>
 
 <dl class="c type">
 <dt class="sig sig-object c" id="c.elosEventVector_t">
-<span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventVector_t</span></span></span><a class="headerlink" href="#c.elosEventVector_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventVector_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventVector_t</span></span></span><a class="headerlink" href="#c.elosEventVector_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEventVector_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>typedef <code class="xref c c-type docutils literal notranslate"><span class="pre">safuVec_t</span></code> to <a class="reference internal" href="#c.elosEventVector_t" title="elosEventVector_t"><code class="xref c c-type docutils literal notranslate"><span class="pre">elosEventVector_t</span></code></a>.</p>
 </dd></dl>
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEvent_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEvent_t</span></span></span><a class="headerlink" href="#c.elosEvent_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEvent_t</span></span></span><a class="headerlink" href="#c.elosEvent_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Representation of an elos event</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent_t.date">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">timespec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">date</span></span></span><a class="headerlink" href="#c.elosEvent_t.date" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.date"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">timespec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">date</span></span></span><a class="headerlink" href="#c.elosEvent_t.date" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.date"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>unix timestamp in nano seconds resolution.</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent_t.source">
-<a class="reference internal" href="#c.elosEventSource_t" title="elosEventSource_t"><span class="n"><span class="pre">elosEventSource_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">source</span></span></span><a class="headerlink" href="#c.elosEvent_t.source" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosEventSource_t" title="elosEventSource_t"><span class="n"><span class="pre">elosEventSource_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">source</span></span></span><a class="headerlink" href="#c.elosEvent_t.source" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>struct containing informations about where the event originated from</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent_t.severity">
-<a class="reference internal" href="#c.elosSeverityE_t" title="elosSeverityE_t"><span class="n"><span class="pre">elosSeverityE_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">severity</span></span></span><a class="headerlink" href="#c.elosEvent_t.severity" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.severity"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosSeverityE_t" title="elosSeverityE_t"><span class="n"><span class="pre">elosSeverityE_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">severity</span></span></span><a class="headerlink" href="#c.elosEvent_t.severity" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.severity"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>when the message gets classified it is mapped to a severity value defined by this project.</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent_t.hardwareid">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">hardwareid</span></span></span><a class="headerlink" href="#c.elosEvent_t.hardwareid" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.hardwareid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">hardwareid</span></span></span><a class="headerlink" href="#c.elosEvent_t.hardwareid" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.hardwareid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>an unique identifier for the hardware which produced this particular information.</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent_t.classification">
-<span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">classification</span></span></span><a class="headerlink" href="#c.elosEvent_t.classification" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.classification"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">classification</span></span></span><a class="headerlink" href="#c.elosEvent_t.classification" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.classification"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>The classification attribute is used to categorize events
 to be related to a certain context of system information.
 The classification value is a 64 unsigned integer and is splitted into 3 sections.</p>
@@ -307,14 +307,14 @@ intrusion detection event can be classified as <cite>Security|Hardware</cite>.</
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent_t.messageCode">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">messageCode</span></span></span><a class="headerlink" href="#c.elosEvent_t.messageCode" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.messageCode"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">messageCode</span></span></span><a class="headerlink" href="#c.elosEvent_t.messageCode" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.messageCode"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>used to hide information (from security perspective),
 thus an information has a meaning without providing a payload (text).</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEvent_t.payload">
-<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><a class="headerlink" href="#c.elosEvent_t.payload" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><a class="headerlink" href="#c.elosEvent_t.payload" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosEvent_t.payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>the actual payload of the information (text, number, structs)).</p>
 </dd></dl>
 
@@ -322,82 +322,82 @@ thus an information has a meaning without providing a payload (text).</p>
 
 <dl class="c enum">
 <dt class="sig sig-object c" id="c.elosSeverityE">
-<span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosSeverityE</span></span></span><a class="headerlink" href="#c.elosSeverityE" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosSeverityE</span></span></span><a class="headerlink" href="#c.elosSeverityE" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>The possible severities for an <span class="c-expr sig sig-inline c"><a class="reference internal" href="#c.elosEvent_t" title="elosEvent_t"><span class="n">elosEvent_t</span></a><span class="p">*</span></span> can have</p>
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE.ELOS_SEVERITY_DEBUG">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_DEBUG</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_DEBUG" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_DEBUG"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_DEBUG</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_DEBUG" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_DEBUG"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE.ELOS_SEVERITY_ERROR">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_ERROR</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_ERROR" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_ERROR"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_ERROR</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_ERROR" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_ERROR"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE.ELOS_SEVERITY_FATAL">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_FATAL</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_FATAL" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_FATAL"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_FATAL</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_FATAL" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_FATAL"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE.ELOS_SEVERITY_INFO">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_INFO</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_INFO" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_INFO"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_INFO</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_INFO" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_INFO"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE.ELOS_SEVERITY_OFF">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_OFF</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_OFF" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_OFF"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_OFF</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_OFF" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_OFF"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE.ELOS_SEVERITY_VERBOSE">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_VERBOSE</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_VERBOSE" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_VERBOSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_VERBOSE</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_VERBOSE" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_VERBOSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE.ELOS_SEVERITY_WARN">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_WARN</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_WARN" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_WARN"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_WARN</span></span></span><a class="headerlink" href="#c.elosSeverityE.ELOS_SEVERITY_WARN" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE.ELOS_SEVERITY_WARN"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="c enum">
 <dt class="sig sig-object c" id="c.elosSeverityE_t">
-<span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosSeverityE_t</span></span></span><a class="headerlink" href="#c.elosSeverityE_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosSeverityE_t</span></span></span><a class="headerlink" href="#c.elosSeverityE_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>The possible severities for an <span class="c-expr sig sig-inline c"><a class="reference internal" href="#c.elosEvent_t" title="elosEvent_t"><span class="n">elosEvent_t</span></a><span class="p">*</span></span> can have</p>
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE_t.ELOS_SEVERITY_DEBUG">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_DEBUG</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_DEBUG" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_DEBUG"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_DEBUG</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_DEBUG" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_DEBUG"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE_t.ELOS_SEVERITY_ERROR">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_ERROR</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_ERROR" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_ERROR"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_ERROR</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_ERROR" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_ERROR"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE_t.ELOS_SEVERITY_FATAL">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_FATAL</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_FATAL" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_FATAL"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_FATAL</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_FATAL" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_FATAL"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE_t.ELOS_SEVERITY_INFO">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_INFO</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_INFO" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_INFO"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_INFO</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_INFO" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_INFO"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE_t.ELOS_SEVERITY_OFF">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_OFF</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_OFF" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_OFF"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_OFF</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_OFF" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_OFF"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE_t.ELOS_SEVERITY_VERBOSE">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_VERBOSE</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_VERBOSE" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_VERBOSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_VERBOSE</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_VERBOSE" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_VERBOSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="c enumerator">
 <dt class="sig sig-object c" id="c.elosSeverityE_t.ELOS_SEVERITY_WARN">
-<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_WARN</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_WARN" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_WARN"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELOS_SEVERITY_WARN</span></span></span><a class="headerlink" href="#c.elosSeverityE_t.ELOS_SEVERITY_WARN" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/event/event_types.h.html#c.elosSeverityE_t.ELOS_SEVERITY_WARN"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -448,7 +448,7 @@ thus an information has a meaning without providing a payload (text).</p>
   <li><a href="../../../index.html">Developer documentation</a><ul>
   <li><a href="../../index.html">Elos API</a><ul>
   <li><a href="event.html">event</a><ul>
-      <li>Previous: <a href="event.html" title="previous chapter">event</a></li>
+      <li>Previous: <a href="event_message_codes_h.html" title="previous chapter">event_message_codes.h</a></li>
       <li>Next: <a href="eventqueue_types_h.html" title="next chapter">eventqueue_types.h</a></li>
   </ul></li>
   </ul></li>
@@ -482,7 +482,7 @@ thus an information has a meaning without providing a payload (text).</p>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,9 +10,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -36,20 +36,20 @@
           <div class="body" role="main">
             
   <section id="evaluation-of-the-gitlab-package-registry-with-regards-to-storing-and-using-the-elos-subproject-debian-packages">
-<span id="id1"></span><h1>Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages.<a class="headerlink" href="#evaluation-of-the-gitlab-package-registry-with-regards-to-storing-and-using-the-elos-subproject-debian-packages" title="Permalink to this heading">¶</a></h1>
+<span id="id1"></span><h1>Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages.<a class="headerlink" href="#evaluation-of-the-gitlab-package-registry-with-regards-to-storing-and-using-the-elos-subproject-debian-packages" title="Link to this heading">¶</a></h1>
 <section id="evaluation-of-the-debian-package-registry">
-<h2>Evaluation of the debian package registry<a class="headerlink" href="#evaluation-of-the-debian-package-registry" title="Permalink to this heading">¶</a></h2>
+<h2>Evaluation of the debian package registry<a class="headerlink" href="#evaluation-of-the-debian-package-registry" title="Link to this heading">¶</a></h2>
 <p>The creation of the debian package registry in gitlab, using the
 official documentation worked as specified by the documentation. But
 uploading an debian package did not.</p>
 <section id="uploading-using-dput">
-<h3>Uploading using dput<a class="headerlink" href="#uploading-using-dput" title="Permalink to this heading">¶</a></h3>
+<h3>Uploading using dput<a class="headerlink" href="#uploading-using-dput" title="Link to this heading">¶</a></h3>
 <p>Evaluating the debian dput command was not possible, since the command
 requires a debian packages .change file, which is not created when
 building the .deb file using cpack</p>
 </section>
 <section id="uploading-using-curl">
-<h3>Uploading using curl<a class="headerlink" href="#uploading-using-curl" title="Permalink to this heading">¶</a></h3>
+<h3>Uploading using curl<a class="headerlink" href="#uploading-using-curl" title="Link to this heading">¶</a></h3>
 <p>The documentation specifies the following command to upload a .deb file
 to the registry when no .change file is available:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--request<span class="w"> </span>PUT<span class="w"> </span>--user<span class="w"> </span><span class="s2">&quot;user:token&quot;</span><span class="w"> </span>--get<span class="w"> </span>--data<span class="w"> </span><span class="s2">&quot;distribution=registry&quot;</span><span class="w"> </span>--data<span class="w"> </span><span class="s2">&quot;component=main&quot;</span><span class="w"> </span><span class="s2">&quot;https://gitlabintern.emlix.com/api/v4/projects/62/packages/debian&quot;</span><span class="w"> </span>--upload-file<span class="w"> </span>packages/cmocka_extensions_0.42.3_amd64.deb
@@ -67,7 +67,7 @@ error further were not successful</p>
 </section>
 </section>
 <section id="generic-repository">
-<h2>Generic repository<a class="headerlink" href="#generic-repository" title="Permalink to this heading">¶</a></h2>
+<h2>Generic repository<a class="headerlink" href="#generic-repository" title="Link to this heading">¶</a></h2>
 <p>No creation of a repository is necessary, and uploading a debian file
 using</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;PRIVATE-TOKEN: token&quot;</span><span class="w"> </span>--upload-file<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/cmocka_extensions_0.42.3_amd64.deb<span class="w"> </span><span class="s2">&quot;https://gitlabintern.emlix.com/api/v4/projects/62/packages/generic/corbos_tools/0.42.3/cmocka_extensions_0.42.3_amd64.deb&quot;</span>
@@ -75,7 +75,7 @@ using</p>
 </div>
 <p>works.</p>
 <section id="creating-a-debian-repository-inside-the-generic-repository">
-<h3>Creating a debian repository inside the generic repository<a class="headerlink" href="#creating-a-debian-repository-inside-the-generic-repository" title="Permalink to this heading">¶</a></h3>
+<h3>Creating a debian repository inside the generic repository<a class="headerlink" href="#creating-a-debian-repository-inside-the-generic-repository" title="Link to this heading">¶</a></h3>
 <p>It is possible to upload a debian Repositories Package file to the
 generic repository. However, it seemed not possible to the access the
 registry as a debian repository using the command</p>
@@ -87,7 +87,7 @@ then accessing the repository using <code class="docutils literal notranslate"><
 since the repository is not a signed official one.</p>
 </section>
 <section id="downloading-debian-files">
-<h3>Downloading debian files<a class="headerlink" href="#downloading-debian-files" title="Permalink to this heading">¶</a></h3>
+<h3>Downloading debian files<a class="headerlink" href="#downloading-debian-files" title="Link to this heading">¶</a></h3>
 <p>Downloading a debian file from the generic repository works using the
 command</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;PRIVATE-TOKEN: token&quot;</span><span class="w"> </span><span class="s2">&quot;https://gitlabintern.emlix.com/api/v4/projects/62/packages/generic/corbos_tools/0.42.3/cmocka_extensions_0.42.3_amd64.deb&quot;</span><span class="w"> </span>--output<span class="w"> </span>cmocka_extensions.deb
@@ -131,14 +131,18 @@ command</p>
 <li class="toctree-l2"><a class="reference internal" href="event_storage_class.html">Architecture Design Record - Event Storage Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_throtteling.html">Architecture Design Record - Event Throtteling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage_of_FORTIFY_SOURCE.html">Design Decisions - Enforce usage of _FORTIFY_SOURCE</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html">Architecture Design Record - Event Storage Backend</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-1">Decision</a></li>
 <li class="toctree-l2"><a class="reference internal" href="handle_kernel_module_dependencies.html">Handle kernel module dependencies for Elos</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages.</a></li>
 <li class="toctree-l2"><a class="reference internal" href="elos-coredump.html">Architecture Design Record - Detecting Coredumps</a></li>
 <li class="toctree-l2"><a class="reference internal" href="elos_logging_frameworks.html">Architecture Design Record - Evaluation Of Logging Frameworks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_authorization.html">Architecture Design Record - Event publishing authorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_authorization_blacklisting.html">Architecture Design Record - Blacklist filtering of published events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elos_event_logging_concept.html">Architecture Design Record - elos event logging concept <strong>DRAFT</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html">Architecture Design Record - Event Storage Backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-1">Decision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-2">Decision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#rational">Rational</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fetch-features.html">ADR - Feature set of elos “fetch” <strong>DRAFT</strong></a></li>
 </ul>
 </li>
 </ul>
@@ -180,7 +184,7 @@ command</p>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

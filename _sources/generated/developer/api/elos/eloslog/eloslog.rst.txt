@@ -1,7 +1,0 @@
-eloslog
-=======
-
-.. toctree::
-    :maxdepth: 4
-
-    types_h

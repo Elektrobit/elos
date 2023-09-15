@@ -12,12 +12,14 @@ Architecture Design Records
    event_storage_class
    event_throtteling
    usage_of_FORTIFY_SOURCE
-   event_storage_backends
    handle_kernel_module_dependencies
    package_registry
    elos-coredump
    elos_logging_frameworks
    event_authorization
    event_authorization_blacklisting
+   elos_event_logging_concept
+   event_storage_backends
+   fetch-features
 
 

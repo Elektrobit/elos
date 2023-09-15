@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,9 +10,9 @@
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
@@ -36,75 +36,75 @@
           <div class="body" role="main">
             
   <section id="clientconnection-types-h">
-<h1>clientconnection_types.h<a class="headerlink" href="#clientconnection-types-h" title="Permalink to this heading">¶</a></h1>
+<h1>clientconnection_types.h<a class="headerlink" href="#clientconnection-types-h" title="Link to this heading">¶</a></h1>
 <p>// SPDX-License-Identifier: MIT</p>
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnection">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnection</span></span></span><a class="headerlink" href="#c.elosClientConnection" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnection</span></span></span><a class="headerlink" href="#c.elosClientConnection" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structure of a ClientConnection</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.flags">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosClientConnection.flags" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosClientConnection.flags" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>State bits of the component (e.g. initialized, active, e.t.c.)</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.fd">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fd</span></span></span><a class="headerlink" href="#c.elosClientConnection.fd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.fd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fd</span></span></span><a class="headerlink" href="#c.elosClientConnection.fd" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.fd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>The socket used for communication</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.syncFd">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">syncFd</span></span></span><a class="headerlink" href="#c.elosClientConnection.syncFd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.syncFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">syncFd</span></span></span><a class="headerlink" href="#c.elosClientConnection.syncFd" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.syncFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>eventfd used for synchronization with the worker thread</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.triggerFd">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">triggerFd</span></span></span><a class="headerlink" href="#c.elosClientConnection.triggerFd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.triggerFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">triggerFd</span></span></span><a class="headerlink" href="#c.elosClientConnection.triggerFd" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.triggerFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>eventfd used for waking the worker thread (e.g. for a controlled shutdown)</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.addr">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">addr</span></span></span><a class="headerlink" href="#c.elosClientConnection.addr" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">addr</span></span></span><a class="headerlink" href="#c.elosClientConnection.addr" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Address information of the currently used socketFd</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.thread">
-<span class="n"><span class="pre">pthread_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">thread</span></span></span><a class="headerlink" href="#c.elosClientConnection.thread" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.thread"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">pthread_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">thread</span></span></span><a class="headerlink" href="#c.elosClientConnection.thread" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.thread"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Worker thread used by pthread_* functions</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.sharedData">
-<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnection.sharedData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnection.sharedData" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>See struct defintion of elosClientConnectionSharedData_t</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.data">
-<a class="reference internal" href="#c.elosClientConnectionData_t" title="elosClientConnectionData_t"><span class="n"><span class="pre">elosClientConnectionData_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><a class="headerlink" href="#c.elosClientConnection.data" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosClientConnectionData_t" title="elosClientConnectionData_t"><span class="n"><span class="pre">elosClientConnectionData_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><a class="headerlink" href="#c.elosClientConnection.data" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>worker thread local data</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.isTrusted">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isTrusted</span></span></span><a class="headerlink" href="#c.elosClientConnection.isTrusted" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.isTrusted"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isTrusted</span></span></span><a class="headerlink" href="#c.elosClientConnection.isTrusted" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.isTrusted"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>‘true’ if the connection is trusted</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.blacklist">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">blacklist</span></span></span><a class="headerlink" href="#c.elosClientConnection.blacklist" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.blacklist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">blacklist</span></span></span><a class="headerlink" href="#c.elosClientConnection.blacklist" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.blacklist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>blacklist filters</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection.eventBuffer">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventBuffer</span></span></span><a class="headerlink" href="#c.elosClientConnection.eventBuffer" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.eventBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventBuffer</span></span></span><a class="headerlink" href="#c.elosClientConnection.eventBuffer" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection.eventBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Buffer for incoming Events.</p>
 </dd></dl>
 
@@ -112,17 +112,17 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnectionData">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionData</span></span></span><a class="headerlink" href="#c.elosClientConnectionData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionData</span></span></span><a class="headerlink" href="#c.elosClientConnectionData" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structures used exclusively by the worker thread</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionData.eventFilterNodeIdVector">
-<span class="n"><span class="pre">elosEventFilterNodeIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventFilterNodeIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData.eventFilterNodeIdVector" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData.eventFilterNodeIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">elosEventFilterNodeIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventFilterNodeIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData.eventFilterNodeIdVector" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData.eventFilterNodeIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>FilterNodes used by the connection</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionData.eventQueueIdVector">
-<span class="n"><span class="pre">elosEventQueueIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventQueueIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData.eventQueueIdVector" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData.eventQueueIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">elosEventQueueIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventQueueIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData.eventQueueIdVector" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData.eventQueueIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>EventQueues used by the connection</p>
 </dd></dl>
 
@@ -130,17 +130,17 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnectionData_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionData_t</span></span></span><a class="headerlink" href="#c.elosClientConnectionData_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionData_t</span></span></span><a class="headerlink" href="#c.elosClientConnectionData_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structures used exclusively by the worker thread</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionData_t.eventFilterNodeIdVector">
-<span class="n"><span class="pre">elosEventFilterNodeIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventFilterNodeIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData_t.eventFilterNodeIdVector" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData_t.eventFilterNodeIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">elosEventFilterNodeIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventFilterNodeIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData_t.eventFilterNodeIdVector" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData_t.eventFilterNodeIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>FilterNodes used by the connection</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionData_t.eventQueueIdVector">
-<span class="n"><span class="pre">elosEventQueueIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventQueueIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData_t.eventQueueIdVector" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData_t.eventQueueIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">elosEventQueueIdVector_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventQueueIdVector</span></span></span><a class="headerlink" href="#c.elosClientConnectionData_t.eventQueueIdVector" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionData_t.eventQueueIdVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>EventQueues used by the connection</p>
 </dd></dl>
 
@@ -148,11 +148,11 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnectionParam">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionParam</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionParam</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialization parameters for a new ClientConnection</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionParam.sharedData">
-<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam.sharedData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam.sharedData" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>See definition of elosClientConnectionSharedData_t</p>
 </dd></dl>
 
@@ -160,11 +160,11 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnectionParam_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionParam_t</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionParam_t</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialization parameters for a new ClientConnection</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionParam_t.sharedData">
-<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam_t.sharedData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam_t.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnectionParam_t.sharedData" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionParam_t.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>See definition of elosClientConnectionSharedData_t</p>
 </dd></dl>
 
@@ -172,35 +172,35 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionSharedData</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionSharedData</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structures shared between all connections of a ClientManager</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData.logAggregator">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">logAggregator</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.logAggregator" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.logAggregator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">logAggregator</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.logAggregator" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.logAggregator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for persistent logging of Events</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData.connectionSemaphore">
-<span class="n"><span class="pre">sem_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connectionSemaphore</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.connectionSemaphore" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.connectionSemaphore"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">sem_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connectionSemaphore</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.connectionSemaphore" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.connectionSemaphore"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for waiting until a connection is available</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData.eventDispatcher">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventDispatcher</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.eventDispatcher" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.eventDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventDispatcher</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.eventDispatcher" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.eventDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for registering the EventBuffers of each Connection</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData.eventProcessor">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventProcessor</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.eventProcessor" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.eventProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventProcessor</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.eventProcessor" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.eventProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for FilterNode/EventQueue handling</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData.config">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">config</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.config" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">config</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData.config" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData.config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Static configuration variables</p>
 </dd></dl>
 
@@ -208,35 +208,35 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structures shared between all connections of a ClientManager</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData_t.logAggregator">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">logAggregator</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.logAggregator" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.logAggregator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">logAggregator</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.logAggregator" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.logAggregator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for persistent logging of Events</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData_t.connectionSemaphore">
-<span class="n"><span class="pre">sem_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connectionSemaphore</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.connectionSemaphore" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.connectionSemaphore"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">sem_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connectionSemaphore</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.connectionSemaphore" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.connectionSemaphore"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for waiting until a connection is available</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData_t.eventDispatcher">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventDispatcher</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.eventDispatcher" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.eventDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventDispatcher</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.eventDispatcher" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.eventDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for registering the EventBuffers of each Connection</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData_t.eventProcessor">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventProcessor</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.eventProcessor" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.eventProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">eventProcessor</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.eventProcessor" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.eventProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Used for FilterNode/EventQueue handling</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnectionSharedData_t.config">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">config</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.config" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">config</span></span></span><a class="headerlink" href="#c.elosClientConnectionSharedData_t.config" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnectionSharedData_t.config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Static configuration variables</p>
 </dd></dl>
 
@@ -244,71 +244,71 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosClientConnection_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnection_t</span></span></span><a class="headerlink" href="#c.elosClientConnection_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosClientConnection_t</span></span></span><a class="headerlink" href="#c.elosClientConnection_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structure of a ClientConnection</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.flags">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.flags" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.flags" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>State bits of the component (e.g. initialized, active, e.t.c.)</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.fd">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fd</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.fd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.fd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fd</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.fd" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.fd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>The socket used for communication</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.syncFd">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">syncFd</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.syncFd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.syncFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">syncFd</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.syncFd" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.syncFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>eventfd used for synchronization with the worker thread</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.triggerFd">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">triggerFd</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.triggerFd" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.triggerFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">triggerFd</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.triggerFd" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.triggerFd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>eventfd used for waking the worker thread (e.g. for a controlled shutdown)</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.addr">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">addr</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.addr" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">addr</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.addr" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Address information of the currently used socketFd</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.thread">
-<span class="n"><span class="pre">pthread_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">thread</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.thread" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.thread"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="n"><span class="pre">pthread_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">thread</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.thread" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.thread"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Worker thread used by pthread_* functions</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.sharedData">
-<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.sharedData" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosClientConnectionSharedData_t" title="elosClientConnectionSharedData_t"><span class="n"><span class="pre">elosClientConnectionSharedData_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">sharedData</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.sharedData" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.sharedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>See struct defintion of elosClientConnectionSharedData_t</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.data">
-<a class="reference internal" href="#c.elosClientConnectionData_t" title="elosClientConnectionData_t"><span class="n"><span class="pre">elosClientConnectionData_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.data" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosClientConnectionData_t" title="elosClientConnectionData_t"><span class="n"><span class="pre">elosClientConnectionData_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.data" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>worker thread local data</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.isTrusted">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isTrusted</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.isTrusted" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.isTrusted"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isTrusted</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.isTrusted" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.isTrusted"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>‘true’ if the connection is trusted</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.blacklist">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">blacklist</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.blacklist" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.blacklist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">blacklist</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.blacklist" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.blacklist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>blacklist filters</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosClientConnection_t.eventBuffer">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventBuffer</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.eventBuffer" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.eventBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eventBuffer</span></span></span><a class="headerlink" href="#c.elosClientConnection_t.eventBuffer" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/clientmanager/clientconnection_types.h.html#c.elosClientConnection_t.eventBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Buffer for incoming Events.</p>
 </dd></dl>
 
@@ -394,7 +394,7 @@
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

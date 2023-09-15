@@ -1,5 +1,0 @@
-types.h
-=======
-
-.. autocmodule:: elos/eloslog/types.h
-    :members:

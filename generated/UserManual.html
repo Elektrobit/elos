@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,9 +10,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -36,9 +36,9 @@
           <div class="body" role="main">
             
   <section id="elos">
-<h1>elos<a class="headerlink" href="#elos" title="Permalink to this heading">¶</a></h1>
+<h1>elos<a class="headerlink" href="#elos" title="Link to this heading">¶</a></h1>
 <section id="short-overview">
-<h2>Short Overview<a class="headerlink" href="#short-overview" title="Permalink to this heading">¶</a></h2>
+<h2>Short Overview<a class="headerlink" href="#short-overview" title="Link to this heading">¶</a></h2>
 <p>The name “elos” means “event logging and management system” and
 describes a tool to collect, store and publish various system
 information (i.e. syslogs, core dumps, measurements obtained from proc-
@@ -52,7 +52,7 @@ obtained in the same way.</p>
 </section>
 <hr class="docutils" />
 <section id="events">
-<h2>Events<a class="headerlink" href="#events" title="Permalink to this heading">¶</a></h2>
+<h2>Events<a class="headerlink" href="#events" title="Link to this heading">¶</a></h2>
 <p>Elos uses events to communicate. Events can be exchanged over the
 network, so different clients may get them, or they can get logged on
 the elosd server (to use the information later on). An event is
@@ -80,7 +80,7 @@ shell command: <code class="docutils literal notranslate"><span class="pre">date
 </section>
 <hr class="docutils" />
 <section id="logging">
-<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this heading">¶</a></h2>
+<h2>Logging<a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
 <p>Events can actually get stored in a json formatted log file, containing
 the information of the events described above. This file is also
 considered the “json backend”, since it is a database. The upper limit
@@ -110,7 +110,7 @@ police of the logging backend.</p>
 </section>
 <hr class="docutils" />
 <section id="communication">
-<h2>Communication<a class="headerlink" href="#communication" title="Permalink to this heading">¶</a></h2>
+<h2>Communication<a class="headerlink" href="#communication" title="Link to this heading">¶</a></h2>
 <p>The EventProcessor (or elosd server) works as a message broker, which
 receives and distributes events based on previously defined event
 filters. The event communication is realized in a publish-poll pattern:
@@ -128,7 +128,7 @@ from the server.</p>
 </section>
 <hr class="docutils" />
 <section id="filters">
-<h2>Filters<a class="headerlink" href="#filters" title="Permalink to this heading">¶</a></h2>
+<h2>Filters<a class="headerlink" href="#filters" title="Link to this heading">¶</a></h2>
 <p>Along the above mentioned filters, elosd also uses a different set of
 filters to decide if an event shall be kept in the logging backend, or
 not. Clients can read not only from their event queues, but also events
@@ -156,7 +156,7 @@ Operator:<span class="w"> </span>EQ<span class="p">|</span>LT<span class="p">|</
 </pre></div>
 </div>
 <section id="event-filter">
-<h3>Event-Filter<a class="headerlink" href="#event-filter" title="Permalink to this heading">¶</a></h3>
+<h3>Event-Filter<a class="headerlink" href="#event-filter" title="Link to this heading">¶</a></h3>
 <p>Event-Filters are extended RPN-Filters, so they support the following
 variables analogs to the canonical event format :</p>
 <ul class="simple">
@@ -176,7 +176,7 @@ event</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">.event</span></code> identifier can be abbreviated with <code class="docutils literal notranslate"><span class="pre">.ev</span></code> or <code class="docutils literal notranslate"><span class="pre">.e</span></code>.</p>
 <section id="examples">
-<h4>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h4>
+<h4>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h4>
 <p>Only match events about core dump created :</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">messageCode</span> <span class="mi">5005</span> <span class="n">EQ</span>
 </pre></div>
@@ -202,7 +202,7 @@ event</p></li>
 </section>
 </section>
 <section id="process-filter">
-<h3>Process-Filter<a class="headerlink" href="#process-filter" title="Permalink to this heading">¶</a></h3>
+<h3>Process-Filter<a class="headerlink" href="#process-filter" title="Link to this heading">¶</a></h3>
 <p>Process filters currently used to authorize processes to publish
 blacklisted events. Process filters are extended RPN-Filters, so they
 support the following variables:</p>
@@ -214,7 +214,7 @@ support the following variables:</p>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">.process</span></code> identifier can be abbreviated with <code class="docutils literal notranslate"><span class="pre">.proc</span></code> or <code class="docutils literal notranslate"><span class="pre">.p</span></code>.</p>
 <section id="examples-1">
-<span id="id1"></span><h4>Examples<a class="headerlink" href="#examples-1" title="Permalink to this heading">¶</a></h4>
+<span id="id1"></span><h4>Examples<a class="headerlink" href="#examples-1" title="Link to this heading">¶</a></h4>
 <p>Only match process from <code class="docutils literal notranslate"><span class="pre">root</span></code> (uid==0) and <code class="docutils literal notranslate"><span class="pre">root</span></code> (gid==0) group:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">uid</span> <span class="mi">0</span> <span class="n">EQ</span> <span class="n">process</span><span class="o">.</span><span class="n">gid</span> <span class="n">EQ</span> <span class="n">AND</span>
 </pre></div>
@@ -233,7 +233,7 @@ support the following variables:</p>
 </section>
 <hr class="docutils" />
 <section id="scanner">
-<h2>Scanner<a class="headerlink" href="#scanner" title="Permalink to this heading">¶</a></h2>
+<h2>Scanner<a class="headerlink" href="#scanner" title="Link to this heading">¶</a></h2>
 <p>Events are gathered from different sources and different sources have
 different formats to show their information. To put these information
 into the - in sections “Events” - introduced canonical event format, a
@@ -251,7 +251,7 @@ already handled by scanners shipping with elos.</p>
 to set <code class="docutils literal notranslate"><span class="pre">ELOS_SCANNER_PATH</span></code> to the directory where the scanner
 libraries are installed.</p>
 <section id="syslog-scanner">
-<h3>Syslog Scanner<a class="headerlink" href="#syslog-scanner" title="Permalink to this heading">¶</a></h3>
+<h3>Syslog Scanner<a class="headerlink" href="#syslog-scanner" title="Link to this heading">¶</a></h3>
 <p>The “system logging protocol” (syslog) is a standard protocol to
 transfer log messages. A syslog message is smaller than 1024 byte and
 consists of a header and the message that shall be transferred itself.
@@ -274,7 +274,7 @@ the syslog scanner will map them. An example for a syslog message is:</p>
 </div>
 </section>
 <section id="kmsg-scanner">
-<h3>Kmsg Scanner<a class="headerlink" href="#kmsg-scanner" title="Permalink to this heading">¶</a></h3>
+<h3>Kmsg Scanner<a class="headerlink" href="#kmsg-scanner" title="Link to this heading">¶</a></h3>
 <p>The kernel message (kmsg) scanner reads the kernel log ring buffer from
 the system file /dev/kmsg. The main idea of this file is to collect all
 the information about the initial phase of the system startup and store
@@ -307,7 +307,7 @@ code is set to 3422 (message not understood), severity and
 classification won’t be set in that case.</p>
 </section>
 <section id="netifd-scanner">
-<h3>Netifd Scanner<a class="headerlink" href="#netifd-scanner" title="Permalink to this heading">¶</a></h3>
+<h3>Netifd Scanner<a class="headerlink" href="#netifd-scanner" title="Link to this heading">¶</a></h3>
 <p>Netifd is part of the OpenWrt project (a distribution for embedded
 devices - typically wireless routers). Netifd means “network interface
 daemon” so its purpose is to manage network configurations. “Interfaces”
@@ -320,9 +320,9 @@ be mapped by our netifd scanner to create canonical events out of it.</p>
 </section>
 <hr class="docutils" />
 <section id="elos-tools">
-<h2>Elos-Tools<a class="headerlink" href="#elos-tools" title="Permalink to this heading">¶</a></h2>
+<h2>Elos-Tools<a class="headerlink" href="#elos-tools" title="Link to this heading">¶</a></h2>
 <section id="elos-coredump">
-<h3>Elos-coredump<a class="headerlink" href="#elos-coredump" title="Permalink to this heading">¶</a></h3>
+<h3>Elos-coredump<a class="headerlink" href="#elos-coredump" title="Link to this heading">¶</a></h3>
 <p>Elos-coredump is an application to create events to be logged to the
 elos log, when a segmentation fault occurs and a coredump file is to be
 created. Following is an example of an event created by elos-coredump
@@ -343,7 +343,7 @@ and logged in elos log</p>
 </pre></div>
 </div>
 <section id="elos-coredump-installation">
-<h4>Elos-coredump Installation<a class="headerlink" href="#elos-coredump-installation" title="Permalink to this heading">¶</a></h4>
+<h4>Elos-coredump Installation<a class="headerlink" href="#elos-coredump-installation" title="Link to this heading">¶</a></h4>
 <p>The elos-coredump tool is built and installed along with elos as given
 in the <a class="reference external" href="#elosd-installation-setup">installation section</a>. After
 installation is complete, the kernel core-pattern needs to be setup to
@@ -353,7 +353,7 @@ by running <code class="docutils literal notranslate"><span class="pre">elos-cor
 <code class="docutils literal notranslate"><span class="pre">/proc/sys/kernel/core_pattern</span></code> file.</p>
 </section>
 <section id="usage">
-<h4>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h4>
+<h4>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h4>
 <p>To run elos-coredump manually the following arguments are required :</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expected</span> <span class="n">order</span> <span class="n">of</span> <span class="n">specifiers</span><span class="p">:</span>
 
@@ -444,7 +444,7 @@ core_patterns is demonstrated below.</p>
 </section>
 </section>
 <section id="elosd-installation-setup">
-<span id="id2"></span><h2>elosd - Installation &amp; Setup<a class="headerlink" href="#elosd-installation-setup" title="Permalink to this heading">¶</a></h2>
+<span id="id2"></span><h2>elosd - Installation &amp; Setup<a class="headerlink" href="#elosd-installation-setup" title="Link to this heading">¶</a></h2>
 <p>This section will cover the topic of how elos has to be installed. If
 you have elos already installed in an image, you can safely skip this
 chapter. First of all: We have to make a difference between the elos
@@ -456,11 +456,11 @@ from a different device just using the terminal. However, we do have an
 elosc demo program to simplify the communication. But let’s start with
 the main thing.</p>
 <section id="get-elos-project">
-<h3>Get elos Project<a class="headerlink" href="#get-elos-project" title="Permalink to this heading">¶</a></h3>
+<h3>Get elos Project<a class="headerlink" href="#get-elos-project" title="Link to this heading">¶</a></h3>
 <p>Elos sourcecode is located in a git repository.</p>
 </section>
 <section id="build-and-installation">
-<h3>Build And Installation<a class="headerlink" href="#build-and-installation" title="Permalink to this heading">¶</a></h3>
+<h3>Build And Installation<a class="headerlink" href="#build-and-installation" title="Link to this heading">¶</a></h3>
 <p>As soon as you have elos, you need to build it. elos has different
 dependencies. To install all the dependencies in a Debian based system,
 execute:</p>
@@ -495,7 +495,7 @@ libraries, since we added a few and elos needs to find them.</p>
 <p>If these lines of code succeeded, than congrats: You have successfully
 installed a working elos daemon.</p>
 <section id="packing">
-<h4>Packing<a class="headerlink" href="#packing" title="Permalink to this heading">¶</a></h4>
+<h4>Packing<a class="headerlink" href="#packing" title="Link to this heading">¶</a></h4>
 <p>Creating the debian packages for elos and the other elos tools is
 possible by calling</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">shared</span><span class="o">/</span><span class="n">ci</span><span class="o">/</span><span class="n">package_all</span><span class="o">.</span><span class="n">sh</span>
@@ -522,7 +522,7 @@ subprojects package with:</p>
 </section>
 <hr class="docutils" />
 <section id="setup-to-make-it-work">
-<h3>Setup To Make It Work<a class="headerlink" href="#setup-to-make-it-work" title="Permalink to this heading">¶</a></h3>
+<h3>Setup To Make It Work<a class="headerlink" href="#setup-to-make-it-work" title="Link to this heading">¶</a></h3>
 <p>There are still a few steps remaining to configure it correctly:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">mkdir</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">elos</span><span class="o">/</span>
 <span class="n">sudo</span> <span class="n">cp</span> <span class="n">elos</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">elosd</span><span class="o">/</span><span class="n">elosd</span><span class="o">.</span><span class="n">json</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">elos</span><span class="o">/</span>
@@ -545,7 +545,7 @@ to another place if you like, in the way described below.</p>
 </section>
 <hr class="docutils" />
 <section id="elosd-configuration-options-explained">
-<h2>elosd Configuration - Options Explained<a class="headerlink" href="#elosd-configuration-options-explained" title="Permalink to this heading">¶</a></h2>
+<h2>elosd Configuration - Options Explained<a class="headerlink" href="#elosd-configuration-options-explained" title="Link to this heading">¶</a></h2>
 <p>By default the elosd config options, stored in ‘/etc/elos/elosd.json’ do
 look like this:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -655,7 +655,7 @@ permanently, you can add them to your <code class="docutils literal notranslate"
 change the location where elosd expects its configuration by setting the
 environment variable ‘ELOS_CONFIG_PATH’</p>
 <section id="event-authorization">
-<h3>Event Authorization<a class="headerlink" href="#event-authorization" title="Permalink to this heading">¶</a></h3>
+<h3>Event Authorization<a class="headerlink" href="#event-authorization" title="Link to this heading">¶</a></h3>
 <p>Event authorization is implemented by setting two filters in the config
 file. The two filters are :</p>
 <ul class="simple">
@@ -672,7 +672,7 @@ those events that match the <code class="docutils literal notranslate"><span cla
 Other clients will be able to publish only those events that do not
 match the <code class="docutils literal notranslate"><span class="pre">EventBlacklist</span></code> filter.</p>
 <section id="dependency">
-<h4>Dependency<a class="headerlink" href="#dependency" title="Permalink to this heading">¶</a></h4>
+<h4>Dependency<a class="headerlink" href="#dependency" title="Link to this heading">¶</a></h4>
 <p>It is assumed that the system has the following dependencies to use this
 feature</p>
 <ul class="simple">
@@ -692,7 +692,7 @@ feature</p>
 </section>
 <hr class="docutils" />
 <section id="elosd-start-and-test">
-<h2>elosd Start and Test<a class="headerlink" href="#elosd-start-and-test" title="Permalink to this heading">¶</a></h2>
+<h2>elosd Start and Test<a class="headerlink" href="#elosd-start-and-test" title="Link to this heading">¶</a></h2>
 <p>After all the settings are done, the elos daemon can be started for
 debugging with i.e.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">ELOS_LOG_LEVEL</span><span class="o">=</span><span class="n">DEBUG</span> <span class="n">elosd</span>
@@ -747,7 +747,7 @@ happened that match the given filter rule.</p>
 </section>
 <hr class="docutils" />
 <section id="event-inputs-scanner-setup">
-<h2>[Event-Inputs] Scanner Setup<a class="headerlink" href="#event-inputs-scanner-setup" title="Permalink to this heading">¶</a></h2>
+<h2>[Event-Inputs] Scanner Setup<a class="headerlink" href="#event-inputs-scanner-setup" title="Link to this heading">¶</a></h2>
 <p>Since scanners are like plugins and we can have a different amount of
 them, which are working all differently, we decided to create a generic
 component which is capable of mapping values to the different canonical
@@ -798,7 +798,7 @@ Operator:<span class="w"> </span>EQ<span class="p">|</span>LT<span class="p">|</
 </pre></div>
 </div>
 <section id="syslog-scanner-1">
-<span id="id3"></span><h3>Syslog Scanner<a class="headerlink" href="#syslog-scanner-1" title="Permalink to this heading">¶</a></h3>
+<span id="id3"></span><h3>Syslog Scanner<a class="headerlink" href="#syslog-scanner-1" title="Link to this heading">¶</a></h3>
 <p>The syslog scanner expects the following config structure:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>SyslogScanner
 ├──<span class="w"> </span>SyslogPath
@@ -820,19 +820,19 @@ notation.</p>
 </div>
 </section>
 <section id="kmsg-scanner-1">
-<span id="id4"></span><h3>Kmsg Scanner<a class="headerlink" href="#kmsg-scanner-1" title="Permalink to this heading">¶</a></h3>
+<span id="id4"></span><h3>Kmsg Scanner<a class="headerlink" href="#kmsg-scanner-1" title="Link to this heading">¶</a></h3>
 <p>Reads the kernel log from <code class="docutils literal notranslate"><span class="pre">/dev/kmsg</span></code> or from a file pointed to by
 ELOS_KMSG_FILE environment variable. The file shall be created with
 mkfifo.</p>
 </section>
 </section>
 <section id="event-ouputs-event-logging-backend-configuration">
-<h2>[Event-Ouputs] Event Logging Backend Configuration<a class="headerlink" href="#event-ouputs-event-logging-backend-configuration" title="Permalink to this heading">¶</a></h2>
+<h2>[Event-Ouputs] Event Logging Backend Configuration<a class="headerlink" href="#event-ouputs-event-logging-backend-configuration" title="Link to this heading">¶</a></h2>
 <p>Depending on the installation on the local system, it might be necessary
 to set <code class="docutils literal notranslate"><span class="pre">ELOS_BACKEND_PATH</span></code> to the directory where the backend plugin
 libraries are installed.</p>
 <section id="plugins">
-<h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading">¶</a></h3>
+<h3>Plugins<a class="headerlink" href="#plugins" title="Link to this heading">¶</a></h3>
 <p>It is possible to create logger instances by configuring instance of
 logger plugins in the elosd config file. Using the json configuration as
 an example, defining an instance of a logger plugin could look like the
@@ -882,7 +882,7 @@ supported, but in the future, other options could be included to allow
 for deferred startup of a plugin instance, if necessary for other
 services like network interfaces, for example.</p>
 <section id="json-backend-plugin">
-<h4>Json Backend Plugin<a class="headerlink" href="#json-backend-plugin" title="Permalink to this heading">¶</a></h4>
+<h4>Json Backend Plugin<a class="headerlink" href="#json-backend-plugin" title="Link to this heading">¶</a></h4>
 <p>This is changeable by either configuring the option “StoragePath” unter
 “Config”, or by defining <code class="docutils literal notranslate"><span class="pre">ELOS_STORAGE_BACKEND_&lt;PLUGIN</span> <span class="pre">NAME&gt;_FILE</span></code> in
 the enviroment. If defined the enviroment variable takes precedent over
@@ -967,7 +967,7 @@ can be changed by defining <code class="docutils literal notranslate"><span clas
 compile time.</p>
 </section>
 <section id="sql-backend-plugin">
-<h4>SQL Backend Plugin<a class="headerlink" href="#sql-backend-plugin" title="Permalink to this heading">¶</a></h4>
+<h4>SQL Backend Plugin<a class="headerlink" href="#sql-backend-plugin" title="Link to this heading">¶</a></h4>
 <p>The SQL Backend Plugin implements a logging backend using sqlite3. The
 code for it is an unofficial Proof-of-Concept implementation that might
 be changed or removed at any moment without prior notice.</p>
@@ -990,7 +990,7 @@ set, the default value <code class="docutils literal notranslate"><span class="p
 </section>
 </section>
 <section id="elosc-as-demo-application-to-verify">
-<h2>Elosc as demo application to verify<a class="headerlink" href="#elosc-as-demo-application-to-verify" title="Permalink to this heading">¶</a></h2>
+<h2>Elosc as demo application to verify<a class="headerlink" href="#elosc-as-demo-application-to-verify" title="Link to this heading">¶</a></h2>
 <p>Using the elos client (elosc), it is possible to interact with the
 running EventProcessor (elosd). The following options are available:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-s<span class="w"> </span>&lt;filter<span class="w"> </span>rule&gt;<span class="w">    </span>subscribe<span class="w"> </span>to<span class="w"> </span>event<span class="w">  </span>Subscribe<span class="w"> </span>to<span class="w"> </span>events<span class="w"> </span>matching<span class="w"> </span>the<span class="w"> </span>given<span class="w"> </span>filter<span class="w"> </span>rule.
@@ -1031,7 +1031,7 @@ elosc<span class="w"> </span>-c<span class="w"> </span><span class="m">100</span
 </div>
 </section>
 <section id="elosmon-demo-client">
-<h2>elosMon demo client<a class="headerlink" href="#elosmon-demo-client" title="Permalink to this heading">¶</a></h2>
+<h2>elosMon demo client<a class="headerlink" href="#elosmon-demo-client" title="Link to this heading">¶</a></h2>
 <p>Another example is the included demo client elosMon, which enables the
 user to subscribe for certain events with the elos daemon and get
 notified if these events occur. This can be used to keep track of
@@ -1053,9 +1053,9 @@ logins:</p>
 </div>
 </section>
 <section id="creating-an-elos-client">
-<h2>Creating an elos client:<a class="headerlink" href="#creating-an-elos-client" title="Permalink to this heading">¶</a></h2>
+<h2>Creating an elos client:<a class="headerlink" href="#creating-an-elos-client" title="Link to this heading">¶</a></h2>
 <section id="using-libelos-explain-elos-demos">
-<h3>using libelos - explain elos/demos<a class="headerlink" href="#using-libelos-explain-elos-demos" title="Permalink to this heading">¶</a></h3>
+<h3>using libelos - explain elos/demos<a class="headerlink" href="#using-libelos-explain-elos-demos" title="Link to this heading">¶</a></h3>
 <p>To create an elos event using the c language:</p>
 <ul class="simple">
 <li><p>include the header</p></li>
@@ -1099,7 +1099,7 @@ logins:</p>
 remove eventlists</p>
 </section>
 <section id="interacting-with-elos-through-tcp-ip-client">
-<span id="interacting-with-elos-through-tcpip-client"></span><h3>Interacting with elos through tcp/ip client.<a class="headerlink" href="#interacting-with-elos-through-tcp-ip-client" title="Permalink to this heading">¶</a></h3>
+<span id="interacting-with-elos-through-tcpip-client"></span><h3>Interacting with elos through tcp/ip client.<a class="headerlink" href="#interacting-with-elos-through-tcp-ip-client" title="Link to this heading">¶</a></h3>
 <p>A tcp client can interact with with a running instance of elos. In the
 following example a direct connection to elos from tcp client written in
 python is shown.</p>
@@ -1296,7 +1296,7 @@ command. An example written in python is given below.</p>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

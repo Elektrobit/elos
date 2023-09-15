@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,15 +10,15 @@
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
-    <link rel="next" title="defines.h" href="defines_h.html" />
-    <link rel="prev" title="eventbuffer" href="eventbuffer.html" />
+    <link rel="next" title="eventdispatcher.h" href="../eventdispatcher/eventdispatcher_h.html" />
+    <link rel="prev" title="defines.h" href="defines_h.html" />
    
   <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
   
@@ -36,33 +36,33 @@
           <div class="body" role="main">
             
   <section id="types-h">
-<h1>types.h<a class="headerlink" href="#types-h" title="Permalink to this heading">¶</a></h1>
+<h1>types.h<a class="headerlink" href="#types-h" title="Link to this heading">¶</a></h1>
 <p>// SPDX-License-Identifier: MIT</p>
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventBuffer">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBuffer</span></span></span><a class="headerlink" href="#c.elosEventBuffer" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBuffer</span></span></span><a class="headerlink" href="#c.elosEventBuffer" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structure of an EventBuffer</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer.flags">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosEventBuffer.flags" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosEventBuffer.flags" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>contains the component status bits, e.g. initialized</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer.writeTrigger">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">writeTrigger</span></span></span><a class="headerlink" href="#c.elosEventBuffer.writeTrigger" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.writeTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">writeTrigger</span></span></span><a class="headerlink" href="#c.elosEventBuffer.writeTrigger" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.writeTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>optional eventfd that is used for signalizing that an event was written</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer.ring">
-<a class="reference internal" href="#c.elosEventBufferRing_t" title="elosEventBufferRing_t"><span class="n"><span class="pre">elosEventBufferRing_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ring</span></span></span><a class="headerlink" href="#c.elosEventBuffer.ring" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.ring"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosEventBufferRing_t" title="elosEventBufferRing_t"><span class="n"><span class="pre">elosEventBufferRing_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ring</span></span></span><a class="headerlink" href="#c.elosEventBuffer.ring" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.ring"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>pointer to an array of elosEventBufferRing_t’s</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer.ringCount">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringCount</span></span></span><a class="headerlink" href="#c.elosEventBuffer.ringCount" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.ringCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringCount</span></span></span><a class="headerlink" href="#c.elosEventBuffer.ringCount" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer.ringCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>size of the array of elosEventBufferRing_t’s</p>
 </dd></dl>
 
@@ -70,11 +70,11 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventBufferParam">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferParam</span></span></span><a class="headerlink" href="#c.elosEventBufferParam" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferParam</span></span></span><a class="headerlink" href="#c.elosEventBufferParam" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Parameter for EventBuffer initialization</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBufferParam.limitEventCount">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferParam.limitEventCount" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferParam.limitEventCount" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Number of Events for each priority that an EventBuffer is required to keep available</p>
 </dd></dl>
 
@@ -82,11 +82,11 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventBufferParam_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferParam_t</span></span></span><a class="headerlink" href="#c.elosEventBufferParam_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferParam_t</span></span></span><a class="headerlink" href="#c.elosEventBufferParam_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Parameter for EventBuffer initialization</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBufferParam_t.limitEventCount">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferParam_t.limitEventCount" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam_t.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferParam_t.limitEventCount" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferParam_t.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Number of Events for each priority that an EventBuffer is required to keep available</p>
 </dd></dl>
 
@@ -94,18 +94,18 @@
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventBufferRing">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferRing</span></span></span><a class="headerlink" href="#c.elosEventBufferRing" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferRing</span></span></span><a class="headerlink" href="#c.elosEventBufferRing" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Ring data structure of an EventBuffer.
 Stores the Events written to the EventBuffer, each priority (e.g. HIGH, NORMAL) has its own indivual ring.</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBufferRing.ringBuffer">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringBuffer</span></span></span><a class="headerlink" href="#c.elosEventBufferRing.ringBuffer" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing.ringBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringBuffer</span></span></span><a class="headerlink" href="#c.elosEventBufferRing.ringBuffer" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing.ringBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>safuRingBuffer containing the Events</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBufferRing.limitEventCount">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferRing.limitEventCount" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferRing.limitEventCount" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>size of the RingBuffer used for storing the Events</p>
 </dd></dl>
 
@@ -113,18 +113,18 @@ Stores the Events written to the EventBuffer, each priority (e.g. HIGH, NORMAL) 
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventBufferRing_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferRing_t</span></span></span><a class="headerlink" href="#c.elosEventBufferRing_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBufferRing_t</span></span></span><a class="headerlink" href="#c.elosEventBufferRing_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Ring data structure of an EventBuffer.
 Stores the Events written to the EventBuffer, each priority (e.g. HIGH, NORMAL) has its own indivual ring.</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBufferRing_t.ringBuffer">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringBuffer</span></span></span><a class="headerlink" href="#c.elosEventBufferRing_t.ringBuffer" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing_t.ringBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringBuffer</span></span></span><a class="headerlink" href="#c.elosEventBufferRing_t.ringBuffer" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing_t.ringBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>safuRingBuffer containing the Events</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBufferRing_t.limitEventCount">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferRing_t.limitEventCount" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing_t.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">limitEventCount</span></span></span><a class="headerlink" href="#c.elosEventBufferRing_t.limitEventCount" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBufferRing_t.limitEventCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>size of the RingBuffer used for storing the Events</p>
 </dd></dl>
 
@@ -132,29 +132,29 @@ Stores the Events written to the EventBuffer, each priority (e.g. HIGH, NORMAL) 
 
 <dl class="c struct">
 <dt class="sig sig-object c" id="c.elosEventBuffer_t">
-<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBuffer_t</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosEventBuffer_t</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Data structure of an EventBuffer</p>
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer_t.flags">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.flags" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flags</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.flags" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>contains the component status bits, e.g. initialized</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer_t.writeTrigger">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">writeTrigger</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.writeTrigger" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.writeTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">writeTrigger</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.writeTrigger" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.writeTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>optional eventfd that is used for signalizing that an event was written</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer_t.ring">
-<a class="reference internal" href="#c.elosEventBufferRing_t" title="elosEventBufferRing_t"><span class="n"><span class="pre">elosEventBufferRing_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ring</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.ring" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.ring"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<a class="reference internal" href="#c.elosEventBufferRing_t" title="elosEventBufferRing_t"><span class="n"><span class="pre">elosEventBufferRing_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ring</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.ring" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.ring"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>pointer to an array of elosEventBufferRing_t’s</p>
 </dd></dl>
 
 <dl class="c member">
 <dt class="sig sig-object c" id="c.elosEventBuffer_t.ringCount">
-<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringCount</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.ringCount" title="Permalink to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.ringCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ringCount</span></span></span><a class="headerlink" href="#c.elosEventBuffer_t.ringCount" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../_modules/elos/eventbuffer/types.h.html#c.elosEventBuffer_t.ringCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>size of the array of elosEventBufferRing_t’s</p>
 </dd></dl>
 
@@ -206,8 +206,8 @@ Stores the Events written to the EventBuffer, each priority (e.g. HIGH, NORMAL) 
   <li><a href="../../../index.html">Developer documentation</a><ul>
   <li><a href="../../index.html">Elos API</a><ul>
   <li><a href="eventbuffer.html">eventbuffer</a><ul>
-      <li>Previous: <a href="eventbuffer.html" title="previous chapter">eventbuffer</a></li>
-      <li>Next: <a href="defines_h.html" title="next chapter">defines.h</a></li>
+      <li>Previous: <a href="defines_h.html" title="previous chapter">defines.h</a></li>
+      <li>Next: <a href="../eventdispatcher/eventdispatcher_h.html" title="next chapter">eventdispatcher.h</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -240,7 +240,7 @@ Stores the Events written to the EventBuffer, each priority (e.g. HIGH, NORMAL) 
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

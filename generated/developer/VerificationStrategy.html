@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,9 +10,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -36,7 +36,7 @@
           <div class="body" role="main">
             
   <section id="test-verification">
-<span id="id1"></span><h1>Test &amp; Verification<a class="headerlink" href="#test-verification" title="Permalink to this heading">¶</a></h1>
+<span id="id1"></span><h1>Test &amp; Verification<a class="headerlink" href="#test-verification" title="Link to this heading">¶</a></h1>
 <p>Goal:</p>
 <p>This document shall outline all measures taken to ensure that the
 software fulfills the intended purpose and does not have unwanted
@@ -45,7 +45,7 @@ measurements used and different test setups developed, to ensure the
 expected behavior.</p>
 <p>[[<em>TOC</em>]]</p>
 <section id="coding-guideline">
-<h2>Coding Guideline<a class="headerlink" href="#coding-guideline" title="Permalink to this heading">¶</a></h2>
+<h2>Coding Guideline<a class="headerlink" href="#coding-guideline" title="Link to this heading">¶</a></h2>
 <p>Goal:</p>
 <p>A coding guideline was defined to reduce common programming error and to
 increase readability and thus understandability of the code.</p>
@@ -53,7 +53,7 @@ increase readability and thus understandability of the code.</p>
 <p>The guideline is checked during static analysis step, described below.</p>
 </section>
 <section id="development-process">
-<h2>Development process<a class="headerlink" href="#development-process" title="Permalink to this heading">¶</a></h2>
+<h2>Development process<a class="headerlink" href="#development-process" title="Link to this heading">¶</a></h2>
 <p>Goal:</p>
 <p>All changes to the repository shall be reviewed by an additional person,
 that is experienced with the software. Hence four-eyes have checked each
@@ -62,13 +62,13 @@ modification.</p>
 gitlab/github system.</p>
 </section>
 <section id="static-analysis">
-<h2>Static analysis<a class="headerlink" href="#static-analysis" title="Permalink to this heading">¶</a></h2>
+<h2>Static analysis<a class="headerlink" href="#static-analysis" title="Link to this heading">¶</a></h2>
 <p>Goal:</p>
 <p>Static analysis shall verify that the coding guideline was fulfilled and
 common rules of secure and safe programming are followed.</p>
 <p>The CI system is responsible of running the check regularly.</p>
 <section id="gccs-static-analyzer">
-<h3>GCCs Static Analyzer<a class="headerlink" href="#gccs-static-analyzer" title="Permalink to this heading">¶</a></h3>
+<h3>GCCs Static Analyzer<a class="headerlink" href="#gccs-static-analyzer" title="Link to this heading">¶</a></h3>
 <p>On default build with GCCs Static Analyzer enabled</p>
 <ul class="simple">
 <li><p>to find common programming issues the project is build on default
@@ -79,13 +79,13 @@ profiling) build with <code class="docutils literal notranslate"><span class="pr
 </section>
 </section>
 <section id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
+<h2>Testing<a class="headerlink" href="#testing" title="Link to this heading">¶</a></h2>
 <p>Goal:</p>
 <p>During tests the capabilities of the software are verified. Basically
 the question is answered: Does the software (or parts from it) react as
 intended?</p>
 <section id="unit-test-test-utest">
-<h3>Unit Test test/utest<a class="headerlink" href="#unit-test-test-utest" title="Permalink to this heading">¶</a></h3>
+<h3>Unit Test test/utest<a class="headerlink" href="#unit-test-test-utest" title="Link to this heading">¶</a></h3>
 <p>Goal:</p>
 <p>unit-tests verify the the correct function on the lowest level of the
 software. e.g. they verify that a c function returns the correct values
@@ -113,7 +113,7 @@ coverage. (gcov and libc mocking doesn’t work)</p></li>
 <li><p>unit tests shall make use of the sanitizers</p></li>
 </ul>
 <section id="coverage-by-asmcov">
-<h4>Coverage by asmcov<a class="headerlink" href="#coverage-by-asmcov" title="Permalink to this heading">¶</a></h4>
+<h4>Coverage by asmcov<a class="headerlink" href="#coverage-by-asmcov" title="Link to this heading">¶</a></h4>
 <p>To generate a coverage report for the unit tests asmcov is used. The
 basic steps are:</p>
 <ol class="arabic simple">
@@ -124,21 +124,21 @@ statement -&gt; asmcov.log</p></li>
 </ol>
 </section>
 <section id="usage">
-<h4>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h4>
+<h4>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h4>
 <p>Currently two usage scenarios are supported:</p>
 <ul class="simple">
 <li><p>For the CI build: create coverage for all available unit tests</p></li>
 <li><p>For the developer: create coverage for a given test or group of tests</p></li>
 </ul>
 <section id="to-create-a-complete-coverage-report-for-the-project-simply-run">
-<h5>To create a complete coverage report for the project simply run:<a class="headerlink" href="#to-create-a-complete-coverage-report-for-the-project-simply-run" title="Permalink to this heading">¶</a></h5>
+<h5>To create a complete coverage report for the project simply run:<a class="headerlink" href="#to-create-a-complete-coverage-report-for-the-project-simply-run" title="Link to this heading">¶</a></h5>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">ci</span><span class="o">/</span><span class="n">create_coverage</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>The results can be found in <code class="docutils literal notranslate"><span class="pre">./build-coverage/coverage_results</span></code></p>
 </section>
 <section id="to-create-a-coverage-report-for-a-certain-or-group-of-unit-test-s-proceed-as-follows">
-<h5>To create a coverage report for a certain or group of unit test(s) proceed as follows:<a class="headerlink" href="#to-create-a-coverage-report-for-a-certain-or-group-of-unit-test-s-proceed-as-follows" title="Permalink to this heading">¶</a></h5>
+<h5>To create a coverage report for a certain or group of unit test(s) proceed as follows:<a class="headerlink" href="#to-create-a-coverage-report-for-a-certain-or-group-of-unit-test-s-proceed-as-follows" title="Link to this heading">¶</a></h5>
 <ol class="arabic simple">
 <li><p>build without Address Sanitizer support, to avoid additional code
 added by the gcc or be aware that probably not 100% branch coverage
@@ -165,18 +165,19 @@ can be achieved as this code is not under your control.</p></li>
 <span class="c1">## only run the all tests for the compilation unit vector.c and event.c</span>
 <span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span> <span class="n">vector</span> <span class="n">event</span>
 
-<span class="c1">## run all test that match the pattern `test_*_utest` and located in $BUILD_DIR/test/utest</span>
+<span class="c1">## run all test that match the pattern `test_*_utest` and located in elos/build/${BUILD_TYPE}/cmake/test/utest</span>
 <span class="n">BUILD_DIR</span><span class="o">=./</span><span class="n">build</span><span class="o">-</span><span class="n">coverage</span> <span class="o">./</span><span class="n">elos</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">coverage</span><span class="o">/</span><span class="n">run_asmcov</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
-<p>The results can be found in <code class="docutils literal notranslate"><span class="pre">$BUILD_DIR/coverage_results</span></code></p>
+<p>The results can be found in
+<code class="docutils literal notranslate"><span class="pre">elos/build/${BUILD_TYPE}/coverage_results</span></code></p>
 <p>To use a custom install location of asmcov set <code class="docutils literal notranslate"><span class="pre">ASMCOV_DIR</span></code> and point
 to the location where the asmcov binaries are installed.</p>
 </section>
 </section>
 </section>
 <section id="smoke-tests-test-smoketest">
-<h3>Smoke Tests test/smoketest<a class="headerlink" href="#smoke-tests-test-smoketest" title="Permalink to this heading">¶</a></h3>
+<h3>Smoke Tests test/smoketest<a class="headerlink" href="#smoke-tests-test-smoketest" title="Link to this heading">¶</a></h3>
 <p>Goal:</p>
 <p>Smoke tests are quick to execute and they give a brief overview about
 the basic functionality. Smoke tests try to answer: Is the software
@@ -187,12 +188,10 @@ still basically OK? Or does it crash right away?</p>
 <li><p>Runs all composed artifacts to ensure a basic expected functionality</p></li>
 <li><p>Make usage of the demo project to check expected behavior of elosd</p></li>
 <li><p>Executed by CI-pipeline</p></li>
-<li><p>Based on the sharness framework
-(<a class="reference external" href="http://chriscool.github.io/sharness/">sharness</a>)</p></li>
-<li><p>Output format is TAP (<a class="reference external" href="https://testanything.org/">test anything</a>)</p></li>
+<li><p>Written in pure Bash</p></li>
 </ul>
 <section id="how-to-run-the-smoke-test-from-git-project-root">
-<h4>how to run the smoke test from git project root:<a class="headerlink" href="#how-to-run-the-smoke-test-from-git-project-root" title="Permalink to this heading">¶</a></h4>
+<h4>how to run the smoke test from git project root:<a class="headerlink" href="#how-to-run-the-smoke-test-from-git-project-root" title="Link to this heading">¶</a></h4>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./elos/ci/build.sh<span class="w"> </span><span class="o">[</span>Release<span class="o">]</span>
 </pre></div>
 </div>
@@ -204,60 +203,61 @@ for the release build</p></li>
 </ul>
 </section>
 <section id="run-on-a-target">
-<h4>Run on a target<a class="headerlink" href="#run-on-a-target" title="Permalink to this heading">¶</a></h4>
+<h4>Run on a target<a class="headerlink" href="#run-on-a-target" title="Link to this heading">¶</a></h4>
 <p>To run the smoketest install all content in <code class="docutils literal notranslate"><span class="pre">elos/tests/smoketest</span></code> to
 a custom location on the target system. Currently it is not packaged and
 installed by elos build system itself.</p>
 <section id="prerequisites">
-<span id="id2"></span><h5>Prerequisites :<a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h5>
+<span id="id2"></span><h5>Prerequisites :<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h5>
 <ul class="simple">
 <li><p>Elos is installed on target system</p></li>
-<li><p>At least a write able directory to store results and for intermediate
+<li><p>At least a writeable directory to store results and for intermediate
 files</p></li>
 </ul>
 </section>
 <section id="howto">
-<h5>HOWTO<a class="headerlink" href="#howto" title="Permalink to this heading">¶</a></h5>
-<p>To execute the smoketests run the installed smoketest.t script. Here an
+<h5>HOWTO<a class="headerlink" href="#howto" title="Link to this heading">¶</a></h5>
+<p>To execute the smoketests run the installed smoketest.sh script. Here an
 example script to for smoketest integration (taken form baseos-lab)</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1">##!/bin/sh -xe</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh -xe</span>
 
 <span class="nb">export</span><span class="w"> </span><span class="nv">ELOS_SCANNER_PATH</span><span class="o">=</span>/usr/lib/elos/scanner
+<span class="nb">export</span><span class="w"> </span><span class="nv">ELOS_BACKEND_PATH</span><span class="o">=</span>/usr/lib/elos/backend
 <span class="nb">export</span><span class="w"> </span><span class="nv">SMOKETEST_DIR</span><span class="o">=</span>/usr/lib/test/baseos-elos/smoketest/
 <span class="nb">export</span><span class="w"> </span><span class="nv">SMOKETEST_RESULT_DIR</span><span class="o">=</span>/tmp/test-baseos-elos-smoketest
 
 
 <span class="c1">## make sure to stop elosd instances before</span>
 
-/usr/lib/test/baseos-elos/smoketest/smoketest.t
+/usr/lib/test/baseos-elos/smoketest/smoketest.sh
 </pre></div>
 </div>
 </section>
 <section id="extended-configuration">
-<h5>Extended configuration<a class="headerlink" href="#extended-configuration" title="Permalink to this heading">¶</a></h5>
+<h5>Extended configuration<a class="headerlink" href="#extended-configuration" title="Link to this heading">¶</a></h5>
 <p>Depending on the installation and configuration it could be necessary to
 adjust some settings. The following Environment variables can be used :</p>
 <ul class="simple">
 <li><p>Use LD_LIBRARY_PATH to include custom locations for elos libraries.:</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/some/location</span></code></p>
-<p>default is : $BUILD_DIR/dist/usr/local/lib</p>
+<p>default is : elos/build/${BUILD_TYPE}/dist/usr/local/lib</p>
 <ul class="simple">
 <li><p>Use PATH to include custom locations for elos</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PATH=${PATH}:/some/location</span></code></p>
-<p>default is: $BUILD_DIR/cmake/src/elosd:$BUILD_DIR/cmake/src/demo”</p>
+<p>default is: ${PATH}:${DIST_DIR}/usr/local/bin”</p>
 <ul class="simple">
 <li><p>Use SMOKETEST_DIR to point to the location where elos-smoketests are
 installed</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SMOKETEST_DIR=/some/location</span></code></p>
-<p>default is : $BASE_DIR/test/smoketest/</p>
+<p>default is : elos/test/smoketest/</p>
 <ul class="simple">
 <li><p>Use SMOKETEST_RESULT_DIR to define where to store smoke tests results</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SMOKETEST_RESULT_DIR=/some/write/able/location</span></code></p>
-<p>default is : “$BUILD_DIR/result/smoketest_results”</p>
+<p>default is : “elos/build/${BUILD_TYPE}/result/smoketest_results”</p>
 <ul class="simple">
 <li><p>Use SMOKETEST_TMP_DIR to define where to store intermediate results
 and or runtime files like sockets, pipes etc.</p></li>
@@ -278,21 +278,29 @@ file</p></li>
 <p>default is: ${SMOKETEST_TMP_DIR}/elosd.kmsg”</p>
 <ul class="simple">
 <li><p>Use ELOS_SCANNER_PATH to define where elos shall look for scanner
-plugins (<code class="docutils literal notranslate"><span class="pre">*.so</span></code> files)</p></li>
+plugins (<code class="docutils literal notranslate"><span class="pre">\*.so</span></code> files)</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_SCANNER_PATH=/some/location</span></code></p>
-<p>default is: $BUILD_DIR/cmake/src/scanner</p>
+<p>default is: <code class="docutils literal notranslate"><span class="pre">$DIST_DIR/usr/local/lib/elos/scanner</span></code></p>
 <ul class="simple">
-<li><p>Use ELOS_STORAGE_BACKEND_JSON_FILE where to store the elos event log.
-(persistent event storage if JSON backend enabled)</p></li>
+<li><p>Use ELOS_BACKEND_PATH to define where elos shall look for backend
+plusings (<code class="docutils literal notranslate"><span class="pre">\*.so</span></code> files)</p></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_STORAGE_BACKEND_JSON_FILE=/some/write/able/location/elosd_event.log</span></code></p>
-<p>default is: ${SMOKETEST_TMP_DIR}/elosd_event.log</p>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_BACKEND_PATH=/some/location</span></code></p>
+<p>default is: <code class="docutils literal notranslate"><span class="pre">$DIST_DIR/usr/local/lib/elos/backend</span></code></p>
+<ul class="simple">
+<li><p>Use ELOS_CONFIG_PATH to define where the elosd configuration is
+stored.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ELOS_CONFIG_PATH=/a/readable/elosd/json/configuration</span></code></p>
+<p>default is: <code class="docutils literal notranslate"><span class="pre">$SMOKETEST_DIR/config.json</span></code></p>
+<p>For the purpose of the smoketests, the elosd config is mostly relevant
+to configure the storage location of the backend and scanner plugins.</p>
 </section>
 </section>
 </section>
 <section id="integration-test">
-<h3>Integration Test<a class="headerlink" href="#integration-test" title="Permalink to this heading">¶</a></h3>
+<h3>Integration Test<a class="headerlink" href="#integration-test" title="Link to this heading">¶</a></h3>
 <p>Goal:</p>
 <p>Integration tests verify that the software fulfills all requirements in
 the final environment.</p>
@@ -307,7 +315,7 @@ separate elos-integration-test package.</p></li>
 <li><p>integration tests shall make use of the sanitizers</p></li>
 </ul>
 <section id="components">
-<h4>Components<a class="headerlink" href="#components" title="Permalink to this heading">¶</a></h4>
+<h4>Components<a class="headerlink" href="#components" title="Link to this heading">¶</a></h4>
 <p>The fundamental components required for integration tests are as given
 below, apart from these, additional components are added according to
 test environment.</p>
@@ -345,9 +353,9 @@ are executed. They could be</p>
 </ul>
 </section>
 <section id="setup">
-<h4>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h4>
+<h4>Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h4>
 <section id="integration-test-setup-for-elos-ci">
-<h5>Integration test setup for elos CI<a class="headerlink" href="#integration-test-setup-for-elos-ci" title="Permalink to this heading">¶</a></h5>
+<h5>Integration test setup for elos CI<a class="headerlink" href="#integration-test-setup-for-elos-ci" title="Link to this heading">¶</a></h5>
 <p><img alt="Integration Test Setup" src="../../_images/integration_test_container_target_setup.png" /></p>
 <ul class="simple">
 <li><p>The host system has the elos-integration-test packages and a
@@ -369,7 +377,7 @@ target credentials like username, password and target ip address in
 order to run the tests.</p>
 </section>
 <section id="integration-test-setup-for-base-os-lab-ci">
-<h5>Integration test setup for Base OS Lab CI<a class="headerlink" href="#integration-test-setup-for-base-os-lab-ci" title="Permalink to this heading">¶</a></h5>
+<h5>Integration test setup for Base OS Lab CI<a class="headerlink" href="#integration-test-setup-for-base-os-lab-ci" title="Link to this heading">¶</a></h5>
 <p><img alt="Integration Test BaseOS Lab Setup" src="../../_images/integration_test_baseos-lab_setup.png" /></p>
 <ul class="simple">
 <li><p>The host base-os lab has the following components :</p>
@@ -397,7 +405,7 @@ host system.</p>
 </section>
 </section>
 <section id="usage-1">
-<span id="id3"></span><h4>Usage<a class="headerlink" href="#usage-1" title="Permalink to this heading">¶</a></h4>
+<span id="id3"></span><h4>Usage<a class="headerlink" href="#usage-1" title="Link to this heading">¶</a></h4>
 <p>The integration tests can be run by calling:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">elos</span>
 <span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">run_integration_tests</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">Release</span><span class="p">]</span>   <span class="c1"># start target container in a terminal</span>
@@ -420,7 +428,7 @@ host system.</p>
 the enviroment variable <code class="docutils literal notranslate"><span class="pre">TEST_OUTPUT</span></code> for the
 <code class="docutils literal notranslate"><span class="pre">run_inetgration_tests.sh</span></code> script.</p>
 <section id="ci-integration">
-<h5>CI integration<a class="headerlink" href="#ci-integration" title="Permalink to this heading">¶</a></h5>
+<h5>CI integration<a class="headerlink" href="#ci-integration" title="Link to this heading">¶</a></h5>
 <p>The ./ci/docker-integration-run.sh can be used to run in some CI
 environment, however to ensure that used docker container and image
 names are uniwue and not interfer with different parallel runs of these
@@ -434,7 +442,7 @@ test suite the follwoing variabeles shall be set.</p>
 The pattern look like <code class="docutils literal notranslate"><span class="pre">${ELOSD_IMAGE_NAME}-${BUILD_ID}-${GIT_COMMIT}</span></code>.</p>
 </section>
 <section id="yocto-baseos-lab-integration">
-<h5>(yocto-) baseos-lab integration<a class="headerlink" href="#yocto-baseos-lab-integration" title="Permalink to this heading">¶</a></h5>
+<h5>(yocto-) baseos-lab integration<a class="headerlink" href="#yocto-baseos-lab-integration" title="Link to this heading">¶</a></h5>
 <p>To manually run the test in base os lab</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">eb</span><span class="o">-</span><span class="n">baseos</span><span class="o">-</span><span class="n">lab</span>
 <span class="o">./</span><span class="n">ci</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>                     <span class="c1"># start host container</span>
@@ -448,7 +456,7 @@ The pattern look like <code class="docutils literal notranslate"><span class="pr
 </section>
 </section>
 <section id="writing-a-robot-test">
-<h4>Writing a Robot Test<a class="headerlink" href="#writing-a-robot-test" title="Permalink to this heading">¶</a></h4>
+<h4>Writing a Robot Test<a class="headerlink" href="#writing-a-robot-test" title="Link to this heading">¶</a></h4>
 <p>The directory structure for integration test is as show below.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>elos
 ├──<span class="w"> </span><span class="nb">test</span>
@@ -461,7 +469,7 @@ The pattern look like <code class="docutils literal notranslate"><span class="pr
 </div>
 <p>New test suites are added to <code class="docutils literal notranslate"><span class="pre">elos/test/integration</span></code>.</p>
 <section id="step-by-step-guide-to-create-and-run-integration-test">
-<h5>Step by step guide to create and run integration test<a class="headerlink" href="#step-by-step-guide-to-create-and-run-integration-test" title="Permalink to this heading">¶</a></h5>
+<h5>Step by step guide to create and run integration test<a class="headerlink" href="#step-by-step-guide-to-create-and-run-integration-test" title="Link to this heading">¶</a></h5>
 <p>An example of a robot test is given below :</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>*** Settings ***
 Documentation      ssh test script
@@ -509,7 +517,7 @@ robot<span class="w"> </span>-t<span class="w"> </span>test_case_name<span class
 </div>
 </section>
 <section id="robot-test-explanation">
-<h5>Robot Test Explanation<a class="headerlink" href="#robot-test-explanation" title="Permalink to this heading">¶</a></h5>
+<h5>Robot Test Explanation<a class="headerlink" href="#robot-test-explanation" title="Link to this heading">¶</a></h5>
 <p>In Robot Framework, each robot file is a test suite. Likewise, a
 directory containing .robot files is a master test suite. Unless Robot
 Framework is given with a single robot file to execute, it wil try to
@@ -556,7 +564,7 @@ using the resource keyword in the settings section as given below.</p>
 </section>
 </section>
 <section id="benchmarks">
-<h3>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this heading">¶</a></h3>
+<h3>Benchmarks<a class="headerlink" href="#benchmarks" title="Link to this heading">¶</a></h3>
 <p>Goal:</p>
 <p>Benchmarks record selected key performance indicators (KPI) that are
 relevant for the resource consumption and performance of the software.</p>
@@ -581,7 +589,7 @@ visualization of the csv-report files.</p></li>
 </pre></div>
 </div>
 <section id="profiling">
-<h4>Profiling<a class="headerlink" href="#profiling" title="Permalink to this heading">¶</a></h4>
+<h4>Profiling<a class="headerlink" href="#profiling" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>gives a insides on how elosd spends its time during execution</p></li>
 <li><p>for profiling perf is used</p></li>
@@ -603,12 +611,12 @@ profiling info from perf.data in text form</p></li>
 </section>
 </section>
 <section id="sanitizers">
-<h2>Sanitizers<a class="headerlink" href="#sanitizers" title="Permalink to this heading">¶</a></h2>
+<h2>Sanitizers<a class="headerlink" href="#sanitizers" title="Link to this heading">¶</a></h2>
 <p>Goal:</p>
 <p>During testing (utest, smoketest, integration tests) some self checking
 sanitizers shall be used to detect unwanted behavior.</p>
 <section id="address-sanitizer">
-<h3>Address Sanitizer<a class="headerlink" href="#address-sanitizer" title="Permalink to this heading">¶</a></h3>
+<h3>Address Sanitizer<a class="headerlink" href="#address-sanitizer" title="Link to this heading">¶</a></h3>
 <p>Only the ‘Debug’ target build comes with the Address Sanitizer enabled</p>
 <ul class="simple">
 <li><p>to find common memory access/management failures the project is build
@@ -620,7 +628,7 @@ you want to use other tools like Valgrind (build with
 </ul>
 </section>
 <section id="thread-sanitizer">
-<h3>Thread Sanitizer<a class="headerlink" href="#thread-sanitizer" title="Permalink to this heading">¶</a></h3>
+<h3>Thread Sanitizer<a class="headerlink" href="#thread-sanitizer" title="Link to this heading">¶</a></h3>
 <p>Only the ‘Tsan’ target build comes with the Thread Sanitizer enabled</p>
 <ul class="simple">
 <li><p>Can be used to find data races, erronous mutex accesses and other
@@ -710,7 +718,7 @@ usefulness.</p></li>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

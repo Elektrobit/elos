@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,9 +10,9 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -36,10 +36,10 @@
           <div class="body" role="main">
             
   <section id="demos">
-<h1>Demos<a class="headerlink" href="#demos" title="Permalink to this heading">¶</a></h1>
+<h1>Demos<a class="headerlink" href="#demos" title="Link to this heading">¶</a></h1>
 <p>Elos comes with a set of demo applications to show certain aspects of elos.</p>
 <section id="elosmon-publish-events-as-mails">
-<h2>elosMon – publish events as mails<a class="headerlink" href="#elosmon-publish-events-as-mails" title="Permalink to this heading">¶</a></h2>
+<h2>elosMon – publish events as mails<a class="headerlink" href="#elosmon-publish-events-as-mails" title="Link to this heading">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: elosMon [OPTION]...
   -h, --help              Display this usage information.
   -v, --verbose           Print verbose messages.
@@ -65,7 +65,7 @@ Example:
 </div>
 </section>
 <section id="elosc-simple-commandline-client">
-<h2>elosc – simple commandline client<a class="headerlink" href="#elosc-simple-commandline-client" title="Permalink to this heading">¶</a></h2>
+<h2>elosc – simple commandline client<a class="headerlink" href="#elosc-simple-commandline-client" title="Link to this heading">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: elosc [OPTION]...
   -s &lt;filter&gt;      event subscribe
   -u &lt;queueId&gt;     event unsubscribe
@@ -84,7 +84,7 @@ Example:
 </div>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -v
-elosc-0.47.8.b5a09d69
+elosc-0.48.7.09a2ef5c
 </pre></div>
 </div>
 <p>To subscribe on any event :</p>
@@ -152,15 +152,15 @@ ERROR: Connection to elosd failed!
 </div>
 </section>
 <section id="demo-libelos-v2-publish-subscrie-demo-using-libelos">
-<h2>demo_libelos_v2 – publish subscrie demo using libelos<a class="headerlink" href="#demo-libelos-v2-publish-subscrie-demo-using-libelos" title="Permalink to this heading">¶</a></h2>
+<h2>demo_libelos_v2 – publish subscrie demo using libelos<a class="headerlink" href="#demo-libelos-v2-publish-subscrie-demo-using-libelos" title="Link to this heading">¶</a></h2>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ demo_libelos_v2 -v
-libelos_demo-0.47.8.b5a09d69
+libelos_demo-0.48.7.09a2ef5c
 </pre></div>
 </div>
 </section>
 <section id="demo-eventbuffer-test-performance-of-event-buffer">
-<h2>demo_eventbuffer – test performance of event buffer<a class="headerlink" href="#demo-eventbuffer-test-performance-of-event-buffer" title="Permalink to this heading">¶</a></h2>
+<h2>demo_eventbuffer – test performance of event buffer<a class="headerlink" href="#demo-eventbuffer-test-performance-of-event-buffer" title="Link to this heading">¶</a></h2>
 <p>This demo was manly developed to test and verify the <cite>EventBuffer</cite> component.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: demo_eventbuffer [-h|--help] [--publisher NUMBER] [--consumer NUMBER] [--messageCount NUMBER] [--eventLimit NUMBER]
 
@@ -183,18 +183,18 @@ consumer: 4
 messageCount: 1000
 
 messagesPublished: 4000
-messagesConsumed: 4000
+messagesConsumed: 3896
 messagesLostByLimit: 0
 
-publishTimes.min: 0.000408msec
-publishTimes.avg: 0.001839msec
-publishTimes.max: 0.032341msec
-publishTimes.sum: 7.355093msec
+publishTimes.min: 0.000384msec
+publishTimes.avg: 0.001826msec
+publishTimes.max: 0.028856msec
+publishTimes.sum: 7.302455msec
 
-consumerTimes.min: 0.000279msec
-consumerTimes.avg: 0.001646msec
-consumerTimes.max: 0.026376msec
-consumerTimes.sum: 6.582888msec
+consumerTimes.min: 0.000282msec
+consumerTimes.avg: 0.001997msec
+consumerTimes.max: 0.034802msec
+consumerTimes.sum: 7.988525msec
 </pre></div>
 </div>
 <p>To benchmark the event buffers on a target to find optimal configuration :</p>
@@ -205,23 +205,23 @@ consumer: 10
 messageCount: 1000
 
 messagesPublished: 100000
-messagesConsumed: 99966
-messagesLostByLimit: 1095
+messagesConsumed: 99964
+messagesLostByLimit: 14910
 
 publishTimes.min: 0.000000msec
-publishTimes.avg: 0.002565msec
-publishTimes.max: 0.088846msec
-publishTimes.sum: 256.468213msec
+publishTimes.avg: 0.002859msec
+publishTimes.max: 0.128617msec
+publishTimes.sum: 285.853650msec
 
-consumerTimes.min: 0.000392msec
-consumerTimes.avg: 0.004805msec
-consumerTimes.max: 0.053478msec
-consumerTimes.sum: 48.054230msec
+consumerTimes.min: 0.000333msec
+consumerTimes.avg: 0.004896msec
+consumerTimes.max: 0.061664msec
+consumerTimes.sum: 48.955191msec
 </pre></div>
 </div>
 </section>
 <section id="syslog-example-demonstrate-the-and-test-the-syslog-scanner">
-<h2>syslog_example – demonstrate the and test the syslog scanner<a class="headerlink" href="#syslog-example-demonstrate-the-and-test-the-syslog-scanner" title="Permalink to this heading">¶</a></h2>
+<h2>syslog_example – demonstrate the and test the syslog scanner<a class="headerlink" href="#syslog-example-demonstrate-the-and-test-the-syslog-scanner" title="Link to this heading">¶</a></h2>
 <p>With the <cite>syslog_example</cite> demo it is possible to verify if the syslog scanner
 is configured correctly. It can also be used to develop the mapping rules for
 the syslog scanner.</p>
@@ -233,7 +233,7 @@ failed to connect to elos
 </div>
 <p>Simulate syslog lines and test a filter if it can be used as mapping rule for the syslog-scanner:</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">simulate the syslog line</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-text">simulate the syslog line</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ syslog_example &quot;Jun 15 19:56:23 hostnameXY wpa_supplicant[420]: wlp0s20f3: WPA: Group rekeying completed with 00:00:00:00:00:00 [GTK=TKIP]&quot;
 ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
 failed to connect to elos
@@ -241,7 +241,7 @@ failed to connect to elos
 </div>
 </div>
 <div class="literal-block-wrapper docutils container" id="id2">
-<div class="code-block-caption"><span class="caption-text">check if rule mtches the syslog line</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-text">check if rule mtches the syslog line</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -f &quot;.event.payload r&#39;WPA: Group rekeying&#39; REGEX&quot;
 Connecting to elosd...
 ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
@@ -251,7 +251,7 @@ ERROR: Connection to elosd failed!
 </div>
 </section>
 <section id="tinyelosc-minimized-elos-client-to-send-raw-payload">
-<h2>tinyElosc – minimized elos client to send raw payload<a class="headerlink" href="#tinyelosc-minimized-elos-client-to-send-raw-payload" title="Permalink to this heading">¶</a></h2>
+<h2>tinyElosc – minimized elos client to send raw payload<a class="headerlink" href="#tinyelosc-minimized-elos-client-to-send-raw-payload" title="Link to this heading">¶</a></h2>
 <p>This demo was developed to send raw formatted payload. The payload is not
 preprocessed and validated by any JSON parser. This can be used to send
 malformed or any arbitrary encoded payload.</p>
@@ -273,7 +273,7 @@ ERR: connect to port 54321
 </div>
 <p>Test elos for arbitrary not valid encoded payload:</p>
 <div class="literal-block-wrapper docutils container" id="id3">
-<div class="code-block-caption"><span class="caption-text">try to publish an XML string instead of a JSON string</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-text">try to publish an XML string instead of a JSON string</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ tinyElosc -p &quot;&lt;wrong&gt;this is not a JSON string&lt;/wrong&gt;&quot;
 ERR: connect to port 54321
 </pre></div>
@@ -281,7 +281,7 @@ ERR: connect to port 54321
 </div>
 </section>
 <section id="elos-log4c-demo-a-demo-program-to-show-log4c-logging-in-elos">
-<h2>elos_log4c_demo - a demo program to show log4c logging in elos<a class="headerlink" href="#elos-log4c-demo-a-demo-program-to-show-log4c-logging-in-elos" title="Permalink to this heading">¶</a></h2>
+<h2>elos_log4c_demo - a demo program to show log4c logging in elos<a class="headerlink" href="#elos-log4c-demo-a-demo-program-to-show-log4c-logging-in-elos" title="Link to this heading">¶</a></h2>
 <p>This demo was developed to demonstrate the usage of log4c logging framework
 with elos. The configuration for log4c can be set with the help of a log4crc
 configuration file.</p>
@@ -397,7 +397,7 @@ and an appender for the logged message should be set in the config file.</p>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

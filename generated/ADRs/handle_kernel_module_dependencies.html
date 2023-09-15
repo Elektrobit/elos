@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,15 +10,15 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages." href="package_registry.html" />
-    <link rel="prev" title="Architecture Design Record - Event Storage Backend" href="event_storage_backends.html" />
+    <link rel="prev" title="Design Decisions - Enforce usage of _FORTIFY_SOURCE" href="usage_of_FORTIFY_SOURCE.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
@@ -36,9 +36,9 @@
           <div class="body" role="main">
             
   <section id="handle-kernel-module-dependencies-for-elos">
-<h1>Handle kernel module dependencies for Elos<a class="headerlink" href="#handle-kernel-module-dependencies-for-elos" title="Permalink to this heading">¶</a></h1>
+<h1>Handle kernel module dependencies for Elos<a class="headerlink" href="#handle-kernel-module-dependencies-for-elos" title="Link to this heading">¶</a></h1>
 <section id="description">
-<h2>Description<a class="headerlink" href="#description" title="Permalink to this heading">¶</a></h2>
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading">¶</a></h2>
 <p>Some Elos functionality depends on kernel modules to be loaded. In
 general there are three possible scenarios for required kernel modules:</p>
 <ol class="arabic simple">
@@ -64,14 +64,14 @@ it needs to be clarified how to proceed in this case.</p></li>
 </ol>
 </section>
 <section id="solutions">
-<h2>Solutions<a class="headerlink" href="#solutions" title="Permalink to this heading">¶</a></h2>
+<h2>Solutions<a class="headerlink" href="#solutions" title="Link to this heading">¶</a></h2>
 <section id="compiled-in-module">
-<span id="id1"></span><h3>1) Compiled in Module<a class="headerlink" href="#compiled-in-module" title="Permalink to this heading">¶</a></h3>
+<span id="id1"></span><h3>1) Compiled in Module<a class="headerlink" href="#compiled-in-module" title="Link to this heading">¶</a></h3>
 <p>For compiled in modules there is nothing to do, the required modules
 (aka features) will be available as <code class="docutils literal notranslate"><span class="pre">init</span></code> is started by the kernel.</p>
 </section>
 <section id="module-as-loadable-modules">
-<span id="id2"></span><h3>2) Module as loadable modules<a class="headerlink" href="#module-as-loadable-modules" title="Permalink to this heading">¶</a></h3>
+<span id="id2"></span><h3>2) Module as loadable modules<a class="headerlink" href="#module-as-loadable-modules" title="Link to this heading">¶</a></h3>
 <div class="line-block">
 <div class="line">In this case the <code class="docutils literal notranslate"><span class="pre">xy.ko</span></code> file needs to be loaded at some point by
 someone during runtime to be available when Elos requires the
@@ -79,7 +79,7 @@ functionality.</div>
 <div class="line">This can be done by:</div>
 </div>
 <section id="leave-it-to-the-init-system-to-load-all-required-modules-at-once-on-boot">
-<span id="id3"></span><h4>2.1) Leave it to the init system to load all required modules at once on boot<a class="headerlink" href="#leave-it-to-the-init-system-to-load-all-required-modules-at-once-on-boot" title="Permalink to this heading">¶</a></h4>
+<span id="id3"></span><h4>2.1) Leave it to the init system to load all required modules at once on boot<a class="headerlink" href="#leave-it-to-the-init-system-to-load-all-required-modules-at-once-on-boot" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Modules to load on boot are defined by <code class="docutils literal notranslate"><span class="pre">/etc/modules</span></code> or
 <code class="docutils literal notranslate"><span class="pre">/etc/modules-load.d/&lt;module_name&gt;.conf</span></code>as described in
@@ -94,7 +94,7 @@ boot time at once</p></li>
 </ul>
 </section>
 <section id="configure-the-init-system-to-manage-kernel-module-loading-depending-on-tasks-requirements">
-<span id="id4"></span><h4>2.2) Configure the init system to manage kernel module loading depending on tasks requirements<a class="headerlink" href="#configure-the-init-system-to-manage-kernel-module-loading-depending-on-tasks-requirements" title="Permalink to this heading">¶</a></h4>
+<span id="id4"></span><h4>2.2) Configure the init system to manage kernel module loading depending on tasks requirements<a class="headerlink" href="#configure-the-init-system-to-manage-kernel-module-loading-depending-on-tasks-requirements" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>It’s up to the init system to decide when to load a module. This can
 shorten the time the system needs to become ready</p></li>
@@ -113,7 +113,7 @@ load all netlink modules available</p></li>
 </ul>
 </section>
 <section id="elos-itself-checks-at-a-suitable-point-in-time-and-loads-the-modules">
-<span id="id5"></span><h4>2.3) Elos itself checks at a suitable point in time and loads the modules<a class="headerlink" href="#elos-itself-checks-at-a-suitable-point-in-time-and-loads-the-modules" title="Permalink to this heading">¶</a></h4>
+<span id="id5"></span><h4>2.3) Elos itself checks at a suitable point in time and loads the modules<a class="headerlink" href="#elos-itself-checks-at-a-suitable-point-in-time-and-loads-the-modules" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Elos can load modules by using <code class="docutils literal notranslate"><span class="pre">modprobe</span></code> or directly via libkmod.</p></li>
 <li><p>Elos test the kernel-API needed and on failure tries to load the
@@ -136,12 +136,12 @@ loading with other processes</p></li>
 </section>
 </section>
 <section id="module-is-not-available-at-all">
-<span id="id6"></span><h3>3) module is not available at all<a class="headerlink" href="#module-is-not-available-at-all" title="Permalink to this heading">¶</a></h3>
+<span id="id6"></span><h3>3) module is not available at all<a class="headerlink" href="#module-is-not-available-at-all" title="Link to this heading">¶</a></h3>
 <p>In case the module is not available at all, neither compiled in nor
 provided as loadable module (<code class="docutils literal notranslate"><span class="pre">*.ko</span></code>-file), Elos can provide two
 options:</p>
 <section id="probe-and-activate-features-at-runtime">
-<span id="id7"></span><h4>3.1) Probe and activate features at runtime<a class="headerlink" href="#probe-and-activate-features-at-runtime" title="Permalink to this heading">¶</a></h4>
+<span id="id7"></span><h4>3.1) Probe and activate features at runtime<a class="headerlink" href="#probe-and-activate-features-at-runtime" title="Link to this heading">¶</a></h4>
 <p>Elos shall detect and enable or disable certain features at runtime,
 depending if required modules are available (loaded).</p>
 <p>This requires Elos to:</p>
@@ -157,7 +157,7 @@ not available try to proceed in A)</p>
 and provides a hint to the corresponding missing kernel feature.</p>
 </section>
 <section id="static-compile-time-configuration">
-<span id="id8"></span><h4>3.2) Static compile time configuration<a class="headerlink" href="#static-compile-time-configuration" title="Permalink to this heading">¶</a></h4>
+<span id="id8"></span><h4>3.2) Static compile time configuration<a class="headerlink" href="#static-compile-time-configuration" title="Link to this heading">¶</a></h4>
 <p>Elos can be extended in a way that features which requires certain
 kernel modules can be disabled. This will reduce the function set of
 Elos. It is not impossible that another implementation can be found
@@ -170,15 +170,15 @@ to discard this option.</p>
 </section>
 </section>
 <section id="decision-rational">
-<h2>Decision/Rational<a class="headerlink" href="#decision-rational" title="Permalink to this heading">¶</a></h2>
+<h2>Decision/Rational<a class="headerlink" href="#decision-rational" title="Link to this heading">¶</a></h2>
 <section id="problem-scenario-1">
-<h3>Problem Scenario 1<a class="headerlink" href="#problem-scenario-1" title="Permalink to this heading">¶</a></h3>
+<h3>Problem Scenario 1<a class="headerlink" href="#problem-scenario-1" title="Link to this heading">¶</a></h3>
 <p>For the first scenario we can’t see any actions we have to take, thus we
 can treat this solved for any target where required kernel modules are
 build in.</p>
 </section>
 <section id="problem-scenario-2">
-<h3>Problem Scenario 2<a class="headerlink" href="#problem-scenario-2" title="Permalink to this heading">¶</a></h3>
+<h3>Problem Scenario 2<a class="headerlink" href="#problem-scenario-2" title="Link to this heading">¶</a></h3>
 <p>We prefer for this scenario a solution based <code class="docutils literal notranslate"><span class="pre">2.2</span></code>. So the init-system
 keeps track of necessary modules to load and the point in time when to
 load. The module management shall be done centralized to avoid conflicts
@@ -187,7 +187,7 @@ load and remove their kernel modules. The kernel module loading
 procedure is also defined by the init-system used.</p>
 </section>
 <section id="problem-scenario-3">
-<h3>Problem Scenario 3<a class="headerlink" href="#problem-scenario-3" title="Permalink to this heading">¶</a></h3>
+<h3>Problem Scenario 3<a class="headerlink" href="#problem-scenario-3" title="Link to this heading">¶</a></h3>
 <p>If a module is not available <code class="docutils literal notranslate"><span class="pre">(problem</span> <span class="pre">3)</span></code>, Elos shall use the
 approach <code class="docutils literal notranslate"><span class="pre">C)</span></code> in <code class="docutils literal notranslate"><span class="pre">3.1</span></code>. For APIs like the <code class="docutils literal notranslate"><span class="pre">netlink</span></code> interface it
 is not easy or even possible to decide between an error of the backend
@@ -203,7 +203,7 @@ an option and is discarded</p>
 </section>
 </section>
 <section id="references">
-<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
 <p><a class="reference external" href="http://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git">libkmod</a>
 <a class="reference external" href="https://www.freedesktop.org/software/systemd/man/modules-load.d.html">modules-load.d</a></p>
 </section>
@@ -242,14 +242,18 @@ an option and is discarded</p>
 <li class="toctree-l2"><a class="reference internal" href="event_storage_class.html">Architecture Design Record - Event Storage Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_throtteling.html">Architecture Design Record - Event Throtteling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage_of_FORTIFY_SOURCE.html">Design Decisions - Enforce usage of _FORTIFY_SOURCE</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html">Architecture Design Record - Event Storage Backend</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-1">Decision</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Handle kernel module dependencies for Elos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="package_registry.html">Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages.</a></li>
 <li class="toctree-l2"><a class="reference internal" href="elos-coredump.html">Architecture Design Record - Detecting Coredumps</a></li>
 <li class="toctree-l2"><a class="reference internal" href="elos_logging_frameworks.html">Architecture Design Record - Evaluation Of Logging Frameworks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_authorization.html">Architecture Design Record - Event publishing authorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_authorization_blacklisting.html">Architecture Design Record - Blacklist filtering of published events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elos_event_logging_concept.html">Architecture Design Record - elos event logging concept <strong>DRAFT</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html">Architecture Design Record - Event Storage Backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-1">Decision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#decision-2">Decision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_storage_backends.html#rational">Rational</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fetch-features.html">ADR - Feature set of elos “fetch” <strong>DRAFT</strong></a></li>
 </ul>
 </li>
 </ul>
@@ -259,7 +263,7 @@ an option and is discarded</p>
 <ul>
   <li><a href="../../index.html">Documentation overview</a><ul>
   <li><a href="adrs.html">Architecture Design Records</a><ul>
-      <li>Previous: <a href="event_storage_backends.html" title="previous chapter">Architecture Design Record - Event Storage Backend</a></li>
+      <li>Previous: <a href="usage_of_FORTIFY_SOURCE.html" title="previous chapter">Design Decisions - Enforce usage of _FORTIFY_SOURCE</a></li>
       <li>Next: <a href="package_registry.html" title="next chapter">Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages.</a></li>
   </ul></li>
   </ul></li>
@@ -291,7 +295,7 @@ an option and is discarded</p>
       &copy;2023, wolfgang.gehrhardt@emlix.com.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

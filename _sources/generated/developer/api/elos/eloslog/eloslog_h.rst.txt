@@ -1,5 +1,0 @@
-eloslog.h
-=========
-
-.. autocmodule:: elos/eloslog/eloslog.h
-    :members:
