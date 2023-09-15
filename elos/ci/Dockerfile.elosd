@@ -11,6 +11,7 @@ RUN apt-get update \
  && apt-get install -y sudo locales build-essential binutils-dev pkg-config cmake \
  git wget curl netcat net-tools ssh libssl-dev openssl ninja-build libcmocka-dev \
  libjson-c-dev libmnl-dev libsqlite3-0 libsqlite3-dev libesmtp-dev expat liblog4c-dev \
+ libcurl4-openssl-dev \
  && rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8 \
