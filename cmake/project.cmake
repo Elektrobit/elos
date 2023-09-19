@@ -50,6 +50,7 @@ macro(project_set_environment)
   endif()
 endmacro()
 
+find_package(PkgConfig REQUIRED)
 find_package(Git REQUIRED)
 function(project_set_version_variables)
   if(ARGN)
