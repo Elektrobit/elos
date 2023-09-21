@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+
+--configure 0501:max_len:50 
+--configure 0503:max_calls:20
+--configure 0528:ignore_templated:true
+--configure 0508:line_length:100
+--threshold W
