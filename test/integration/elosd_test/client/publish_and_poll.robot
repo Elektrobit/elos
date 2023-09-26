@@ -1,60 +1,67 @@
+*** Comments ***
 # SPDX-License-Identifier: MIT
-*** Settings ***
-Documentation     A test suite to check if publish and poll of messages between
-...               elos daemon and clients subscribed to it behave as intended.
 
-Library           String
-Library           SSHLibrary
-Resource         ../../keywords.resource
-Suite Setup       Connect To Target And Log In
-Suite Teardown    Close All Connections
+
+*** Settings ***
+Documentation       A test suite to check if publish and poll of messages between
+...                 elos daemon and clients subscribed to it behave as intended.
+
+Library             String
+Library             SSHLibrary
+Resource            ../../keywords.resource
+
+Suite Setup         Connect To Target And Log In
+Suite Teardown      Close All Connections
+
 
 *** Variables ***
-${CLIENT_LOG_FILE}    /tmp/client_$X.log
-${FILTERSTRING}    ".event.source.appName 'publish_poll' STRCMP"
-${MESSAGE_COUNT}    10
-${CLIENT_COUNT}     2
-@{MESSAGES}
-@{SUBSCRIBED_CLIENTS_LOG}
-@{PUBLISH_LOG}
-&{ATTRIBUTES}
+${CLIENT_LOG_FILE}              /tmp/client_$X.log
+${FILTERSTRING}                 ".event.source.appName 'publish_poll' STRCMP"
+${MESSAGE_COUNT}                10
+${CLIENT_COUNT}                 2
+@{MESSAGES}                     @{EMPTY}
+@{SUBSCRIBED_CLIENTS_LOG}       @{EMPTY}
+@{PUBLISH_LOG}                  @{EMPTY}
+&{ATTRIBUTES}                   &{EMPTY}
 ${MESSAGE_TEMPLATE}
-...    {
-...    "date": [$DATE,0],
-...    "source": {
-...    "appName": "publish_poll",
-...    "fileName": "$ELOSC_FILE_NAME",
-...    "pid": 42
-...    },
-...    "severity": 1,
-...    "hardwareid": "$HOSTNAME",
-...    "classification": $CLASSIFICATION,
-...    "messageCode": $MESSAGE_CODE,
-...    "payload": "$PAYLOAD"
-...    }
+...                             {
+...                             "date": [$DATE,0],
+...                             "source": {
+...                             "appName": "publish_poll",
+...                             "fileName": "$ELOSC_FILE_NAME",
+...                             "pid": 42
+...                             },
+...                             "severity": 1,
+...                             "hardwareid": "$HOSTNAME",
+...                             "classification": $CLASSIFICATION,
+...                             "messageCode": $MESSAGE_CODE,
+...                             "payload": "$PAYLOAD"
+...                             }
+
 
 *** Test Cases ***
 Client Logs Published Message
     [Documentation]    If published message matches a filter subscribed to by client
-    ...                then it is logged by the client
-    [Teardown]         Run Keyword    Remove Temporary Test Files
+    ...    then it is logged by the client
 
     Given Elos Clients Started And Listening
     When Message Published Matching A Subscribed Filter
     Then Message Logged By Listening Clients
+    [Teardown]    Run Keyword    Remove Temporary Test Files
+
 
 *** Keywords ***
 Remove Temporary Test Files
     [Documentation]    Remove all test related temp files
 
-    ${output}    ${rc}=    Execute Command     rm -rf /tmp/client_*.log    return_rc=True
+    ${output}    ${rc}=    Execute Command    rm -rf /tmp/client_*.log    return_rc=True
     Should Be Equal As Integers    ${rc}    0
 
 Set Message Attributes
-    [Arguments]    ${msg_code}
     [Documentation]    Create a dictionary with specific message attributes
+    [Arguments]    ${msg_code}
 
-    ${date}=     Execute Command    date +"%s"
+    ${date}=    Execute Command    date +"%s"
     Set To Dictionary    ${ATTRIBUTES}    date    ${date}
     Set To Dictionary    ${ATTRIBUTES}    appName    "publish_poll"
     ${filename}=    Execute Command    which elosc
@@ -75,8 +82,8 @@ Set Message Attributes
     Log Dictionary    ${ATTRIBUTES}
 
 Create Message
-    [Arguments]    ${msg_code}
     [Documentation]    Create a customized message with the message templates
+    [Arguments]    ${msg_code}
 
     Run Keyword    Set Message Attributes    ${msg_code}
 
@@ -99,8 +106,8 @@ Create Messages
     Log List    ${MESSAGES}
 
 Get File Name From Index
-    [Arguments]        ${index}
     [Documentation]    Retutn the filename with given Index
+    [Arguments]    ${index}
     ${index_str}=    Convert To String    ${index}
     ${file}=    Replace String    ${CLIENT_LOG_FILE}    $X    ${index_str}
 
@@ -119,30 +126,30 @@ Message Published Matching A Subscribed Filter
     Run Keyword    Create Messages
     FOR    ${message}    IN    @{MESSAGES}
         ${publish_output}=    Execute Command    elosc -p '${message}'
-        Append To List    ${PUBLISH_LOG}     ${publish_output}
+        Append To List    ${PUBLISH_LOG}    ${publish_output}
     END
     Log List    ${PUBLISH_LOG}
-    Sleep   1s
+    Sleep    1s
 
 Generate Client Logs
     [Documentation]    Copy all client logs into a list
     Run Keyword    Terminate Running Client Instances
 
     FOR    ${count}    IN RANGE    ${CLIENT_COUNT}
-        ${log_file}=    Get File Name From Index    ${count}
+        ${log_files}=    Get File Name From Index    ${count}
         ${message_received}=    Set Variable    0
         WHILE    ${message_received} == 0    limit=5 seconds
-            ${client_output}=    Execute Command   cat ${log_file}
+            ${client_output}=    Execute Command    cat ${log_files}
             ${ret}=    Get Lines Containing String    ${client_output}    "messageCode":9
             ${message_received}=    Get Length    ${ret}
         END
-        Append To List     ${SUBSCRIBED_CLIENTS_LOG}    ${client_output}
+        Append To List    ${SUBSCRIBED_CLIENTS_LOG}    ${client_output}
     END
     Log List    ${SUBSCRIBED_CLIENTS_LOG}
 
-Message Logged by Listening Clients
+Message Logged By Listening Clients
     [Documentation]    A Published message matching a subscribed
-    ...                RPN-filter is logged by elos client
+    ...    RPN-filter is logged by elos client
     Run Keyword    Generate Client Logs
 
     FOR    ${log}    IN    @{SUBSCRIBED_CLIENTS_LOG}
@@ -153,6 +160,6 @@ Message Logged by Listening Clients
 
 Terminate Running Client Instances
     [Documentation]    Terminate all running client instance after
-    ...                each test case run
-    ${output}    ${rc}=    Execute Command     pkill elosc    return_rc=True
+    ...    each test case run
+    ${output}    ${rc}=    Execute Command    pkill elosc    return_rc=True
     Should Be Equal As Integers    ${rc}    0
