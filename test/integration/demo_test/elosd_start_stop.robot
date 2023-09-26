@@ -1,15 +1,16 @@
+*** Comments ***
 # SPDX-License-Identifier: MIT
+
+
 *** Settings ***
-Documentation     A test suite elosd service is stoppable and startable
+Documentation       A test suite elosd service is stoppable and startable
 
-Resource          ../elosd-keywords.resource
-Resource          ../keywords.resource
+Resource            ../elosd-keywords.resource
+Resource            ../keywords.resource
 
+Suite Setup         Connect To Target And Log In
+Suite Teardown      Close All Connections
 
-Suite Setup       Connect To Target And Log In
-Suite Teardown    Close All Connections
-
-*** Variables ***
 
 *** Test Cases ***
 Test Elosd Service Stops Elosd Instance
@@ -26,15 +27,16 @@ Test Elosd Service Starts Elosd Instance
     When Elosd Service Starts Instance
     Then Elosd Instance Is Started
 
+
 *** Keywords ***
 Elosd Instance Is Running
     [Documentation]    Check if a elosd instance is running
 
-    ${status_running}=     Elosd Is Running
-    Should Be True     ${status_running}
+    ${status_running}=    Elosd Is Running
+    Should Be True    ${status_running}
 
-    ${pid}    ${rc}     Execute And Log    pgrep elosd    ${RETURN_STDOUT}    ${RETURN_RC}
-    Should Not Be Empty     ${pid}
+    ${pid}    ${rc}=    Execute And Log    pgrep elosd    ${RETURN_STDOUT}    ${RETURN_RC}
+    Should Not Be Empty    ${pid}
 
 Elosd Service Stops Instance
     [Documentation]    elosd service stops an elosd instance
@@ -46,14 +48,14 @@ Elosd Completely Stops
     [Documentation]    elosd stops, no running elosd instance found
 
     ${status_stopped}=    Elosd Is Stopped
-    Should Be True     ${status_stopped}
+    Should Be True    ${status_stopped}
 
-    ${pid}    ${rc}     Execute And Log    pgrep elosd    ${RETURN_STDOUT}    ${RETURN_RC}
-    Should Be Empty     ${pid}
+    ${pid}    ${rc}=    Execute And Log    pgrep elosd    ${RETURN_STDOUT}    ${RETURN_RC}
+    Should Be Empty    ${pid}
 
 Elosd Instance Is Not Running
     [Documentation]    check elosd is stopped
-    Run Keyword     Elosd Completely Stops
+    Run Keyword    Elosd Completely Stops
 
 Elosd Service Starts Instance
     [Documentation]    elosd service starts an elosd instance
