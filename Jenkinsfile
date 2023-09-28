@@ -177,10 +177,14 @@ pipeline {
                       . ./ci/ignored_sources.sh
                       ./ci/code_lint.py --ci
                       ./ci/checklicense.sh
+                      ./ci/run_integration_tests_linter.sh Release
                     '''
                   }
                 }
                 post {
+                  failure {
+                    archiveArtifacts artifacts: "build/Release/result/integration/robot_lint/*.log", fingerprint: true
+                  }
                   always {
                     archiveArtifacts artifacts: "build/Release/cmake/lint_results/**", fingerprint: true
                   }
