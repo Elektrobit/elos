@@ -95,7 +95,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh
+docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh --all
 
 ret=$?
 
