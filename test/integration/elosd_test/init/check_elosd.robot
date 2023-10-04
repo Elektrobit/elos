@@ -8,7 +8,7 @@ Suite Setup       Connect To Target And Log In
 Suite Teardown    Close All Connections
 
 *** Variables ***
-${ELOSD}    /usr/local/bin/elosd
+${ELOSD}    /usr/bin/elosd
 
 
 *** Test Cases ***
