@@ -1,12 +1,13 @@
 #!/bin/bash
 
-CMD_PATH=$(cd $(dirname $0) && pwd)
-BASE_DIR=${CMD_PATH%/*}
+CMD_PATH="$(realpath "$(dirname "$0")")"
+BASE_DIR="$(realpath "$CMD_PATH/..")"
+BUILD_TYPE="${1:-Debug}"
+. "$BASE_DIR/ci/common_names.sh"
 
-export BUILD_TYPE="${1:-Debug}"
-BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
-BENCHMARK_RESULT_DIR=${BENCHMARK_RESULT_DIR:-"$BUILD_DIR/result/benchmark_results"}
+BENCHMARK_RESULT_DIR=${BENCHMARK_RESULT_DIR:-"$RESULT_DIR/benchmark_results"}
 
+export BUILD_TYPE
 export BENCHMARK_RESULT_DIR
 export BUILD_DIR
 
