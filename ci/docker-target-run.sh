@@ -2,9 +2,9 @@
 #
 # create and run docker build env
 #
-CMD_PATH=$(cd $(dirname $0) && pwd)
-BASE_DIR=${CMD_PATH%/*}
-PROJECT=${BASE_DIR##*/}
+CMD_PATH="$(realpath "$(dirname "$0")")"
+BASE_DIR="$(realpath "$CMD_PATH/..")"
+. "$BASE_DIR/ci/common_names.sh"
 IMAGE_NAME="${PROJECT}"
 TARGET_NAME="${PROJECT}-target"
 
