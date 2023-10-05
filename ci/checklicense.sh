@@ -1,9 +1,10 @@
 #!/bin/bash
 
-CMD_PATH=$(cd $(dirname $0) && pwd)
-BASE_DIR=${CMD_PATH%/*}
-BUILD_DIR="$BASE_DIR/build/Debug"
-LICENSE_RESULT_DIR="${LINT_RESULT_DIR-${BUILD_DIR}/result/checklicense_results}"
+CMD_PATH="$(realpath "$(dirname "$0")")"
+BASE_DIR="$(realpath "$CMD_PATH/..")"
+BUILD_TYPE=Debug
+. "$BASE_DIR/ci/common_names.sh"
+LICENSE_RESULT_DIR="${LINT_RESULT_DIR-${RESULT_DIR}/checklicense_results}"
 LICENSE="MIT"
 
 FINDINGS_LOGS=$LICENSE_RESULT_DIR/findings.log
