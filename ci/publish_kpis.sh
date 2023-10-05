@@ -1,8 +1,8 @@
 #!/bin/bash -e
-CMD_PATH=$(cd "$(dirname "$0")" && pwd)
-BASE_DIR=${CMD_PATH%/*}
-BASE_DIR=$(dirname $0)/..
-BUILD_DIR=$BASE_DIR/build/Release
+CMD_PATH="$(realpath "$(dirname "$0")")"
+BASE_DIR="$(realpath "$CMD_PATH/..")"
+BUILD_TYPE="Release"
+. "$BASE_DIR/ci/common_names.sh"
 
 BRANCH_NAME=${BRANCH_NAME-$(git branch --show-current)}
 
