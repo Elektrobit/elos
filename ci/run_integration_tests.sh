@@ -53,13 +53,13 @@ ELOSD_ID=$(docker run -d -ti --rm \
 RUNNER_ID=$(docker run -d -ti --rm \
         --name ${TEST_DOCKER_NAME} \
         --link ${ELOSD_DOCKER_NAME} \
-	-v $BASE_DIR/..:/base \
+	-v $BASE_DIR:/base \
 	-w /base \
 	--env "PROJECT=${PROJECT}" \
-	--env "TEST_OUTPUT=/base/elos/build/${BUILD_TYPE}/result/integration" \
-	${TEST_IMAGE_NAME})
+	--env "TEST_OUTPUT=/base/build/${BUILD_TYPE}/result/integration" \
+	${TEST_IMAGE_NAME}
 
-docker exec ${TEST_DOCKER_NAME} /base/elos/test/integration/scripts/run_integration_tests.sh
+docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh
 
 ret=$?
 

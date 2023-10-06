@@ -3,6 +3,7 @@ FROM ubuntu:jammy
 ARG USER=ci
 ARG UID=1000
 ARG GID=1000
+ARG WORKDIR="/elos/build"
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
@@ -12,15 +13,17 @@ RUN apt-get update \
 
 RUN locale-gen en_US.UTF-8 \
  && locale-gen de_DE.UTF-8 \
- && groupadd -g $GID -o ci \
+ && groupadd -g $GID -o $USER \
  && useradd -m -u $UID -g $GID -o -s /bin/bash $USER \
  && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+RUN mkdir -p $WORKDIR && chown $USER:$USER $WORKDIR
 
 USER $USER
 ENV LC_ALL=en_US.UTF-8
 ENV DOCKERBUILD=1
 ENV PATH=/home/$USER/.local/bin:$PATH
-WORKDIR /build
+WORKDIR $WORKDIR
 RUN pip install robotframework
 RUN pip install --upgrade robotframework-sshlibrary
 RUN pip install --upgrade robotframework-datadriver
