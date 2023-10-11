@@ -1,5 +1,9 @@
+SOURCES_URI=${SOURCES_URI:-https://github.com/Elektrobit/}
 
-SOURCES_URI=${SOURCES_URI:-https://github.com/emlix/}
+DEFAULT_BRANCH="integration"
+if [ "$SOURCES_URI" = "https://github.com/Elektrobit/" ]; then
+    DEFAULT_BRANCH="main"
+fi
 
 CMOCKA_EXTENSIONS_REPO_NAME=${CMOCKA_EXTENSIONS_REPO_NAME:-cmocka-extensions.git}
 CMOCKA_EXTENSIONS_REPO_PATH=${CMOCKA_EXTENSIONS_REPO_PATH:-${SOURCES_URI}/${CMOCKA_EXTENSIONS_REPO_NAME}}
