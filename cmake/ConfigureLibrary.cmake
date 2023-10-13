@@ -8,6 +8,10 @@ set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS)
 function(configureLibrary LIBRARY_NAME LIBRARY_REPOSITORY LIBRARY_TAG)
   message("#### Configuring external library ${LIBRARY_NAME} (${CMAKE_BUILD_TYPE}) ####")
 
+  if(LIBRARY_NAME STREQUAL "")
+    message(FATAL_ERROR "Parameter LIBRARY_NAME is not set. Exiting.")
+  endif()
+
   message("Searching for ${LIBRARY_NAME}")
   find_package(${LIBRARY_NAME} QUIET)
   if(${LIBRARY_NAME}_FOUND)
@@ -16,8 +20,13 @@ function(configureLibrary LIBRARY_NAME LIBRARY_REPOSITORY LIBRARY_TAG)
   endif()
   message("Did not find ${LIBRARY_NAME}")
 
-  SET(LOCAL_REPO_DIR ${LIBRARY_REPOSITORY})
+  if (LIBRARY_REPOSITORY STREQUAL "")
+    message(FATAL_ERROR "Parameter LIBRARY_REPOSITORY is not set. Exiting.")
+  elseif(LIBRARY_TAG STREQUAL "")
+    set(LIBRARY_TAG "integration")
+  endif()
 
+  SET(LOCAL_REPO_DIR ${LIBRARY_REPOSITORY})
 
   if (NOT EXISTS ${LIBRARY_REPOSITORY})
     message("Fetching ${LIBRARY_NAME}")
