@@ -142,7 +142,13 @@ pipeline {
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "build/Debug/cmake/Testing/Temporary/,build/Release/cmake/Testing/Temporary/", fingerprint: true
+                    archiveArtifacts artifacts: "build/Debug/cmake/result/unit_test/,build/Release/result/unit_test/", fingerprint: true
+                      script {
+                      step (
+                        [$class: 'JUnitResultArchiver', testResults: 'build/*/result/unit_test/junit.xml']
+                      )
+                    }
+
                   }
                 }
               }
