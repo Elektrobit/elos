@@ -32,6 +32,8 @@ for dir in $(ls -d "$TEST_SOURCE"/*/); do
     if [ "${dir#*$TEST_DIR}" != "$dir" ]; then
         TEST_NAME=$(echo $dir | rev | cut -d '/' -f 2 | rev)
         echo "\nStart test suite $dir"
-        robot --variablefile="$VARIABLE_FILE" --outputdir="$TEST_OUTPUT"/"$TEST_NAME" --output="$TEST_NAME" --report="$TEST_NAME" $dir || true
+        robot --variablefile="$VARIABLE_FILE" --outputdir="$TEST_OUTPUT"/"$TEST_NAME" --output="$TEST_NAME" --report="$TEST_NAME" $dir || exit_status=$?
     fi
 done
+
+exit "${exit_status:-0}"
