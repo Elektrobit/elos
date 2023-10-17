@@ -1,17 +1,20 @@
 #!/bin/bash
 set -e -u
 
-SCRIPT_DIR=${SCRIPT_DIR:-$(realpath $(dirname $0))}
-ELOS_DIR=${ELOS_DIR:-$(realpath $SCRIPT_DIR/../..)}
-SMOKETEST_DIR=${SMOKETEST_DIR-"$ELOS_DIR/test/smoketest"}
+CMD_PATH="$(realpath "$(dirname "$0")")"
+BASE_DIR="$(realpath "$CMD_PATH/../..")"
+
 BUILD_TYPE=${BUILD_TYPE:-"Coverage"}
-BUILD_DIR=${BUILD_DIR:-$ELOS_DIR/build/$BUILD_TYPE}
-PERF_RESULTS_PATH=${PERF_RESULTS_PATH:-$BUILD_DIR/result/perf_results}
+
+. "$BASE_DIR/ci/common_names.sh"
+
+SMOKETEST_DIR=${SMOKETEST_DIR-"$BASE_DIR/test/smoketest"}
+PERF_RESULTS_PATH=${PERF_RESULTS_PATH:-$RESULT_DIR/perf_results}
 PERF_RESULT_PATH=${PERF_RESULT_PATH:-$PERF_RESULTS_PATH/$(date "+%Y%m%d_%H%M%S")}
 
 CMAKE_PARAM=${CMAKE_PARAM:-""}
 
-ELOSD_BINARY=${ELOSD_BINARY:-$BUILD_DIR/src/elosd/elosd}
+ELOSD_BINARY=${ELOSD_BINARY:-$BUILD_DIR/dist/usr/local/bin/elosd}
 export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"/tmp/elosd.syslog.socket"}
 export ELOS_KMSG_FILE=${ELOS_KMSG_FILE-"/tmp/elosd.kmsg"}
 export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$BUILD_DIR/src/scanner"}
@@ -28,12 +31,12 @@ PERF_CAP_BACKUP=${PERF_CAP_BACKUP:-$PERF_RESULTS_PATH/$(basename $PERF_CAP_FILE)
 PERF_CAP_LEVEL=${PERF_CAP_LEVEL:-3}
 
 function perf_clean {
-    $ELOS_DIR/../shared/ci/clean.sh
+    "$BASE_DIR/ci/clean.sh"
 }
 
 function perf_build {
     perf_clean
-    $ELOS_DIR/ci/build.sh $BUILD_TYPE
+    "$BASE_DIR/ci/build.sh" "$BUILD_TYPE"
 }
 
 function perf_elosd {
@@ -65,7 +68,7 @@ function perf_setcap {
     then
         echo "file '$PERF_CAP_BACKUP' already exists, use 'clearcap' to remove it if wanted"
     else
-        elosd_usergroup=$(stat --printf='%U:%G' $ELOS_DIR)
+        elosd_usergroup=$(stat --printf='%U:%G' $BASE_DIR)
         mkdir -p $PERF_RESULTS_PATH
         cat $PERF_CAP_FILE > $PERF_CAP_BACKUP
         chown -R $elosd_usergroup $BUILD_DIR
