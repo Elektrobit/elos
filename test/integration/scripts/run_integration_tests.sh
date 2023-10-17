@@ -3,14 +3,14 @@
 # Run Robot tests using this script.
 #
 
-CMD_PATH=$(cd $(dirname $0) && pwd)
-BASE_DIR=$(cd ${CMD_PATH%/*}/../.. && pwd)
-PROJECT="${PROJECT-${BASE_DIR##*/}}"
+CMD_PATH="$(realpath "$(dirname "$0")")"
+BASE_DIR="$(realpath "$CMD_PATH/../../..")"
+
+. "$BASE_DIR/ci/common_names.sh"
+
 TEST_SOURCE=${TEST_SOURCE-${CMD_PATH%/*}}
 VARIABLE_FILE="${VARIABLE_FILE-${TEST_SOURCE}/robot_variables.py}"
-BUILD_TYPE=${BUILD_TYPE:-Debug}
-BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
-TEST_OUTPUT="${TEST_OUTPUT-${BUILD_DIR}/result/integration}"
+TEST_OUTPUT="${TEST_OUTPUT-${RESULT_DIR}/integration}"
 TEST_DIR="_test"
 TARGET_NAME="${TARGET_NAME-${PROJECT}-target}"
 TARGET_IP=$(grep ${TARGET_NAME} /etc/hosts | cut -f 1)
