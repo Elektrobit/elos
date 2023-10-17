@@ -166,11 +166,6 @@ pipeline {
                 post {
                   always {
                     archiveArtifacts artifacts: "build/Debug/result/smoketest_results/,build/Release/result/smoketest_results/", fingerprint: true
-                    script {
-                      step (
-                        [$class: 'JUnitResultArchiver', testResults: '**/junit.xml']
-                      )
-                    }
                   }
                 }
               }
