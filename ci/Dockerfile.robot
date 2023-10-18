@@ -24,9 +24,11 @@ ENV LC_ALL=en_US.UTF-8
 ENV DOCKERBUILD=1
 ENV PATH=/home/$USER/.local/bin:$PATH
 WORKDIR $WORKDIR
-RUN pip install robotframework
+RUN pip install robotframework>=6.1.1
 RUN pip install robotframework-sshlibrary>=3.8.0 --pre
-RUN pip install --upgrade robotframework-datadriver
-RUN pip install --upgrade robotframework-jsonlibrary
+RUN pip install robotframework-datadriver>=1.8.1
+RUN pip install robotframework-jsonlibrary>=0.5
+RUN pip install robotframework-robocop>=4.1.1
+RUN pip install robotframework-tidy>=4.5.0
 
 CMD /bin/bash
