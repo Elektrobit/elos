@@ -70,11 +70,12 @@ pipeline {
   stages {
     stage("Elos Run") {
       parallel {
-        //stage('trigger baseos-lab') {
+        stage('trigger baseos-lab') {
         //  when { anyOf {
         //    equals expected: true, actual: stages().findAll{"baseos-lab".toLowerCase().contains(it.toLowerCase())}.any{true}
         //  }}
-        //  steps {
+          steps {
+            updateGitlabCommitStatus name: 'baseos-lab', state: 'skipped'
         //    gitlabCommitStatus("baseos-lab") {
         //      script {
         //        echo "triggering eb-baseos-elos-baseos-lab Pipeline with elos Branch '${BRANCH_NAME}'"
@@ -86,8 +87,8 @@ pipeline {
         //        )
         //      }
         //    }
-        //  }
-        //}
+          }
+        }
         stage("Build and test") {
             agent {
               dockerfile {
@@ -257,7 +258,7 @@ pipeline {
               }
             }
         }
-//        stage ("Run integration test") {
+        stage ("Run integration test") {
 //          agent {
 //            label "docker"
 //          }
@@ -266,13 +267,14 @@ pipeline {
 //	    BUILD_ARG = "--build-arg USER=jenkins"
 //
 //          }
-//          steps {
+          steps {
+            updateGitlabCommitStatus name: 'integration test', state: 'skipped'
 //            gitlabCommitStatus("elos: integration test") {
 //              sh '''#!/bin/bash -xe
 //                ./ci/run_integration_tests.sh Release
 //              '''
 //            }
-//          }
+          }
 //          post {
 //            always {
 //              archiveArtifacts artifacts: "build/Release/result/**", fingerprint: true
@@ -300,7 +302,7 @@ pipeline {
 //              ])
 //            }
 //          }
-//        }
+        }
       }
     }
   }
