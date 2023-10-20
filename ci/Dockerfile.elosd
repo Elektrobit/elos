@@ -46,7 +46,8 @@ RUN sudo rm -rf /home/elos
 
 RUN sudo mkdir /var/run/sshd \
  && sudo chmod 0755 /var/run/sshd \
- && sudo useradd -p $(openssl passwd -1 $TARGET_PASSWORD) --create-home --shell /bin/bash --groups sudo $TARGET_USER_NAME
+ && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config \
+ && sudo useradd -o -u 0 -p $(openssl passwd -1 $TARGET_PASSWORD) --create-home --shell /bin/bash --groups sudo $TARGET_USER_NAME
 
 EXPOSE 22
 EXPOSE 54321
