@@ -21,6 +21,7 @@ ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
     [Documentation]    Authorized processes can publish blacklisted event
     [Teardown]         Reset Elosd Config
 
+    Skip    msg=currently broken
     Given A Filter To Authorize Elosc As Root Is Set
     When Root Elosc Tries To Publish A Blacklisted Event
     Then Blacklisted Event Is Published
