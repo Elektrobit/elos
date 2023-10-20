@@ -2,6 +2,11 @@
 find_package(safu REQUIRED)
 find_package(samconf REQUIRED)
 
+create_interface_library(
+  FROM
+    config
+)
+
 add_library(
   config_static
   STATIC
@@ -29,6 +34,7 @@ add_compile_definitions(ELOSD_LOG_LEVEL="${ELOSD_LOG_LEVEL}")
 target_link_libraries(
   config_static
   PUBLIC
+    config_interface
     elos_common_interface
     safu::safu
     samconf::samconf
