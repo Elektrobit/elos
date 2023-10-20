@@ -64,6 +64,14 @@
                             "1000": ".event.source.appName 'login' STRCMP"
                         }
                     }
+                },
+                "Shmem": {
+                    "ShmemFile": "scanner_shmem",
+                    "ShmemCreate": true,
+                    "ShmemLogEntries": 16,
+                    "ShmemOffset": 0,
+                    "SemFile": "scanner_shmem_sem",
+                    "SemCreate": true
                 }
             }
         }
