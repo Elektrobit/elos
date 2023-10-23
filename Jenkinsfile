@@ -71,22 +71,22 @@ pipeline {
     stage("Elos Run") {
       parallel {
         stage('trigger baseos-lab') {
-        //  when { anyOf {
-        //    equals expected: true, actual: stages().findAll{"baseos-lab".toLowerCase().contains(it.toLowerCase())}.any{true}
-        //  }}
-          steps {
-            updateGitlabCommitStatus name: 'baseos-lab', state: 'skipped'
-        //    gitlabCommitStatus("baseos-lab") {
-        //      script {
-        //        echo "triggering eb-baseos-elos-baseos-lab Pipeline with elos Branch '${BRANCH_NAME}'"
-        //        build(job: 'eb-baseos-elos-baseos-lab',
-        //              wait: true,
-        //              parameters: [
-        //                  string(name: 'ELOS_DEV_BRANCH', value: "${BRANCH_NAME}"),
-        //              ]
-        //        )
-        //      }
-        //    }
+          when { anyOf {
+            equals expected: true, actual: stages().findAll{"baseos-lab".toLowerCase().contains(it.toLowerCase())}.any{true}
+          }}
+        steps {
+          updateGitlabCommitStatus name: 'baseos-lab', state: 'skipped'
+            gitlabCommitStatus("baseos-lab") {
+              script {
+                echo "triggering eb-baseos-elos-baseos-lab Pipeline with elos Branch '${BRANCH_NAME}'"
+                build(job: 'eb-baseos-elos-baseos-lab',
+                      wait: true,
+                      parameters: [
+                          string(name: 'ELOS_DEV_BRANCH', value: "${BRANCH_NAME}"),
+                      ]
+                )
+              }
+            }
           }
         }
         stage("Build and test") {
@@ -259,49 +259,48 @@ pipeline {
             }
         }
         stage ("Run integration test") {
-//          agent {
-//            label "docker"
-//          }
-//          environment {
-//            DOCKER_BUILDKIT = 0
-//	    BUILD_ARG = "--build-arg USER=jenkins"
-//
-//          }
-          steps {
-            updateGitlabCommitStatus name: 'integration test', state: 'skipped'
-//            gitlabCommitStatus("elos: integration test") {
-//              sh '''#!/bin/bash -xe
-//                ./ci/run_integration_tests.sh Release
-//              '''
-//            }
+          agent {
+            label "docker"
           }
-//          post {
-//            always {
-//              archiveArtifacts artifacts: "build/Release/result/**", fingerprint: true
-//              script {
-//                  step(
-//                        [
-//                          $class              : 'RobotPublisher',
-//                          outputPath          : 'build/Release/result/integration/',
-//                          outputFileName      : '**/*.xml',
-//                          reportFileName      : '**/*test.html',
-//                          logFileName         : '**/log.html',
-//                          disableArchiveOutput: false,
-//                          passThreshold       : 50,
-//                          unstableThreshold   : 40,
-//                          otherFiles          : "**/*.png,**/*.jpg",
-//                        ]
-//                  )
-//              }
-//              cleanWs(deleteDirs: true, patterns: [
-//                [pattern: '*', type: 'INCLUDE'],
-//                [pattern: 'samconf', type: 'EXCLUDE'],
-//                [pattern: 'safu', type: 'EXCLUDE'],
-//                [pattern: 'elos', type: 'EXCLUDE'],
-//                [pattern: '*/build*', type: 'INCLUDE'],
-//              ])
-//            }
-//          }
+          environment {
+            DOCKER_BUILDKIT = 0
+	    BUILD_ARG = "--build-arg USER=jenkins"
+
+          }
+          steps {
+            gitlabCommitStatus("elos: integration test") {
+              sh '''#!/bin/bash -xe
+                ./ci/run_integration_tests.sh Release
+              '''
+            }
+          }
+          post {
+            always {
+              archiveArtifacts artifacts: "build/Release/result/**", fingerprint: true
+              script {
+                  step(
+                        [
+                          $class              : 'RobotPublisher',
+                          outputPath          : 'build/Release/result/integration/',
+                          outputFileName      : '**/*.xml',
+                          reportFileName      : '**/*test.html',
+                          logFileName         : '**/log.html',
+                          disableArchiveOutput: false,
+                          passThreshold       : 50,
+                          unstableThreshold   : 40,
+                          otherFiles          : "**/*.png,**/*.jpg",
+                        ]
+                  )
+              }
+              cleanWs(deleteDirs: true, patterns: [
+                [pattern: '*', type: 'INCLUDE'],
+                [pattern: 'samconf', type: 'EXCLUDE'],
+                [pattern: 'safu', type: 'EXCLUDE'],
+                [pattern: 'elos', type: 'EXCLUDE'],
+                [pattern: '*/build*', type: 'INCLUDE'],
+              ])
+            }
+          }
         }
       }
     }

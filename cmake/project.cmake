@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.49.4)
+set(ELOS_VERSION 0.49.5)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -50,6 +50,7 @@ macro(project_set_environment)
   endif()
 endmacro()
 
+find_package(PkgConfig REQUIRED)
 find_package(Git REQUIRED)
 function(project_set_version_variables)
   if(ARGN)
