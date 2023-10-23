@@ -30,6 +30,6 @@ fi
 docker run --rm -it $SSH_AGENT_OPTS \
     --name host \
     --link $TARGET_NAME \
-    -v $BASE_DIR/test/integration:/${PROJECT}/test/integration \
-    -w /${PROJECT}/test/integration \
+    -v $BASE_DIR:/base \
+    -w /base \
     $IMAGE_NAME $@

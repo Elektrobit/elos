@@ -265,7 +265,7 @@ pipeline {
           environment {
             DOCKER_BUILDKIT = 0
 	    BUILD_ARG = "--build-arg USER=jenkins"
-
+            SOURCES_URI = "${SOURCES_URI}"
           }
           steps {
             gitlabCommitStatus("elos: integration test") {
