@@ -276,6 +276,12 @@ The fundamental components required for integration tests are as given below, ap
 * Robot test framework
   - [Robot Framework](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html) is a test automation framework.
   - Integration tests are written with the help of Robot test framework.
+  - Robocop
+    - [Robocop](https://robocop.readthedocs.io/en/stable/) static code analyser for robot framework
+    - Tests written with robotframework are statically analysed using robocop tool
+  - Robotidy
+    - [Robotidy](https://robotidy.readthedocs.io/en/stable/index.html) code linter for robot framework
+    - code linter for tests written in robot framework
 * Integration test package
   - A test directory has one or more tests written in robot as well as sub directories containing tests
   - The integration test can be found in ```test/integration```
@@ -318,7 +324,7 @@ The host in base os lab is a container with the robot framework, labgrid and pyt
 The integration tests can be run by calling:
 ```
 cd elos
-./ci/run_integration_tests.sh [Release]   # start target container in a terminal
+./ci/run_integration_tests.sh [Release]   # run integration tests automatically
 ```
 This will start two docker containers and execute the tests.
 
@@ -370,7 +376,6 @@ cd eb-baseos-lab
                                        # To test on all images use --build-all and no image name instead of -i
 ```
 
-
 #### Writing a Robot Test
 
 The directory structure for integration test is as show below.
@@ -387,6 +392,17 @@ elos
 
 New test suites are added to ```elos/test/integration```.
 
+##### Coding Guidelines
+
+The coding guidelines for robot static code analysis are as given in ```elos/test/integartion/scripts/robot_linter_config.txt```. The
+guide lines are quite liberal as default and can be further restricted depending on the user requirements. The default guidelines are
+as follows:
+
+- The length of a robot keyword is set to 50
+- A keyword can call a maximum of 20 other keywords inside it.
+- Since template test cases dont have keywords, check for too few calls to keywords shall be avoided.
+- Line width for robot tests are set to 100
+- static checks shall only report log levels of above warning.
 
 ##### Step by step guide to create and run integration test
 
@@ -461,6 +477,38 @@ Resource           keywords.resource
 
 ```
 Variables created in .resource files can be of type other than strings.
+
+
+##### Robot Test Linter
+
+The code check and linting of robot tests are done as follows:
+
+```
+cd elos
+BUILD_TYPE="[DEBUG|Release]"./ci/run_integration_tests_linter.sh --static-check  # run integration tests linter
+```
+This will start two docker containers and execute static code checker on the all robot tests.
+
+The results will be stored in ```build/[Debug|Release]/result/integration/robot_lint```, only when one or more of the tests fail the checks.
+
+After analysing the results, the tests which fail can be fixed using the robotidy linter as geven below
+
+```
+BUILD_TYPE="[DEBUG|Release]"./ci/run_integration_tests_linter.sh --show test.robot
+```
+This will point out the format errors in the given test.robot and gives suggestions to fix them. If no test is specified all tests wil be checked
+and suggestion will be shown.
+
+If the fixes suggested are satifactory, then the fixes can be implemented by
+```
+BUILD_TYPE="[DEBUG|Release]"./ci/run_integration_tests_linter.sh --show-fix test.robot
+```
+This will show the suggested changes before writing them to the corresponding test/s.
+
+For other options in the ```run_integration_tests_linter.sh``` use
+```
+./ci/run_integration_tests_linter.sh --help
+```
 
 
 ### Benchmarks
