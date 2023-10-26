@@ -13,15 +13,14 @@ Suite Teardown    Close All Connections
 *** Variables ***
 ${AUTHORIZE_ROOT}                   ${true}
 ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
-@{ALLOW_ELOSC_AS_ROOT}              .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND
-@{ALLOW_ELOSC_AS_NON_ROOT}          .process.gid 0 NE .process.exec '/usr/bin/elosc' STRCMP AND
+@{ALLOW_ELOSC_AS_ROOT}              .process.gid 0 EQ .process.exec '${ELOSC_PATH}' STRCMP AND
+@{ALLOW_ELOSC_AS_NON_ROOT}          .process.gid 0 NE .process.exec '${ELOSC_PATH}' STRCMP AND
 
 *** Test Cases ***
 01_Test_Complex_Filters
     [Documentation]    Authorized processes can publish blacklisted event
     [Teardown]         Reset Elosd Config
 
-    Skip    msg=currently broken
     Given A Filter To Authorize Elosc As Root Is Set
     When Root Elosc Tries To Publish A Blacklisted Event
     Then Blacklisted Event Is Published

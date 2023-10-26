@@ -25,9 +25,8 @@ ENV DOCKERBUILD=1
 ENV PATH=/home/$USER/.local/bin:$PATH
 WORKDIR $WORKDIR
 RUN pip install robotframework
-RUN pip install --upgrade robotframework-sshlibrary
+RUN pip install --pre --upgrade robotframework-sshlibrary
 RUN pip install --upgrade robotframework-datadriver
 RUN pip install --upgrade robotframework-jsonlibrary
 
 CMD /bin/bash
-

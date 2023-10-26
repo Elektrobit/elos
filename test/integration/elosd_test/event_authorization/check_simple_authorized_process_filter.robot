@@ -22,7 +22,6 @@ ${BLACKLIST_FILTER}                              .event.messageCode 2010 EQ
     ...                All root processes are authorized.
     [Teardown]         Reset Elosd Config
 
-    Skip    msg=currently broken
     Given A Filter To Authorize Root Processes Is Set
     When Root Process Tries To Publish A Blacklisted Event
     Then Blacklisted Event Is Published

@@ -8,6 +8,8 @@ Library          libraries/ElosdLibrary.py
 Library          libraries/TemplateConfig.py
 
 *** Variables ***
+${ELOSD_PATH}      ${ELOS_INSTALL_PREFIX}/elosd
+${ELOSC_PATH}      ${ELOS_INSTALL_PREFIX}/elosc
 ${ELOSD_PORT}      54321
 ${ELOS_SERVICE_STOP_RC}    -1
 

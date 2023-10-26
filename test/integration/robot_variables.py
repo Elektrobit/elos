@@ -8,6 +8,7 @@ ELOS_START_COMMAND = "service elosd start"
 ELOS_STOP_COMMAND = "service elosd stop"
 ELOS_STATUS_COMMAND = "service elosd status"
 ELOSD_LOG = "/tmp/elosd.log"
+ELOS_INSTALL_PREFIX = "/usr/local/bin"
 
 ELOS_DEFAULT_CONFIG_FILE = "/etc/elos/elosd.json"
 

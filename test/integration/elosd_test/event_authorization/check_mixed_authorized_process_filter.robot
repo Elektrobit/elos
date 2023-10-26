@@ -12,7 +12,7 @@ Suite Teardown    Close All Connections
 
 *** Variables ***
 ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
-@{AUTHORIZED_PROCESS_FILTERS}       .process.exec '/usr/bin/elosc' STRCMP    .process.uid 200 EQ    .process.gid 0 EQ
+@{AUTHORIZED_PROCESS_FILTERS}       .process.exec ${ELOSC_PATH} STRCMP    .process.uid 200 EQ    .process.gid 0 EQ
 
 *** Test Cases ***
 01_Test_Valid_And_Invalid_Filters

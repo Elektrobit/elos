@@ -12,7 +12,7 @@ Suite Teardown    Close All Connections
 
 *** Variables ***
 ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
-@{FILTER_1}                         .process.exec '/usr/bin/elosc' STRCMP
+@{FILTER_1}                         .process.exec '${ELOSC_PATH}' STRCMP
 @{FILTER_2}                         .process.uid 0 EQ
 @{FILTER_3}                         .process.gid 0 EQ
 @{AUTHORIZED_PROCESS_FILTERS}       ${FILTER_1}    ${FILTER_2}    ${FILTER_3} 
@@ -21,7 +21,6 @@ ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
 01_Test_Multiple_Filters
     [Documentation]    Any authorized process can publish a blacklisted event
 
-    Skip    msg=currently broken
     FOR    ${filter}    IN    @{AUTHORIZED_PROCESS_FILTERS}
         Given A Process Filter Is Set    ${filter}
         When Client Tries To Publish A Blacklisted Event
@@ -31,7 +30,6 @@ ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
 02_Test_Multiple_Filters
     [Documentation]    Any authorized process can publish a normal event
 
-    Skip    msg=currently broken
     FOR    ${filter}    IN    @{AUTHORIZED_PROCESS_FILTERS}
         Given A Process Filter Is Set    ${filter}
         When Client Tries To Publish A Normal Event
