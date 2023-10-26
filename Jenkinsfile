@@ -142,7 +142,13 @@ pipeline {
                 }
                 post {
                   always {
-                    archiveArtifacts artifacts: "build/Debug/cmake/Testing/Temporary/,build/Release/cmake/Testing/Temporary/", fingerprint: true
+                    archiveArtifacts artifacts: "build/Debug/cmake/result/unit_test/,build/Release/result/unit_test/", fingerprint: true
+                      script {
+                      step (
+                        [$class: 'JUnitResultArchiver', testResults: 'build/*/result/unit_test/junit.xml']
+                      )
+                    }
+
                   }
                 }
               }
@@ -160,11 +166,6 @@ pipeline {
                 post {
                   always {
                     archiveArtifacts artifacts: "build/Debug/result/smoketest_results/,build/Release/result/smoketest_results/", fingerprint: true
-                    script {
-                      step (
-                        [$class: 'JUnitResultArchiver', testResults: '**/junit.xml']
-                      )
-                    }
                   }
                 }
               }
@@ -173,13 +174,7 @@ pipeline {
                 steps{
                   gitlabCommitStatus("lint sources") {
                     sh '''#!/bin/bash -xe
-                      export IGNORE_SOURCES=" \
-                        src/plugins/storagebackends/nosqlbackend/*/* \
-                        src/components/processfilter/public/elos/processfilter/vector.h \
-                        src/components/plugin/public/elos/plugin/vector.h \
-                        src/components/rpnfilter/public/elos/rpnfilter/vector.h \
-                        src/components/eventfilter/public/elos/eventfilter/vector.h \
-                      "
+                      . ./ci/ignored_sources.sh
                       ./ci/code_lint.py --ci
                       ./ci/checklicense.sh
                     '''
