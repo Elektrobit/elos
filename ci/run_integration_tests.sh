@@ -7,6 +7,12 @@ BUILD_TYPE="${1:-Debug}"
 BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
 
 PROJECT=${BASE_DIR##*/}
+
+# avoid project names with leading '_' as the resulting docker image names are invalid
+if [[ "${PROJECT}" = _* ]]; then
+    PROJECT="${PROJECT:1}"
+fi
+
 ELOSD_IMAGE_NAME="${PROJECT:-elos}"
 ELOSD_DOCKER_NAME="${PROJECT}-target"
 TEST_IMAGE_NAME="${PROJECT}-robot"
