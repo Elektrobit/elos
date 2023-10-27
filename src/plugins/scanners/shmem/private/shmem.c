@@ -21,7 +21,7 @@
 
 static safuResultE_t _openSharedMemory(elosScannerContextShmem_t *context) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
+    mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
     int oflag = O_RDWR;
     int retVal;
 
@@ -94,7 +94,7 @@ static safuResultE_t _closeSharedMemory(elosScannerContextShmem_t *context) {
 
 static safuResultE_t _openSemaphore(elosScannerContextShmem_t *context) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
+    mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
     int oflag = 0;
     int retVal;
 
