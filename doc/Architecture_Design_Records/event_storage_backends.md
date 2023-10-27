@@ -221,9 +221,10 @@ Further development has not been decided as of yet.
 It is confirmed that we can store an elos event to an InfluxDb table and
 read it again.
 
-Preliminary performance tests have given slight indication that InfluxDb might
-performance worse then Json or SQL, but currently the testing system performs
-not reliably enough to make certain statements.
+The current Test Results have shown that InfluxDB performs better the more
+similar writes have been done, assumably since it needs to write its meta-
+data for the table only once, and subsequent writes are a lot smaller then for
+the other loggers.
 
 ## Open Points
 Version 2 of InfluxDb uses a different storage format. The assumption
@@ -233,16 +234,25 @@ It is also unclear how the write performance changes should we decide to cache
 events and write multiple at once, which is easily possible with the InfluxDb
 API, in both versions.
 
-Lastly it is unclear how the size of the payload would influence the write
-performance, since time-series databases usually have small-sized variable data,
-while elosd's event payload can easily get rather big, depending on the message
-that is logged.
-
-
 ### Test Results
-|name           | number | elosd_    | write_    | write     | elosd_    | sync_     | total     |
-|		| events | start     |  message_ |  message_ |  shutdown |  before_  |           |
-|		|        |           |  start    | stop      |           |  mount    |           |
+
+The following table displays the results of performance tests, executed
+on the S32G.
+We measured, primarily, the amount of bits written for a given set of elos
+events that needed to be logged.
+This test was executed for 4 different configuration, using 4 different json
+files:
+ - Basic.json: Control group, configures no logger.
+ - influxdb.json: Configures the InfluxDB Backend as the logger.
+ - json.json: Configures the Json Logging Backend as the logger.
+ - sqlite.json: Configures the SQLite Database Logger as the logger.
+
+The different columns of the table symbolize different stages of the test execution.
+The main bulk of writes should happen between "write messages_start" and
+"write_messages_stop", with the possibility of a few messages trailing behind due
+to the system not syncing in time.
+
+|name | number events| elosd_start | write_message_start | write_message_stop | elosd_shutdown | sync_ before_umount | total |
 |---------------|--------|-----------|-----------|-----------|-----------|-----------|-----------|
 |basic.json     |      1 |         2 |         0 |         0 |         0 |         8 |        10 |
 |               |     10 |         0 |         0 |         0 |         0 |         2 |         2 |
