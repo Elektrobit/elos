@@ -38,6 +38,10 @@ A Simple Authorized Process Filter Is Set
 Multiple Clients Try To Publish A Blacklisted Event
     [Documentation]    run multiple clients to publish blacklisted filters
 
+    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
+ 
+    Set Test Variable    ${PUBLISH_TIME}
+
     FOR    ${i}    IN RANGE    0     ${CLIENTS}
         Run Keyword     Client Tries To Publish A Blacklisted Event
     END
@@ -53,8 +57,8 @@ Client Tries To Publish A Blacklisted Event
 Blacklisted Event Is Published
     [Documentation]    Blacklisted event will be published from authorized clients
 
-    ${stdout}    ${rc}   Execute And Log    elosc -f ".event.messageCode 2010 EQ" | grep 2010 | tail -${CLIENTS}    ${RETURN_STDOUT}    ${RETURN_RC}
-    Should Contain X Times    ${stdout}    2010    ${CLIENTS}
+    ${stdout}    ${rc}   Execute And Log    elosc -f ".event.messageCode 2010 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND" | grep "source"    ${RETURN_STDOUT}    ${RETURN_RC}
+    Should Contain X Times    ${stdout}    2010     ${CLIENTS}
     Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
 
 

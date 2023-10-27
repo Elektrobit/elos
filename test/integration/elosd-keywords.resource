@@ -125,3 +125,13 @@ Check Elosd Log For
     #    ${rc}=   Execute And Log    grep "${part}" ${ELOSD_LOG}         ${RETURN_RC}
     #END
     #Should Be Equal As Integers    ${rc}    0
+
+Get Elos Event Publish Time Threshold
+    [Documentation]     Return the threshold event publish time, to check for 
+    ...                 events published after this time.
+
+    ${event_publish_time_threshold}    ${rc}     Execute And Log    date +%s    ${RETURN_STDOUT}    ${RETURN_RC}
+    Executable Returns No Errors    ${rc}     event publish time threshold can not be set
+    Log     ${event_publish_time_threshold}
+
+    RETURN    ${event_publish_time_threshold}
