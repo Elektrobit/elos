@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
             if (argc > 3) {
                 retVal = asprintf(&demo.semName, "%s", argv[3]);
             } else {
-                retVal = asprintf(&demo.semName, "%s_sem", demo.shmemName);
+                retVal = asprintf(&demo.semName, "%s_sem", demo.shmemName);  // NOLINT false positiv
             }
 
             if (retVal == -1) {
