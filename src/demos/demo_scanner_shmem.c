@@ -245,7 +245,6 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "ERROR: At least two parameters are needed.\n");
         fprintf(stderr, "Usage: %s <SHMEM_NAME> <SHMEM_OFFSET> [SEM_NAME]\n", argv[0]);
     } else {
-        char *semFmt = "%s_sem";
         int retVal;
 
         demo.shmemOffset = strtol(argv[2], NULL, 10);
@@ -254,13 +253,15 @@ int main(int argc, char *argv[]) {
             perror("strdup");
         } else {
             if (argc > 3) {
-                semFmt = "%s";
+                retVal = asprintf(&demo.semName, "%s", argv[3]);
+            } else {
+                retVal = asprintf(&demo.semName, "%s_sem", demo.shmemName);
             }
 
-            retVal = asprintf(&demo.semName, semFmt, demo.shmemName);
             if (retVal == -1) {
                 perror("asprintf");
             } else {
+                printf("use sem name : %s\n", demo.semName);
                 result = _demoSetup(&demo);
                 if (result == SAFU_RESULT_OK) {
                     result = _demoLoop(&demo);
