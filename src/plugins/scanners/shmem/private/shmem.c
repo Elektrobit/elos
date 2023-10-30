@@ -2,6 +2,8 @@
 
 #define _GNU_SOURCE
 
+#include "shmem.h"
+
 #include <fcntl.h>
 #include <safu/common.h>
 #include <safu/flags.h>
@@ -14,7 +16,6 @@
 #include <unistd.h>
 
 #include "elos/scanner/scanner.h"
-#include "shmem.h"
 #include "shmem_config.h"
 #include "shmem_ringbuffer.h"
 
@@ -51,7 +52,7 @@ static safuResultE_t _openSharedMemory(elosScannerContextShmem_t *context) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
     int oflag = O_RDWR;
-    int retVal;
+    int retVal = 0;
 
     if (context->shmemCreate == true) {
         oflag |= O_CREAT | O_TRUNC;
@@ -125,7 +126,7 @@ static safuResultE_t _openSemaphore(elosScannerContextShmem_t *context) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
     int oflag = 0;
-    int retVal;
+    int retVal = 0;
 
     if (context->semCreate == true) {
         oflag |= O_CREAT;
