@@ -7,19 +7,19 @@ Architecture Design Records
    :caption: Contents:
 
    atomic_variables
-   event_logging_storage_concept
-   event_retention_policies
-   event_storage_class
-   event_throtteling
-   usage_of_FORTIFY_SOURCE
-   handle_kernel_module_dependencies
-   package_registry
    elos-coredump
+   elos_event_logging_concept
    elos_logging_frameworks
    event_authorization
    event_authorization_blacklisting
-   elos_event_logging_concept
+   event_logging_storage_concept
+   event_retention_policies
    event_storage_backends
+   event_storage_class
+   event_throtteling
    fetch-features
+   handle_kernel_module_dependencies
+   package_registry
+   usage_of_FORTIFY_SOURCE
 
 

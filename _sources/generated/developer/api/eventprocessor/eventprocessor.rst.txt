@@ -5,5 +5,5 @@ eventprocessor
     :maxdepth: 4
 
     eventfilternodevector_h
-    eventprocessor_c
     eventqueuevector_h
+    eventprocessor_c

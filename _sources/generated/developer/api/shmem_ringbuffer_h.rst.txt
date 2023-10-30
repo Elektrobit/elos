@@ -1,0 +1,5 @@
+shmem_ringbuffer.h
+==================
+
+.. autocmodule:: shmem_ringbuffer.h
+    :members:

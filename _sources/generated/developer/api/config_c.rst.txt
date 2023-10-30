@@ -1,0 +1,4 @@
+config.c
+========
+
+.. autocmodule:: config.c

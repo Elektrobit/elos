@@ -1,0 +1,5 @@
+shmem_config.h
+==============
+
+.. autocmodule:: shmem_config.h
+    :members:

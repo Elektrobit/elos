@@ -17,7 +17,7 @@
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="message.h" href="elos/common/message_h.html" />
+    <link rel="next" title="Architecture Design Records" href="../../ADRs/adrs.html" />
     <link rel="prev" title="The project documentation" href="../documentation.html" />
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
@@ -38,170 +38,6 @@
   <section id="elos-api">
 <h1>Elos API<a class="headerlink" href="#elos-api" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="elos/common/message_h.html">message.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/common/process_h.html">process.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/common/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/common/common.html">common</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientauthorization_h.html">clientauthorization.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientauthorizedprocesses_h.html">clientauthorizedprocesses.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientblacklist_h.html">clientblacklist.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientconnection_h.html">clientconnection.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientmanager_h.html">clientmanager.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientmanager.html">clientmanager</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientauthorization_types_h.html">clientauthorization_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientconnection_defines_h.html">clientconnection_defines.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientconnection_types_h.html">clientconnection_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/clientmanager_types_h.html">clientmanager_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/clientmanager/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/event_h.html">event.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/event_source_h.html">event_source.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/event_vector_h.html">event_vector.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/event.html">event</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/event_message_codes_h.html">event_message_codes.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/event_types_h.html">event_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/eventqueue_types_h.html">eventqueue_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/event/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventbuffer/eventbuffer_h.html">eventbuffer.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventbuffer/eventbuffer.html">eventbuffer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventbuffer/defines_h.html">defines.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventbuffer/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventdispatcher/eventdispatcher_h.html">eventdispatcher.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventdispatcher/eventdispatcher.html">eventdispatcher</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventdispatcher/defines_h.html">defines.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventdispatcher/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/builder_h.html">builder.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/eventfilter_h.html">eventfilter.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/execute_h.html">execute.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/vector_h.html">vector.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/eventfilter.html">eventfilter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/eventfilter_types_h.html">eventfilter_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/step_types_h.html">step_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventfilter/vector_types_h.html">vector_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventlogging/LogAggregator_h.html">LogAggregator.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventlogging/eventlogging.html">eventlogging</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventlogging/LogAggregatorTypes_h.html">LogAggregatorTypes.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventlogging/PluginFilterLoader_h.html">PluginFilterLoader.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventlogging/StorageBackend_h.html">StorageBackend.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventfiltermanager_h.html">eventfiltermanager.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventfilternode_h.html">eventfilternode.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventprocessor_h.html">eventprocessor.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventqueue_h.html">eventqueue.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventqueuemanager_h.html">eventqueuemanager.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/idmanager_h.html">idmanager.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventprocessor.html">eventprocessor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/defines_h.html">defines.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventfilter_types_h.html">eventfilter_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/eventqueue_types_h.html">eventqueue_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/eventprocessor/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/plugin/plugin_h.html">plugin.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/plugin/thread_h.html">thread.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/plugin/vector_h.html">vector.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/plugin/plugin.html">plugin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/plugin/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/pluginmanager/pluginmanager_h.html">pluginmanager.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/pluginmanager/pluginmanager.html">pluginmanager</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/pluginmanager/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/builder_h.html">builder.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/execute_h.html">execute.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/processfilter_h.html">processfilter.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/vector_h.html">vector.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/processfilter.html">processfilter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/processfilter_types_h.html">processfilter_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/step_types_h.html">step_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/processfilter/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/builder_h.html">builder.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/execute_h.html">execute.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/rpnfilter_h.html">rpnfilter.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/vector_h.html">vector.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/rpnfilter.html">rpnfilter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/builder_types_h.html">builder_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/execute_types_h.html">execute_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/rpnfilter_types_h.html">rpnfilter_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/step_types_h.html">step_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/types_h.html">types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/rpnfilter/vector_types_h.html">vector_types.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/scanner/scanner_h.html">scanner.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="elos/scanner/scanner.html">scanner</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientauthorization_c.html">clientauthorization.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientauthorizedprocesses_c.html">clientauthorizedprocesses.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientblacklist_c.html">clientblacklist.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientconnection_c.html">clientconnection.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientconnection_worker_c.html">clientconnection_worker.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientmanager_c.html">clientmanager.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientmanager_listen_c.html">clientmanager_listen.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientmanager_private_h.html">clientmanager_private.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientmanager_start_c.html">clientmanager_start.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clientmanager_stop_c.html">clientmanager_stop.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event_c.html">event.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event_source_c.html">event_source.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event_vector_c.html">event_vector.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventbuffer_c.html">eventbuffer.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventdispatcher_c.html">eventdispatcher.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventdispatcher_dispatch_c.html">eventdispatcher_dispatch.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventdispatcher_private_h.html">eventdispatcher_private.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventdispatcher_worker_c.html">eventdispatcher_worker.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfilter_c.html">eventfilter.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfilter_builder_compile_c.html">eventfilter_builder_compile.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfilter_builder_tokenize_c.html">eventfilter_builder_tokenize.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfilter_execute_c.html">eventfilter_execute.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="LogAggregator_c.html">LogAggregator.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PluginFilterLoader_c.html">PluginFilterLoader.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="StorageBackend_c.html">StorageBackend.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfiltermanager/eventfiltermanager_c.html">eventfiltermanager.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfiltermanager/eventfilternode_c.html">eventfilternode.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfiltermanager/eventfilternodevector_c.html">eventfilternodevector.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventfiltermanager/eventfiltermanager.html">eventfiltermanager</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventprocessor/eventfilternodevector_h.html">eventfilternodevector.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventprocessor/eventprocessor_c.html">eventprocessor.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventprocessor/eventqueuevector_h.html">eventqueuevector.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventprocessor/eventprocessor.html">eventprocessor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventqueue/eventqueue_c.html">eventqueue.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventqueue/eventqueuemanager_c.html">eventqueuemanager.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventqueue/eventqueuevector_c.html">eventqueuevector.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eventqueue/eventqueue.html">eventqueue</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_c.html">plugin.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_load_c.html">plugin_load.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_load_h.html">plugin_load.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_vector_c.html">plugin_vector.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_workerthread_c.html">plugin_workerthread.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pluginmanager_c.html">pluginmanager.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pluginmanager_entry_c.html">pluginmanager_entry.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pluginmanager_load_c.html">pluginmanager_load.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pluginmanager_remove_c.html">pluginmanager_remove.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pluginmanager_unload_c.html">pluginmanager_unload.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="processfilter_c.html">processfilter.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="processfilter_builder_compile_c.html">processfilter_builder_compile.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="processfilter_builder_tokenize_c.html">processfilter_builder_tokenize.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="processfilter_execute_c.html">processfilter_execute.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rpnfilter_c.html">rpnfilter.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rpnfilter_builder_c.html">rpnfilter_builder.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rpnfilter_builder_compile_c.html">rpnfilter_builder_compile.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rpnfilter_builder_finalize_c.html">rpnfilter_builder_finalize.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rpnfilter_builder_tokenize_c.html">rpnfilter_builder_tokenize.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rpnfilter_execute_c.html">rpnfilter_execute.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rpnfilter_vector_c.html">rpnfilter_vector.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="kmsg_mapper_h.html">kmsg_mapper.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="kmsg_c.html">kmsg.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="kmsg_mapper_c.html">kmsg_mapper.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="logline_mapper_h.html">logline_mapper.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="logline_mapper_c.html">logline_mapper.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="syslog_c.html">syslog.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JsonBackend_h.html">JsonBackend.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JsonBackend_c.html">JsonBackend.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JsonBackendPlugin_c.html">JsonBackendPlugin.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NoSqlBackend_h.html">NoSqlBackend.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NoSqlBackend_c.html">NoSqlBackend.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SqlBackend_h.html">SqlBackend.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SqlBackend_c.html">SqlBackend.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SqlBackendPlugin_c.html">SqlBackendPlugin.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SqlQueries_h.html">SqlQueries.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="InfluxDb_h.html">InfluxDb.h</a></li>
-<li class="toctree-l1"><a class="reference internal" href="InfluxDbBackend_c.html">InfluxDbBackend.c</a></li>
-<li class="toctree-l1"><a class="reference internal" href="InfluxDbBackendPlugin_c.html">InfluxDbBackendPlugin.c</a></li>
-</ul>
 </div>
 </section>
 
@@ -248,7 +84,7 @@
   <li><a href="../../../index.html">Documentation overview</a><ul>
   <li><a href="../index.html">Developer documentation</a><ul>
       <li>Previous: <a href="../documentation.html" title="previous chapter">The project documentation</a></li>
-      <li>Next: <a href="elos/common/message_h.html" title="next chapter">message.h</a></li>
+      <li>Next: <a href="../../ADRs/adrs.html" title="next chapter">Architecture Design Records</a></li>
   </ul></li>
   </ul></li>
 </ul>

@@ -1,0 +1,5 @@
+defines.h
+=========
+
+.. autocmodule:: elos/config/defines.h
+    :members:
