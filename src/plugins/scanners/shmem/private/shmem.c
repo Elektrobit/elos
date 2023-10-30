@@ -111,13 +111,20 @@ static safuResultE_t _closeSharedMemory(elosScannerContextShmem_t *context) {
         context->shmemFd = -1;
     }
 
+    if (context->shmemCreate == true) {
+        retVal = shm_unlink(context->shmemFile);
+        if (retVal == -1) {
+            safuLogWarnErrnoValue("shm_unlink failed", retVal);
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
     if (context->shmemFile != NULL) {
         free(context->shmemFile);
         context->shmemFile = NULL;
     }
 
     context->shmemDataSize = 0;
-    context->shmemCreate = false;
 
     return result;
 }
@@ -151,6 +158,14 @@ static safuResultE_t _closeSemaphore(elosScannerContextShmem_t *context) {
         retVal = sem_close(context->semData);
         if (retVal == -1) {
             safuLogWarnErrnoValue("sem_close failed", retVal);
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
+    if (context->shmemCreate == true && context->semFile != NULL) {
+        retVal = sem_unlink(context->semFile);
+        if (retVal == -1) {
+            safuLogWarnErrnoValue("sem_unlink failed", retVal);
             result = SAFU_RESULT_FAILED;
         }
     }
@@ -207,6 +222,8 @@ elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
         if (retResult != SAFU_RESULT_OK) {
             result = SCANNER_ERROR;
         }
+
+        context->shmemCreate = false;
 
         free(session->context);
         session->context = NULL;
