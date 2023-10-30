@@ -2,8 +2,6 @@
 
 #define _GNU_SOURCE
 
-#include "shmem.h"
-
 #include <fcntl.h>
 #include <safu/common.h>
 #include <safu/flags.h>
@@ -16,8 +14,38 @@
 #include <unistd.h>
 
 #include "elos/scanner/scanner.h"
+#include "shmem.h"
 #include "shmem_config.h"
 #include "shmem_ringbuffer.h"
+
+static void _updatePermissionOnPath(char const *const name, mode_t mode) {
+    char *semPath = NULL;
+    int retVal = 0;
+
+    retVal = asprintf(&semPath, "/dev/shm/sem.%s", name);
+    if (retVal == -1) {
+        safuLogErrErrno("asprintf failed");
+    } else if (retVal < -1) {
+        safuLogWarnF("Unexpected return value of asprintf: %d", retVal);
+    } else {
+        retVal = chmod(semPath, mode);
+        if (retVal == -1) {
+            safuLogErrErrno("chmod failed");
+        } else if (retVal < -1 || retVal > 0) {
+            safuLogWarnF("Unexpected return value of chmod: %d", retVal);
+        }
+        free(semPath);
+    }
+}
+
+static void _updatePermissionsOnFd(int fd, mode_t mode) {
+    int retVal = fchmod(fd, mode);
+    if (retVal == -1) {
+        safuLogErrErrno("fchmod failed");
+    } else if (retVal < -1 || retVal > 0) {
+        safuLogWarnF("Unexpected return value of fchmod: %d", retVal);
+    }
+}
 
 static safuResultE_t _openSharedMemory(elosScannerContextShmem_t *context) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -33,6 +61,7 @@ static safuResultE_t _openSharedMemory(elosScannerContextShmem_t *context) {
     if (context->shmemFd == -1) {
         safuLogErrErrnoValue("shm_open failed", retVal);
     } else {
+        _updatePermissionsOnFd(context->shmemFd, mode);
         result = SAFU_RESULT_OK;
 
         if (context->shmemCreate == true) {
@@ -106,6 +135,7 @@ static safuResultE_t _openSemaphore(elosScannerContextShmem_t *context) {
     if (context->semData == SEM_FAILED) {
         safuLogErrErrnoValue("sem_open failed", retVal);
     } else {
+        _updatePermissionOnPath(context->semFile, mode);
         result = SAFU_RESULT_OK;
     }
 
