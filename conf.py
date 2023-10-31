@@ -14,6 +14,7 @@ author = 'wolfgang.gehrhardt@emlix.com'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'myst_parser',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinxcontrib.programoutput',
@@ -32,6 +33,10 @@ extensions = [
 
 templates_path = ['doc/_templates']
 exclude_patterns = ['build/*/cmake/_deps/*']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 language = 'en'
 

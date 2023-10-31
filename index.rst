@@ -20,12 +20,12 @@ Welcome to elos's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   Users <build/Debug/doc/source_generated/UserManual>
+   Users <documentation/userManual>
    Demos <src/demos/index>
    elos API <build/Debug/doc/source_generated/api/index>
-   Developers <build/Debug/doc/source_generated/developer/index>
+   Developers <documentation/developer>
    Developers2 <src/index>
-   ADR <build/Debug/doc/source_generated/ADRs/adrs>
+   documentation/Architecture_Design_Records/*
 
 
 Indices and tables

@@ -123,67 +123,6 @@ ${API_INDEX_TABLE}
 " > ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/index.rst
 }
 
-function createUserDocu() {
-    mkdir -p ${SPHINX_GENERATED_SOURCE_DIR}/images
-    cp ${MD_DOCUMENTAION_DIR}/images/elos_layout.png ${SPHINX_GENERATED_SOURCE_DIR}/images
-
-    pandoc --from gfm --to rst -o ${SPHINX_GENERATED_SOURCE_DIR}/UserManual.rst ${MD_DOCUMENTAION_DIR}/userManual.md
-}
-
-function createDeveloperDocu() {
-    cp -r ${MD_DOCUMENTAION_DIR}/images ${SPHINX_GENERATED_SOURCE_DIR}/developer/
-    mkdir -p ${SPHINX_GENERATED_SOURCE_DIR}/images
-    cp ${MD_DOCUMENTAION_DIR}/images/overview_event_logging.png ${SPHINX_GENERATED_SOURCE_DIR}/images
-    cp ${MD_DOCUMENTAION_DIR}/images/eventprocessor_components.png ${SPHINX_GENERATED_SOURCE_DIR}/images
-
-    pandoc --from gfm --to rst -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/DeveloperManual.rst ${MD_DOCUMENTAION_DIR}/developer.md
-    pandoc --from gfm --to rst -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/eventprocessor.rst ${MD_DOCUMENTAION_DIR}/eventprocessor/eventprocessor.md
-    pandoc --from gfm --to rst -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/rpnfilter.rst ${MD_DOCUMENTAION_DIR}/rpnfilter/rpnfilter.md
-    pandoc --from gfm --to rst -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/VerificationStrategy.rst ${MD_DOCUMENTAION_DIR}/verification_strategy.md
-    pandoc --from gfm --to rst -o ${SPHINX_GENERATED_SOURCE_DIR}/developer/documentation.rst ${MD_DOCUMENTAION_DIR}/documentation.md
-
-    echo -e "
-Developer documentation
-==========================
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Contents:
-
-  DeveloperManual
-  eventprocessor
-  rpnfilter
-  VerificationStrategy
-  documentation
-  Elos API <api/index>
-" > ${SPHINX_GENERATED_SOURCE_DIR}/developer/index.rst
-}
-
-function createADRs() {
-
-    mkdir -p ${SPHINX_GENERATED_SOURCE_DIR}/images
-    cp ${MD_DOCUMENTAION_DIR}/images/adr_distributed_event_log_storage.png ${SPHINX_GENERATED_SOURCE_DIR}/images
-
-    ADR_INDEX_TABLE=""
-    ADRs=$(find ${MD_DOCUMENTAION_DIR}/Architecture_Design_Records/ -type f -name "*.md")
-    for adrFile in ${ADRs}; do
-        adr=$(basename ${adrFile} .md)
-        pandoc --from gfm --to rst -o ${SPHINX_GENERATED_SOURCE_DIR}/ADRs/${adr}.rst ${adrFile}
-        ADR_INDEX_TABLE="${ADR_INDEX_TABLE}   ${adr}\n"
-    done
-
-    echo -e "
-Architecture Design Records
-===========================
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Contents:
-
-${ADR_INDEX_TABLE}
-" > ${SPHINX_GENERATED_SOURCE_DIR}/ADRs/adrs.rst
-}
-
 if [ ${OPTION_CLEAN} -eq 1 ]; then
     echo "Delete ${SPHINX_GENERATED_SOURCE_DIR} ${SPHINX_BUILD_DIR}"
     rm -rf ${SPHINX_GENERATED_SOURCE_DIR} ${SPHINX_BUILD_DIR}
@@ -191,11 +130,8 @@ fi
 
 mkdir -p ${SPHINX_BUILD_DIR} ${SPHINX_GENERATED_SOURCE_DIR}/ADRs ${SPHINX_GENERATED_SOURCE_DIR}/developer
 
-createUserDocu
 createApiDocu
-createDeveloperDocu
 createDeveloperApiDocu
-createADRs
 
 export PATH="${PATH}:${DIST_DIR}/usr/local/bin"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-"./"}:${DIST_DIR}/usr/local/lib"
