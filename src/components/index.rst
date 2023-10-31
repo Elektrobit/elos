@@ -1,11 +1,12 @@
-Elos Source
-===========
+Components
+==========
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    eloslog/index
+   logger/index
 
 
 Component Structure
