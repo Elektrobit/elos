@@ -31,7 +31,7 @@ extensions = [
 ]
 
 templates_path = ['doc/_templates']
-exclude_patterns = []
+exclude_patterns = ['build/*/cmake/_deps/*']
 
 language = 'en'
 
