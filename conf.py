@@ -108,12 +108,16 @@ c_autodoc_roots = [
     './src/plugins/scanners/kmsg/private/',
     './src/plugins/scanners/syslog/interface/',
     './src/plugins/scanners/syslog/private/',
+    './src/plugins/scanners/shmem/interface/',
+    './src/plugins/scanners/shmem/private/',
     './src/plugins/storagebackends/jsonbackend/interface/',
     './src/plugins/storagebackends/jsonbackend/private/',
     './src/plugins/storagebackends/nosqlbackend/interface/',
     './src/plugins/storagebackends/nosqlbackend/private/',
     './src/plugins/storagebackends/sqlbackend/interface/',
     './src/plugins/storagebackends/sqlbackend/private/',
+    './src/plugins/storagebackends/influxdbbackend/interface/',
+    './src/plugins/storagebackends/influxdbbackend/private/',
 ]
 
 set_type_checking_flag = True
