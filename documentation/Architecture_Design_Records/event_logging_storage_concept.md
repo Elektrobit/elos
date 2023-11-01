@@ -97,7 +97,7 @@ To store and load events two different process are necessary.
 Each event must be mapped to a [event storage class](event_storage_class.md),
 which is linked to a [event storage backend](event_storage_backends.md). This
 shall be done by by a configurable rule set of
-[RPN-Filters](../rpnfilter/rpnfilter.md)
+[RPN-Filters](/src/components/rpnfilter/index)
 
 #### Search-Engine
 

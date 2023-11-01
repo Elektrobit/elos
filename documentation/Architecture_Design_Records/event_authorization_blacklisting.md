@@ -37,7 +37,11 @@ b) How to setup complex filter rules which filter on multiple event attributes.
 
 ## Solution
 
-a) In case of error while setup, creation and execution of blacklist filter due to various reasons given in [Problem](#problem),  a blacklist filter is not created, which means events from unauthorized clients can not be properly classified and filtered. In this case events from unauthorized clients can be classified as :
+a) In case of error while setup, creation and execution of blacklist filter due
+to various reasons given in problem description, a blacklist filter is not
+created, which means events from unauthorized clients can not be properly
+classified and filtered. In this case events from unauthorized clients can be
+classified as :
 
 
    1) all events from unauthorized clients are classified as critical and shall not be published a security event is published instead.

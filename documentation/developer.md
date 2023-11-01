@@ -1327,12 +1327,12 @@ here.
 
 ##### RpnFilter
 
-Fast and efficient message filtering. See the [RpnFilter Documentation](rpnfilter/rpnfilter.md) for more details.
+Fast and efficient message filtering. See the [RpnFilter Documentation](/src/components/rpnfilter/index) for more details.
 
 ##### EventProcessor
 
 Abstract component to group components related to Event processing together.
-See the [EventProcessor Documentation](eventprocessor/eventprocessor.md) for more details.
+See the [EventProcessor Documentation](/src/components/eventprocessor/index) for more details.
 
 ### Scanner Manager
 
