@@ -290,7 +290,7 @@ The fundamental components required for integration tests are as given below, ap
 
 ##### Integration test setup for elos CI
 
-![Integration Test Setup](images/integration_test_container_target_setup.png "Integration Test Setup")
+![Integration Test Setup](/documentation/images/integration_test_container_target_setup.png "Integration Test Setup")
 
 * The host system has the elos-integration-test packages and a test-runner script.
 * The robot container where  the robot test framework is installed. The test package directory is mounted on to this container.
@@ -301,7 +301,7 @@ New tests are added directly in the elos-integration-test package. Starting the 
 
 ##### Integration test setup for Base OS Lab CI
 
-![Integration Test BaseOS Lab Setup ](images/integration_test_baseos-lab_setup.png "Integration Test BaseOS Lab Setup")
+![Integration Test BaseOS Lab Setup ](/documentation/images/integration_test_baseos-lab_setup.png "Integration Test BaseOS Lab Setup")
 
 * The host base-os lab has the following components :
   - elos-integration-package

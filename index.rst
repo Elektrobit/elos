@@ -27,6 +27,7 @@ Welcome to elos's documentation!
    Developers2 <src/index>
    ADRs <documentation/Architecture_Design_Records/index>
    How we document <doc/index>
+   Verification Strategy or how we test <test/index>
 
 
 Indices and tables
