@@ -25,7 +25,7 @@ Welcome to elos's documentation!
    elos API <build/Debug/doc/source_generated/api/index>
    Developers <documentation/developer>
    Developers2 <src/index>
-   documentation/Architecture_Design_Records/*
+   ADRs <documentation/Architecture_Design_Records/index>
 
 
 Indices and tables
