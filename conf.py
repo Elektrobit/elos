@@ -32,7 +32,7 @@ extensions = [
 ]
 
 templates_path = ['doc/_templates']
-exclude_patterns = ['build/*/cmake/_deps/*']
+exclude_patterns = ['build/*/cmake/_deps/*', 'README.md']
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
