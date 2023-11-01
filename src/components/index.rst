@@ -5,6 +5,7 @@ Components
    :maxdepth: 2
    :caption: Contents:
 
+   rpnfilter/index
    eloslog/index
    logger/index
 
