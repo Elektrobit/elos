@@ -5,7 +5,7 @@
 elos is a tool to collect, store and publish various system events (i.e. syslogs, core dumps, measurements obtained from proc- and sys-fs, …) while providing easy access to the collected data.
 
 
-# Documentation
+## Documentation
 
 The elos documentation can be found here: https://elektrobit.github.io/elos/
 
@@ -48,23 +48,6 @@ or use the CI hooks
 ./elos/ci/build.sh [Release]
 ```
 
-### Workspace setup
-
-1. Please run the following git commands after cloning the repository:
-
-   ```bash
-   git config core.hooksPath .githooks
-   ```
-
-   to set the commit message template and to setup the project specific git hooks.
-
-2. Usually it is a good idea to create a symlink to the compilation database
-   created by cmake in the build directory. Run therefore:
-
-   ```
-   ln -s build/compile_commands.json
-   ```
-
 
 ## Development
 
@@ -92,6 +75,23 @@ ci@62209400:/base$ ./elos/test/smoketest/smoketest_interactive.sh
 ```
 Be aware this is a smoketest environment so it is very verbose.
 
+### Workspace setup
+
+1. Please run the following git commands after cloning the repository:
+
+   ```bash
+   git config core.hooksPath .githooks
+   ```
+
+   to set the commit message template and to setup the project specific git hooks.
+
+2. Usually it is a good idea to create a symlink to the compilation database
+   created by cmake in the build directory. Run therefore:
+
+   ```
+   ln -s build/compile_commands.json
+   ```
+
 ## Dependencies
 
 * [cmocka_extensions](https://github.com/Elektrobit/cmocka_extensions)
@@ -113,7 +113,7 @@ More detailed documentation on the event logging and management system.
 
 Contains some files to help out some external build systems which are not part of this project.
 
-## src
+### src
 
 Contains the actual productive sources.
 
@@ -152,7 +152,7 @@ The sources to manage the version always in the same way.
 Contains all test related sources. See the documenation for details.
 
 
-# License
+## License
 
 MIT License
 
@@ -160,7 +160,7 @@ Copyright (c) [2023] [emlix GmbH, Elektrobit Automotive GmbH]
 
 The full text of the license can be found in the [LICENSE](LICENSE) file in the repository root directory.
 
-## Powered by EB
+### Powered by EB
 
 <img src="doc/source/_static/eb-logo.png" width=70 height=70 align="left">
 elos is powered by elektrobit automotive gmbh.
@@ -168,12 +168,12 @@ Elektrobit is an automotive software company and developer of embedded software 
 elos isan  integrated part of EB corbos Linux – built on Ubuntu is an open-source operating system for high-performance computing, leveraging the rich functionality of Linux while meeting security and industry regulations.
 
 
-## Maintainers
+### Maintainers
 
 * Wolfgang Gehrhardt wolfgang.gehrhardt@emlix.com [@gehwolf](https://github.com/gehwolf)
 * Thomas Brinker thomas.brinker@emlix.com [@ThomasBrinker](https://github.com/ThomasBrinker)
 
-## Credits
+### Credits
 
 * Andreas Schickedanz
 * Andreas Zdziarstek
@@ -193,7 +193,7 @@ elos isan  integrated part of EB corbos Linux – built on Ubuntu is an open-sou
 * Vignesh Jayaraman
 * Wolfgang Gehrhardt
 
-## Artwork
+### Artwork
 
 The elos logo is the Vombatus ursinus, also known as the bare-nosed wombat,
 designed from the handwriting word elos. Originator is Anja Lehwess-Litzmann
