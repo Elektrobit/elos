@@ -26,6 +26,7 @@ Welcome to elos's documentation!
    Developers <documentation/developer>
    Developers2 <src/index>
    ADRs <documentation/Architecture_Design_Records/index>
+   How we document <doc/index>
 
 
 Indices and tables
