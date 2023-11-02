@@ -113,7 +113,7 @@ pipeline {
 
               stage('Build release') {
                 steps{
-                  gitlabCommitStatus("elos: build release") {
+                  gitlabCommitStatus("build release") {
                     sh '''#!/bin/bash -xe
                       ./ci/build.sh --ci Release
                     '''
@@ -263,7 +263,7 @@ pipeline {
             SOURCES_URI = "${SOURCES_URI}"
           }
           steps {
-            gitlabCommitStatus("elos: integration test") {
+            gitlabCommitStatus("integration test") {
               sh '''#!/bin/bash -xe
                 ./ci/run_integration_tests.sh Release
               '''
