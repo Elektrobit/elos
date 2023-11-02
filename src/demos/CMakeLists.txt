@@ -19,6 +19,20 @@ target_link_libraries(
 install(TARGETS demo_libelos_v2 DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_executable(
+  demo_scanner_shmem
+  demo_scanner_shmem.c
+)
+
+target_link_libraries(
+  demo_scanner_shmem
+  PRIVATE
+    libelos
+    version
+)
+
+install(TARGETS demo_scanner_shmem DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(
   syslog_example
   syslog.c
 )
