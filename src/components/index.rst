@@ -6,9 +6,13 @@ Components
    :caption: Contents:
 
    eloslog/index
+   event/index
+   eventlogging/index
    eventprocessor/index
    logger/index
    rpnfilter/index
+   scanner/index
+   scanner_manager/index
 
 
 Component Structure

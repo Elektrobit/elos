@@ -43,4 +43,5 @@ List of ADRs
    ./package_registry
    ./shmem_locking
    ./usage_of_FORTIFY_SOURCE
+   ./communication_protocol
 

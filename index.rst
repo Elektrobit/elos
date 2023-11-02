@@ -23,8 +23,7 @@ Welcome to elos's documentation!
    Users <documentation/userManual>
    Demos <src/demos/index>
    public API <build/Debug/doc/source_generated/api/index>
-   Developers <documentation/developer>
-   Developers2 <src/index>
+   Developers <src/index>
    Complete API Reference <build/Debug/doc/source_generated/developer/api/index>
    ADRs <documentation/Architecture_Design_Records/index>
    How we document <doc/index>
