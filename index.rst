@@ -20,7 +20,7 @@ Welcome to elos's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   Users <documentation/userManual>
+   Users <doc/userManual>
    Demos <src/demos/index>
    public API <build/Debug/doc/source_generated/api/index>
    Developers <src/index>

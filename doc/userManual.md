@@ -10,7 +10,7 @@ To reach this goal, elos is using a so called canonical format, which means, tha
 be provided in a normalized form, so all of the data from different sources gets structured and can be obtained
 in the same way.
 
-![Elos Layout](images/elos_layout.png)
+![Elos Layout](/documentation/images/elos_layout.png)
 
 ---
 
