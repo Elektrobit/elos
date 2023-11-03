@@ -364,4 +364,4 @@ Parameters: \* ``[in]`` backend -> a pointer to a backend instance \*
 Returns: \* SAFU_RESULT_OK -> on success \* SAFU_RESULT_FAILED -> on
 failure
 
-.. |overview event logging| image:: /documentation/images/overview_event_logging.png
+.. |overview event logging| image:: /doc/images/overview_event_logging.png

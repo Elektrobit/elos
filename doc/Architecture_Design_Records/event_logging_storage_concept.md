@@ -87,7 +87,7 @@ backends](event_storage_backends.md) the remaining task for event logging
 system is to do the classification of an event against the given storage
 classes and then do the mapping to the corresponding storage backend.
 
-![overview distributed event log storage](/documentation/images/adr_distributed_event_log_storage.png)
+![overview distributed event log storage](/doc/images/adr_distributed_event_log_storage.png)
 
 
 To store and load events two different process are necessary.

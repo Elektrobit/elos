@@ -4,7 +4,7 @@ Syslog – Scanner
 Serves as a syslog daemon and converts syslog lines into the canonical
 event format.
 
-.. figure:: /documentation/images/scanner_syslog_component.png
+.. figure:: /doc/images/scanner_syslog_component.png
    :alt: Syslog scanner component diagram
 
    Syslog scanner

@@ -131,7 +131,7 @@ Commitment:
 -  Knowledge and Logic for new Log sources can be extended separately
    through shared library!
 
-.. figure:: /documentation/images/component_diagram_A.png
+.. figure:: /doc/images/component_diagram_A.png
    :alt: Component diagram A
 
    Component diagram_A
@@ -154,7 +154,7 @@ Commitment:
 -  Knowledge and Logic is possibly scattered through EventProcessor and
    LogAggregator
 
-.. figure:: /documentation/images/component_diagram_B.png
+.. figure:: /doc/images/component_diagram_B.png
    :alt: Component diagram B
 
    Component diagram_B
@@ -222,7 +222,7 @@ discussion if required.
 Actual implementation
 '''''''''''''''''''''
 
-.. figure:: /documentation/images/publish_poll.png
+.. figure:: /doc/images/publish_poll.png
    :alt: Publish&Poll Component diagram
 
    Publish & Poll
@@ -285,7 +285,7 @@ In general there are the following roles:
 
 The relevant entities are related as follows:
 
-.. figure:: /documentation/images/event_class_diagram.png
+.. figure:: /doc/images/event_class_diagram.png
    :alt: Event class diagram
 
    Entities
@@ -328,14 +328,14 @@ The relevant entities are related as follows:
 
 **Publishing**
 
-.. figure:: /documentation/images/publishing_sequence_diagram.png
+.. figure:: /doc/images/publishing_sequence_diagram.png
    :alt: Publishing sequence diagram
 
    Publishing
 
 **Subscribing**
 
-.. figure:: /documentation/images/subscribing_sequence_diagram.png
+.. figure:: /doc/images/subscribing_sequence_diagram.png
    :alt: Subscribing sequence diagram
 
    Subscribing
@@ -356,4 +356,4 @@ Actual implementation
      "severity": 0,
    }
 
-.. |Data Flow Diagram| image:: /documentation/images/data_flow.png
+.. |Data Flow Diagram| image:: /doc/images/data_flow.png

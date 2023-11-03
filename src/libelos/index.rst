@@ -206,7 +206,7 @@ Example sequence diagram
 This sequence diagram shows a simplified use case for polling for
 events.
 
-.. figure:: /documentation/images/library_sequence_diagram.png
+.. figure:: /doc/images/library_sequence_diagram.png
    :alt: Library sequence diagram
 
    Library sequence diagram

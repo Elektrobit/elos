@@ -27,7 +27,7 @@ join the Scanner threads.
 
 The following diagram demonstrates the live cycle of a scanner.
 
-.. figure:: /documentation/images/scanner_sequence_diagram.png
+.. figure:: /doc/images/scanner_sequence_diagram.png
    :alt: Scanner sequence diagram
 
    Scanner sequence diagram

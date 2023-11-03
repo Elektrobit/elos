@@ -833,7 +833,7 @@ To accomplish this the following components are necessary:
 -  A rule source which provide rules
 -  A translation engine to prepare rules for the evaluation engine
 
-.. figure:: /documentation/images/mapping_filter_concept.png
+.. figure:: /doc/images/mapping_filter_concept.png
    :alt: Mapping and filter concept
 
    Mapping and filter concept
@@ -869,4 +869,4 @@ easily extensible by additional engines that provide other
 implementations. For example a script interpreter that provides the
 ability of stateful filtering can be plugged in here.
 
-.. |Event log filtering and mapping| image:: /documentation/images/overview_event_log_filtering.png
+.. |Event log filtering and mapping| image:: /doc/images/overview_event_log_filtering.png
