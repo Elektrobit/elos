@@ -25,7 +25,7 @@ Welcome to elos's documentation!
    public API <build/Debug/doc/source_generated/api/index>
    Developers <src/index>
    Complete API Reference <build/Debug/doc/source_generated/developer/api/index>
-   ADRs <documentation/Architecture_Design_Records/index>
+   ADRs <doc/Architecture_Design_Records/index>
    How we document <doc/index>
    Verification Strategy or how we test <test/index>
 
