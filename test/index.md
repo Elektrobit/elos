@@ -483,31 +483,33 @@ Variables created in .resource files can be of type other than strings.
 
 The code check and linting of robot tests are done as follows:
 
-```
+```shell
 cd elos
-BUILD_TYPE="[DEBUG|Release]"./ci/run_integration_tests_linter.sh --static-check  # run integration tests linter
+./ci/run_integration_tests_linter.sh [Debug|Release]
 ```
-This will start two docker containers and execute static code checker on the all robot tests.
 
-The results will be stored in ```build/[Debug|Release]/result/integration/robot_lint```, only when one or more of the tests fail the checks.
+This will start the ```.test/integration/scripts/robot_code_lint.sh``` script which will do a static code check on all integration tests.
+The results will be stored in ```build/[Debug|Release]/result/integration/robot_lint/robot_lint.log```, only when one or more of the tests fail the checks.
 
 After analysing the results, the tests which fail can be fixed using the robotidy linter as geven below
 
+```shell
+./test/integration/scripts/robot_code_lint.sh --show
 ```
-BUILD_TYPE="[DEBUG|Release]"./ci/run_integration_tests_linter.sh --show test.robot
-```
+
 This will point out the format errors in the given test.robot and gives suggestions to fix them. If no test is specified all tests wil be checked
 and suggestion will be shown.
 
 If the fixes suggested are satifactory, then the fixes can be implemented by
+```shell
+./test/integration/scripts/robot_code_lint.sh --show-fix
 ```
-BUILD_TYPE="[DEBUG|Release]"./ci/run_integration_tests_linter.sh --show-fix test.robot
-```
+
 This will show the suggested changes before writing them to the corresponding test/s.
 
-For other options in the ```run_integration_tests_linter.sh``` use
-```
-./ci/run_integration_tests_linter.sh --help
+For other options in the ```robot_code_lint.sh``` use
+```shell
+./test/integration/scripts/robot_code_lint.sh --help
 ```
 
 

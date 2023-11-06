@@ -8,7 +8,9 @@ BASE_DIR="$(realpath "$CMD_PATH/../../..")"
 
 . "$BASE_DIR/ci/common_names.sh"
 
+BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
 INTEGRATION_TEST_DIR="${BASE_DIR}/test/integration"
+RESULT_DIR="${BUILD_DIR}/result"
 LINT_CONFIG_DIR="${INTEGRATION_TEST_DIR}/scripts"
 LINT_CONFIG=${LINT_CONFIG_DIR}/robot_linter_config.txt
 TEST_OUTPUT="${RESULT_DIR}/integration/robot_lint"
