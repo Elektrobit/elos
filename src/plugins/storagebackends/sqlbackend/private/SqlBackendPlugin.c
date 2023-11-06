@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include "SqlBackend.h"
-#include "elos/plugin/types.h"
+#include "elos/plugincontrol/types.h"
 
 #ifndef SQLITE_DEFAULT_CONNECTION
 #define SQLITE_DEFAULT_CONNECTION "/var/db/elosd.sqlite"

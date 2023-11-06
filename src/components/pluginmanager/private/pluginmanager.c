@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "elos/plugin/vector.h"
+#include "elos/plugincontrol/vector.h"
 
 safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, elosPluginManagerParam_t const *param) {
     safuResultE_t result = SAFU_RESULT_FAILED;

@@ -5,7 +5,7 @@ create_interface_library(
   FROM
     pluginmanager
   LIBRARIES
-    plugin_interface
+    plugincontrol_interface
 )
 
 add_library(
@@ -32,7 +32,7 @@ target_link_libraries(
     pluginmanager_interface
     elos_common_interface
     safu::safu
-    plugin_static
+    plugincontrol_static
 )
 
 set_property(TARGET pluginmanager_static PROPERTY POSITION_INDEPENDENT_CODE ON)

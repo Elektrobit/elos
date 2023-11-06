@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 #include "InfluxDb.h"
-#include "elos/plugin/types.h"
+#include "elos/plugincontrol/types.h"
 
 safuResultE_t elosPluginLoad(void *pluginPtr) {
     elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;

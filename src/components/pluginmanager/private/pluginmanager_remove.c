@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "elos/plugin/plugin.h"
+#include "elos/plugincontrol/plugincontrol.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
 safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPluginPtrVector_t *pluginPtrVector) {
