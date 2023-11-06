@@ -10,7 +10,7 @@ To reach this goal, elos is using a so called canonical format, which means, tha
 be provided in a normalized form, so all of the data from different sources gets structured and can be obtained
 in the same way.
 
-![Elos Layout](images/elos_layout.png)
+![Elos Layout](/doc/images/elos_layout.png)
 
 ---
 
@@ -303,7 +303,8 @@ coredump file is to be created. Following is an example of an event created by e
 
 #### Elos-coredump Installation
 
-The elos-coredump tool is built and installed along with elos as given in the [installation section](#elosd-installation-setup).
+The elos-coredump tool is built and installed along with elos as given in the
+installation section.
 After installation is complete, the kernel core-pattern needs to be setup to ensure that coredumps are piped to elos-coredump.
 This can be achieved by running ```elos-coredump``` as ```root```. This run, sets the value ```|<PATH_TO_COREDUMP_BINARY>/elos-coredump %P %E %u %g %s %t %h```
 in the ```/proc/sys/kernel/core_pattern``` file.

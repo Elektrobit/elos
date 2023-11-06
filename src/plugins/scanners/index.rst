@@ -1,11 +1,10 @@
-
-# elos
-
-## Scanner
+Scanner
+=======
 
 This interface is intended for internal use only.
 
-### Scanner Interface
+Scanner Interface
+-----------------
 
 The scanner interface is based on two parts:
 
@@ -13,7 +12,8 @@ The scanner interface is based on two parts:
 - Functions passed in form of pointer from the server to the scanner (register event, push event)
 
 
-#### scanner_initialize
+scanner_initialize
+~~~~~~~~~~~~~~~~~~
 
 Initialize the components needed for event scanning (e.g. check if temperature
 sensor interface exists and is accessible) and register one or more event types
@@ -27,7 +27,8 @@ Parameters:
 Returns: 0 for success or errorcode
 
 
-#### scanner_start
+scanner_start
+~~~~~~~~~~~~~~~~~~
 
 Start scanning for events. This function will be executed inside a thread on
 the server side, so blocking reads and similiar features can be used.
@@ -41,7 +42,8 @@ Note: This function won't exit until an error occurs or the function
 is exited with the scanner_stop() call.
 
 
-#### scanner_stop
+scanner_stop
+~~~~~~~~~~~~~~~~~~
 
 Stops scanning for events. Will be called from outside the thread the
 _start functions runs in.
@@ -52,7 +54,8 @@ Parameters:
 Returns: 0 for success or errorcode
 
 
-#### scanner_free
+scanner_free
+~~~~~~~~~~~~~~~~~~
 
 Stop scanning for events (if not already stopped),
 free resources allocated during scanner_initialize.

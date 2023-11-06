@@ -195,7 +195,7 @@ pipeline {
                 }
                 post {
                   success {
-                    archiveArtifacts artifacts: "doc/build/**", fingerprint: true
+                    archiveArtifacts artifacts: "build/Debug/doc/**", fingerprint: true
                   }
                 }
               }

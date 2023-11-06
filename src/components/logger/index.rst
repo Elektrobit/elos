@@ -1,6 +1,6 @@
 
 logger
-=====
+======
 
 The component contains code for the internal logger. The internal logger converts a log message along with its properties like message code, severity, classification into log event. This log event is then stored in the elos back-end. Internal events when logged in such a way help in analysing and debugging the state of elosd.
 
@@ -23,4 +23,3 @@ The elos log function retrieves the internal logger of elos and the creates a lo
 
 The log event is created from the arguments passed to the `elosLog` function by calling the `elosLoggCreateElosEventFromLog`. Information about log event and corresponding event members are available here:
 
-:doc:`../eloslog/index.rst`

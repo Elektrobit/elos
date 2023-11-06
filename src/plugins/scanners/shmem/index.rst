@@ -17,7 +17,6 @@ The scanner is configured via the elosd.json file, with a block like the followi
         "SemCreate": true
     }
 
-::
 
 Note that all options are currently mandatory, leaving options out will cause the shmem scanner to abort with errors during initialization.
 
@@ -29,5 +28,3 @@ Note that all options are currently mandatory, leaving options out will cause th
 * *SemCreate*, boolean: Create the semaphore when set to ``true``, open it when set to ``false``
 
 *Attention*: This is a proof of concept, so implementation details as well as the configurationn options may change.
-
-:doc:`../index.rst`

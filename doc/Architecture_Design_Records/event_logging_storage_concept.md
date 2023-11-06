@@ -87,7 +87,7 @@ backends](event_storage_backends.md) the remaining task for event logging
 system is to do the classification of an event against the given storage
 classes and then do the mapping to the corresponding storage backend.
 
-![overview distributed event log storage](../images/adr_distributed_event_log_storage.png)
+![overview distributed event log storage](/doc/images/adr_distributed_event_log_storage.png)
 
 
 To store and load events two different process are necessary.
@@ -97,7 +97,7 @@ To store and load events two different process are necessary.
 Each event must be mapped to a [event storage class](event_storage_class.md),
 which is linked to a [event storage backend](event_storage_backends.md). This
 shall be done by by a configurable rule set of
-[RPN-Filters](../rpnfilter/rpnfilter.md)
+[RPN-Filters](/src/components/rpnfilter/index)
 
 #### Search-Engine
 

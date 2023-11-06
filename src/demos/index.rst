@@ -108,7 +108,7 @@ To benchmark the event buffers on a target to find optimal configuration :
 
 .. command-output:: demo_eventbuffer --publisher 100 --consumer 10 --messageCount 1000 --eventLimit 300
 
-syslog_example – demonstrate the and test the syslog scanner
+syslog_example – demonstrate and test the syslog scanner
 ------------------------------------------------------------
 
 With the `syslog_example` demo it is possible to verify if the syslog scanner

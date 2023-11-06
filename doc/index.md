@@ -9,8 +9,8 @@ Sources are :
 
 * Source Code (doc-strings)
 * Architecture Design Records (markdown files)
-* Manuals, Howtos, Guidelines (markdown files)
-* Component or topic related detailed documentation (markdown files)
+* Manuals, Howtos, Guidelines (markdown files, restructured text)
+* Component or topic related detailed documentation (markdown files, restructured text)
 
 The documentation shall be split into two main categories:
 
@@ -30,11 +30,12 @@ To build the HTML version run the following:
 
 ```bash
 ./ci/docker-run.sh
+./ci/build.sh [Build Type]
 ./ci/build_doc.sh
 ```
 
-Then find the documentation in `doc/build` starting with
-`doc/build/index.html` as entry point.
+Then find the documentation in `build/<BuildType>/doc/html` starting with
+`build/<BuildType>/doc/html/index.html` as entry point.
 
 ## Documentation source structure
 
@@ -71,9 +72,8 @@ For the API documentation the following rules shall be applied:
   * Description of different behavior depending on the input.
 * Think of the combination of doc-string and element declaration as a detailed
   design necessary to verify the correct behavior of function by a unit test.
+* Take a look on libc man pages to get an idea what should be documented
 
 [sphinx-c-autodoc]: https://github.com/speedyleion/sphinx-c-autodoc
 [Napoleon]: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/
-
-
 

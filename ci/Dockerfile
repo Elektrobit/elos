@@ -82,6 +82,7 @@ RUN python -m venv /home/$USER/.venv \
   && . /home/$USER/.venv/bin/activate \
   && python -m pip install \
      beautifulsoup4  \
+	 myst-parser \
      sphinx \
      sphinx-c-autodoc \
      sphinx-copybutton \

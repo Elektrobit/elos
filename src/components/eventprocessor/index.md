@@ -9,7 +9,7 @@ interface when it comes to handling and interacting with Events.
 
 ## Component Diagram
 
-![EventProcessor component diagram](../images/eventprocessor_components.png "EventProcessor components")
+![EventProcessor component diagram](/doc/images/eventprocessor_components.png "EventProcessor components")
 
 ## Interface
 

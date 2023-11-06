@@ -778,14 +778,14 @@ Get elos
 .. [8]
    Also known as post fix notation. The operator follows the operands.
 
-.. |image0| image:: _static/elos_2D_05.png
+.. |image0| image:: /doc/static/elos_2D_05.png
    :height: 35em
-.. |image1| image:: _static/image2.png
+.. |image1| image:: /doc/static/image2.png
    :width: 6.25417in
    :height: 4.69861in
-.. |image2| image:: _static/image3.png
+.. |image2| image:: /doc/static/image3.png
    :width: 6.69306in
    :height: 4.65in
-.. |image3| image:: _static/image4.png
+.. |image3| image:: /doc/static/image4.png
    :width: 6.69306in
    :height: 3.56944in

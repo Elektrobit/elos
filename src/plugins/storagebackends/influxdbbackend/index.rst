@@ -12,8 +12,12 @@ openembedded missing a recipe for more recent versions of InluxDB.
 
 Configuration
 -------------
+
 In order to use InfluxDB as a logging backend, the following configuration is
 necessary:
+
+.. code-block::
+
 	{
 	    "root": {
 		"elos": {
@@ -36,6 +40,9 @@ necessary:
 
 
 A fully developed InfluxDB Plugin may instead have a config as below:
+
+.. code-block::
+
 	{
 	    "root": {
 		"elos": {
@@ -71,6 +78,7 @@ since both fullfill the same goal of authenticating elosd to the database.
 
 Database
 --------
+
 Elosd will store its events in the InfluxDB database, or "bucket" 'elosd', and
 will store the events in the table, or "measurement" 'event'.
 
