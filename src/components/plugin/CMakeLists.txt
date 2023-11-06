@@ -6,6 +6,7 @@ create_interface_library(
   FROM
     plugin
   LIBRARIES
+    libelosplugin_interface
     elos_common_interface
     samconf::samconf_interface
     safu::safu_interface

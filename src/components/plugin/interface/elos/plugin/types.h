@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <elos/libelosplugin/types.h>
 #include <pthread.h>
 #include <safu/flags.h>
 #include <safu/result.h>
@@ -9,34 +10,8 @@
 
 #include "elos/common/types.h"
 
-#define ELOS_PLUGIN_ID_INVALID 0
-
 #define ELOS_PLUGIN_FLAG_WORKERRUNNING              SAFU_FLAG_CUSTOM_START_BIT
 #define ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(__f) ((atomic_load(__f) & ELOS_PLUGIN_FLAG_WORKERRUNNING) != 0)
-
-typedef elosId_t elosPluginId_t;
-typedef uint32_t elosPluginState_t;
-
-typedef enum elosPluginStateE {
-    PLUGIN_STATE_INVALID = 0,
-    PLUGIN_STATE_INITIALIZED,
-    PLUGIN_STATE_LOADED,
-    PLUGIN_STATE_STARTED,
-    PLUGIN_STATE_STOPPED,
-    PLUGIN_STATE_UNLOADED,
-    PLUGIN_STATE_ERROR,
-} elosPluginStateE_t;
-
-typedef struct elosPluginContext {
-    elosPluginStateE_t state;
-    samconfConfig_t const *config;
-    elosPluginId_t id;
-    void *data;
-    int sync;
-    int stop;
-} elosPluginContext_t;
-
-typedef safuResultE_t(elosPluginFunc_t)(elosPluginContext_t *);
 
 typedef enum elosPluginFuncEntryE {
     ELOS_PLUGIN_FUNC_LOAD = 0,
