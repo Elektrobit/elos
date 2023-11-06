@@ -13,7 +13,26 @@
 typedef elosId_t elosPluginId_t;
 typedef uint32_t elosPluginState_t;
 
-typedef safuResultE_t(elosPluginFunc_t)(void *);
+typedef enum elosPluginStateE {
+    PLUGIN_STATE_INVALID = 0,
+    PLUGIN_STATE_INITIALIZED,
+    PLUGIN_STATE_LOADED,
+    PLUGIN_STATE_STARTED,
+    PLUGIN_STATE_STOPPED,
+    PLUGIN_STATE_UNLOADED,
+    PLUGIN_STATE_ERROR,
+} elosPluginStateE_t;
+
+typedef struct elosPluginContext {
+    elosPluginStateE_t state;
+    samconfConfig_t const *config;
+    elosPluginId_t id;
+    void *data;
+    int sync;
+    int stop;
+} elosPluginContext_t;
+
+typedef safuResultE_t(elosPluginFunc_t)(elosPluginContext_t *);
 
 typedef enum elosPluginFuncEntryE {
     ELOS_PLUGIN_FUNC_LOAD = 0,
@@ -44,31 +63,16 @@ typedef struct elosPluginParam {
     void *data;
 } elosPluginParam_t;
 
-typedef enum elosPluginStateE {
-    PLUGIN_STATE_INVALID = 0,
-    PLUGIN_STATE_INITIALIZED,
-    PLUGIN_STATE_LOADED,
-    PLUGIN_STATE_STARTED,
-    PLUGIN_STATE_STOPPED,
-    PLUGIN_STATE_UNLOADED,
-    PLUGIN_STATE_ERROR,
-} elosPluginStateE_t;
-
 typedef struct elosPluginWorker {
     pthread_t thread;
     bool isThreadRunning;
-    int sync;
 } elosPluginWorker_t;
 
 typedef struct elosPlugin {
-    elosPluginId_t id;
-    elosPluginStateE_t state;
     elosPluginFuncEntry_t func[ELOS_PLUGIN_FUNC_COUNT];
-    samconfConfig_t const *config;
+    elosPluginContext_t context;
     elosPluginWorker_t worker;
     int sync;
-    int stop;
-    void *data;
     char const *path;
     char *file;
     void *dlHandle;

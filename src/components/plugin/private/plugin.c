@@ -10,11 +10,12 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
-#define _LOG_ERR_PLUGIN_WRONG_STATE(__plugin, __state) \
-    safuLogErrF("Plugin id=%d is not in state '%s' (state=%d)", (__plugin)->id, __state, (__plugin)->state);
+#define _LOG_ERR_PLUGIN_WRONG_STATE(__plugin, __state)                                           \
+    safuLogErrF("Plugin id=%d is not in state '%s' (state=%d)", (__plugin)->context.id, __state, \
+                (__plugin)->context.state);
 
 #define _LOG_ERR_PLUGIN_UNKNOWN_STATE(__plugin) \
-    safuLogErrF("Plugin id=%d is in unknown state=%d", (__plugin)->id, (__plugin)->state);
+    safuLogErrF("Plugin id=%d is in unknown state=%d", (__plugin)->context.id, (__plugin)->context.state);
 
 static inline safuResultE_t _funcTableDeleteMembers(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -75,7 +76,7 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
         safuLogErr("Invalid parameter");
     } else if ((param->path != NULL) && ((param->config == NULL) || (param->file != NULL))) {
         safuLogErr("Invalid value combination in parameter struct");
-    } else if (plugin->state != PLUGIN_STATE_INVALID) {
+    } else if (plugin->context.state != PLUGIN_STATE_INVALID) {
         safuLogErr("The given plugin struct is not in state 'PLUGIN_STATE_INVALID'");
     } else {
         int eventFdWorker;
@@ -83,9 +84,9 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
         int eventFdStop;
 
         memset(plugin, 0, sizeof(elosPlugin_t));
-        plugin->stop = -1;
+        plugin->context.stop = -1;
+        plugin->context.sync = -1;
         plugin->sync = -1;
-        plugin->worker.sync = -1;
 
         eventFdStop = eventfd(0, 0);
         if (eventFdStop == -1) {
@@ -110,13 +111,13 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
                     }
 
                     if (result == SAFU_RESULT_OK) {
-                        plugin->id = param->id;
+                        plugin->context.config = param->config;
+                        plugin->context.data = param->data;
+                        plugin->context.stop = eventFdStop;
+                        plugin->context.sync = eventFdWorker;
+                        plugin->context.id = param->id;
                         plugin->path = param->path;
-                        plugin->config = param->config;
-                        plugin->data = param->data;
-                        plugin->stop = eventFdStop;
                         plugin->sync = eventFdSync;
-                        plugin->worker.sync = eventFdWorker;
                         plugin->worker.isThreadRunning = false;
 
                         result = _funcTableInitialize(plugin, param);
@@ -126,10 +127,10 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
         }
 
         if (result != SAFU_RESULT_OK) {
-            plugin->state = PLUGIN_STATE_ERROR;
+            plugin->context.state = PLUGIN_STATE_ERROR;
             elosPluginDeleteMembers(plugin);
         } else {
-            plugin->state = PLUGIN_STATE_INITIALIZED;
+            plugin->context.state = PLUGIN_STATE_INITIALIZED;
         }
     }
 
@@ -169,7 +170,7 @@ safuResultE_t elosPluginStart(elosPlugin_t *plugin) {
     } else {
         bool startNeeded = false;
 
-        switch (plugin->state) {
+        switch (plugin->context.state) {
             case PLUGIN_STATE_LOADED:
                 startNeeded = true;
                 break;
@@ -195,10 +196,10 @@ safuResultE_t elosPluginStart(elosPlugin_t *plugin) {
             } else {
                 eventfd_t efdVal = 0;
 
-                retVal = eventfd_read(plugin->worker.sync, &efdVal);
+                retVal = eventfd_read(plugin->context.sync, &efdVal);
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_read (worker.sync) failed");
-                } else if (plugin->state != PLUGIN_STATE_STARTED) {
+                } else if (plugin->context.state != PLUGIN_STATE_STARTED) {
                     _LOG_ERR_PLUGIN_WRONG_STATE(plugin, "STARTED");
                 } else {
                     result = SAFU_RESULT_OK;
@@ -218,7 +219,7 @@ safuResultE_t elosPluginStop(elosPlugin_t *plugin) {
     } else {
         bool stopNeeded = false;
 
-        switch (plugin->state) {
+        switch (plugin->context.state) {
             case PLUGIN_STATE_STARTED:
                 stopNeeded = true;
                 break;
@@ -236,17 +237,17 @@ safuResultE_t elosPluginStop(elosPlugin_t *plugin) {
         }
 
         if (stopNeeded == true) {
-            result = plugin->func[ELOS_PLUGIN_FUNC_STOP].ptr(plugin);
+            result = plugin->func[ELOS_PLUGIN_FUNC_STOP].ptr(&plugin->context);
             if (result != SAFU_RESULT_OK) {
-                safuLogErrF("PluginWorker stop call failed for %s", plugin->config->key);
+                safuLogErrF("PluginWorker stop call failed for %s", plugin->context.config->key);
             } else {
                 eventfd_t efdVal = 0;
                 int retVal;
 
-                retVal = eventfd_read(plugin->worker.sync, &efdVal);
+                retVal = eventfd_read(plugin->context.sync, &efdVal);
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_read (worker.sync) failed");
-                } else if (plugin->state != PLUGIN_STATE_STOPPED) {
+                } else if (plugin->context.state != PLUGIN_STATE_STOPPED) {
                     _LOG_ERR_PLUGIN_WRONG_STATE(plugin, "STOPPED");
                 } else {
                     result = SAFU_RESULT_OK;
@@ -266,7 +267,7 @@ safuResultE_t elosPluginUnload(elosPlugin_t *plugin) {
     } else {
         bool unloadNeeded = true;
 
-        switch (plugin->state) {
+        switch (plugin->context.state) {
             case PLUGIN_STATE_LOADED:
             case PLUGIN_STATE_STOPPED:
             case PLUGIN_STATE_ERROR:
@@ -300,13 +301,13 @@ safuResultE_t elosPluginUnload(elosPlugin_t *plugin) {
             }
 
             if (plugin->func[ELOS_PLUGIN_FUNC_UNLOAD].ptr != NULL) {
-                result = plugin->func[ELOS_PLUGIN_FUNC_UNLOAD].ptr(plugin);
+                result = plugin->func[ELOS_PLUGIN_FUNC_UNLOAD].ptr(&plugin->context);
                 if (result != SAFU_RESULT_OK) {
                     safuLogWarn("PluginWorker: Unload function failed (might result in memory leaks)");
                 }
             }
 
-            plugin->state = PLUGIN_STATE_UNLOADED;
+            plugin->context.state = PLUGIN_STATE_UNLOADED;
         }
     }
 
@@ -319,7 +320,7 @@ safuResultE_t elosPluginDeleteMembers(elosPlugin_t *plugin) {
     if (plugin != NULL) {
         bool cleanupNeeded = false;
 
-        switch (plugin->state) {
+        switch (plugin->context.state) {
             case PLUGIN_STATE_LOADED:
             case PLUGIN_STATE_STARTED:
             case PLUGIN_STATE_STOPPED:
@@ -348,17 +349,17 @@ safuResultE_t elosPluginDeleteMembers(elosPlugin_t *plugin) {
             if (plugin->dlHandle != NULL) {
                 retVal = dlclose(plugin->dlHandle);
                 if (retVal < 0) {
-                    safuLogWarnF("dlclose for plugin id:%d failed with: %s", plugin->id, strerror(errno));
+                    safuLogWarnF("dlclose for plugin id:%d failed with: %s", plugin->context.id, strerror(errno));
                     result = SAFU_RESULT_FAILED;
                 }
             }
 
             free(plugin->file);
 
-            if (plugin->stop != -1) {
-                retVal = close(plugin->stop);
+            if (plugin->context.stop != -1) {
+                retVal = close(plugin->context.stop);
                 if (retVal < 0) {
-                    safuLogWarnF("close (stop) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
+                    safuLogWarnF("close (stop) for plugin id:%d failed with: %s", plugin->context.id, strerror(errno));
                     result = SAFU_RESULT_FAILED;
                 }
             }
@@ -366,15 +367,16 @@ safuResultE_t elosPluginDeleteMembers(elosPlugin_t *plugin) {
             if (plugin->sync != -1) {
                 retVal = close(plugin->sync);
                 if (retVal < 0) {
-                    safuLogWarnF("close (sync) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
+                    safuLogWarnF("close (sync) for plugin id:%d failed with: %s", plugin->context.id, strerror(errno));
                     result = SAFU_RESULT_FAILED;
                 }
             }
 
-            if (plugin->worker.sync != -1) {
-                retVal = close(plugin->worker.sync);
+            if (plugin->context.sync != -1) {
+                retVal = close(plugin->context.sync);
                 if (retVal < 0) {
-                    safuLogWarnF("close (worker.sync) for plugin id:%d failed with: %s", plugin->id, strerror(errno));
+                    safuLogWarnF("close (worker.sync) for plugin id:%d failed with: %s", plugin->context.id,
+                                 strerror(errno));
                     result = SAFU_RESULT_FAILED;
                 }
             }
@@ -403,8 +405,8 @@ safuResultE_t elosPluginDelete(elosPlugin_t **plugin) {
 safuResultE_t elosPluginGetName(const elosPlugin_t *plugin, const char **name) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (plugin != NULL && plugin->config != NULL && name != NULL) {
-        *name = plugin->config->key;
+    if (plugin != NULL && plugin->context.config != NULL && name != NULL) {
+        *name = plugin->context.config->key;
         result = SAFU_RESULT_OK;
     } else {
         safuLogErr("Invalid parameters");

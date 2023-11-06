@@ -104,9 +104,9 @@ void elosLogAggregatorFindEventsUtestCreateLogAggregator(void **state) {
 
     result = elosPluginNew(&plugin, &pluginParam);
     assert_int_equal(result, SAFU_RESULT_OK);
-    plugin->state = PLUGIN_STATE_STARTED;
-    plugin->data = safuAllocMem(NULL, sizeof(elosStorageBackend_t));
-    memcpy(plugin->data, &dummyBackend, sizeof(elosStorageBackend_t));
+    plugin->context.state = PLUGIN_STATE_STARTED;
+    plugin->context.data = safuAllocMem(NULL, sizeof(elosStorageBackend_t));
+    memcpy(plugin->context.data, &dummyBackend, sizeof(elosStorageBackend_t));
 
     testState->logAggregator.lock = safuAllocMem(NULL, sizeof(pthread_mutex_t));
     memset(testState->logAggregator.lock, 0, sizeof(pthread_mutex_t));
@@ -123,7 +123,7 @@ void elosLogAggregatorFindEventsUtestFreeLogAggregator(void **state) {
 
     plugin = *(elosPlugin_t **)safuVecGetLast(&testState->logAggregator.pluginPtrVector);
     assert_non_null(plugin);
-    free(plugin->data);
+    free(plugin->context.data);
     free(plugin);
     safuVecFree(&testState->logAggregator.pluginPtrVector);
 

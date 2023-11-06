@@ -18,8 +18,7 @@ static inline const char *_getConnectionString() {
     return safuGetEnvOr("ELOS_STORAGE_BACKEND_SQL_CONNECTION", SQLITE_DEFAULT_CONNECTION);
 }
 
-safuResultE_t elosPluginLoad(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginLoad(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -42,8 +41,7 @@ safuResultE_t elosPluginLoad(void *pluginPtr) {
     return result;
 }
 
-safuResultE_t elosPluginStart(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
@@ -58,7 +56,7 @@ safuResultE_t elosPluginStart(void *pluginPtr) {
             safuLogErr("elosSqlBackendStart failed");
         }
 
-        retVal = eventfd_write(plugin->worker.sync, 1);
+        retVal = eventfd_write(plugin->sync, 1);
         if (retVal < 0) {
             safuLogErrErrno("eventfd_write (worker.sync) failed");
             result = SAFU_RESULT_FAILED;
@@ -74,8 +72,7 @@ safuResultE_t elosPluginStart(void *pluginPtr) {
     return result;
 }
 
-safuResultE_t elosPluginStop(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
@@ -102,8 +99,7 @@ safuResultE_t elosPluginStop(void *pluginPtr) {
     return result;
 }
 
-safuResultE_t elosPluginUnload(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginUnload(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {

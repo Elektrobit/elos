@@ -44,10 +44,10 @@ void elosTestElosPluginInitializeSuccess(void **state) {
 
         result = elosPluginInitialize(&test->plugin, &param);
         assert_int_equal(result, SAFU_RESULT_OK);
-        assert_int_equal(test->plugin.state, PLUGIN_STATE_INITIALIZED);
-        assert_ptr_equal(test->plugin.config, param.config);
-        assert_ptr_equal(test->plugin.data, param.data);
-        assert_int_equal(test->plugin.id, param.id);
+        assert_int_equal(test->plugin.context.state, PLUGIN_STATE_INITIALIZED);
+        assert_ptr_equal(test->plugin.context.config, param.config);
+        assert_ptr_equal(test->plugin.context.data, param.data);
+        assert_int_equal(test->plugin.context.id, param.id);
         for (int o = 0; o < ELOS_PLUGIN_FUNC_COUNT; o += 1) {
             assert_ptr_not_equal(test->plugin.func[o].name, NULL);
             assert_string_equal(test->plugin.func[o].name, elosPluginFuncDefaultName[o]);

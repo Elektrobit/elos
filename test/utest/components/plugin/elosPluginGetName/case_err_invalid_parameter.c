@@ -30,10 +30,10 @@ void elosTestElosPluginGetNameErrInvalidParameter(UNUSED void **state) {
 
     _testElosPluginGetNameErrInvalidParameterParam("plugin == NULL", NULL, &pluginName);
 
-    plugin.config = NULL;
+    plugin.context.config = NULL;
     _testElosPluginGetNameErrInvalidParameterParam("plugin.config == NULL", &plugin, &pluginName);
 
     samconfConfig_t config = {0};
-    plugin.config = &config;
+    plugin.context.config = &config;
     _testElosPluginGetNameErrInvalidParameterParam("pluginName == NULL", &plugin, NULL);
 }

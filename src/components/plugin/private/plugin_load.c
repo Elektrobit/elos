@@ -39,7 +39,7 @@ safuResultE_t elosPluginLoadHelperSearchFile(elosPlugin_t const *plugin, char **
         samconfConfigStatusE_t configResult;
         char const *fileName = NULL;
 
-        configResult = samconfConfigGetString(plugin->config, "File", &fileName);
+        configResult = samconfConfigGetString(plugin->context.config, "File", &fileName);
         if (configResult != SAMCONF_CONFIG_OK) {
             safuLogErrF("samconfConfigGet 'File' failed : %d", configResult);
         } else if (fileName == NULL) {
@@ -106,7 +106,7 @@ safuResultE_t elosPluginLoad(elosPlugin_t *plugin) {
     } else {
         bool loadNeeded = false;
 
-        switch (plugin->state) {
+        switch (plugin->context.state) {
             case PLUGIN_STATE_INITIALIZED:
                 loadNeeded = true;
                 break;
@@ -116,10 +116,10 @@ safuResultE_t elosPluginLoad(elosPlugin_t *plugin) {
             case PLUGIN_STATE_LOADED:
             case PLUGIN_STATE_UNLOADED:
             case PLUGIN_STATE_ERROR:
-                safuLogErrF("Plugin is not in state 'INITIALIZED': state=%d'", plugin->state);
+                safuLogErrF("Plugin is not in state 'INITIALIZED': state=%d'", plugin->context.state);
                 break;
             default:
-                safuLogErrF("Plugin is in unknown state '%d'", plugin->state);
+                safuLogErrF("Plugin is in unknown state '%d'", plugin->context.state);
                 break;
         }
 
@@ -145,12 +145,12 @@ safuResultE_t elosPluginLoad(elosPlugin_t *plugin) {
             if (result == SAFU_RESULT_OK) {
                 eventfd_t efdVal = 0;
 
-                retVal = eventfd_read(plugin->worker.sync, &efdVal);
+                retVal = eventfd_read(plugin->context.sync, &efdVal);
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_read failed");
                     result = SAFU_RESULT_FAILED;
                 } else {
-                    if (plugin->state != PLUGIN_STATE_LOADED) {
+                    if (plugin->context.state != PLUGIN_STATE_LOADED) {
                         safuLogErr("Plugin not in state 'LOADED' after worker thread execution");
                         result = SAFU_RESULT_FAILED;
                     }
@@ -159,7 +159,7 @@ safuResultE_t elosPluginLoad(elosPlugin_t *plugin) {
         }
 
         if (result != SAFU_RESULT_OK) {
-            plugin->state = PLUGIN_STATE_ERROR;
+            plugin->context.state = PLUGIN_STATE_ERROR;
         }
     }
 

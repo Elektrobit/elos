@@ -59,7 +59,7 @@ static inline int _mapStrToFlag(const char *str) {
     return retVal;
 }
 
-static inline int _getFlags(const elosPlugin_t *plugin) {
+static inline int _getFlags(const elosPluginContext_t *plugin) {
     int flags = 0;
     const samconfConfig_t *flagArray;
 
@@ -121,7 +121,7 @@ static inline size_t _initializeCount(elosJsonBackend_t *jsonBackend) {
     return prevCounts;
 }
 
-static inline int _getPathSizeLimit(elosPlugin_t *plugin) {
+static inline int _getPathSizeLimit(elosPluginContext_t *plugin) {
     int limit = ELOS_JSON_LOGGING_PATH_LIMIT_DEFAULT;
     samconfConfigStatusE_t retVal = samconfConfigGetInt32(plugin->config, "Config/PathSizeLimit", &limit);
     if (retVal != SAMCONF_CONFIG_OK && retVal != SAMCONF_CONFIG_NOT_FOUND) {
@@ -130,7 +130,7 @@ static inline int _getPathSizeLimit(elosPlugin_t *plugin) {
     return limit;
 }
 
-static inline char *_getDateFormat(elosPlugin_t *plugin) {
+static inline char *_getDateFormat(elosPluginContext_t *plugin) {
     char *format;
     samconfConfigStatusE_t retVal = samconfConfigGetString(plugin->config, "Config/DateFormat", (const char **)&format);
     if (retVal != SAMCONF_CONFIG_OK && retVal != SAMCONF_CONFIG_NOT_FOUND) {
@@ -142,7 +142,7 @@ static inline char *_getDateFormat(elosPlugin_t *plugin) {
     return format;
 }
 
-static inline size_t _getFileSize(elosPlugin_t *plugin) {
+static inline size_t _getFileSize(elosPluginContext_t *plugin) {
     int32_t size;
     samconfConfigStatusE_t retVal = samconfConfigGetInt32(plugin->config, "Config/MaxSize", &size);
     if (retVal == SAMCONF_CONFIG_OK) {
@@ -153,8 +153,7 @@ static inline size_t _getFileSize(elosPlugin_t *plugin) {
     return ELOS_JSON_LOGGER_MAX_FILE_SIZE;
 }
 
-safuResultE_t elosPluginLoad(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginLoad(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -186,8 +185,7 @@ safuResultE_t elosPluginLoad(void *pluginPtr) {
     return result;
 }
 
-safuResultE_t elosPluginStart(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
@@ -202,7 +200,7 @@ safuResultE_t elosPluginStart(void *pluginPtr) {
             safuLogErr("elosJsonBackendStart failed");
         }
 
-        retVal = eventfd_write(plugin->worker.sync, 1);
+        retVal = eventfd_write(plugin->sync, 1);
         if (retVal < 0) {
             safuLogErrErrno("eventfd_write (worker.sync) failed");
             result = SAFU_RESULT_FAILED;
@@ -217,8 +215,7 @@ safuResultE_t elosPluginStart(void *pluginPtr) {
     return result;
 }
 
-safuResultE_t elosPluginStop(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
@@ -245,8 +242,7 @@ safuResultE_t elosPluginStop(void *pluginPtr) {
     return result;
 }
 
-safuResultE_t elosPluginUnload(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginUnload(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {

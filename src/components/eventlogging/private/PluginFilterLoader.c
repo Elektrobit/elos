@@ -16,11 +16,11 @@ safuResultE_t elosPluginFilterLoaderLoad(elosPlugin_t *plugin) {
     const samconfConfig_t *filterConfig = NULL;
     const char *pluginName = NULL;
 
-    if (plugin != NULL && plugin->config != NULL && plugin->data != NULL) {
+    if (plugin != NULL && plugin->context.config != NULL && plugin->context.data != NULL) {
         elosPluginGetName(plugin, &pluginName);
         size_t filterCount = 0;
 
-        configResult = samconfConfigGet(plugin->config, "Filter", &filterConfig);
+        configResult = samconfConfigGet(plugin->context.config, "Filter", &filterConfig);
         if (configResult == SAMCONF_CONFIG_OK) {
             result = SAFU_RESULT_OK;
             filterCount = filterConfig->childCount;
@@ -32,7 +32,7 @@ safuResultE_t elosPluginFilterLoaderLoad(elosPlugin_t *plugin) {
             result = SAFU_RESULT_FAILED;
         }
 
-        backend = (elosStorageBackend_t *)plugin->data;
+        backend = (elosStorageBackend_t *)plugin->context.data;
         filterResult = elosEventFilterVectorInit(&backend->filter, filterCount);
         if (filterResult != RPNFILTER_RESULT_OK) {
             safuLogErr("Failed to to create filter vector");
