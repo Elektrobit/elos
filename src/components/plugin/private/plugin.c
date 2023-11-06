@@ -118,7 +118,7 @@ safuResultE_t elosPluginInitialize(elosPlugin_t *plugin, elosPluginParam_t const
                         plugin->context.id = param->id;
                         plugin->path = param->path;
                         plugin->sync = eventFdSync;
-                        plugin->worker.isThreadRunning = false;
+                        atomic_store(&plugin->flags, SAFU_FLAG_NONE);
 
                         result = _funcTableInitialize(plugin, param);
                     }
@@ -290,13 +290,13 @@ safuResultE_t elosPluginUnload(elosPlugin_t *plugin) {
         }
 
         if (unloadNeeded == true) {
-            if (plugin->worker.isThreadRunning) {
-                int retVal = pthread_join(plugin->worker.thread, NULL);
+            if (ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(&plugin->flags) == true) {
+                int retVal = pthread_join(plugin->workerThread, NULL);
                 if (retVal < 0) {
                     safuLogErr("Plugin: pthread_join failed!");
                     result = SAFU_RESULT_FAILED;
                 } else {
-                    plugin->worker.isThreadRunning = false;
+                    atomic_fetch_and(&plugin->flags, ~ELOS_PLUGIN_FLAG_WORKERRUNNING);
                 }
             }
 

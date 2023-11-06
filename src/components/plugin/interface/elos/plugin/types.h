@@ -2,6 +2,7 @@
 #pragma once
 
 #include <pthread.h>
+#include <safu/flags.h>
 #include <safu/result.h>
 #include <safu/vector_types.h>
 #include <samconf/samconf_types.h>
@@ -9,6 +10,9 @@
 #include "elos/common/types.h"
 
 #define ELOS_PLUGIN_ID_INVALID 0
+
+#define ELOS_PLUGIN_FLAG_WORKERRUNNING              SAFU_FLAG_CUSTOM_START_BIT
+#define ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(__f) ((atomic_load(__f) & ELOS_PLUGIN_FLAG_WORKERRUNNING) != 0)
 
 typedef elosId_t elosPluginId_t;
 typedef uint32_t elosPluginState_t;
@@ -63,15 +67,11 @@ typedef struct elosPluginParam {
     void *data;
 } elosPluginParam_t;
 
-typedef struct elosPluginWorker {
-    pthread_t thread;
-    bool isThreadRunning;
-} elosPluginWorker_t;
-
 typedef struct elosPlugin {
+    safuFlags_t flags;
     elosPluginFuncEntry_t func[ELOS_PLUGIN_FUNC_COUNT];
     elosPluginContext_t context;
-    elosPluginWorker_t worker;
+    pthread_t workerThread;
     int sync;
     char const *path;
     char *file;

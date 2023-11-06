@@ -132,13 +132,13 @@ safuResultE_t elosPluginLoad(elosPlugin_t *plugin) {
             }
 
             if (result == SAFU_RESULT_OK) {
-                retVal = pthread_create(&plugin->worker.thread, 0, elosPluginWorkerThread, (void *)plugin);
+                retVal = pthread_create(&plugin->workerThread, 0, elosPluginWorkerThread, (void *)plugin);
                 if (retVal < 0) {
                     safuLogErrErrno("pthread_create failed");
-                    plugin->worker.isThreadRunning = false;
+                    atomic_fetch_and(&plugin->flags, ~ELOS_PLUGIN_FLAG_WORKERRUNNING);
                     result = SAFU_RESULT_FAILED;
                 } else {
-                    plugin->worker.isThreadRunning = true;
+                    atomic_fetch_or(&plugin->flags, ELOS_PLUGIN_FLAG_WORKERRUNNING);
                 }
             }
 
