@@ -2,6 +2,7 @@
 
 #define _GNU_SOURCE
 #include <ctype.h>
+#include <elos/libelosplugin/libelosplugin.h>
 #include <fcntl.h>
 #include <glob.h>
 #include <safu/log.h>
@@ -13,7 +14,6 @@
 #include <unistd.h>
 
 #include "JsonBackend.h"
-#include "elos/plugin/types.h"
 
 static inline char *_upperString(const char *src) {
     size_t i;
@@ -192,23 +192,19 @@ safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
         safuLogErr("Null parameter given");
         result = SAFU_RESULT_FAILED;
     } else {
-        eventfd_t efdVal = 0;
-        int retVal;
-
         result = elosJsonBackendStart(plugin->data);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosJsonBackendStart failed");
         }
 
-        retVal = eventfd_write(plugin->sync, 1);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_write (worker.sync) failed");
-            result = SAFU_RESULT_FAILED;
-        }
-
-        retVal = eventfd_read(plugin->stop, &efdVal);
-        if (retVal < 0) {
-            result = SAFU_RESULT_FAILED;
+        result = elosPluginReportAsStarted(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginReportAsStarted failed");
+        } else {
+            result = elosPluginStopTriggerWait(plugin);
+            if (result == SAFU_RESULT_FAILED) {
+                safuLogErr("elosPluginStopTriggerWait failed");
+            }
         }
     }
 
@@ -222,8 +218,6 @@ safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
         safuLogErr("Null parameter given");
         result = SAFU_RESULT_FAILED;
     } else {
-        int retVal;
-
         safuLogDebugF("Stopping Plugin '%s'", plugin->config->key);
 
         result = elosJsonBackendShutdown(plugin->data);
@@ -232,10 +226,9 @@ safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
             safuLogWarn("elosJsonBackendShutdown failed (likely resulting in a memory leak)");
         }
 
-        retVal = eventfd_write(plugin->stop, 1);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_write (stop) failed");
-            result = SAFU_RESULT_FAILED;
+        result = elosPluginStopTriggerWrite(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginStopTriggerWrite failed");
         }
     }
 

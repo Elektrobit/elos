@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/common.h>
 #include <safu/log.h>
 #include <safu/mutex.h>
@@ -9,7 +10,6 @@
 
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventlogging/StorageBackend.h"
-#include "elos/plugin/types.h"
 
 static safuResultE_t _backendStart(elosStorageBackend_t *backend) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -114,27 +114,21 @@ safuResultE_t elosPluginLoad(elosPluginContext_t *plugin) {
 }
 
 safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
-    safuResultE_t result = SAFU_RESULT_OK;
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
-        result = SAFU_RESULT_FAILED;
     } else {
-        eventfd_t efdVal = 0;
-        int retVal;
-
         safuLogDebugF("Plugin '%s' has been started", plugin->config->key);
 
-        retVal = eventfd_write(plugin->sync, 1);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_write (worker.sync) failed");
-            result = SAFU_RESULT_FAILED;
-        }
-
-        retVal = eventfd_read(plugin->stop, &efdVal);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_read (stop) failed");
-            result = SAFU_RESULT_FAILED;
+        result = elosPluginReportAsStarted(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginReportAsStarted failed");
+        } else {
+            result = elosPluginStopTriggerWait(plugin);
+            if (result == SAFU_RESULT_FAILED) {
+                safuLogErr("elosPluginStopTriggerWait failed");
+            }
         }
     }
 
@@ -142,20 +136,16 @@ safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
 }
 
 safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
-    safuResultE_t result = SAFU_RESULT_OK;
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
-        result = SAFU_RESULT_FAILED;
     } else {
-        int retVal;
-
         safuLogDebugF("Stopping Plugin '%s'", plugin->config->key);
 
-        retVal = eventfd_write(plugin->stop, 1);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_write (stop) failed");
-            result = SAFU_RESULT_FAILED;
+        result = elosPluginStopTriggerWrite(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginStopTriggerWrite failed");
         }
     }
 
