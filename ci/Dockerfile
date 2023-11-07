@@ -101,9 +101,14 @@ deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main\n\
   && sudo ln -s /usr/lib/x86_64-linux-gnu/libclang-16.so.1 /usr/lib/libclang-16.so
 
 ENV SPHINX_VENV="/home/$USER/.venv/"
-ENV LOG4C_RCPATH="/base/elos/src/demo/elos_log4c_demo"
+ENV LOG4C_RCPATH="/base/src/demos/elos_log4c_demo"
+ENV PATH=/home/$USER/.local/bin:$PATH
 
-WORKDIR /build/elos
+WORKDIR /home/$USER
+RUN pip install robotframework-robocop>=4.1.1
+RUN pip install robotframework-tidy>=4.5.0
+
+WORKDIR /base
 
 CMD /bin/bash
 
