@@ -242,7 +242,7 @@ We measured, primarily, the amount of bits written for a given set of elos
 events that needed to be logged.
 This test was executed for 4 different configuration, using 4 different json
 files:
- - Basic.json: Control group, configures no logger.
+ - basic.json: Control group, configures no logger.
  - influxdb.json: Configures the InfluxDB Backend as the logger.
  - json.json: Configures the Json Logging Backend as the logger.
  - sqlite.json: Configures the SQLite Database Logger as the logger.
@@ -251,6 +251,13 @@ The different columns of the table symbolize different stages of the test execut
 The main bulk of writes should happen between "write messages_start" and
 "write_messages_stop", with the possibility of a few messages trailing behind due
 to the system not syncing in time.
+
+Each table block represents a different test run. As Visible, there are slight
+differences in the numbers between each test run for each configuration file.
+Some of this can be justified by the fact that we have small amounts of writes
+even without any actual logging, as can be seen in the values of the basic.json.
+And every difference besides that is in a very small percentage range that we
+can mostly ignore, or use to calculate an average for each importer.
 
 |name | number events| elosd_start | write_message_start | write_message_stop | elosd_shutdown | sync_ before_umount | total |
 |---------------|--------|-----------|-----------|-----------|-----------|-----------|-----------|
