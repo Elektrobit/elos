@@ -32,6 +32,7 @@ target_link_libraries(
     elos_common_interface
     eventfilter_static
     libelosplugin
+    plugincontrol_interface
     samconf::samconf
     safu::safu
     mongo::mongoc_shared

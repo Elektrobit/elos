@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "elos/plugin/vector.h"
+#include "elos/plugincontrol/vector.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
 static int _pluginManagerUnloadHelper(void const *element, UNUSED void const *data) {
