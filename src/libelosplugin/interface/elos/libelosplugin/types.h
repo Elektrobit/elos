@@ -30,3 +30,18 @@ typedef struct elosPluginContext {
 } elosPluginContext_t;
 
 typedef safuResultE_t(elosPluginFunc_t)(elosPluginContext_t *);
+
+typedef enum elosPluginTypeE {
+    PLUGIN_TYPE_INVALID = 0,
+    PLUGIN_TYPE_SCANNER,
+    PLUGIN_TYPE_STORAGEBACKEND,
+    PLUGIN_TYPE_CLIENTCONNECTION,
+} elosPluginTypeE_t;
+
+typedef struct elosPluginConfig {
+    elosPluginTypeE_t type;
+    elosPluginFunc_t *load;
+    elosPluginFunc_t *unload;
+    elosPluginFunc_t *start;
+    elosPluginFunc_t *stop;
+} elosPluginConfig_t;
