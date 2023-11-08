@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "elos/plugincontrol/plugincontrol.h"
+#include "elos/plugin/plugin.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
 safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfConfig_t const *moduleConfig,
@@ -73,14 +73,14 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfC
                 if (iterResult != SAFU_RESULT_OK) {
                     safuLogErr("elosPluginManagerEntryGet failed");
                 } else {
-                    iterResult = elosPluginControlLoad(plugin);
+                    iterResult = elosPluginLoad(plugin);
                     if (iterResult != SAFU_RESULT_OK) {
-                        safuLogErr("elosPluginControlLoad failed");
+                        safuLogErr("elosPluginLoad failed");
                     } else {
                         if (hasTrigger == false) {
-                            iterResult = elosPluginControlStart(plugin);
+                            iterResult = elosPluginStart(plugin);
                             if (iterResult != SAFU_RESULT_OK) {
-                                safuLogErr("elosPluginControlStart failed");
+                                safuLogErr("elosPluginStart failed");
                             }
                         }
 

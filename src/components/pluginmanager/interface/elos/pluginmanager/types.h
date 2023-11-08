@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "elos/plugincontrol/types.h"
+#include "elos/plugin/types.h"
 
 #ifndef PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE
 #define PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE 8

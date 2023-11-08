@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 #include "JsonBackend.h"
-#include "elos/plugincontrol/types.h"
+#include "elos/plugin/types.h"
 
 static inline char *_upperString(const char *src) {
     size_t i;

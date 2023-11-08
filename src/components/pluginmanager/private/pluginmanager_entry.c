@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "elos/plugincontrol/vector.h"
+#include "elos/plugin/vector.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
 safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elosPluginParam_t const *param,
@@ -21,13 +21,13 @@ safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elos
 
         pluginParam.id = pluginManager->nextId;
 
-        result = elosPluginControlInitialize(&plugin, &pluginParam);
+        result = elosPluginInitialize(&plugin, &pluginParam);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosPluginControlInitialize failed");
+            safuLogErr("elosPluginInitialize failed");
         } else {
             result = elosPluginVectorPush(&pluginManager->pluginVector, &plugin);
             if (result != SAFU_RESULT_OK) {
-                safuLogErr("elosPluginControlInitialize failed");
+                safuLogErr("elosPluginInitialize failed");
             } else {
                 if (id != NULL) {
                     *id = plugin.id;
@@ -72,9 +72,9 @@ safuResultE_t elosPluginManagerEntryLoad(elosPluginManager_t *pluginManager, elo
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginVectorGetById failed");
         } else {
-            result = elosPluginControlLoad(plugin);
+            result = elosPluginLoad(plugin);
             if (result != SAFU_RESULT_OK) {
-                safuLogErr("elosPluginControlLoad");
+                safuLogErr("elosPluginLoad");
             }
         }
     }
@@ -96,9 +96,9 @@ safuResultE_t elosPluginManagerEntryUnload(elosPluginManager_t *pluginManager, e
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginVectorGetById failed");
         } else {
-            result = elosPluginControlUnload(plugin);
+            result = elosPluginUnload(plugin);
             if (result != SAFU_RESULT_OK) {
-                safuLogErr("elosPluginControlUnload failed");
+                safuLogErr("elosPluginUnload failed");
             }
         }
     }
@@ -120,9 +120,9 @@ safuResultE_t elosPluginManagerEntryStart(elosPluginManager_t *pluginManager, el
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginVectorGetById failed");
         } else {
-            result = elosPluginControlStart(plugin);
+            result = elosPluginStart(plugin);
             if (result != SAFU_RESULT_OK) {
-                safuLogErr("elosPluginControlStart");
+                safuLogErr("elosPluginStart");
             }
         }
     }
@@ -144,9 +144,9 @@ safuResultE_t elosPluginManagerEntryStop(elosPluginManager_t *pluginManager, elo
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginVectorGetById failed");
         } else {
-            result = elosPluginControlStop(plugin);
+            result = elosPluginStop(plugin);
             if (result != SAFU_RESULT_OK) {
-                safuLogErr("elosPluginControlStop");
+                safuLogErr("elosPluginStop");
             }
         }
     }

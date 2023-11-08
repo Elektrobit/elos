@@ -13,7 +13,7 @@ create_unit_test(
     case_exterr_mutex.c
     elosLogAggregatorFindEvents_utest.c
   LIBRARIES
-    plugincontrol_static
+    plugin_static
     backend_json_static
     eventlogging_static_weak
     cmocka_mocks::mock_libc

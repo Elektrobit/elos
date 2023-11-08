@@ -32,7 +32,7 @@ target_link_libraries(
     eventlogging_interface
     elos_common_interface
     eventfilter_static
-    plugincontrol_interface
+    plugin_interface
     samconf::samconf
     safu::safu
     CURL::libcurl

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include <elos/plugincontrol/types.h>
+#include <elos/plugin/types.h>
 #include <samconf/samconf.h>
 
 #include "elosPluginFilterLoaderLoad_utest.h"

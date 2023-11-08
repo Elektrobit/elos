@@ -3,7 +3,7 @@
 
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventlogging/StorageBackend.h"
-#include "elos/plugincontrol/plugincontrol.h"
+#include "elos/plugin/plugin.h"
 
 TEST_SUITE_FUNC_PROTOTYPES(elosLogAggregatorFindEventsUtest)
 
@@ -102,7 +102,7 @@ void elosLogAggregatorFindEventsUtestCreateLogAggregator(void **state) {
     };
     int retVal;
 
-    result = elosPluginControlNew(&plugin, &pluginParam);
+    result = elosPluginNew(&plugin, &pluginParam);
     assert_int_equal(result, SAFU_RESULT_OK);
     plugin->state = PLUGIN_STATE_STARTED;
     plugin->data = safuAllocMem(NULL, sizeof(elosStorageBackend_t));

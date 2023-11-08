@@ -17,7 +17,7 @@ safuResultE_t elosPluginFilterLoaderLoad(elosPlugin_t *plugin) {
     const char *pluginName = NULL;
 
     if (plugin != NULL && plugin->config != NULL && plugin->data != NULL) {
-        elosPluginControlGetName(plugin, &pluginName);
+        elosPluginGetName(plugin, &pluginName);
         size_t filterCount = 0;
 
         configResult = samconfConfigGet(plugin->config, "Filter", &filterConfig);
