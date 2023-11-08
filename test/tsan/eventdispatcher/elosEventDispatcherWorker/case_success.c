@@ -104,5 +104,5 @@ void testElosEventDispatcherWorkerSuccess(void **state) {
 
     assert_int_equal(atomic_load(&elosEventProcessorPublishBandaid.eventCount.normal), eventCount);
     assert_int_equal(atomic_load(&elosEventProcessorPublishBandaid.eventCount.high), eventCount);
-    assert_in_range(atomic_load(&elosEventProcessorPublishBandaid.eventCount.health), 1, 256);
+    assert_in_range(atomic_load(&elosEventProcessorPublishBandaid.eventCount.health), 1, 5);
 }
