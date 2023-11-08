@@ -13,9 +13,9 @@ static int _pluginManagerUnloadHelper(void const *element, UNUSED void const *da
     elosPlugin_t *plugin = *(elosPlugin_t **)element;
     safuResultE_t result;
 
-    result = elosPluginManagerEntryUnload(pluginManager, plugin->id);
+    result = elosPluginManagerEntryUnload(pluginManager, plugin->context.id);
     if (result != SAFU_RESULT_OK) {
-        safuLogWarnF("Unloading pluginId '%d' failed (likely resulting in a memory leak)", plugin->id);
+        safuLogWarnF("Unloading pluginId '%d' failed (likely resulting in a memory leak)", plugin->context.id);
     }
 
     return 0;

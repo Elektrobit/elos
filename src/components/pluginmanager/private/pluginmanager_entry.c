@@ -30,7 +30,7 @@ safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elos
                 safuLogErr("elosPluginInitialize failed");
             } else {
                 if (id != NULL) {
-                    *id = plugin.id;
+                    *id = plugin.context.id;
                 }
 
                 pluginManager->nextId += 1;

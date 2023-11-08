@@ -57,12 +57,12 @@ void elosTestElosPluginInitializeSuccessFuncOverride(void **state) {
 
         result = elosPluginInitialize(&test->plugin, &param);
         assert_int_equal(result, SAFU_RESULT_OK);
-        assert_ptr_equal(test->plugin.config, &config);
-        assert_ptr_equal(test->plugin.data, &data);
-        assert_int_equal(test->plugin.id, id);
+        assert_ptr_equal(test->plugin.context.config, &config);
+        assert_ptr_equal(test->plugin.context.data, &data);
+        assert_int_equal(test->plugin.context.id, id);
         assert_ptr_not_equal(test->plugin.path, NULL);
         assert_string_equal(test->plugin.path, path);
-        assert_int_equal(test->plugin.state, PLUGIN_STATE_INITIALIZED);
+        assert_int_equal(test->plugin.context.state, PLUGIN_STATE_INITIALIZED);
 
         for (size_t o = 0; o < ELOS_PLUGIN_FUNC_COUNT; o += 1) {
             elosPluginFuncEntry_t *func = test->plugin.func;

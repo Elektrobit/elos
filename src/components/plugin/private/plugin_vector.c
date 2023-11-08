@@ -73,7 +73,7 @@ static int _pluginVectorMatchById(const void *element, const void *data) {
     elosPluginId_t const id = *(elosPluginId_t const *)data;
     int result = 0;
 
-    if (plugin->id == id) {
+    if (plugin->context.id == id) {
         result = 1;
     }
 
@@ -106,7 +106,7 @@ static int _pluginVectorRemoveById(const void *element, const void *data) {
     elosPluginId_t const id = *(elosPluginId_t const *)data;
     int result = 0;
 
-    if (plugin->id == id) {
+    if (plugin->context.id == id) {
         result = elosPluginDeleteMembers(plugin);
         if (result < 0) {
             safuLogWarn("elosPluginDeleteMembers failed (likely creating a memory leak)");

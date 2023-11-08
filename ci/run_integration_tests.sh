@@ -8,10 +8,14 @@ BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
 
 PROJECT=${BASE_DIR##*/}
 
-# avoid project names with leading '_' as the resulting docker image names are invalid
-if [[ "${PROJECT}" = _* ]]; then
-    PROJECT="${PROJECT:1}"
-fi
+# filter the project name to avoid problems when using it with docker containers
+PROJECT=$(\
+    echo "${PROJECT}" \
+    | tr -c '[:alnum:].-' '-' \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed 's/^[^[:alnum:]]*//;s/[^[:alnum:]]*$//' \
+    | sed 's/-\{2,\}/-/g' \
+)
 
 ELOSD_IMAGE_NAME="${PROJECT:-elos}"
 ELOSD_DOCKER_NAME="${PROJECT}-target"

@@ -45,7 +45,7 @@ int _customPthreadCreate(UNUSED pthread_t *__restrict__ __newthread, UNUSED cons
     elosPlugin_t *plugin = (elosPlugin_t *)__arg;
 
     // Convice the plugin we're loaded so we don't have to do start/stop here too
-    plugin->state = PLUGIN_STATE_LOADED;
+    plugin->context.state = PLUGIN_STATE_LOADED;
 
     return 0;
 }
@@ -77,7 +77,7 @@ void elosTestElosPluginLoadSuccessFuncOverride(void **state) {
         assert_ptr_not_equal(func->name, NULL);
         assert_string_equal(func->name, elosPluginFuncCustomName[i]);
 
-        result = func->ptr((void *)&test->plugin);
+        result = func->ptr(&test->plugin.context);
         assert_int_equal(result, SAFU_RESULT_OK);
     }
 

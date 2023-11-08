@@ -18,8 +18,8 @@ int elosTestElosPluginGetNameSuccessSetup(UNUSED void **state) {
     config->children = NULL;
     config->childCount = 0;
 
-    pluginTest->plugin.state = PLUGIN_STATE_INVALID;
-    pluginTest->plugin.config = config;
+    pluginTest->plugin.context.state = PLUGIN_STATE_INVALID;
+    pluginTest->plugin.context.config = config;
     *state = pluginTest;
     return 0;
 }
@@ -27,7 +27,7 @@ int elosTestElosPluginGetNameSuccessSetup(UNUSED void **state) {
 int elosTestElosPluginGetNameSuccessTeardown(UNUSED void **state) {
     elosPluginTest_t *pluginTest = *((elosPluginTest_t **)state);
 
-    samconfConfigDelete((samconfConfig_t *)pluginTest->plugin.config);
+    samconfConfigDelete((samconfConfig_t *)pluginTest->plugin.context.config);
     free(pluginTest);
 
     return 0;

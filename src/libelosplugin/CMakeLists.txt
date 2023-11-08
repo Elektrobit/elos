@@ -1,19 +1,26 @@
 # SPDX-License-Identifier: MIT
 include(../../cmake/shared_library.cmake)
 
-find_package(json-c REQUIRED)
+find_package(samconf REQUIRED)
 find_package(safu REQUIRED)
 
+create_interface_library(
+  FROM
+  libelosplugin
+  LIBRARIES
+    elos_event_interface
+    samconf::samconf_interface
+    safu::safu_interface
+)
+
 add_library(
-  libelos
+  libelosplugin
   SHARED
-    private/libelos.c
-    private/libelos_communication.c
-    private/libelos_logger.c
+    private/libelosplugin.c
 )
 
 target_include_directories(
-  libelos
+  libelosplugin
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private
   PUBLIC
@@ -21,40 +28,39 @@ target_include_directories(
 )
 
 target_link_libraries(
-  libelos
+  libelosplugin
   PUBLIC
-    elos_common_interface
+    libelosplugin_interface
     elos_event_static
-    eloslog_static
-    json-c::json-c
+    samconf::samconf
     safu::safu
 )
 
-set_target_properties(libelos PROPERTIES PREFIX "")  # Prevent creation of "liblibelos.so"
+set_target_properties(libelosplugin PROPERTIES PREFIX "")  # Prevent creation of "liblibelos.so"
 set_target_properties(
-  libelos
+  libelosplugin
   PROPERTIES
     SOVERSION ${ELOS_VERSION_MAJOR}
     VERSION ${ELOS_VERSION_MAJOR}.${ELOS_VERSION_MINOR}.${ELOS_VERSION_MICRO}
 )
 
-install(TARGETS libelos DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS libelosplugin DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install_component_headers(COMPONENTS elos_common_interface elos_event_static)
+install_component_headers(COMPONENTS elos_event_static)
 
 create_static_library_from_shared(
   NAME
-    libelos_static
+    libelosplugin_static
   FROM
-    libelos
+    libelosplugin
   NO_PREFIX
 )
 
 create_weak_library(
   FROM
-    libelos
+    libelosplugin
   TO
-    libelos_static_weak
+    libelosplugin_static_weak
   WEAKEN_DEPENDENCIES
     elos_event_static
   NO_PREFIX

@@ -32,9 +32,9 @@ safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPl
             } else {
                 int retVal;
 
-                resIter = elosPluginManagerEntryRemove(pluginManager, plugin->id);
+                resIter = elosPluginManagerEntryRemove(pluginManager, plugin->context.id);
                 if (resIter != SAFU_RESULT_OK) {
-                    safuLogErrF("elosPluginManagerEntryRemove failed (plugin->id: %d)", plugin->id);
+                    safuLogErrF("elosPluginManagerEntryRemove failed (plugin->id: %d)", plugin->context.id);
                 }
 
                 retVal = safuVecPop(pluginPtrVector);

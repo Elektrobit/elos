@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <elos/libelosplugin/types.h>
 #include <pthread.h>
+#include <safu/flags.h>
 #include <safu/result.h>
 #include <safu/vector_types.h>
 #include <samconf/samconf_types.h>
 
 #include "elos/common/types.h"
 
-#define ELOS_PLUGIN_ID_INVALID 0
-
-typedef elosId_t elosPluginId_t;
-typedef uint32_t elosPluginState_t;
-
-typedef safuResultE_t(elosPluginFunc_t)(void *);
+#define ELOS_PLUGIN_FLAG_WORKERRUNNING              SAFU_FLAG_CUSTOM_START_BIT
+#define ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(__f) ((atomic_load(__f) & ELOS_PLUGIN_FLAG_WORKERRUNNING) != 0)
 
 typedef enum elosPluginFuncEntryE {
     ELOS_PLUGIN_FUNC_LOAD = 0,
@@ -44,31 +42,12 @@ typedef struct elosPluginParam {
     void *data;
 } elosPluginParam_t;
 
-typedef enum elosPluginStateE {
-    PLUGIN_STATE_INVALID = 0,
-    PLUGIN_STATE_INITIALIZED,
-    PLUGIN_STATE_LOADED,
-    PLUGIN_STATE_STARTED,
-    PLUGIN_STATE_STOPPED,
-    PLUGIN_STATE_UNLOADED,
-    PLUGIN_STATE_ERROR,
-} elosPluginStateE_t;
-
-typedef struct elosPluginWorker {
-    pthread_t thread;
-    bool isThreadRunning;
-    int sync;
-} elosPluginWorker_t;
-
 typedef struct elosPlugin {
-    elosPluginId_t id;
-    elosPluginStateE_t state;
+    safuFlags_t flags;
     elosPluginFuncEntry_t func[ELOS_PLUGIN_FUNC_COUNT];
-    samconfConfig_t const *config;
-    elosPluginWorker_t worker;
+    elosPluginContext_t context;
+    pthread_t workerThread;
     int sync;
-    int stop;
-    void *data;
     char const *path;
     char *file;
     void *dlHandle;

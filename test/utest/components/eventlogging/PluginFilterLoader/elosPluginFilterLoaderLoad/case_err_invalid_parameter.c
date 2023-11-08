@@ -25,11 +25,11 @@ void elosTestElosPluginFilterLoaderLoadErrInvalidParameter(UNUSED void **state) 
 
     _testelosPluginFilterLoaderLoadErrInvalidParameterParam("plugin is NULL", NULL);
 
-    elosPlugin_t plugin = {.config = NULL};
+    elosPlugin_t plugin = {.context = {.config = NULL}};
     _testelosPluginFilterLoaderLoadErrInvalidParameterParam("plugin->config is NULL", &plugin);
 
     samconfConfig_t config = {0};
-    plugin.config = &config;
-    plugin.data = NULL;
+    plugin.context.config = &config;
+    plugin.context.data = NULL;
     _testelosPluginFilterLoaderLoadErrInvalidParameterParam("plugin->data is NULL", &plugin);
 }

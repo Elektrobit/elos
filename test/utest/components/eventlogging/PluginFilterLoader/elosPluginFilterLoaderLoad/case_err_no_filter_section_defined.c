@@ -25,7 +25,7 @@ void elosTestElosPluginFilterLoaderLoadErrNoFilterSectionDefined(UNUSED void **s
     SHOULD("%s", "test if no \"Filter\" section is defined, backend is setup properly");
 
     elosStorageBackend_t backend = {0};
-    elosPlugin_t plugin = {.config = config, .data = &backend};
+    elosPlugin_t plugin = {.context = {.config = config, .data = &backend}};
 
     safuResultE_t result = elosPluginFilterLoaderLoad(&plugin);
     assert_int_equal(result, SAFU_RESULT_FAILED);

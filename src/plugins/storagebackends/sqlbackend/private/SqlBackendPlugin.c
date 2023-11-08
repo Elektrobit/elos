@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/common.h>
 #include <safu/log.h>
 #include <safu/mutex.h>
@@ -8,7 +9,6 @@
 #include <unistd.h>
 
 #include "SqlBackend.h"
-#include "elos/plugin/types.h"
 
 #ifndef SQLITE_DEFAULT_CONNECTION
 #define SQLITE_DEFAULT_CONNECTION "/var/db/elosd.sqlite"
@@ -18,8 +18,7 @@ static inline const char *_getConnectionString() {
     return safuGetEnvOr("ELOS_STORAGE_BACKEND_SQL_CONNECTION", SQLITE_DEFAULT_CONNECTION);
 }
 
-safuResultE_t elosPluginLoad(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginLoad(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -42,48 +41,39 @@ safuResultE_t elosPluginLoad(void *pluginPtr) {
     return result;
 }
 
-safuResultE_t elosPluginStart(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
         result = SAFU_RESULT_FAILED;
     } else {
-        eventfd_t efdVal = 0;
-        int retVal;
-
         result = elosSqlBackendStart(plugin->data);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosSqlBackendStart failed");
         }
 
-        retVal = eventfd_write(plugin->worker.sync, 1);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_write (worker.sync) failed");
-            result = SAFU_RESULT_FAILED;
-        }
-
-        retVal = eventfd_read(plugin->stop, &efdVal);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_read (stop) failed");
-            result = SAFU_RESULT_FAILED;
+        result = elosPluginReportAsStarted(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginReportAsStarted failed");
+        } else {
+            result = elosPluginStopTriggerWait(plugin);
+            if (result == SAFU_RESULT_FAILED) {
+                safuLogErr("elosPluginStopTriggerWait failed");
+            }
         }
     }
 
     return result;
 }
 
-safuResultE_t elosPluginStop(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
         result = SAFU_RESULT_FAILED;
     } else {
-        int retVal;
-
         safuLogDebugF("Stopping Plugin '%s'", plugin->config->key);
 
         result = elosSqlBackendShutdown(plugin->data);
@@ -92,18 +82,16 @@ safuResultE_t elosPluginStop(void *pluginPtr) {
             safuLogWarn("elosSqlBackendShutdown failed (likely resulting in a memory leak)");
         }
 
-        retVal = eventfd_write(plugin->stop, 1);
-        if (retVal < 0) {
-            safuLogErrErrno("eventfd_write (stop) failed");
-            result = SAFU_RESULT_FAILED;
+        result = elosPluginStopTriggerWrite(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginStopTriggerWrite failed");
         }
     }
 
     return result;
 }
 
-safuResultE_t elosPluginUnload(void *pluginPtr) {
-    elosPlugin_t *plugin = (elosPlugin_t *)pluginPtr;
+safuResultE_t elosPluginUnload(elosPluginContext_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
