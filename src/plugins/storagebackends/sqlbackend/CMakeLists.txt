@@ -28,7 +28,7 @@ target_link_libraries(
     eventlogging_interface
     elos_common_interface
     eventfilter_static
-    plugin_interface
+    plugincontrol_interface
     samconf::samconf
     safu::safu
     $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_SQL}>:${SQLITE3_LIBRARIES}>
