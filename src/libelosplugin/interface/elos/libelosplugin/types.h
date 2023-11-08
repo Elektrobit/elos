@@ -31,6 +31,9 @@ typedef struct elosPluginContext {
 
 typedef safuResultE_t(elosPluginFunc_t)(elosPluginContext_t *);
 
+/*******************************************************************
+ * Selects the type of the plugin.
+ ******************************************************************/
 typedef enum elosPluginTypeE {
     PLUGIN_TYPE_INVALID = 0,
     PLUGIN_TYPE_SCANNER,
@@ -38,6 +41,20 @@ typedef enum elosPluginTypeE {
     PLUGIN_TYPE_CLIENTCONNECTION,
 } elosPluginTypeE_t;
 
+/*******************************************************************
+ * Configuration for a plugin. Sets the type of the plugin as well
+ * as the functions that are used by PluginControl.
+ *
+ * Must always have the variable name "elosPluginConfig" so
+ * PluginControl can locate it when the plugin is loaded.
+ *
+ * Members:
+ *  type: Defines the type of the plugin (scanner, ...)
+ *  load: The function to be used to set up (initialize) the plugins
+ *  unload: The function to be used to teardown (free) the plugin
+ *  start: The function for starting the plugin itself
+ *  stop: The function for stopping a started plugin
+ ******************************************************************/
 typedef struct elosPluginConfig {
     elosPluginTypeE_t type;
     elosPluginFunc_t *load;
