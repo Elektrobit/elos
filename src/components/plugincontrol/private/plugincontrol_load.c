@@ -13,8 +13,8 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
-#include "elos/plugincontrol/plugincontrol.h"
 #include "elos/plugincontrol/thread.h"
+#include "plugincontrol_private.h"
 
 // Note: Helper functions are meant to be called only internally, due to that we don't need value validity checks.
 //       These normally would be marked 'static', but are not to make unit testing easier.
@@ -68,30 +68,53 @@ safuResultE_t elosPluginControlLoadHelperSearchFile(elosPluginControl_t const *c
     return result;
 }
 
-safuResultE_t elosPluginControlLoadHelperGetFunctions(elosPluginControl_t *control) {
-    safuResultE_t result = SAFU_RESULT_OK;
-    char *errStr = NULL;
+safuResultE_t elosPluginControlLoadHelperGetConfig(elosPluginControl_t *control) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
-    result = elosPluginControlLoadHelperSearchFile(control, &control->file);
-    if (result == SAFU_RESULT_OK) {
-        control->dlHandle = dlopen(control->file, RTLD_LAZY);
-        errStr = dlerror();
-        if ((control->dlHandle == NULL) || (errStr != NULL)) {
-            safuLogErrF("dlopen failed with: '%s'", errStr);
-            result = SAFU_RESULT_FAILED;
-        } else {
-            for (size_t i = 0; i < ELOS_PLUGIN_FUNC_COUNT; i += 1) {
-                elosPluginControlFuncEntry_t *func = &control->func[i];
-                void **ptr = (void **)&(func->ptr);
+    if (control->pluginConfig != NULL) {
+        result = SAFU_RESULT_OK;
+    } else {
+        char *errStr = NULL;
 
-                *ptr = dlsym(control->dlHandle, func->name);
+        result = elosPluginControlLoadHelperSearchFile(control, &control->file);
+        if (result == SAFU_RESULT_OK) {
+            control->dlHandle = dlopen(control->file, RTLD_LAZY);
+            errStr = dlerror();
+            if ((control->dlHandle == NULL) || (errStr != NULL)) {
+                safuLogErrF("dlopen failed with: '%s'", errStr);
+            } else {
+                void const **ptr = (void const **)&(control->pluginConfig);
+
+                *ptr = dlsym(control->dlHandle, ELOS_PLUGINCONTROL_CONFIG_NAME);
                 errStr = dlerror();
                 if ((*ptr == NULL) || (errStr != NULL)) {
                     safuLogErrF("dlsym failed with: '%s'", errStr);
-                    result = SAFU_RESULT_FAILED;
-                    break;
+                } else {
+                    result = SAFU_RESULT_OK;
                 }
             }
+        }
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        elosPluginConfig_t const *pluginConfig = control->pluginConfig;
+
+        if (control->pluginType != pluginConfig->type) {
+            safuLogErrF("plugin id:%d has wrong type (expected: %d, found: %d)", control->context.id,
+                        control->pluginType, pluginConfig->type);
+            result = SAFU_RESULT_FAILED;
+        } else if (pluginConfig->load == NULL) {
+            safuLogErrF("plugin id:%d has no load function set (.load == NULL)", control->context.id);
+            result = SAFU_RESULT_FAILED;
+        } else if (pluginConfig->unload == NULL) {
+            safuLogErrF("plugin id:%d has no unload function set (.unload == NULL)", control->context.id);
+            result = SAFU_RESULT_FAILED;
+        } else if (pluginConfig->start == NULL) {
+            safuLogErrF("plugin id:%d has no start function set (.start == NULL)", control->context.id);
+            result = SAFU_RESULT_FAILED;
+        } else if (pluginConfig->stop == NULL) {
+            safuLogErrF("plugin id:%d has no stop function set (.stop == NULL)", control->context.id);
+            result = SAFU_RESULT_FAILED;
         }
     }
 
@@ -126,9 +149,9 @@ safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
         if (loadNeeded == true) {
             int retVal;
 
-            result = elosPluginControlLoadHelperGetFunctions(control);
+            result = elosPluginControlLoadHelperGetConfig(control);
             if (result != SAFU_RESULT_OK) {
-                safuLogErr("elosPluginControlLoadHelperGetFunctions failed");
+                safuLogErr("elosPluginControlLoadHelperGetConfig failed");
             }
 
             if (result == SAFU_RESULT_OK) {

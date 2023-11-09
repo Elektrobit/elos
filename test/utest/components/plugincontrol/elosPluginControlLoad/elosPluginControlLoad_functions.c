@@ -5,13 +5,6 @@
 
 #include "elosPluginControlLoad_utest.h"
 
-char const *elosPluginFuncCustomName[ELOS_PLUGIN_FUNC_COUNT] = {
-    [ELOS_PLUGIN_FUNC_LOAD] = "elosCustomLoad",
-    [ELOS_PLUGIN_FUNC_START] = "elosCustomStart",
-    [ELOS_PLUGIN_FUNC_STOP] = "elosCustomStop",
-    [ELOS_PLUGIN_FUNC_UNLOAD] = "elosCustomUnload",
-};
-
 safuResultE_t elosCustomLoad(elosPlugin_t *plugin) {
     elosPluginTestData_t *data = (elosPluginTestData_t *)plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
@@ -47,3 +40,11 @@ safuResultE_t elosCustomUnload(elosPlugin_t *plugin) {
 
     return result;
 }
+
+elosPluginConfig_t const elosPluginConfig = {
+    .type = PLUGIN_TYPE_SCANNER,
+    .load = elosCustomLoad,
+    .unload = elosCustomUnload,
+    .start = elosCustomStart,
+    .stop = elosCustomStop,
+};

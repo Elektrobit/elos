@@ -10,7 +10,7 @@ typedef struct elosPluginTestData {
 } elosPluginTestData_t;
 
 typedef struct elosUnitTestState {
-    elosPluginControl_t plugin;
+    elosPluginControl_t pluginControl;
     elosPluginTestData_t data;
 } elosUnitTestState_t;
 
@@ -19,12 +19,12 @@ typedef struct elosUnitTestState {
 #define _CUSTOM_STOP_BIT   (1 << 2)
 #define _CUSTOM_UNLOAD_BIT (1 << 3)
 
-extern char const *elosPluginFuncCustomName[ELOS_PLUGIN_FUNC_COUNT];
-
 safuResultE_t elosCustomLoad(elosPlugin_t *plugin);
 safuResultE_t elosCustomStart(elosPlugin_t *plugin);
 safuResultE_t elosCustomStop(elosPlugin_t *plugin);
 safuResultE_t elosCustomUnload(elosPlugin_t *plugin);
 
+extern elosPluginConfig_t const elosPluginConfig;
+
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadErrParam)
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadSuccessFuncOverride)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadSuccessLocal)

@@ -17,7 +17,7 @@ int elosTestElosPluginControlInitializeErrFuncTeardown(void **state) {
 
 void elosTestElosPluginControlInitializeErrFunc(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
-    elosPluginControlParam_t param = {0};
+    elosPluginControlParam_t param = {.pluginType = PLUGIN_TYPE_SCANNER};
     safuResultE_t result;
 
     TEST("elosPluginControlInitialize");
@@ -34,15 +34,13 @@ void elosTestElosPluginControlInitializeErrFunc(void **state) {
         assert_int_equal(result, SAFU_RESULT_FAILED);
     }
 
-    for (int i = 0; i < 2; i += 1) {
-        param.file = "/dev/null";
+    param.file = "/dev/null";
 
-        PARAM("strdup call %d fails", (i + 1));
-        MOCK_FUNC_AFTER_CALL(strdup, i);
-        expect_any(__wrap_strdup, string);
-        will_return(__wrap_strdup, NULL);
+    PARAM("strdup call fails");
+    MOCK_FUNC_AFTER_CALL(strdup, 0);
+    expect_any(__wrap_strdup, string);
+    will_return(__wrap_strdup, NULL);
 
-        result = elosPluginControlInitialize(&test->plugin, &param);
-        assert_int_equal(result, SAFU_RESULT_FAILED);
-    }
+    result = elosPluginControlInitialize(&test->plugin, &param);
+    assert_int_equal(result, SAFU_RESULT_FAILED);
 }

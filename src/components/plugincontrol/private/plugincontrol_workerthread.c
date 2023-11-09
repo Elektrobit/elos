@@ -14,7 +14,7 @@ void *elosPluginControlWorkerThread(void *data) {
     safuResultE_t result = SAFU_RESULT_OK;
     int retVal;
 
-    result = control->func[ELOS_PLUGIN_FUNC_LOAD].ptr(&control->context);
+    result = control->pluginConfig->load(&control->context);
     if (result != SAFU_RESULT_OK) {
         control->context.state = PLUGIN_STATE_ERROR;
         safuLogErr("plugin load function call failed");
@@ -38,7 +38,7 @@ void *elosPluginControlWorkerThread(void *data) {
         } else {
             control->context.state = PLUGIN_STATE_STARTED;
 
-            result = control->func[ELOS_PLUGIN_FUNC_START].ptr(&control->context);
+            result = control->pluginConfig->start(&control->context);
             if (result != SAFU_RESULT_OK) {
                 control->context.state = PLUGIN_STATE_ERROR;
                 safuLogErr("plugin load function call failed");

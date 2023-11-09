@@ -13,14 +13,6 @@
 #define ELOS_PLUGIN_FLAG_WORKERRUNNING              SAFU_FLAG_CUSTOM_START_BIT
 #define ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(__f) ((atomic_load(__f) & ELOS_PLUGIN_FLAG_WORKERRUNNING) != 0)
 
-typedef enum elosPluginControlFuncEntryE {
-    ELOS_PLUGIN_FUNC_LOAD = 0,
-    ELOS_PLUGIN_FUNC_START,
-    ELOS_PLUGIN_FUNC_STOP,
-    ELOS_PLUGIN_FUNC_UNLOAD,
-    ELOS_PLUGIN_FUNC_COUNT,
-} elosPluginControlFuncEntryE_t;
-
 typedef struct elosPluginControlFuncEntry {
     char *name;
     elosPluginFunc_t *ptr;
@@ -36,7 +28,7 @@ typedef struct elosPluginControlParamFuncOverride {
 typedef struct elosPluginControlParam {
     elosPluginId_t id;
     samconfConfig_t const *config;
-    elosPluginControlParamFuncOverride_t funcOverride;
+    elosPluginTypeE_t pluginType;
     char const *path;
     char const *file;
     void *data;
@@ -44,7 +36,8 @@ typedef struct elosPluginControlParam {
 
 typedef struct elosPluginControl {
     safuFlags_t flags;
-    elosPluginControlFuncEntry_t func[ELOS_PLUGIN_FUNC_COUNT];
+    elosPluginConfig_t const *pluginConfig;
+    elosPluginTypeE_t pluginType;
     elosPlugin_t context;
     pthread_t workerThread;
     int sync;

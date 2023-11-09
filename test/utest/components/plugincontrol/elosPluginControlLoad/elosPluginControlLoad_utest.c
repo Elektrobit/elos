@@ -7,7 +7,7 @@ TEST_SUITE_FUNC_PROTOTYPES(_testSuite)
 int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosPluginControlLoadErrParam),
-        TEST_CASE(elosTestElosPluginControlLoadSuccessFuncOverride),
+        TEST_CASE(elosTestElosPluginControlLoadSuccessLocal),
     };
 
     return RUN_TEST_SUITE(tests, _testSuite);

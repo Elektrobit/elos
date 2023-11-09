@@ -10,6 +10,7 @@ int elosTestElosPluginControlDeleteSuccessSetup(void **state) {
     elosPluginId_t id = 42;
 
     elosPluginControlParam_t param = {
+        .pluginType = PLUGIN_TYPE_SCANNER,
         .config = &config,
         .data = NULL,
         .id = id,

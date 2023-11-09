@@ -30,10 +30,3 @@ static int _testSuiteTeardown(void **state) {
 
     return 0;
 }
-
-char const *elosPluginFuncDefaultName[ELOS_PLUGIN_FUNC_COUNT] = {
-    [ELOS_PLUGIN_FUNC_LOAD] = "elosPluginControlLoad",
-    [ELOS_PLUGIN_FUNC_START] = "elosPluginControlStart",
-    [ELOS_PLUGIN_FUNC_STOP] = "elosPluginControlStop",
-    [ELOS_PLUGIN_FUNC_UNLOAD] = "elosPluginControlUnload",
-};
