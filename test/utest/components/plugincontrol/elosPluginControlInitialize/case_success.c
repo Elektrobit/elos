@@ -26,7 +26,7 @@ void elosTestElosPluginControlInitializeSuccess(void **state) {
     SHOULD("%s", "test correct behaviour of elosPluginControlInitialize");
 
     for (int i = 0; i < 2; i += 1) {
-        elosPluginParam_t param = {
+        elosPluginControlParam_t param = {
             .config = &config,
             .data = &data,
             .id = id,

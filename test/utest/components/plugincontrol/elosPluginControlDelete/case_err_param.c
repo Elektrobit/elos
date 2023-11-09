@@ -11,7 +11,7 @@ int elosTestElosPluginControlDeleteErrParamTeardown(UNUSED void **state) {
 }
 
 void elosTestElosPluginControlDeleteErrParam(UNUSED void **state) {
-    elosPlugin_t *zeroedPluginPtr = NULL;
+    elosPluginControl_t *zeroedPluginPtr = NULL;
     safuResultE_t result;
 
     TEST("elosPluginControlDelete");

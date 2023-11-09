@@ -7,7 +7,7 @@
 #include "elos/plugincontrol/types.h"
 
 typedef struct elosPluginTest {
-    elosPlugin_t plugin;
+    elosPluginControl_t plugin;
 } elosPluginTest_t;
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlGetNameErrInvalidParameter)

@@ -5,4 +5,4 @@
 
 #include "elos/plugincontrol/types.h"
 
-void *elosPluginWorkerThread(void *data);
+void *elosPluginControlWorkerThread(void *data);

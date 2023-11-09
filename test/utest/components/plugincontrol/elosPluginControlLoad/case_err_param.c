@@ -11,7 +11,7 @@ int elosTestElosPluginControlLoadErrParamTeardown(UNUSED void **state) {
 }
 
 void elosTestElosPluginControlLoadErrParam(UNUSED void **state) {
-    elosPlugin_t zeroedPlugin = {0};
+    elosPluginControl_t zeroedPlugin = {0};
     safuResultE_t result;
 
     TEST("elosPluginControlLoad");

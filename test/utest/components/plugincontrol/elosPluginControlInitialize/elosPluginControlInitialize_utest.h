@@ -6,7 +6,7 @@
 #include "elos/plugincontrol/plugincontrol.h"
 
 typedef struct elosUnitTestState {
-    elosPlugin_t plugin;
+    elosPluginControl_t plugin;
 } elosUnitTestState_t;
 
 extern char const *elosPluginFuncDefaultName[ELOS_PLUGIN_FUNC_COUNT];

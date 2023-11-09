@@ -15,7 +15,7 @@
 static pthread_mutex_t elosLogAggregatorMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int _loadFilter(void const *element, UNUSED void const *data) {
-    elosPlugin_t *plugin = *(elosPlugin_t **)element;
+    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     elosPluginFilterLoaderLoad(plugin);
     return 0;
 }
@@ -38,7 +38,7 @@ safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLog
             logAggregator->lock = &elosLogAggregatorMutex;
             logAggregator->pluginManager = param->pluginManager;
 
-            retVal = safuVecCreate(&logAggregator->pluginPtrVector, 1, sizeof(elosPlugin_t *));
+            retVal = safuVecCreate(&logAggregator->pluginControlPtrVector, 1, sizeof(elosPluginControl_t *));
             if (retVal < 0) {
                 safuLogErr("safuVecCreate failed");
             } else {
@@ -54,11 +54,11 @@ safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLog
                         result = SAFU_RESULT_FAILED;
                     } else {
                         result = elosPluginManagerLoad(logAggregator->pluginManager, logAggregator->config, searchPath,
-                                                       &logAggregator->pluginPtrVector);
+                                                       &logAggregator->pluginControlPtrVector);
                         if (result != SAFU_RESULT_OK) {
                             safuLogWarn("elosPluginManagerLoad executed with errors");
                         } else {
-                            safuVecIterate(&logAggregator->pluginPtrVector, _loadFilter, NULL);
+                            safuVecIterate(&logAggregator->pluginControlPtrVector, _loadFilter, NULL);
                         }
                     }
                 }
@@ -78,7 +78,7 @@ typedef struct _addHelperData {
 
 static int _logAggregatorAddHelper(void const *element, void const *data) {
     _addHelperData_t *helperData = (_addHelperData_t *)data;
-    elosPlugin_t *plugin = *(elosPlugin_t **)element;
+    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((plugin->context.state != PLUGIN_STATE_STARTED) || (plugin->context.data == NULL)) {
@@ -116,7 +116,7 @@ safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elo
             _addHelperData_t helperData = {.event = event, result = SAFU_RESULT_OK};
             int retVal;
 
-            retVal = safuVecIterate(&logAggregator->pluginPtrVector, _logAggregatorAddHelper, &helperData);
+            retVal = safuVecIterate(&logAggregator->pluginControlPtrVector, _logAggregatorAddHelper, &helperData);
             if (retVal < 0) {
                 safuLogErr("Iterating through the backends failed");
                 result = SAFU_RESULT_FAILED;
@@ -133,7 +133,7 @@ safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elo
 }
 
 static int _unloadFilter(void const *element, UNUSED void const *data) {
-    elosPlugin_t *plugin = *(elosPlugin_t **)element;
+    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     elosStorageBackend_t *backend = (elosStorageBackend_t *)plugin->context.data;
     elosEventFilterVectorDeleteMembers(&backend->filter);
     return 0;
@@ -150,14 +150,15 @@ safuResultE_t elosLogAggregatorShutdown(elosLogAggregator_t *logAggregator) {
             if (logAggregator->pluginManager != NULL) {
                 safuResultE_t funcResult;
 
-                safuVecIterate(&logAggregator->pluginPtrVector, _unloadFilter, NULL);
+                safuVecIterate(&logAggregator->pluginControlPtrVector, _unloadFilter, NULL);
 
-                funcResult = elosPluginManagerUnload(logAggregator->pluginManager, &logAggregator->pluginPtrVector);
+                funcResult =
+                    elosPluginManagerUnload(logAggregator->pluginManager, &logAggregator->pluginControlPtrVector);
                 if (funcResult != SAFU_RESULT_OK) {
                     result = funcResult;
                 }
 
-                retVal = safuVecFree(&logAggregator->pluginPtrVector);
+                retVal = safuVecFree(&logAggregator->pluginControlPtrVector);
                 if (retVal < 0) {
                     result = SAFU_RESULT_FAILED;
                 }
@@ -178,7 +179,7 @@ typedef struct _findEventHelperData {
 
 static int _logAggregatorFindEventsHelper(void const *element, void const *data) {
     _findEventHelperData_t *helperData = (_findEventHelperData_t *)data;
-    elosPlugin_t *plugin = *(elosPlugin_t **)element;
+    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((plugin->context.state != PLUGIN_STATE_STARTED) || (plugin->context.data == NULL)) {
@@ -227,7 +228,8 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
 
             SAFU_PTHREAD_MUTEX_LOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
             if (result == SAFU_RESULT_OK) {
-                retVal = safuVecIterate(&logAggregator->pluginPtrVector, _logAggregatorFindEventsHelper, &helperData);
+                retVal =
+                    safuVecIterate(&logAggregator->pluginControlPtrVector, _logAggregatorFindEventsHelper, &helperData);
                 if (retVal < 0) {
                     safuLogErr("Iterating through the backends failed");
                     result = SAFU_RESULT_FAILED;

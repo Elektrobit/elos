@@ -8,7 +8,7 @@ int elosTestElosPluginControlLoadSuccessFuncOverrideSetup(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     safuResultE_t result;
 
-    elosPluginParam_t const param = {
+    elosPluginControlParam_t const param = {
         .data = &test->data,
         .funcOverride.load = elosPluginFuncCustomName[ELOS_PLUGIN_FUNC_LOAD],
         .funcOverride.start = elosPluginFuncCustomName[ELOS_PLUGIN_FUNC_START],
@@ -42,7 +42,7 @@ int elosTestElosPluginControlLoadSuccessFuncOverrideTeardown(void **state) {
 
 int _customPthreadCreate(UNUSED pthread_t *__restrict__ __newthread, UNUSED const pthread_attr_t *__restrict__ __attr,
                          UNUSED void *(*__start_routine)(void *), void *__restrict__ __arg) {
-    elosPlugin_t *plugin = (elosPlugin_t *)__arg;
+    elosPluginControl_t *plugin = (elosPluginControl_t *)__arg;
 
     // Convice the plugin we're loaded so we don't have to do start/stop here too
     plugin->context.state = PLUGIN_STATE_LOADED;
@@ -71,7 +71,7 @@ void elosTestElosPluginControlLoadSuccessFuncOverride(void **state) {
     MOCK_FUNC_NEVER(pthread_create);
 
     for (int i = 0; i < ELOS_PLUGIN_FUNC_COUNT; i += 1) {
-        elosPluginFuncEntry_t *func = &test->plugin.func[i];
+        elosPluginControlFuncEntry_t *func = &test->plugin.func[i];
 
         assert_ptr_not_equal(func->ptr, NULL);
         assert_ptr_not_equal(func->name, NULL);

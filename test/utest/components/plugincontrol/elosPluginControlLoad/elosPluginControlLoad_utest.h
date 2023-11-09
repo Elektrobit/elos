@@ -10,7 +10,7 @@ typedef struct elosPluginTestData {
 } elosPluginTestData_t;
 
 typedef struct elosUnitTestState {
-    elosPlugin_t plugin;
+    elosPluginControl_t plugin;
     elosPluginTestData_t data;
 } elosUnitTestState_t;
 

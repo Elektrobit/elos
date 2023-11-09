@@ -19,17 +19,17 @@
 // Note: Helper functions are meant to be called only internally, due to that we don't need value validity checks.
 //       These normally would be marked 'static', but are not to make unit testing easier.
 
-safuResultE_t elosPluginControlLoadHelperSearchFile(elosPlugin_t const *plugin, char **file) {
+safuResultE_t elosPluginControlLoadHelperSearchFile(elosPluginControl_t const *control, char **file) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     char *newFile = NULL;
 
-    if (plugin->path == NULL) {
+    if (control->path == NULL) {
         result = SAFU_RESULT_OK;
 
-        if (plugin->file != NULL) {
+        if (control->file != NULL) {
             int retVal;
 
-            retVal = access(plugin->file, F_OK | R_OK);
+            retVal = access(control->file, F_OK | R_OK);
             if (retVal != 0) {
                 safuLogErrF("access on file '%s' failed (returned: %d, %s)", newFile, retVal, strerror(errno));
                 result = SAFU_RESULT_FAILED;
@@ -39,7 +39,7 @@ safuResultE_t elosPluginControlLoadHelperSearchFile(elosPlugin_t const *plugin, 
         samconfConfigStatusE_t configResult;
         char const *fileName = NULL;
 
-        configResult = samconfConfigGetString(plugin->context.config, "File", &fileName);
+        configResult = samconfConfigGetString(control->context.config, "File", &fileName);
         if (configResult != SAMCONF_CONFIG_OK) {
             safuLogErrF("samconfConfigGet 'File' failed : %d", configResult);
         } else if (fileName == NULL) {
@@ -47,7 +47,7 @@ safuResultE_t elosPluginControlLoadHelperSearchFile(elosPlugin_t const *plugin, 
         } else {
             int retVal;
 
-            retVal = asprintf(&newFile, "%s/%s", plugin->path, fileName);
+            retVal = asprintf(&newFile, "%s/%s", control->path, fileName);
             if (retVal <= 0) {
                 safuLogErr("asprintf failed");
             } else if (retVal <= 1) {
@@ -68,23 +68,23 @@ safuResultE_t elosPluginControlLoadHelperSearchFile(elosPlugin_t const *plugin, 
     return result;
 }
 
-safuResultE_t elosPluginControlLoadHelperGetFunctions(elosPlugin_t *plugin) {
+safuResultE_t elosPluginControlLoadHelperGetFunctions(elosPluginControl_t *control) {
     safuResultE_t result = SAFU_RESULT_OK;
     char *errStr = NULL;
 
-    result = elosPluginControlLoadHelperSearchFile(plugin, &plugin->file);
+    result = elosPluginControlLoadHelperSearchFile(control, &control->file);
     if (result == SAFU_RESULT_OK) {
-        plugin->dlHandle = dlopen(plugin->file, RTLD_LAZY);
+        control->dlHandle = dlopen(control->file, RTLD_LAZY);
         errStr = dlerror();
-        if ((plugin->dlHandle == NULL) || (errStr != NULL)) {
+        if ((control->dlHandle == NULL) || (errStr != NULL)) {
             safuLogErrF("dlopen failed with: '%s'", errStr);
             result = SAFU_RESULT_FAILED;
         } else {
             for (size_t i = 0; i < ELOS_PLUGIN_FUNC_COUNT; i += 1) {
-                elosPluginFuncEntry_t *func = &plugin->func[i];
+                elosPluginControlFuncEntry_t *func = &control->func[i];
                 void **ptr = (void **)&(func->ptr);
 
-                *ptr = dlsym(plugin->dlHandle, func->name);
+                *ptr = dlsym(control->dlHandle, func->name);
                 errStr = dlerror();
                 if ((*ptr == NULL) || (errStr != NULL)) {
                     safuLogErrF("dlsym failed with: '%s'", errStr);
@@ -98,15 +98,15 @@ safuResultE_t elosPluginControlLoadHelperGetFunctions(elosPlugin_t *plugin) {
     return result;
 }
 
-safuResultE_t elosPluginControlLoad(elosPlugin_t *plugin) {
+safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (plugin == NULL) {
+    if (control == NULL) {
         safuLogErr("Invalid parameter");
     } else {
         bool loadNeeded = false;
 
-        switch (plugin->context.state) {
+        switch (control->context.state) {
             case PLUGIN_STATE_INITIALIZED:
                 loadNeeded = true;
                 break;
@@ -116,41 +116,41 @@ safuResultE_t elosPluginControlLoad(elosPlugin_t *plugin) {
             case PLUGIN_STATE_LOADED:
             case PLUGIN_STATE_UNLOADED:
             case PLUGIN_STATE_ERROR:
-                safuLogErrF("Plugin is not in state 'INITIALIZED': state=%d'", plugin->context.state);
+                safuLogErrF("Plugin is not in state 'INITIALIZED': state=%d'", control->context.state);
                 break;
             default:
-                safuLogErrF("Plugin is in unknown state '%d'", plugin->context.state);
+                safuLogErrF("Plugin is in unknown state '%d'", control->context.state);
                 break;
         }
 
         if (loadNeeded == true) {
             int retVal;
 
-            result = elosPluginControlLoadHelperGetFunctions(plugin);
+            result = elosPluginControlLoadHelperGetFunctions(control);
             if (result != SAFU_RESULT_OK) {
                 safuLogErr("elosPluginControlLoadHelperGetFunctions failed");
             }
 
             if (result == SAFU_RESULT_OK) {
-                retVal = pthread_create(&plugin->workerThread, 0, elosPluginWorkerThread, (void *)plugin);
+                retVal = pthread_create(&control->workerThread, 0, elosPluginControlWorkerThread, (void *)control);
                 if (retVal < 0) {
                     safuLogErrErrno("pthread_create failed");
-                    atomic_fetch_and(&plugin->flags, ~ELOS_PLUGIN_FLAG_WORKERRUNNING);
+                    atomic_fetch_and(&control->flags, ~ELOS_PLUGIN_FLAG_WORKERRUNNING);
                     result = SAFU_RESULT_FAILED;
                 } else {
-                    atomic_fetch_or(&plugin->flags, ELOS_PLUGIN_FLAG_WORKERRUNNING);
+                    atomic_fetch_or(&control->flags, ELOS_PLUGIN_FLAG_WORKERRUNNING);
                 }
             }
 
             if (result == SAFU_RESULT_OK) {
                 eventfd_t efdVal = 0;
 
-                retVal = eventfd_read(plugin->context.sync, &efdVal);
+                retVal = eventfd_read(control->context.sync, &efdVal);
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_read failed");
                     result = SAFU_RESULT_FAILED;
                 } else {
-                    if (plugin->context.state != PLUGIN_STATE_LOADED) {
+                    if (control->context.state != PLUGIN_STATE_LOADED) {
                         safuLogErr("Plugin not in state 'LOADED' after worker thread execution");
                         result = SAFU_RESULT_FAILED;
                     }
@@ -159,7 +159,7 @@ safuResultE_t elosPluginControlLoad(elosPlugin_t *plugin) {
         }
 
         if (result != SAFU_RESULT_OK) {
-            plugin->context.state = PLUGIN_STATE_ERROR;
+            control->context.state = PLUGIN_STATE_ERROR;
         }
     }
 

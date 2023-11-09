@@ -41,7 +41,7 @@ void elosTestElosPluginControlInitializeSuccessFuncOverride(void **state) {
 
     // i==0 is handled in case_success.c, so we skip it here for easier test case construction
     for (size_t i = 1; i < numberOfTestCases; i += 1) {
-        elosPluginParam_t const param = {
+        elosPluginControlParam_t const param = {
             .config = &config,
             .data = &data,
             .id = id,
@@ -65,7 +65,7 @@ void elosTestElosPluginControlInitializeSuccessFuncOverride(void **state) {
         assert_int_equal(test->plugin.context.state, PLUGIN_STATE_INITIALIZED);
 
         for (size_t o = 0; o < ELOS_PLUGIN_FUNC_COUNT; o += 1) {
-            elosPluginFuncEntry_t *func = test->plugin.func;
+            elosPluginControlFuncEntry_t *func = test->plugin.func;
             char const *testFuncName = elosPluginFuncDefaultName[o];
             size_t const nameBit = (1 << o);
 

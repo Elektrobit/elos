@@ -6,15 +6,15 @@
 
 #include "elos/plugincontrol/vector.h"
 
-safuResultE_t elosPluginVectorInitialize(elosPluginVector_t *pluginVector, size_t elements) {
+safuResultE_t elosPluginControlVectorInitialize(elosPluginControlVector_t *controlVector, size_t elements) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (pluginVector == NULL) {
+    if (controlVector == NULL) {
         safuLogErr("Null parameter given");
     } else {
         int retVal;
 
-        retVal = safuVecCreate(pluginVector, elements, sizeof(elosPlugin_t));
+        retVal = safuVecCreate(controlVector, elements, sizeof(elosPluginControl_t));
         if (retVal < 0) {
             safuLogErr("safuVecCreate failed");
         } else {
@@ -25,15 +25,15 @@ safuResultE_t elosPluginVectorInitialize(elosPluginVector_t *pluginVector, size_
     return result;
 }
 
-safuResultE_t elosPluginVectorPush(elosPluginVector_t *pluginVector, elosPlugin_t *plugin) {
+safuResultE_t elosPluginControlVectorPush(elosPluginControlVector_t *controlVector, elosPluginControl_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((pluginVector == NULL) || (plugin == NULL)) {
+    if ((controlVector == NULL) || (plugin == NULL)) {
         safuLogErr("Null parameter given");
     } else {
         int retVal;
 
-        retVal = safuVecPush(pluginVector, plugin);
+        retVal = safuVecPush(controlVector, plugin);
         if (retVal < 0) {
             safuLogErr("safuVecPush failed");
         } else {
@@ -44,16 +44,16 @@ safuResultE_t elosPluginVectorPush(elosPluginVector_t *pluginVector, elosPlugin_
     return result;
 }
 
-safuResultE_t elosPluginVectorIterate(elosPluginVector_t *pluginVector, safuVecFunc_t *func, void *data,
-                                      int *iterResult) {
+safuResultE_t elosPluginControlVectorIterate(elosPluginControlVector_t *controlVector, safuVecFunc_t *func, void *data,
+                                             int *iterResult) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((pluginVector == NULL) || (func == NULL)) {
+    if ((controlVector == NULL) || (func == NULL)) {
         safuLogErr("Null parameter given");
     } else {
         int retVal;
 
-        retVal = safuVecIterate(pluginVector, func, data);
+        retVal = safuVecIterate(controlVector, func, data);
         if (retVal < 0) {
             safuLogWarn("safuVecIterate failed");
         } else {
@@ -69,26 +69,27 @@ safuResultE_t elosPluginVectorIterate(elosPluginVector_t *pluginVector, safuVecF
 }
 
 static int _pluginVectorMatchById(const void *element, const void *data) {
-    elosPlugin_t const *plugin = (elosPlugin_t const *)element;
+    elosPluginControl_t const *control = (elosPluginControl_t const *)element;
     elosPluginId_t const id = *(elosPluginId_t const *)data;
     int result = 0;
 
-    if (plugin->context.id == id) {
+    if (control->context.id == id) {
         result = 1;
     }
 
     return result;
 }
 
-safuResultE_t elosPluginVectorGetById(elosPluginVector_t *pluginVector, elosPluginId_t id, elosPlugin_t **plugin) {
+safuResultE_t elosPluginControlVectorGetById(elosPluginControlVector_t *controlVector, elosPluginId_t id,
+                                             elosPluginControl_t **control) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((pluginVector == NULL) || (id == ELOS_ID_INVALID) || (plugin == NULL)) {
+    if ((controlVector == NULL) || (id == ELOS_ID_INVALID) || (control == NULL)) {
         safuLogErr("Null parameter given");
     } else {
         int retVal;
 
-        retVal = safuVecFindGet(pluginVector, (void **)plugin, NULL, _pluginVectorMatchById, &id);
+        retVal = safuVecFindGet(controlVector, (void **)control, NULL, _pluginVectorMatchById, &id);
         if (retVal < 0) {
             safuLogErr("safuVecFindGet failed");
         } else if (retVal == 0) {
@@ -102,12 +103,12 @@ safuResultE_t elosPluginVectorGetById(elosPluginVector_t *pluginVector, elosPlug
 }
 
 static int _pluginVectorRemoveById(const void *element, const void *data) {
-    elosPlugin_t *plugin = (elosPlugin_t *)element;
+    elosPluginControl_t *control = (elosPluginControl_t *)element;
     elosPluginId_t const id = *(elosPluginId_t const *)data;
     int result = 0;
 
-    if (plugin->context.id == id) {
-        result = elosPluginControlDeleteMembers(plugin);
+    if (control->context.id == id) {
+        result = elosPluginControlDeleteMembers(control);
         if (result < 0) {
             safuLogWarn("elosPluginControlDeleteMembers failed (likely creating a memory leak)");
         }
@@ -118,15 +119,15 @@ static int _pluginVectorRemoveById(const void *element, const void *data) {
     return result;
 }
 
-safuResultE_t elosPluginVectorRemoveById(elosPluginVector_t *pluginVector, elosPluginId_t id) {
+safuResultE_t elosPluginControlVectorRemoveById(elosPluginControlVector_t *controlVector, elosPluginId_t id) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((pluginVector == NULL) || (id == ELOS_ID_INVALID)) {
+    if ((controlVector == NULL) || (id == ELOS_ID_INVALID)) {
         safuLogErr("Null parameter given");
     } else {
         int retVal;
 
-        retVal = safuVecFindRemove(pluginVector, _pluginVectorRemoveById, &id);
+        retVal = safuVecFindRemove(controlVector, _pluginVectorRemoveById, &id);
         if (retVal < 0) {
             safuLogErr("safuVecFindRemove failed");
         } else if (retVal == 0) {
@@ -141,9 +142,9 @@ safuResultE_t elosPluginVectorRemoveById(elosPluginVector_t *pluginVector, elosP
 
 static int _deleteMemberfunc(void const *element, UNUSED void const *data) {
     safuResultE_t result;
-    elosPlugin_t *plugin = (elosPlugin_t *)element;
+    elosPluginControl_t *control = (elosPluginControl_t *)element;
 
-    result = elosPluginControlDeleteMembers(plugin);
+    result = elosPluginControlDeleteMembers(control);
     if (result < 0) {
         safuLogWarn("elosPluginVectorDeleteMembers failed (likely creating a memory leak)");
     }
@@ -151,19 +152,19 @@ static int _deleteMemberfunc(void const *element, UNUSED void const *data) {
     return 0;
 }
 
-safuResultE_t elosPluginVectorDeleteMembers(elosPluginVector_t *pluginVector) {
+safuResultE_t elosPluginControlVectorDeleteMembers(elosPluginControlVector_t *controlVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (pluginVector == NULL) {
+    if (controlVector == NULL) {
         safuLogErr("Null parameter given");
     } else {
-        result = elosPluginVectorIterate(pluginVector, _deleteMemberfunc, NULL, NULL);
+        result = elosPluginControlVectorIterate(controlVector, _deleteMemberfunc, NULL, NULL);
         if (result == SAFU_RESULT_FAILED) {
             safuLogErr("elosPluginVectorIterate failed");
         } else {
             int retVal;
 
-            retVal = safuVecFree(pluginVector);
+            retVal = safuVecFree(controlVector);
             if (retVal < 0) {
                 safuLogErr("safuVecCreate failed");
             } else {

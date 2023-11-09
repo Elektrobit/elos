@@ -34,7 +34,7 @@ int elosTestElosPluginControlGetNameSuccessTeardown(UNUSED void **state) {
 }
 
 void elosTestElosPluginControlGetNameSuccess(UNUSED void **state) {
-    const elosPlugin_t *plugin = &(*(elosPluginTest_t **)state)->plugin;
+    const elosPluginControl_t *plugin = &(*(elosPluginTest_t **)state)->plugin;
     const char *pluginName = NULL;
     const char *expectedName = "TestPluginName";
 

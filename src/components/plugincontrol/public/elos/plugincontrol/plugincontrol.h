@@ -3,20 +3,20 @@
 
 #include "elos/plugincontrol/types.h"
 
-safuResultE_t elosPluginControlInitialize(elosPlugin_t *plugin, elosPluginParam_t const *param);
+safuResultE_t elosPluginControlInitialize(elosPluginControl_t *control, elosPluginControlParam_t const *param);
 
-safuResultE_t elosPluginControlNew(elosPlugin_t **plugin, elosPluginParam_t const *param);
+safuResultE_t elosPluginControlNew(elosPluginControl_t **control, elosPluginControlParam_t const *param);
 
-safuResultE_t elosPluginControlLoad(elosPlugin_t *plugin);
+safuResultE_t elosPluginControlLoad(elosPluginControl_t *control);
 
-safuResultE_t elosPluginControlUnload(elosPlugin_t *plugin);
+safuResultE_t elosPluginControlUnload(elosPluginControl_t *control);
 
-safuResultE_t elosPluginControlStart(elosPlugin_t *plugin);
+safuResultE_t elosPluginControlStart(elosPluginControl_t *control);
 
-safuResultE_t elosPluginControlStop(elosPlugin_t *plugin);
+safuResultE_t elosPluginControlStop(elosPluginControl_t *control);
 
-safuResultE_t elosPluginControlDeleteMembers(elosPlugin_t *plugin);
+safuResultE_t elosPluginControlDeleteMembers(elosPluginControl_t *control);
 
-safuResultE_t elosPluginControlDelete(elosPlugin_t **plugin);
+safuResultE_t elosPluginControlDelete(elosPluginControl_t **control);
 
-safuResultE_t elosPluginControlGetName(const elosPlugin_t *plugin, const char **name);
+safuResultE_t elosPluginControlGetName(const elosPluginControl_t *control, const char **name);

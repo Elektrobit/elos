@@ -14,15 +14,15 @@ int elosTestElosPluginControlGetNameErrInvalidParameterTeardown(UNUSED void **st
     return 0;
 }
 
-static void _testElosPluginControlGetNameErrInvalidParameterParam(const char *parameterUnderTest, elosPlugin_t *plugin,
-                                                                  const char **name) {
+static void _testElosPluginControlGetNameErrInvalidParameterParam(const char *parameterUnderTest,
+                                                                  elosPluginControl_t *plugin, const char **name) {
     PARAM("%s", parameterUnderTest);
     safuResultE_t result = elosPluginControlGetName(plugin, name);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }
 
 void elosTestElosPluginControlGetNameErrInvalidParameter(UNUSED void **state) {
-    elosPlugin_t plugin = {0};
+    elosPluginControl_t plugin = {0};
     const char *pluginName = NULL;
 
     TEST("elosPluginControlGetName");

@@ -17,7 +17,7 @@ int elosTestElosPluginControlInitializeErrFuncTeardown(void **state) {
 
 void elosTestElosPluginControlInitializeErrFunc(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
-    elosPluginParam_t param = {0};
+    elosPluginControlParam_t param = {0};
     safuResultE_t result;
 
     TEST("elosPluginControlInitialize");

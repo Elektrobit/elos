@@ -9,16 +9,17 @@
 safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, elosPluginManagerParam_t const *param);
 
 safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfConfig_t const *pluginConfig,
-                                    char const *pluginSearchPath, elosPluginPtrVector_t *pluginVector);
+                                    char const *pluginSearchPath, elosPluginControlPtrVector_t *pluginVector);
 
-safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager, elosPluginPtrVector_t *pluginVector);
+safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager, elosPluginControlPtrVector_t *pluginVector);
 
-safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPluginPtrVector_t *pluginVector);
+safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPluginControlPtrVector_t *pluginVector);
 
-safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elosPluginParam_t const *param,
+safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elosPluginControlParam_t const *param,
                                         elosPluginId_t *id);
 
-safuResultE_t elosPluginManagerEntryGet(elosPluginManager_t *pluginManager, elosPluginId_t id, elosPlugin_t **plugin);
+safuResultE_t elosPluginManagerEntryGet(elosPluginManager_t *pluginManager, elosPluginId_t id,
+                                        elosPluginControl_t **plugin);
 
 safuResultE_t elosPluginManagerEntryLoad(elosPluginManager_t *pluginManager, elosPluginId_t id);
 
