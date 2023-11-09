@@ -21,10 +21,10 @@ typedef struct elosUnitTestState {
 
 extern char const *elosPluginFuncCustomName[ELOS_PLUGIN_FUNC_COUNT];
 
-safuResultE_t elosCustomLoad(elosPluginContext_t *plugin);
-safuResultE_t elosCustomStart(elosPluginContext_t *plugin);
-safuResultE_t elosCustomStop(elosPluginContext_t *plugin);
-safuResultE_t elosCustomUnload(elosPluginContext_t *plugin);
+safuResultE_t elosCustomLoad(elosPlugin_t *plugin);
+safuResultE_t elosCustomStart(elosPlugin_t *plugin);
+safuResultE_t elosCustomStop(elosPlugin_t *plugin);
+safuResultE_t elosCustomUnload(elosPlugin_t *plugin);
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadSuccessFuncOverride)

@@ -12,7 +12,7 @@ char const *elosPluginFuncCustomName[ELOS_PLUGIN_FUNC_COUNT] = {
     [ELOS_PLUGIN_FUNC_UNLOAD] = "elosCustomUnload",
 };
 
-safuResultE_t elosCustomLoad(elosPluginContext_t *plugin) {
+safuResultE_t elosCustomLoad(elosPlugin_t *plugin) {
     elosPluginTestData_t *data = (elosPluginTestData_t *)plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
 
@@ -21,7 +21,7 @@ safuResultE_t elosCustomLoad(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosCustomStart(elosPluginContext_t *plugin) {
+safuResultE_t elosCustomStart(elosPlugin_t *plugin) {
     elosPluginTestData_t *data = (elosPluginTestData_t *)plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
 
@@ -30,7 +30,7 @@ safuResultE_t elosCustomStart(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosCustomStop(elosPluginContext_t *plugin) {
+safuResultE_t elosCustomStop(elosPlugin_t *plugin) {
     elosPluginTestData_t *data = (elosPluginTestData_t *)plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
 
@@ -39,7 +39,7 @@ safuResultE_t elosCustomStop(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosCustomUnload(elosPluginContext_t *plugin) {
+safuResultE_t elosCustomUnload(elosPlugin_t *plugin) {
     elosPluginTestData_t *data = (elosPluginTestData_t *)plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
 

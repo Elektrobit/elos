@@ -45,7 +45,7 @@ typedef struct elosPluginControlParam {
 typedef struct elosPluginControl {
     safuFlags_t flags;
     elosPluginControlFuncEntry_t func[ELOS_PLUGIN_FUNC_COUNT];
-    elosPluginContext_t context;
+    elosPlugin_t context;
     pthread_t workerThread;
     int sync;
     char const *path;

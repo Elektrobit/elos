@@ -79,7 +79,7 @@ static safuResultE_t _backendShutdown(elosStorageBackend_t *backend) {
     return result;
 }
 
-safuResultE_t elosPluginLoad(elosPluginContext_t *plugin) {
+safuResultE_t elosPluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -113,7 +113,7 @@ safuResultE_t elosPluginLoad(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
+safuResultE_t elosPluginStart(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -135,7 +135,7 @@ safuResultE_t elosPluginStart(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
+safuResultE_t elosPluginStop(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -152,7 +152,7 @@ safuResultE_t elosPluginStop(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosPluginUnload(elosPluginContext_t *plugin) {
+safuResultE_t elosPluginUnload(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {

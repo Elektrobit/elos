@@ -3,6 +3,6 @@
 
 #include "elos/libelosplugin/types.h"
 
-safuResultE_t elosPluginReportAsStarted(elosPluginContext_t *plugin);
-safuResultE_t elosPluginStopTriggerWait(elosPluginContext_t *plugin);
-safuResultE_t elosPluginStopTriggerWrite(elosPluginContext_t *plugin);
+safuResultE_t elosPluginReportAsStarted(elosPlugin_t *plugin);
+safuResultE_t elosPluginStopTriggerWait(elosPlugin_t *plugin);
+safuResultE_t elosPluginStopTriggerWrite(elosPlugin_t *plugin);
