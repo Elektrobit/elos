@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: MIT
+find_package(cmocka_mocks)
+find_package(safu REQUIRED)
+find_package(samconf REQUIRED)
+
+create_unit_test(
+  NAME
+  test_clientAuthorization_elosAuthorizedProcessCheck_utest
+  SOURCES
+    case_success.c
+    case_err_authorizedprocess_param_null.c
+    case_err_process_param_null.c
+    case_success_no_match.c
+    elosAuthorizedProcessCheck_utest.c
+  LIBRARIES
+    connectionmanager_static_weak
+    safu::mock_safu
+    samconf::mock_samconf
+)

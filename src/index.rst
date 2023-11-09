@@ -272,8 +272,8 @@ In general there are the following roles:
    -  Can be any arbitrary process who is capable to connect to the
       elosd socket. (this includes remote process on other machines)
    -  Can be both Subscriber and Publisher
-   -  Number is limited at least by CLIENT_MANAGER_MAX_CONNECTIONS +
-      CLIENT_MANAGER_LISTEN_QUEUE_LENGTH
+   -  Number is limited at least by CONNECTION_MANAGER_MAX_CONNECTIONS +
+      CONNECTION_MANAGER_LISTEN_QUEUE_LENGTH
 
 -  Scanner:
 

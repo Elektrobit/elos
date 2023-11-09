@@ -15,7 +15,7 @@ node elosd {
   component EventProcessor
 
   component MessageHandler
-  component ClientManager
+  component ConnectionManager
 
   EventFilter <-up- Event
   EventFilter <-up- RpnFilter
@@ -33,7 +33,7 @@ node elosd {
   EventProcessor -[hidden]- EventFilterManager
   MessageHandler -[hidden]up- EventFilterManager
   MessageHandler <-up-> EventProcessor : "  publish, subscribe, read"
-  ClientManager <-left-> MessageHandler
+  ConnectionManager <-left-> MessageHandler
 }
 
 component "Scanner (.so)" as Scanner {
@@ -47,7 +47,7 @@ node "Client" as Client {
 interface "Interface [TBD]" as Interface
 
 EventProcessor <-right- libelos_scanner : publish
-ClientManager <-left-> libelos
+ConnectionManager <-left-> libelos
 EventDispatcher -right-> Interface
 
 Interface -[hidden]down- libelos_scanner

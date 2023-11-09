@@ -144,12 +144,12 @@ _As mentioned above, connection type specific countermeasures are out of scope_
 _of this document, so only the basic countermeasures are handled here._
 
 The first connection flooding scenario, opening as much connections as possible,
-already has a basic mitigation in place, with the ClientManager having a maximum
-connection limit defined by `CLIENT_MANAGER_MAX_CONNECTIONS`.
+already has a basic mitigation in place, with the ConnectionManager having a maximum
+connection limit defined by `CONNECTION_MANAGER_MAX_CONNECTIONS`.
 
 This implementation can be sligthly improved by moving this define
 into the configuration files.
-The suggested value is: `elos/ClientManager/Limits/MaximumConnections/{integer}`
+The suggested value is: `elos/ConnectionManager/Limits/MaximumConnections/{integer}`
 
 The second scenario, closing and opening as many connections as possible,
 currently has no countermeasures implemented. The easiest way to defend against
@@ -179,7 +179,7 @@ a value to the configuration file. The value can then checked every time
 of EventQueues associated with the connection. Should the limit be reached,
 and error string shall be returned to the client describing the problem.
 
-Suggested configuration value: `elos/ClientManager/Limits/MaximumSubscriptionsPerConnection/{integer}`
+Suggested configuration value: `elos/ConnectionManager/Limits/MaximumSubscriptionsPerConnection/{integer}`
 Suggested error string: `"maximum amount of subscriptions per connection reached"`
 
 ### Data flooding
@@ -189,7 +189,7 @@ This can be solved in the same way as with Connection/Subscription flooding
 by checking against a configuration value while receiving messages.
 The value is ideally buffered in one of the shared data structeres
 to make access faster, as the read function is called very often.
-The suggested value is: `elos/ClientManager/Limits/MaximumDataLength/{integer}`
+The suggested value is: `elos/ConnectionManager/Limits/MaximumDataLength/{integer}`
 
 ### Data stalling
 
@@ -199,7 +199,7 @@ return codes so we can properly identify and propagate the timeout error.
 
 The timeout value needs to be based on a configuration value, which ideally
 is buffered for performance reasons. The suggest configuration value is:
-`elos/ClientManager/Limits/DataSendReceiveTimeout/{sec,nsec}`
+`elos/ConnectionManager/Limits/DataSendReceiveTimeout/{sec,nsec}`
 
 ### Event flooding and Event throtteling/prioritizing
 
@@ -248,7 +248,7 @@ need to parse the Events in any form and can focus on dispatching the available
 Events by simply copying them to the different Pipelines as fast as possible.
 
 Handling of these buffers shall be invisible to both and has to be handled
-by e.g. the ClientManager and the ScannerManager. Since read/write speed is
+by e.g. the ConnectionManager and the ScannerManager. Since read/write speed is
 extremely important here we won't have a centralized component managing
 these Buffers, as we do not want to do an id based lookup every time we
 publish an event - Instead the EventBuffer shall be a standalone component.
@@ -356,7 +356,7 @@ safuResultE_t elosEventDispatcherDelete(elosEventVector_t *eventDispatcher);
 ```
 
 _Notes_:
-* `BufferAdd` and `BufferRemove` shall be used by e.g. the ClientManager and
+* `BufferAdd` and `BufferRemove` shall be used by e.g. the ConnectionManager and
 the ScannerManager to add and remove Buffers that the `EventDispatcher` uses.
 * `Start` and `Stop` are responsible for handling the background thread that
 runs the EventDispatcher.

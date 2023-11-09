@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "elos/clientmanager/clientmanager.h"
 #include "elos/config/config.h"
+#include "elos/connectionmanager/connectionmanager.h"
 #include "elos/eloslog/eloslog.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventlogging/LogAggregator.h"
@@ -26,7 +26,7 @@
 
 struct serverContext {
     samconfConfig_t *config;
-    elosClientManager_t clientManagerContext;
+    elosConnectionManager_t connectionManagerContext;
     elosScannerManagerContext_t scannerManagerContext;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
@@ -68,7 +68,7 @@ int elosServerShutdown(struct serverContext *ctx) {
         safuLogErr("Shutting down log aggregator failed!");
         result = EXIT_FAILURE;
     }
-    if (elosClientManagerDeleteMembers(&ctx->clientManagerContext) != SAFU_RESULT_OK) {
+    if (elosConnectionManagerDeleteMembers(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
         safuLogErr("Stoping client manager failed!");
         result = EXIT_FAILURE;
     }
@@ -197,21 +197,21 @@ int main(int argc, char **argv) {
     }
 
     safuLogDebug("Start client manager");
-    elosClientManagerParam_t cmParams = {
+    elosConnectionManagerParam_t cmParams = {
         .config = context.config,
         .logAggregator = &context.logAggregator,
         .eventProcessor = &context.eventProcessor,
         .eventDispatcher = &context.eventDispatcher,
     };
-    result = elosClientManagerInitialize(&context.clientManagerContext, &cmParams);
+    result = elosConnectionManagerInitialize(&context.connectionManagerContext, &cmParams);
     if (result != SAFU_RESULT_OK) {
-        safuLogErr("elosClientManagerInitialize");
+        safuLogErr("elosConnectionManagerInitialize");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
     } else {
-        retval = elosClientManagerStart(&context.clientManagerContext);
+        retval = elosConnectionManagerStart(&context.connectionManagerContext);
         if (retval < 0) {
-            safuLogErr("elosClientManagerStart");
+            safuLogErr("elosConnectionManagerStart");
             elosServerShutdown(&context);
             return EXIT_FAILURE;
         }

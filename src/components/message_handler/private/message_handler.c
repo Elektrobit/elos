@@ -7,7 +7,7 @@
 #include <safu/log.h>
 #include <stdlib.h>
 
-#include "elos/clientmanager/clientconnection_types.h"
+#include "elos/connectionmanager/clientconnection_types.h"
 
 typedef safuResultE_t elosMessageHandler_t(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
@@ -166,7 +166,8 @@ safuResultE_t elosMessageHandlerHandleMessage(elosClientConnection_t const *cons
     if (conn == NULL) {
         safuLogErr("Invalid parameter");
     } else {
-        // Note: Inefficient, we should move it into elosClientManagerConnection_t at some point and reuse the memory
+        // Note: Inefficient, we should move it into elosConnectionManagerConnection_t at some point and reuse the
+        // memory
         msg = safuAllocMem(NULL, sizeof(elosMessage_t));
         if (msg == NULL) {
             safuLogErr("safuAllocMem failed");

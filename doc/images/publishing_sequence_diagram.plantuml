@@ -1,14 +1,14 @@
 @startuml
 
 participant Client
-participant ClientManager
+participant ConnectionManager
 participant EventProcessor
 collections EventFilter
 queue EventQueue
 
 group create a session
-  Client --> ClientManager : connect()
-  Client <-- ClientManager : Session
+  Client --> ConnectionManager : connect()
+  Client <-- ConnectionManager : Session
 end
 
 loop while client want's to publish
@@ -22,8 +22,8 @@ loop while client want's to publish
 end
 
 group close a session
-  Client --> ClientManager : close()
-  Client <-- ClientManager : Result
+  Client --> ConnectionManager : close()
+  Client <-- ConnectionManager : Result
 end
 @enduml
 

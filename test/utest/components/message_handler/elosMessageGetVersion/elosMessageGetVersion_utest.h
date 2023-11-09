@@ -4,8 +4,8 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
-#include "elos/clientmanager/clientmanager.h"
 #include "elos/common/message.h"
+#include "elos/connectionmanager/connectionmanager.h"
 #include "mock_message_handler.h"
 
 #define MOCK_DISPATCH_ID 42
