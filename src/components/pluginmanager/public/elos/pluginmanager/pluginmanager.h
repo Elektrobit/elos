@@ -8,8 +8,9 @@
 
 safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, elosPluginManagerParam_t const *param);
 
-safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfConfig_t const *pluginConfig,
-                                    char const *pluginSearchPath, elosPluginControlPtrVector_t *pluginVector);
+safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
+                                    samconfConfig_t const *pluginConfig, char const *pluginSearchPath,
+                                    elosPluginControlPtrVector_t *pluginVector);
 
 safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager, elosPluginControlPtrVector_t *pluginVector);
 

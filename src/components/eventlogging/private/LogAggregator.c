@@ -53,8 +53,10 @@ safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLog
                         safuLogErr("elosConfigGetElosdBackendPath failed");
                         result = SAFU_RESULT_FAILED;
                     } else {
-                        result = elosPluginManagerLoad(logAggregator->pluginManager, logAggregator->config, searchPath,
-                                                       &logAggregator->pluginControlPtrVector);
+                        elosPluginTypeE_t type = PLUGIN_TYPE_STORAGEBACKEND;
+
+                        result = elosPluginManagerLoad(logAggregator->pluginManager, type, logAggregator->config,
+                                                       searchPath, &logAggregator->pluginControlPtrVector);
                         if (result != SAFU_RESULT_OK) {
                             safuLogWarn("elosPluginManagerLoad executed with errors");
                         } else {

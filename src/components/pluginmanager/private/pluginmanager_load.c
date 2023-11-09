@@ -9,11 +9,14 @@
 #include "elos/plugincontrol/plugincontrol.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
-safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfConfig_t const *moduleConfig,
-                                    char const *pluginSearchPath, elosPluginControlPtrVector_t *controlPtrVector) {
+safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
+                                    samconfConfig_t const *moduleConfig, char const *pluginSearchPath,
+                                    elosPluginControlPtrVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     samconfConfig_t const *pluginConfig = NULL;
-    elosPluginControlParam_t pluginParam = {0};
+    elosPluginControlParam_t pluginParam = {
+        .pluginType = type,
+    };
 
     if ((pluginManager == NULL) || (pluginSearchPath == NULL) || (moduleConfig == NULL) || (controlPtrVector == NULL)) {
         safuLogErr("NULL-Pointer has been passed as parameter");
