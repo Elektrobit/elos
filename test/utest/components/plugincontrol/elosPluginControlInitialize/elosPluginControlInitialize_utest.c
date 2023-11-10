@@ -8,7 +8,6 @@ int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosPluginControlInitializeErrFunc),
         TEST_CASE(elosTestElosPluginControlInitializeErrParam),
-        TEST_CASE(elosTestElosPluginControlInitializeSuccessFuncOverride),
         TEST_CASE(elosTestElosPluginControlInitializeSuccess),
     };
 
@@ -32,10 +31,3 @@ static int _testSuiteTeardown(void **state) {
 
     return 0;
 }
-
-char const *elosPluginFuncDefaultName[ELOS_PLUGIN_FUNC_COUNT] = {
-    [ELOS_PLUGIN_FUNC_LOAD] = "elosPluginLoad",
-    [ELOS_PLUGIN_FUNC_START] = "elosPluginStart",
-    [ELOS_PLUGIN_FUNC_STOP] = "elosPluginStop",
-    [ELOS_PLUGIN_FUNC_UNLOAD] = "elosPluginUnload",
-};

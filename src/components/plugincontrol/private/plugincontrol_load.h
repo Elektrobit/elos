@@ -10,5 +10,5 @@ typedef struct elosFuncTableEntry {
     void **func;
 } elosFuncTableEntry_t;
 
-safuResultE_t elosPluginControlLoadHelperSearchFile(elosPlugin_t const *plugin, char **file);
-safuResultE_t elosPluginControlLoadHelperGetFunctions(elosPlugin_t *plugin);
+safuResultE_t elosPluginControlLoadHelperSearchFile(elosPluginControl_t const *control, char **file);
+safuResultE_t elosPluginControlLoadHelperGetFunctions(elosPluginControl_t *control);

@@ -90,8 +90,8 @@ static safuResultE_t _backendFindFunc(elosStorageBackend_t *backend, elosRpnFilt
 void elosLogAggregatorFindEventsUtestCreateLogAggregator(void **state) {
     elosUteststateT_t *testState = *state;
     safuResultE_t result;
-    elosPlugin_t *plugin = NULL;
-    elosPluginParam_t pluginParam = {.id = 42};
+    elosPluginControl_t *plugin = NULL;
+    elosPluginControlParam_t pluginParam = {.id = 42};
     elosStorageBackend_t dummyBackend = {
         .name = "utBackend",
         .backendData = testState->eventJsonString,
@@ -113,19 +113,19 @@ void elosLogAggregatorFindEventsUtestCreateLogAggregator(void **state) {
     retVal = pthread_mutex_init(testState->logAggregator.lock, NULL);
     assert_int_equal(retVal, 0);
 
-    safuVecCreate(&testState->logAggregator.pluginPtrVector, 1, sizeof(elosPlugin_t *));
-    safuVecPush(&testState->logAggregator.pluginPtrVector, &plugin);
+    safuVecCreate(&testState->logAggregator.pluginControlPtrVector, 1, sizeof(elosPluginControl_t *));
+    safuVecPush(&testState->logAggregator.pluginControlPtrVector, &plugin);
 }
 
 void elosLogAggregatorFindEventsUtestFreeLogAggregator(void **state) {
     elosUteststateT_t *testState = *state;
-    elosPlugin_t *plugin;
+    elosPluginControl_t *plugin;
 
-    plugin = *(elosPlugin_t **)safuVecGetLast(&testState->logAggregator.pluginPtrVector);
+    plugin = *(elosPluginControl_t **)safuVecGetLast(&testState->logAggregator.pluginControlPtrVector);
     assert_non_null(plugin);
     free(plugin->context.data);
     free(plugin);
-    safuVecFree(&testState->logAggregator.pluginPtrVector);
+    safuVecFree(&testState->logAggregator.pluginControlPtrVector);
 
     elosLogAggregatorShutdown(&testState->logAggregator);
     pthread_mutex_destroy(testState->logAggregator.lock);

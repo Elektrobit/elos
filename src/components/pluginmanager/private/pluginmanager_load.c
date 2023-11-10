@@ -9,13 +9,16 @@
 #include "elos/plugincontrol/plugincontrol.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
-safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfConfig_t const *moduleConfig,
-                                    char const *pluginSearchPath, elosPluginPtrVector_t *pluginPtrVector) {
+safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
+                                    samconfConfig_t const *moduleConfig, char const *pluginSearchPath,
+                                    elosPluginControlPtrVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     samconfConfig_t const *pluginConfig = NULL;
-    elosPluginParam_t pluginParam = {0};
+    elosPluginControlParam_t pluginParam = {
+        .pluginType = type,
+    };
 
-    if ((pluginManager == NULL) || (pluginSearchPath == NULL) || (moduleConfig == NULL) || (pluginPtrVector == NULL)) {
+    if ((pluginManager == NULL) || (pluginSearchPath == NULL) || (moduleConfig == NULL) || (controlPtrVector == NULL)) {
         safuLogErr("NULL-Pointer has been passed as parameter");
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INITIALIZED) {
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
@@ -67,7 +70,7 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfC
             if (iterResult != SAFU_RESULT_OK) {
                 safuLogErr("elosPluginManagerEntryAdd failed");
             } else {
-                elosPlugin_t *plugin = NULL;
+                elosPluginControl_t *plugin = NULL;
 
                 iterResult = elosPluginManagerEntryGet(pluginManager, pluginId, &plugin);
                 if (iterResult != SAFU_RESULT_OK) {
@@ -87,7 +90,7 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, samconfC
                         if (iterResult == SAFU_RESULT_OK) {
                             int retVal;
 
-                            retVal = safuVecPush(pluginPtrVector, &plugin);
+                            retVal = safuVecPush(controlPtrVector, &plugin);
                             if (retVal < 0) {
                                 safuLogErr("safuVecPush failed");
                                 iterResult = SAFU_RESULT_FAILED;

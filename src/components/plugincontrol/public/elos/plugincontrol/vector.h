@@ -4,15 +4,16 @@
 #include "elos/plugincontrol/plugincontrol.h"
 #include "safu/vector.h"
 
-safuResultE_t elosPluginVectorInitialize(elosPluginVector_t *plugin, size_t elements);
+safuResultE_t elosPluginControlVectorInitialize(elosPluginControlVector_t *controlVector, size_t elements);
 
-safuResultE_t elosPluginVectorPush(elosPluginVector_t *pluginVector, elosPlugin_t *plugin);
+safuResultE_t elosPluginControlVectorPush(elosPluginControlVector_t *controlVector, elosPluginControl_t *control);
 
-safuResultE_t elosPluginVectorIterate(elosPluginVector_t *pluginVector, safuVecFunc_t *func, void *data,
-                                      int *iterResult);
+safuResultE_t elosPluginControlVectorIterate(elosPluginControlVector_t *controlVector, safuVecFunc_t *func, void *data,
+                                             int *iterResult);
 
-safuResultE_t elosPluginVectorGetById(elosPluginVector_t *pluginVector, elosPluginId_t id, elosPlugin_t **plugin);
+safuResultE_t elosPluginControlVectorGetById(elosPluginControlVector_t *controlVector, elosPluginId_t id,
+                                             elosPluginControl_t **control);
 
-safuResultE_t elosPluginVectorRemoveById(elosPluginVector_t *pluginVector, elosPluginId_t id);
+safuResultE_t elosPluginControlVectorRemoveById(elosPluginControlVector_t *controlVector, elosPluginId_t id);
 
-safuResultE_t elosPluginVectorDeleteMembers(elosPluginVector_t *plugin);
+safuResultE_t elosPluginControlVectorDeleteMembers(elosPluginControlVector_t *controlVector);

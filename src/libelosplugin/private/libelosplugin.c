@@ -7,7 +7,7 @@
 
 #define _STOP_TRIGGER_VALUE 1
 
-safuResultE_t elosPluginReportAsStarted(elosPluginContext_t *plugin) {
+safuResultE_t elosPluginReportAsStarted(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -26,7 +26,7 @@ safuResultE_t elosPluginReportAsStarted(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosPluginStopTriggerWait(elosPluginContext_t *plugin) {
+safuResultE_t elosPluginStopTriggerWait(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -46,7 +46,7 @@ safuResultE_t elosPluginStopTriggerWait(elosPluginContext_t *plugin) {
     return result;
 }
 
-safuResultE_t elosPluginStopTriggerWrite(elosPluginContext_t *plugin) {
+safuResultE_t elosPluginStopTriggerWrite(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {

@@ -9,7 +9,8 @@ int elosTestElosPluginControlDeleteSuccessSetup(void **state) {
     safuResultE_t result;
     elosPluginId_t id = 42;
 
-    elosPluginParam_t param = {
+    elosPluginControlParam_t param = {
+        .pluginType = PLUGIN_TYPE_SCANNER,
         .config = &config,
         .data = NULL,
         .id = id,

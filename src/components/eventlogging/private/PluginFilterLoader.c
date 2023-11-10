@@ -8,7 +8,7 @@
 #include "elos/eventfilter/vector.h"
 #include "elos/eventlogging/StorageBackend.h"
 
-safuResultE_t elosPluginFilterLoaderLoad(elosPlugin_t *plugin) {
+safuResultE_t elosPluginFilterLoaderLoad(elosPluginControl_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     samconfConfigStatusE_t configResult = SAMCONF_CONFIG_ERROR;
     elosRpnFilterResultE_t filterResult = RPNFILTER_RESULT_ERROR;

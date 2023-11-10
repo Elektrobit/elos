@@ -26,7 +26,8 @@ void elosTestElosPluginControlInitializeSuccess(void **state) {
     SHOULD("%s", "test correct behaviour of elosPluginControlInitialize");
 
     for (int i = 0; i < 2; i += 1) {
-        elosPluginParam_t param = {
+        elosPluginControlParam_t param = {
+            .pluginType = PLUGIN_TYPE_SCANNER,
             .config = &config,
             .data = &data,
             .id = id,
@@ -48,11 +49,7 @@ void elosTestElosPluginControlInitializeSuccess(void **state) {
         assert_ptr_equal(test->plugin.context.config, param.config);
         assert_ptr_equal(test->plugin.context.data, param.data);
         assert_int_equal(test->plugin.context.id, param.id);
-        for (int o = 0; o < ELOS_PLUGIN_FUNC_COUNT; o += 1) {
-            assert_ptr_not_equal(test->plugin.func[o].name, NULL);
-            assert_string_equal(test->plugin.func[o].name, elosPluginFuncDefaultName[o]);
-            assert_ptr_equal(test->plugin.func[o].ptr, NULL);
-        }
+        assert_int_equal(test->plugin.pluginType, param.pluginType);
 
         if (i == 0) {
             assert_ptr_equal(test->plugin.file, NULL);

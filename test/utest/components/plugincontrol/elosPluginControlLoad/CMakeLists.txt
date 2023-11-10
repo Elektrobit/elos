@@ -6,7 +6,7 @@ create_unit_test(
     test_plugin_elosPluginControlLoad_utest
   SOURCES
     case_err_param.c
-    case_success_funcoverride.c
+    case_success_local.c
     elosPluginControlLoad_functions.c
     elosPluginControlLoad_utest.c
   LIBRARIES

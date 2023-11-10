@@ -7,7 +7,6 @@ create_unit_test(
   SOURCES
     case_err_func.c
     case_err_param.c
-    case_success_funcoverride.c
     case_success.c
     elosPluginControlInitialize_utest.c
   LIBRARIES

@@ -13,45 +13,38 @@
 #define ELOS_PLUGIN_FLAG_WORKERRUNNING              SAFU_FLAG_CUSTOM_START_BIT
 #define ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(__f) ((atomic_load(__f) & ELOS_PLUGIN_FLAG_WORKERRUNNING) != 0)
 
-typedef enum elosPluginFuncEntryE {
-    ELOS_PLUGIN_FUNC_LOAD = 0,
-    ELOS_PLUGIN_FUNC_START,
-    ELOS_PLUGIN_FUNC_STOP,
-    ELOS_PLUGIN_FUNC_UNLOAD,
-    ELOS_PLUGIN_FUNC_COUNT,
-} elosPluginFuncEntryE_t;
-
-typedef struct elosPluginFuncEntry {
+typedef struct elosPluginControlFuncEntry {
     char *name;
     elosPluginFunc_t *ptr;
-} elosPluginFuncEntry_t;
+} elosPluginControlFuncEntry_t;
 
-typedef struct elosPluginParamFuncOverride {
+typedef struct elosPluginControlParamFuncOverride {
     char const *load;
     char const *unload;
     char const *start;
     char const *stop;
-} elosPluginParamFuncOverride_t;
+} elosPluginControlParamFuncOverride_t;
 
-typedef struct elosPluginParam {
+typedef struct elosPluginControlParam {
     elosPluginId_t id;
     samconfConfig_t const *config;
-    elosPluginParamFuncOverride_t funcOverride;
+    elosPluginTypeE_t pluginType;
     char const *path;
     char const *file;
     void *data;
-} elosPluginParam_t;
+} elosPluginControlParam_t;
 
-typedef struct elosPlugin {
+typedef struct elosPluginControl {
     safuFlags_t flags;
-    elosPluginFuncEntry_t func[ELOS_PLUGIN_FUNC_COUNT];
-    elosPluginContext_t context;
+    elosPluginConfig_t const *pluginConfig;
+    elosPluginTypeE_t pluginType;
+    elosPlugin_t context;
     pthread_t workerThread;
     int sync;
     char const *path;
     char *file;
     void *dlHandle;
-} elosPlugin_t;
+} elosPluginControl_t;
 
-typedef safuVec_t elosPluginVector_t;
-typedef safuVec_t elosPluginPtrVector_t;
+typedef safuVec_t elosPluginControlVector_t;
+typedef safuVec_t elosPluginControlPtrVector_t;

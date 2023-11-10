@@ -14,5 +14,5 @@ typedef struct elosLogAggregator {
     elosPluginManager_t *pluginManager;
     pthread_mutex_t *lock;
     samconfConfig_t const *config;
-    elosPluginPtrVector_t pluginPtrVector;
+    elosPluginControlPtrVector_t pluginControlPtrVector;
 } elosLogAggregator_t;

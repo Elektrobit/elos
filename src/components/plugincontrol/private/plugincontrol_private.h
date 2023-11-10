@@ -3,4 +3,4 @@
 
 #include "elos/plugincontrol/plugincontrol.h"
 
-safuResultE_t elosPluginFilterLoaderLoad(elosPluginControl_t *plugin);
+#define ELOS_PLUGINCONTROL_CONFIG_NAME "elosPluginConfig"

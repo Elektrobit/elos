@@ -6,7 +6,7 @@ int elosTestElosPluginControlInitializeErrParamSetup(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     safuResultE_t result;
 
-    elosPluginParam_t const param = {0};
+    elosPluginControlParam_t const param = {.pluginType = PLUGIN_TYPE_SCANNER};
     result = elosPluginControlInitialize(&test->plugin, &param);
     assert_int_equal(result, SAFU_RESULT_OK);
 
@@ -21,10 +21,11 @@ int elosTestElosPluginControlInitializeErrParamTeardown(void **state) {
 
 void elosTestElosPluginControlInitializeErrParam(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
-    elosPluginParam_t const param = {0};
-    elosPluginParam_t const invalidParamA = {.path = "123", .file = "456"};
-    elosPluginParam_t const invalidParamB = {.path = "123"};
-    elosPlugin_t zeroedPlugin = {0};
+    elosPluginControlParam_t const param = {0};
+    elosPluginControlParam_t const invalidParamA = {.path = "123", .file = "456", .pluginType = PLUGIN_TYPE_SCANNER};
+    elosPluginControlParam_t const invalidParamB = {.path = "123", .pluginType = PLUGIN_TYPE_SCANNER};
+
+    elosPluginControl_t zeroedPlugin = {0};
 
     safuResultE_t result;
 

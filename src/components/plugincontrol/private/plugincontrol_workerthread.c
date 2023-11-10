@@ -9,19 +9,19 @@
 #include "safu/log.h"
 #include "safu/mutex.h"
 
-void *elosPluginWorkerThread(void *data) {
-    elosPlugin_t *plugin = (elosPlugin_t *)data;
+void *elosPluginControlWorkerThread(void *data) {
+    elosPluginControl_t *control = (elosPluginControl_t *)data;
     safuResultE_t result = SAFU_RESULT_OK;
     int retVal;
 
-    result = plugin->func[ELOS_PLUGIN_FUNC_LOAD].ptr(&plugin->context);
+    result = control->pluginConfig->load(&control->context);
     if (result != SAFU_RESULT_OK) {
-        plugin->context.state = PLUGIN_STATE_ERROR;
+        control->context.state = PLUGIN_STATE_ERROR;
         safuLogErr("plugin load function call failed");
     } else {
-        plugin->context.state = PLUGIN_STATE_LOADED;
+        control->context.state = PLUGIN_STATE_LOADED;
 
-        retVal = eventfd_write(plugin->context.sync, 1);
+        retVal = eventfd_write(control->context.sync, 1);
         if (retVal < 0) {
             safuLogErrErrno("pthread_cond_wait failed");
             result = SAFU_RESULT_FAILED;
@@ -31,21 +31,21 @@ void *elosPluginWorkerThread(void *data) {
     if (result == SAFU_RESULT_OK) {
         eventfd_t efdVal = 0;
 
-        retVal = eventfd_read(plugin->sync, &efdVal);
+        retVal = eventfd_read(control->sync, &efdVal);
         if (retVal < 0) {
             safuLogErrErrno("eventfd_read (sync) failed");
             result = SAFU_RESULT_FAILED;
         } else {
-            plugin->context.state = PLUGIN_STATE_STARTED;
+            control->context.state = PLUGIN_STATE_STARTED;
 
-            result = plugin->func[ELOS_PLUGIN_FUNC_START].ptr(&plugin->context);
+            result = control->pluginConfig->start(&control->context);
             if (result != SAFU_RESULT_OK) {
-                plugin->context.state = PLUGIN_STATE_ERROR;
+                control->context.state = PLUGIN_STATE_ERROR;
                 safuLogErr("plugin load function call failed");
             } else {
-                plugin->context.state = PLUGIN_STATE_STOPPED;
+                control->context.state = PLUGIN_STATE_STOPPED;
 
-                retVal = eventfd_write(plugin->context.sync, 1);
+                retVal = eventfd_write(control->context.sync, 1);
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_write (worker.sync) failed");
                     result = SAFU_RESULT_FAILED;

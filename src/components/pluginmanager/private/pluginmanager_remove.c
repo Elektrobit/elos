@@ -8,24 +8,25 @@
 #include "elos/plugincontrol/plugincontrol.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
-safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPluginPtrVector_t *pluginPtrVector) {
+safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager,
+                                      elosPluginControlPtrVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((pluginManager == NULL) || (pluginPtrVector == NULL)) {
+    if ((pluginManager == NULL) || (controlPtrVector == NULL)) {
         safuLogErr("NULL-Pointer has been passed as parameter");
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INITIALIZED) {
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
-        elosPluginVector_t *pluginVector = &pluginManager->pluginVector;
+        elosPluginControlVector_t *pluginVector = &pluginManager->pluginVector;
         ssize_t const elements = safuVecElements(pluginVector);
 
         result = SAFU_RESULT_OK;
 
         for (ssize_t i = 0; i < elements; i += 1) {
             safuResultE_t resIter = SAFU_RESULT_OK;
-            elosPlugin_t *plugin;
+            elosPluginControl_t *plugin;
 
-            plugin = *(elosPlugin_t **)safuVecGetLast(pluginPtrVector);
+            plugin = *(elosPluginControl_t **)safuVecGetLast(controlPtrVector);
             if (plugin == NULL) {
                 safuLogErr("safuVecGetLast failed");
                 resIter = SAFU_RESULT_FAILED;
@@ -37,7 +38,7 @@ safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPl
                     safuLogErrF("elosPluginManagerEntryRemove failed (plugin->id: %d)", plugin->context.id);
                 }
 
-                retVal = safuVecPop(pluginPtrVector);
+                retVal = safuVecPop(controlPtrVector);
                 if (retVal < 0) {
                     safuLogErr("safuVecPop failed");
                     resIter = SAFU_RESULT_FAILED;
