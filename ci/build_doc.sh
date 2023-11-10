@@ -147,4 +147,5 @@ if [ ${WARNINGS} -ne 0 ]; then
     echo "Build warnings ${WARNINGS}"
     echo ""
     cat ${SPHINX_BUILD_DIR}/html_doc_error.log
+    exit 1
 fi
