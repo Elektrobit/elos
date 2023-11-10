@@ -11,6 +11,7 @@ Elos Source
    demos/index
    elosd/index
    libelos/index
+   libelosplugin/index
    plugins/index
    version/index
 
