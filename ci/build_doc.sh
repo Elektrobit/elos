@@ -137,7 +137,7 @@ export PATH="${PATH}:${DIST_DIR}/usr/local/bin"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-"./"}:${DIST_DIR}/usr/local/lib"
 sphinx-build -b html ${SPHINX_SOURCE_DIR} ${SPHINX_HTML_OUTPUT_DIR} 2> ${SPHINX_BUILD_DIR}/html_doc_error.log
 if [ $? -ne 0 ]; then
-    echo "Build failed, fr details see ${SPHINX_BUILD_DIR}/html_doc_error.log"
+    echo "Build failed, for details see ${SPHINX_BUILD_DIR}/html_doc_error.log"
     exit 1
 fi
 
@@ -147,4 +147,5 @@ if [ ${WARNINGS} -ne 0 ]; then
     echo "Build warnings ${WARNINGS}"
     echo ""
     cat ${SPHINX_BUILD_DIR}/html_doc_error.log
+    exit 1
 fi
