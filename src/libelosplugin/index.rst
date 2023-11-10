@@ -58,5 +58,5 @@ functions are responsible for fully activating the Plugin, with Start for
 example containing an endless loop that monitors a resource, while Stop
 contains the functionality to end the loop running in Start.
 
-All used functions are of the type "safuResultE_t func(elosPluginContext_t *)",
+All used functions are of the type :code:`safuResultE_t func(elosPluginContext_t *)`,
 with the elosPluginContext_t containing everything needed to operate the plugin.
