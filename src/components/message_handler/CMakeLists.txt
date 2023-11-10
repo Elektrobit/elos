@@ -24,7 +24,7 @@ target_include_directories(
 target_link_libraries(
   messagehandler_static
   PUBLIC
-    clientmanager_interface
+    connectionmanager_interface
     elos_common_interface
     eventbuffer_static
     eventprocessor_static

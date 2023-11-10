@@ -5,7 +5,7 @@
 #include <samconf/samconf.h>
 #include <stdint.h>
 
-#include "elos/clientmanager/clientmanager.h"
+#include "elos/connectionmanager/connectionmanager.h"
 #include "elos/eventlogging/LogAggregator.h"
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/scanner/scanner.h"

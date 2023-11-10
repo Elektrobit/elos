@@ -11,13 +11,13 @@ node elos {
 
   together {
     component Scanner
-    component ClientManager
+    component ConnectionManager
   }
 }
 
-Scanner -[hidden]up-> ClientManager
+Scanner -[hidden]up-> ConnectionManager
 Scanner -> LogAggregator : persist
-ClientManager -> LogAggregator : persist
+ConnectionManager -> LogAggregator : persist
 LogAggregator -* JsonBackend
 JsonBackend -> Storage
 @enduml

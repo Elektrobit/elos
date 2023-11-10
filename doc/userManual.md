@@ -514,7 +514,7 @@ By default the elosd config options, stored in '/etc/elos/elosd.json' do look li
             "UseEnv": false,
             "Port": 54321,
             "Interface": "127.0.0.1",
-            "LogFilter": "clientmanager.c;dispatcher.c;message_handler.c;message_event_create.c;message_event_push.c",
+            "LogFilter": "connectionmanager.c;dispatcher.c;message_handler.c;message_event_create.c;message_event_push.c",
             "LogLevel": "DEBUG",
             "EventBlacklist": ".event.messageCode 2000 EQ",
             "authorizedProcesses": [

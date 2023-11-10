@@ -56,9 +56,9 @@ favicons = [
 c_autodoc_roots = [
     './src/',
     './src/common/interface',
-    './src/components/clientmanager/interface',
-    './src/components/clientmanager/private',
-    './src/components/clientmanager/public',
+    './src/components/connectionmanager/interface',
+    './src/components/connectionmanager/private',
+    './src/components/connectionmanager/public',
     './src/components/config/interface',
     './src/components/config/private',
     './src/components/config/public',

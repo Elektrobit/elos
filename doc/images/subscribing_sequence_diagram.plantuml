@@ -1,15 +1,15 @@
 @startuml
 
 participant Client
-participant ClientManager
+participant ConnectionManager
 participant EventProcessor
 collections EventFilter
 queue EventQueue
 
 
 group create a session
-  Client --> ClientManager : connect()
-  Client <-- ClientManager : Session
+  Client --> ConnectionManager : connect()
+  Client <-- ConnectionManager : Session
 end
 
 loop for each set of events a client want's to subscribe
@@ -33,11 +33,11 @@ loop while client want's to receive events
 end
 
 group close a session
-  Client --> ClientManager : close()
-  ClientManager --> EventProcessor : deleteEventQueueOwnedByThisSession()
+  Client --> ConnectionManager : close()
+  ConnectionManager --> EventProcessor : deleteEventQueueOwnedByThisSession()
   EventProcessor --> EventQueue : deleteIfNotUsed()
   EventProcessor --> EventFilter : deleteIfNotUsed()
-  Client <-- ClientManager :
+  Client <-- ConnectionManager :
 end
 @enduml
 
