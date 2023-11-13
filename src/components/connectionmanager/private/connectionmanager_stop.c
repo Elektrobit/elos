@@ -29,7 +29,7 @@ safuResultE_t elosConnectionManagerStop(elosConnectionManager_t *connectionManag
             if (retVal != 0) {
                 safuLogWarnErrnoValue("Joining ConnectionManager worker failed (possible memory leak)", retVal);
             } else {
-                result = SAFU_RESULT_FAILED;
+                result = SAFU_RESULT_OK;
             }
             atomic_fetch_and(&connectionManager->flags, ~ELOS_CONNECTIONMANAGER_THREAD_NOT_JOINED);
         }

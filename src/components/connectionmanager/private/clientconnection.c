@@ -85,7 +85,7 @@ safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConne
 }
 
 safuResultE_t elosClientConnectionDeleteMembers(elosClientConnection_t *clientConnection) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
+    safuResultE_t result = SAFU_RESULT_OK;
 
     if (clientConnection != NULL) {
         if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientConnection->flags) == true) {
