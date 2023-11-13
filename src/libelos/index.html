@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>libelos &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="libelosplugin" href="../libelosplugin/index.html" />
+    <link rel="prev" title="elosd" href="../elosd/index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="libelos">
+<h1>libelos<a class="headerlink" href="#libelos" title="Link to this heading">¶</a></h1>
+<p>The Library comes in form of a c library (libelos) and a header file.
+The library provides two APIs :</p>
+<ul class="simple">
+<li><p>Event-API:</p>
+<ul>
+<li><p>Used to publish and subscribe to events</p></li>
+</ul>
+</li>
+<li><p>LogAggregator-API (DCF-API)</p>
+<ul>
+<li><p>Used to store logs (content of a log see SM_REQ001)</p></li>
+<li><p>Used to access logs (content of a log see SM_REQ001)</p></li>
+</ul>
+</li>
+</ul>
+<section id="design-decision-thread-safety">
+<h2>Design decision – Thread Safety<a class="headerlink" href="#design-decision-thread-safety" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>TBD: The library is intended to be thread safe and forkable, with no
+worker threads and synchronous input/output.</p>
+</div></blockquote>
+</section>
+<section id="actual-implementation">
+<h2>Actual implementation<a class="headerlink" href="#actual-implementation" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>The functions are documented in this section</p></li>
+<li><p>There is also a simple sequence diagram available further down below
+that shows how to interact with the server.</p></li>
+</ul>
+</section>
+<section id="eloseventqueueremove">
+<h2>elosEventQueueRemove<a class="headerlink" href="#eloseventqueueremove" title="Link to this heading">¶</a></h2>
+<p>Removes a previously created EventQueue.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosEventQueueRemove</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> eventQueueId -&gt; the id for the EventQueue that shall be
+removed</p></li>
+</ul>
+<p>Returns: * 0 for success or errorcode &lt; 0 on failure</p>
+</section>
+<section id="eloseventqueuesetlimit">
+<h2>elosEventQueueSetLimit<a class="headerlink" href="#eloseventqueuesetlimit" title="Link to this heading">¶</a></h2>
+<p>Restrict the amount of events that can be recorded in a given timeframe.
+This replaces the default values from the configuration file for the
+specified EventQueueID.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosEventQueueSetLimit</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span><span class="p">,</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">timeframe</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> eventQueueId -&gt; the id for the EventQueue that shall be
+modified</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> timeframe -&gt; the timeframe in which the maximum amount of
+events can occur</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> events -&gt; the maximum amount of events that can occur in the
+specified timeframe</p></li>
+</ul>
+<p>Returns: * 0 for success or errorcode &lt; 0 on failure</p>
+</section>
+<section id="eloseventqueuegetlimit">
+<h2>elosEventQueueGetLimit<a class="headerlink" href="#eloseventqueuegetlimit" title="Link to this heading">¶</a></h2>
+<p>Fetch the amount of events that can be recorded in a given timeframe,
+these are either the default values from the configuration file or the
+values set by the last <code class="docutils literal notranslate"><span class="pre">elosEventQueueSetLimit()</span></code> call.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosEventQueueGetLimit</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventQueueId_t</span><span class="w"> </span><span class="n">eventQueueId</span><span class="p">,</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="o">*</span><span class="n">timeframe</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> eventQueueId -&gt; the id for the EventQueue that shall be
+modified</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[out]</span></code> timeframe -&gt; the timeframe in seconds in which the maximum
+amount of events can occur</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[out]</span></code> events -&gt; the maximum amount of events that can occur in
+the specified timeframe</p></li>
+</ul>
+<p>Returns: * 0 for success or errorcode &lt; 0 on failure</p>
+</section>
+<section id="eloslogfiltercreate">
+<h2>elosLogFilterCreate<a class="headerlink" href="#eloslogfiltercreate" title="Link to this heading">¶</a></h2>
+<p>Creates a logFilter struct that can contain one or more rules for
+filtering log entries from the database during a read.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFilterCreate</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="o">*</span><span class="w"> </span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">logFilter</span><span class="p">,</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="eloslogfilteraddrule">
+<h2>elosLogFilterAddRule<a class="headerlink" href="#eloslogfilteraddrule" title="Link to this heading">¶</a></h2>
+<p>Adds a new filter rule to the logFilter struct.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFilterAddRule</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="o">*</span><span class="w"> </span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">logFilter</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilterRule_e</span><span class="w"> </span><span class="n">logFilterRule</span><span class="p">,</span><span class="w"> </span><span class="c1">// &lt;TBD&gt; e.g. LOG_FILTER_RULE_TIMESTAMP</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">logFilterParam</span><span class="w">  </span><span class="c1">// &lt;TBD&gt; e.g. a struct with timestamp values</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="eloslogfilterdestroy">
+<h2>elosLogFilterDestroy<a class="headerlink" href="#eloslogfilterdestroy" title="Link to this heading">¶</a></h2>
+<p>Frees the memory associated with a logFilter struct.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFilterDestroy</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="o">*</span><span class="w"> </span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="n">logFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">logFilter</span><span class="p">,</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="eloslogfindevent">
+<h2>elosLogFindEvent<a class="headerlink" href="#eloslogfindevent" title="Link to this heading">¶</a></h2>
+<p>Fetches all logged events based on the used filter (e.g. based on
+payload or other data).</p>
+<ul class="simple">
+<li><p>In case no events are in the log, the vector parameter won’t be
+changed.</p></li>
+<li><p>The memory of the event vector will be allocated by the library and
+must be freed afterwards with elosEventVectorDelete().</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">elosLogFindEvent</span><span class="p">(</span>
+<span class="w">        </span><span class="n">elosSession_t</span><span class="w"> </span><span class="o">*</span><span class="n">session</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filterRule</span><span class="p">,</span>
+<span class="w">        </span><span class="n">elosEventVector_t</span><span class="w"> </span><span class="o">**</span><span class="n">vector</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> session -&gt; session data structure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[in]</span></code> filterRule -&gt; filter rule for entry selection</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[out]</span></code> vector -&gt; list of event structs</p></li>
+</ul>
+<p>Returns: * 0 for success or errorcode &lt; 0 on failure</p>
+<section id="json-data-structure-example">
+<h3>JSON data structure example<a class="headerlink" href="#json-data-structure-example" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Each event will always have the fields <strong>name</strong>, <strong>timestamp</strong>, and
+<strong>data</strong></p></li>
+<li><p>The <strong>data</strong> field is individual for each event type, they will be
+described in a separate section of this document.</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COREDUMP_STARTED&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1631720019</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;pid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1234&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;exe&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/usr/bin/crashed_application&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;corefile&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/tmp/coredump_with_identifiers&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TEMPERATURE_HIGH&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1631717420</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;sensor_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;71.0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sensor_2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;63.7&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="example-sequence-diagram">
+<h2>Example sequence diagram<a class="headerlink" href="#example-sequence-diagram" title="Link to this heading">¶</a></h2>
+<p>This sequence diagram shows a simplified use case for polling for
+events.</p>
+<figure class="align-default" id="id1">
+<img alt="Library sequence diagram" src="../../_images/library_sequence_diagram.png" />
+<figcaption>
+<p><span class="caption-text">Library sequence diagram</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Developers</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../clients/index.html">elos-clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../common/index.html">common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../components/index.html">Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/index.html">Demos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../elosd/index.html">elosd</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">libelos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../libelosplugin/index.html">libelosplugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plugins/index.html">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../version/index.html">Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#the-input-and-output-data-formats">The input and output data formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#components">Components</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../test/index.html">Verification Strategy or how we test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Elos Source</a><ul>
+      <li>Previous: <a href="../elosd/index.html" title="previous chapter">elosd</a></li>
+      <li>Next: <a href="../libelosplugin/index.html" title="next chapter">libelosplugin</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/src/libelos/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

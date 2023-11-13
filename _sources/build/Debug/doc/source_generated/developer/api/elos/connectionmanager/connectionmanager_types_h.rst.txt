@@ -1,0 +1,5 @@
+connectionmanager_types.h
+=========================
+
+.. autocmodule:: elos/connectionmanager/connectionmanager_types.h
+    :members:

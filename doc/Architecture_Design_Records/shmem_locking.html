@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>Architecture Design Record - Shared Memory Locking &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Design Decisions - Enforce usage of _FORTIFY_SOURCE" href="usage_of_FORTIFY_SOURCE.html" />
+    <link rel="prev" title="Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages." href="package_registry.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="architecture-design-record-shared-memory-locking">
+<h1>Architecture Design Record - Shared Memory Locking<a class="headerlink" href="#architecture-design-record-shared-memory-locking" title="Link to this heading">¶</a></h1>
+<section id="problem">
+<h2>Problem<a class="headerlink" href="#problem" title="Link to this heading">¶</a></h2>
+<p>We need to read and write data from a shared memory region that is shared
+across multiple virtual machines (using /dev/mem). To prevent data races,
+we need some sort of locking mechanism that works with /dev/mem.</p>
+</section>
+<section id="considerations">
+<h2>Considerations<a class="headerlink" href="#considerations" title="Link to this heading">¶</a></h2>
+<p>There are a few methods for locking, which will be detailed in this section.</p>
+<section id="kernel-based-locking-mutex-futex-semaphores">
+<h3>Kernel based locking (Mutex, Futex, Semaphores, …)<a class="headerlink" href="#kernel-based-locking-mutex-futex-semaphores" title="Link to this heading">¶</a></h3>
+<p>There are a couple of good options with “classic” shared memory allocated
+via the POSIX functions calls, e.g. pthread_mutex or the newer futex,
+with semaphores being an additional option if the locking mechanism doesn’t
+need to be placed inside the shared memory.</p>
+<p>None of these are designed to work with a concept like /dev/mem though,
+which is accessed by multiple virtual machines that have each their own kernel,
+while the locking mechanism themselves are managed by only one kernel.</p>
+<p>Technically a pthread_mutex or a futex could be placed inside /dev/mem,
+but this is veering deeply into “undefined behavior” territory and should be
+avoided at all costs. In the worst case it will seem like it is working and
+will start breaking when we least expect it further down the line.</p>
+</section>
+<section id="spinlock-atomic-variables">
+<h3>Spinlock (Atomic variables)<a class="headerlink" href="#spinlock-atomic-variables" title="Link to this heading">¶</a></h3>
+<p>Atomic variables are not managed by a kernel and work fine as long as
+the operation can be translated directly into assembler code. This shouldn’t
+be a problem for the usual basic integer operations up to the processors
+register size (e.g. 8 bytes on 64bit platforms).</p>
+<p>As a spinlock makes use of atomic integers we can use it for this use case.
+The issue here is with the spinlock itself which has a whole host of issues
+that cannot be ignored for normal use cases (e.g. driving a whole core to
+a 100% usage just for waiting until something happens).</p>
+</section>
+<section id="hypervisor-based-locking">
+<h3>Hypervisor based locking<a class="headerlink" href="#hypervisor-based-locking" title="Link to this heading">¶</a></h3>
+<p>Hypervisor based locking is the most complicated, but really the only option
+to properly implement a locking mechanism for an address range shared across
+multiple machines.</p>
+<p>Roughly generalized, we have two possibles modes of operation detailed below.</p>
+<section id="adress-range-based-locking">
+<h4>Adress range based locking<a class="headerlink" href="#adress-range-based-locking" title="Link to this heading">¶</a></h4>
+<p>The hypervisor mode can be set to trigger on a predefined address range;
+This is usually used to virtualize or emulate hardware, but, in theory,
+might be used here as well. The data structure itself would be managed by
+the hypervisor in this case, with the users having their own simplified view
+of the data with the ability to read or write data entries.</p>
+</section>
+<section id="software-interrupt-based-locking">
+<h4>Software interrupt based locking<a class="headerlink" href="#software-interrupt-based-locking" title="Link to this heading">¶</a></h4>
+<p>The hypervisor mode has its own version of an software interrupt,
+which is very similiar to the normal software interrupt that is
+used to implement the kernel system calls.</p>
+<p>This feature could be used to implement a mutex-like construct that does
+support locking across multiple virtual machines properly.</p>
+</section>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h2>
+<p>Only spinlocks are currently available as a safe and ready to use locking
+method in conjunction with /dev/mem, in the long term hypervisor based locking
+should be designed and realized due to its inherent advantages.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ADRs</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#list-of-adrs">List of ADRs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../test/index.html">Verification Strategy or how we test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Architecture Design Records</a><ul>
+      <li>Previous: <a href="package_registry.html" title="previous chapter">Evaluation of the gitlab package registry, with regards to storing and using the elos subproject debian packages.</a></li>
+      <li>Next: <a href="usage_of_FORTIFY_SOURCE.html" title="next chapter">Design Decisions - Enforce usage of _FORTIFY_SOURCE</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/doc/Architecture_Design_Records/shmem_locking.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

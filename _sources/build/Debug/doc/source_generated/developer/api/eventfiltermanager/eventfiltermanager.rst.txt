@@ -1,0 +1,9 @@
+eventfiltermanager
+==================
+
+.. toctree::
+    :maxdepth: 4
+
+    eventfiltermanager_c
+    eventfilternode_c
+    eventfilternodevector_c

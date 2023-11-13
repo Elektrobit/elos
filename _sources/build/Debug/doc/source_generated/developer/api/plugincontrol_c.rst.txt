@@ -1,0 +1,4 @@
+plugincontrol.c
+===============
+
+.. autocmodule:: plugincontrol.c

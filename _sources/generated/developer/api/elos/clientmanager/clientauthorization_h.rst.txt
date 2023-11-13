@@ -1,5 +1,0 @@
-clientauthorization.h
-=====================
-
-.. autocmodule:: elos/clientmanager/clientauthorization.h
-    :members:

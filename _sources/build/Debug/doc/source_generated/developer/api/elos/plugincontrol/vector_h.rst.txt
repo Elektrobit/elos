@@ -1,0 +1,5 @@
+vector.h
+========
+
+.. autocmodule:: elos/plugincontrol/vector.h
+    :members:

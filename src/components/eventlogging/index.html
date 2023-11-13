@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>Event Logging &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="EventProcessor" href="../eventprocessor/index.html" />
+    <link rel="prev" title="canonical event format" href="../event/index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="event-logging">
+<h1>Event Logging<a class="headerlink" href="#event-logging" title="Link to this heading">¶</a></h1>
+<p>The event logging system implements a data collection facility, which
+collects events from different sources to filters and limits them in
+order to store them. For details about the canonical event format see
+“canonical event format”.</p>
+<p>The Event Logging system has the following main goals:</p>
+<ul class="simple">
+<li><p>filter events depending on filter settings</p></li>
+<li><p>limit events to log if a configured limit (logs per time) is exceeded</p></li>
+<li><p>optimize storage access to minimize IO operations and maximize
+physical storage lifetime</p></li>
+</ul>
+<p>For the design the following assumptions are made: (TBD make some
+reliable measurements)</p>
+<ul class="simple">
+<li><p>the upper limit of available storage is 100GB</p></li>
+<li><p>an storage entity the event is round about &lt;= 100Kb</p></li>
+<li><p>10⁶ events; 100 event/s =&gt; 60H</p></li>
+<li><p>All events are treated equal / categorize events and apply different
+storage retention policies</p></li>
+<li><p>What is the minimal expected time frame to hold events (1a ?)</p></li>
+<li><p>512 Bytes is smallest storage entity size (SSD/MMC always write at
+least 512 byte)</p></li>
+</ul>
+<p><img alt="overview event logging" src="../../../_images/overview_event_logging.png" /> #### Log aggregation</p>
+<p>The details on storing events shall be encapsulated by a component
+called LogAggregator. This component is responsible for the following
+tasks:</p>
+<ul class="simple">
+<li><p>manage storage backend start, stop</p></li>
+<li><p>filter and limit event logs</p></li>
+<li><p>forward events to the actual storage backend to persist them</p></li>
+<li><p>manage concurrent storage requests</p></li>
+<li><p>manage retention policy, (trigger log cleanup, drop old logs )</p></li>
+<li><p>monitor storage backend health, generate notification about failing
+storage backend</p></li>
+<li><p>manage multiple backends (compile time or as loadable plugin?)</p></li>
+</ul>
+<p>The Loggagregator is a shared instance in the elosd. So it has to
+synchronize all attempts to persist an event.</p>
+<section id="logaggregator-detailed-design-api">
+<h2>LogAggregator - Detailed Design (API)<a class="headerlink" href="#logaggregator-detailed-design-api" title="Link to this heading">¶</a></h2>
+<p>The LogAggregator interface is defined as follows:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosLogAggregator</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">elosLogAggregator_t</span><span class="p">;</span>
+
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorStart</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorAdd</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorShutdown</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorFindEvents</span><span class="p">(</span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">rule</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>elosLogAggregatorStart</p>
+<p>Initialize the event logging system. It initializes the configured
+storage backend and setup synchronization and filter functionality.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorStart</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator
+instance</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosLogAggregatorShutdown</p>
+<p>Shutdown the logging system and free all related resources.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorShutdown</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator
+instance</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosLogAggregatorAdd</p>
+<p>Queue an event to store on non volatile storage.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorAdd</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">event</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator
+instance * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> event -&gt; the event that will get stored</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosLogAggregatorFindEvents</p>
+<div class="line-block">
+<div class="line">Find all logged events that match a given filter rule. The events are
+gathered from the json backend.</div>
+<div class="line">The filter rule, which will be applied to the events, is a comparision
+formula in string format</div>
+<div class="line">i.e. “.event.source.appName ‘exampleName’ STRCMP”. Events with
+elements matching the rule are appended</div>
+<div class="line">to the third parameter, the event vector.</div>
+</div>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosLogAggregatorFindEvents</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosLogAggregator_t</span><span class="w"> </span><span class="o">*</span><span class="n">logAggregator</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">rule</span><span class="p">,</span>
+<span class="w">    </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> logAggregator -&gt; a pointer to a logAggregator
+instance * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> rule -&gt; a filter rule in string format *
+<code class="docutils literal notranslate"><span class="pre">[in|out]</span></code> events -&gt; an event vector, where elements will be appended</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<section id="logging-backend-s">
+<h3>Logging Backend(s)<a class="headerlink" href="#logging-backend-s" title="Link to this heading">¶</a></h3>
+<p>The actual storage process depends on the storage engine used. Therefore
+this is abstracted in so called Storage backends. A storage backend
+takes one or more events store them in the underlying storage engine. A
+storage engine could be a simple file write, a database or any other
+solution that fits the needs for the target system.</p>
+<p>The interface of a storage backend consist basically of the following
+tasks:</p>
+<ul class="simple">
+<li><p>Backend open</p></li>
+<li><p>Backend store</p></li>
+<li><p>Backend close</p></li>
+<li><p>Realize required retention policy</p></li>
+</ul>
+<p>The following Design Decision shall describe the decision process for
+the final storage backend to use.</p>
+</section>
+</section>
+<section id="design-decision-storage-backend">
+<h2>Design Decision – Storage backend<a class="headerlink" href="#design-decision-storage-backend" title="Link to this heading">¶</a></h2>
+<ol class="upperalpha simple">
+<li><p>JSON-File based</p></li>
+<li><p>DBMS - SQLITE</p></li>
+<li><p>Time series DB</p></li>
+<li><p>NoSQL</p></li>
+<li><p>Custom implementation</p></li>
+</ol>
+</section>
+<section id="storage-backend-interface-detailed-design-api">
+<h2>Storage backend Interface - Detailed Design (API)<a class="headerlink" href="#storage-backend-interface-detailed-design-api" title="Link to this heading">¶</a></h2>
+<p>The StorageBackend interface is defined as follows:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">elosStorageBackend</span><span class="p">;</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosStorageBackend</span><span class="w"> </span><span class="n">elosStorageBackend_t</span><span class="p">;</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendStart_t</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendPersist_t</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span>
+<span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendShutdown_t</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">elosStorageBackend</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">backendData</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackendStart_t</span><span class="w"> </span><span class="o">*</span><span class="n">start</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackendPersist_t</span><span class="w"> </span><span class="o">*</span><span class="n">persist</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosStorageBackendShutdown_t</span><span class="w"> </span><span class="o">*</span><span class="n">shutdown</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>elosStorageBackendStart</p>
+<p>Initialize the event logging system. It initializes the configured
+storage backend and setup synchronization and filter functionality.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendStart_t</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to the backend instance</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosStorageBackendShutdown</p>
+<p>Shutdown the logging system and free all related resources.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendShutdown_t</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> -&gt; a pointer to a backend instance</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosStorageBackendPersist</p>
+<p>Writes the event to the underlying storage.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosStorageBackendPersist_t</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to a backend instance *
+<code class="docutils literal notranslate"><span class="pre">[in]</span></code> event -&gt; a pointer to a event instance to persist</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+</section>
+<section id="json-backend-detailed-design-api">
+<h2>Json Backend - Detailed Design (API)<a class="headerlink" href="#json-backend-detailed-design-api" title="Link to this heading">¶</a></h2>
+<p>The JsonBackend interface is defined as follows:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendStart</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendPersist</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendFindEvents</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span><span class="p">);</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendShutdown</span><span class="p">(</span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">);</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosJsonBackend</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">storageFile</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">elosJsonBackend_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>elosJsonBackendStart</p>
+<p>Initialize the file backed storage of JSON serialized event objects. The
+<code class="docutils literal notranslate"><span class="pre">elosStorageBackend_t.backendData</span></code> shall be initialized with a pointer
+to a <code class="docutils literal notranslate"><span class="pre">elosJsonBackend_t</span></code> instance.
+<code class="docutils literal notranslate"><span class="pre">elosJsonBackend_t.storageFileWrite</span></code> and
+<code class="docutils literal notranslate"><span class="pre">elosJsonBackend_t.storageFileRead</span></code> shall contain valid file
+descriptors to the target file for writing/reading purposes. In write
+mode, the file shall be opened for appending and synchronous writing, to
+ensure a write is carried out through the kernel caches.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendStart</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to the backend instance</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosJsonBackendShutdown</p>
+<p>Shutdown the logging system and free all related resources.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendShutdown</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> -&gt; a pointer to a backend instance</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosJsonBackendPersist</p>
+<p>Writes the event to the underlying storage pointed to by
+<code class="docutils literal notranslate"><span class="pre">elosStorageBackend_t.backendData</span></code>. The function shall not call
+<code class="docutils literal notranslate"><span class="pre">sync</span></code> to flush kernel caches, as the file shall be opened with
+O_SYNC. The function shall block until the event is successful written
+to the storage backend.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendPersist</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">elosEvent_t</span><span class="w"> </span><span class="o">*</span><span class="n">event</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to a backend instance *
+<code class="docutils literal notranslate"><span class="pre">[in]</span></code> event -&gt; a pointer to a event instance to persist</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+<p>elosJsonBackendFindEvents</p>
+<p>Applies a filter to a given storage backend. Events which weren’t sorted
+out by the filter, will be appended on the event vector.</p>
+<p>Function:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosJsonBackendFindEvents</span><span class="p">(</span>
+<span class="w">    </span><span class="n">elosStorageBackend_t</span><span class="w"> </span><span class="o">*</span><span class="n">backend</span><span class="p">,</span>
+<span class="w">    </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span>
+<span class="w">    </span><span class="n">safuVec_t</span><span class="w"> </span><span class="o">*</span><span class="n">events</span>
+<span class="w">    </span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters: * <code class="docutils literal notranslate"><span class="pre">[in]</span></code> backend -&gt; a pointer to a backend instance *
+<code class="docutils literal notranslate"><span class="pre">[in]</span></code> filter -&gt; a filter that will be applied to the backend *
+<code class="docutils literal notranslate"><span class="pre">[in|out]</span></code> events -&gt; an event vector, where elements will be appended</p>
+<p>Returns: * SAFU_RESULT_OK -&gt; on success * SAFU_RESULT_FAILED -&gt; on
+failure</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Developers</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../clients/index.html">elos-clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../common/index.html">common</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../demos/index.html">Demos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../elosd/index.html">elosd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../libelos/index.html">libelos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../libelosplugin/index.html">libelosplugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../plugins/index.html">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../version/index.html">Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#the-input-and-output-data-formats">The input and output data formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#components">Components</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../test/index.html">Verification Strategy or how we test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Elos Source</a><ul>
+  <li><a href="../index.html">Components</a><ul>
+      <li>Previous: <a href="../event/index.html" title="previous chapter">canonical event format</a></li>
+      <li>Next: <a href="../eventprocessor/index.html" title="next chapter">EventProcessor</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../../_sources/src/components/eventlogging/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

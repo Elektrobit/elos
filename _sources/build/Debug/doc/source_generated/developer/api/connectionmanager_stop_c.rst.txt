@@ -1,0 +1,4 @@
+connectionmanager_stop.c
+========================
+
+.. autocmodule:: connectionmanager_stop.c

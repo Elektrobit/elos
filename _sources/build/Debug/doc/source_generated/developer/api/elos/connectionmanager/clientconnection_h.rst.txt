@@ -1,0 +1,5 @@
+clientconnection.h
+==================
+
+.. autocmodule:: elos/connectionmanager/clientconnection.h
+    :members:

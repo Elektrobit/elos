@@ -39,33 +39,34 @@
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/time.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
 
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/plugin/vector.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/plugincontrol/vector.h&quot;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/pluginmanager/pluginmanager.h&quot;</span>
 
 <div class="viewcode-block" id="c._pluginManagerUnloadHelper"><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">_pluginManagerUnloadHelper</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">element</span><span class="p">,</span><span class="w"> </span><span class="n">UNUSED</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">elosPluginManager_t</span><span class="w"> </span><span class="o">*</span><span class="n">pluginManager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">elosPluginManager_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">data</span><span class="p">;</span>
-<span class="w">    </span><span class="n">elosPlugin_t</span><span class="w"> </span><span class="o">*</span><span class="n">plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">elosPlugin_t</span><span class="w"> </span><span class="o">**</span><span class="p">)</span><span class="n">element</span><span class="p">;</span>
+<span class="w">    </span><span class="n">elosPluginControl_t</span><span class="w"> </span><span class="o">*</span><span class="n">plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">elosPluginControl_t</span><span class="w"> </span><span class="o">**</span><span class="p">)</span><span class="n">element</span><span class="p">;</span>
 <span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
 
-<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosPluginManagerEntryUnload</span><span class="p">(</span><span class="n">pluginManager</span><span class="p">,</span><span class="w"> </span><span class="n">plugin</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">);</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosPluginManagerEntryUnload</span><span class="p">(</span><span class="n">pluginManager</span><span class="p">,</span><span class="w"> </span><span class="n">plugin</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;Unloading pluginId &#39;%d&#39; failed (likely resulting in a memory leak)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">plugin</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">);</span>
+<span class="w">        </span><span class="n">safuLogWarnF</span><span class="p">(</span><span class="s">&quot;Unloading pluginId &#39;%d&#39; failed (likely resulting in a memory leak)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">plugin</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span></div>
 
-<div class="viewcode-block" id="c.elosPluginManagerUnload"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosPluginManagerUnload</span><span class="p">(</span><span class="n">elosPluginManager_t</span><span class="w"> </span><span class="o">*</span><span class="n">pluginManager</span><span class="p">,</span><span class="w"> </span><span class="n">elosPluginPtrVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">pluginPtrVector</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="viewcode-block" id="c.elosPluginManagerUnload"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosPluginManagerUnload</span><span class="p">(</span><span class="n">elosPluginManager_t</span><span class="w"> </span><span class="o">*</span><span class="n">pluginManager</span><span class="p">,</span>
+<span class="w">                                      </span><span class="n">elosPluginControlPtrVector_t</span><span class="w"> </span><span class="o">*</span><span class="n">controlPtrVector</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">pluginManager</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">pluginPtrVector</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">pluginManager</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">controlPtrVector</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;NULL-Pointer has been passed as parameter&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pluginManager</span><span class="o">-&gt;</span><span class="n">state</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PLUGINMANAGER_STATE_INITIALIZED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;The given pluginManager struct is not in state &#39;INITIALIZED&#39;&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosPluginVectorIterate</span><span class="p">(</span><span class="n">pluginPtrVector</span><span class="p">,</span><span class="w"> </span><span class="n">_pluginManagerUnloadHelper</span><span class="p">,</span><span class="w"> </span><span class="n">pluginManager</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosPluginControlVectorIterate</span><span class="p">(</span><span class="n">controlPtrVector</span><span class="p">,</span><span class="w"> </span><span class="n">_pluginManagerUnloadHelper</span><span class="p">,</span><span class="w"> </span><span class="n">pluginManager</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosPluginVectorIterate failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosPluginControlVectorIterate failed&quot;</span><span class="p">);</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 
@@ -94,11 +95,14 @@
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test/index.html">Verification Strategy or how we test</a></li>
 </ul>
 
 <div class="relations">

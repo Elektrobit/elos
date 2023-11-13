@@ -1,4 +1,0 @@
-clientmanager_start.c
-=====================
-
-.. autocmodule:: clientmanager_start.c

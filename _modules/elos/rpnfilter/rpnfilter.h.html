@@ -37,113 +37,148 @@
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/rpnfilter/rpnfilter_types.h&quot;</span>
 
-<div class="viewcode-block" id="c.elosRpnFilterInit"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterInit">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterInit"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterInit">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterInit</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Initializes an existing elosRpnFilter</span>
-<span class="cm"> * Input:        Pointer to the memory area that will be</span>
-<span class="cm"> *               initialized with default values after compiling</span>
-<span class="cm"> * Info:         Needs to be freed with elosRpnFilterDeleteMembers()</span>
-<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Initializes an existing elosRpnFilter</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Pointer to the memory area that will be</span>
+<span class="cm"> *     initialized with default values after compiling</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *     Needs to be freed with elosRpnFilterDeleteMembers()</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterInit</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterNew"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterNew">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterNew"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterNew">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterNew</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Allocates an elosRpnFilter</span>
-<span class="cm"> * Input:        Pointer to a pointer that will contain the newly</span>
-<span class="cm"> *               allocated elosRpnFilter after calling the function.</span>
-<span class="cm"> * Info:         The resulting elosRpnFilter is uninitialized</span>
-<span class="cm"> *               Needs to be freed with elosRpnFilterDelete()</span>
-<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Allocates an elosRpnFilter</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Pointer to a pointer that will contain the newly</span>
+<span class="cm"> *     allocated elosRpnFilter after calling the function.</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *     The resulting elosRpnFilter is uninitialized</span>
+<span class="cm"> *     Needs to be freed with elosRpnFilterDelete()</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterNew</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">**</span><span class="n">filter</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterDeepCopy"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterDeepCopy">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterDeepCopy"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterDeepCopy">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterDeepCopy</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Makes a deep copy of elosRpnFilter. The copy is</span>
-<span class="cm"> *               completely independent of the original</span>
-<span class="cm"> *               and needs to be freed separately.</span>
-<span class="cm"> * Input:        Two elosRpnFilter pointers (from and to)</span>
-<span class="cm"> * Info:         &#39;to&#39; needs to be freed with elosRpnFilterDeleteMembers()</span>
-<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Makes a deep copy of elosRpnFilter. The copy is</span>
+<span class="cm"> *     completely independent of the original</span>
+<span class="cm"> *     and needs to be freed separately.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Two elosRpnFilter pointers (from and to)</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *     &#39;to&#39; needs to be freed with elosRpnFilterDeleteMembers()</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterDeepCopy</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterClone"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterClone">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterClone"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterClone">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterClone</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Duplicates elosRpnFilter into a newly allocated</span>
-<span class="cm"> *               memory region. The copy is completely independent</span>
-<span class="cm"> *               of the original and needs to be freed separately.</span>
-<span class="cm"> * Input:        Two elosRpnFilter pointers (from and to)</span>
-<span class="cm"> * Info:         &#39;to&#39; needs to be freed with elosRpnFilterDelete()</span>
-<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Duplicates elosRpnFilter into a newly allocated</span>
+<span class="cm"> *     memory region. The copy is completely independent</span>
+<span class="cm"> *     of the original and needs to be freed separately.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Two elosRpnFilter pointers (from and to)</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *     &#39;to&#39; needs to be freed with elosRpnFilterDelete()</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterClone</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">**</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterDeleteMembers"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterDeleteMembers"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterDeleteMembers</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Frees memory used by elosRpnFilter members</span>
-<span class="cm"> * Input:        Pointer to the elosRpnFilter to free</span>
-<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Frees memory used by elosRpnFilter members</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Pointer to the elosRpnFilter to free</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterDeleteMembers</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterDelete"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterDelete">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterDelete"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterDelete">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterDelete</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Frees memory used by elosRpnFilter members</span>
-<span class="cm"> * Input:        Pointer to the memory area that will be</span>
-<span class="cm"> *               initialized with default values after compiling</span>
-<span class="cm"> * Info:         Needs to be freed with elosRpnFilterDeleteMembers()</span>
-<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Frees memory used by elosRpnFilter members</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Pointer to the memory area that will be</span>
+<span class="cm"> *     initialized with default values after compiling</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *     Needs to be freed with elosRpnFilterDeleteMembers()</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterDelete</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterCreate"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterCreate">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterCreate"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterCreate">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterCreate</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Create new filter to be used with elosRpnFilterExecute</span>
-<span class="cm"> * Info;         Combines elosRpnFilterBuilderNew</span>
-<span class="cm"> *               elosRpnFilterBuilderTokenize, elosRpnFilterBuilderCompile</span>
-<span class="cm"> *               and elosRpnFilterBuilderFinalize into an easy to use function.</span>
-<span class="cm"> * Input:        Initialized elosRpnFilter and parameters</span>
-<span class="cm"> * Return:       - FILTER_RESULT_OK on success,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Create new filter to be used with elosRpnFilterExecute</span>
+<span class="cm"> * Info:</span>
+<span class="cm"> *     Combines elosRpnFilterBuilderNew</span>
+<span class="cm"> *     elosRpnFilterBuilderTokenize, elosRpnFilterBuilderCompile</span>
+<span class="cm"> *     and elosRpnFilterBuilderFinalize into an easy to use function.</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Initialized elosRpnFilter and parameters</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_OK on success,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterCreate</span><span class="p">(</span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilterParam_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterExecute"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterExecute">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterExecute"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterExecute">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterExecute</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Runs an elosRpnFilter on the given data</span>
-<span class="cm"> * Input:        elosRpnFilter and parameters</span>
-<span class="cm"> * Return:       - FILTER_RESULT_MATCH on success with a match,</span>
-<span class="cm"> *               - FILTER_RESULT_NO_MATCH on success with no match,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Runs an elosRpnFilter on the given data</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     elosRpnFilter and parameters</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_MATCH on success with a match,</span>
+<span class="cm"> *     - FILTER_RESULT_NO_MATCH on success with no match,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecute</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">*</span><span class="n">input</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosRpnFilterExecuteResult"><a class="viewcode-back" href="../../../generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterExecuteResult">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosRpnFilterExecuteResult"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/rpnfilter/rpnfilter_h.html#c.elosRpnFilterExecuteResult">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Function:     elosRpnFilterExecuteResult</span>
 <span class="cm"> *------------------------------------------------------------------</span>
-<span class="cm"> * Description:  Runs an elosRpnFilter on the given data and</span>
-<span class="cm"> *               returns the remaining values on the filter stack.</span>
-<span class="cm"> *               Useful for more complex operations.</span>
-<span class="cm"> * Input:        Initialized elosRpnFilter and parameters</span>
-<span class="cm"> * Return:       - FILTER_RESULT_MATCH on success with a match,</span>
-<span class="cm"> *               - FILTER_RESULT_NO_MATCH on success with no match,</span>
-<span class="cm"> *               - FILTER_RESULT_ERROR on failure.</span>
+<span class="cm"> * Description:</span>
+<span class="cm"> *     Runs an elosRpnFilter on the given data and</span>
+<span class="cm"> *     returns the remaining values on the filter stack.</span>
+<span class="cm"> *     Useful for more complex operations.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Input:</span>
+<span class="cm"> *     Initialized elosRpnFilter and parameters</span>
+<span class="cm"> * Return:</span>
+<span class="cm"> *     - FILTER_RESULT_MATCH on success with a match,</span>
+<span class="cm"> *     - FILTER_RESULT_NO_MATCH on success with no match,</span>
+<span class="cm"> *     - FILTER_RESULT_ERROR on failure.</span>
 <span class="cm"> ******************************************************************/</span>
 <span class="n">elosRpnFilterResultE_t</span><span class="w"> </span><span class="nf">elosRpnFilterExecuteResult</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilter_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="w">                                                  </span><span class="n">elosRpnFilterStack_t</span><span class="w"> </span><span class="o">*</span><span class="n">output</span><span class="p">);</span></div>
@@ -170,11 +205,14 @@
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../test/index.html">Verification Strategy or how we test</a></li>
 </ul>
 
 <div class="relations">

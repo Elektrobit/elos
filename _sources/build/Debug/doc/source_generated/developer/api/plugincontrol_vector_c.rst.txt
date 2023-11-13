@@ -1,0 +1,4 @@
+plugincontrol_vector.c
+======================
+
+.. autocmodule:: plugincontrol_vector.c

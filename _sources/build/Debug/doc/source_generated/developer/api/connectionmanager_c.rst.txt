@@ -1,0 +1,4 @@
+connectionmanager.c
+===================
+
+.. autocmodule:: connectionmanager.c

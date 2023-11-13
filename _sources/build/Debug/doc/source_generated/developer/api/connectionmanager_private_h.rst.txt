@@ -1,0 +1,5 @@
+connectionmanager_private.h
+===========================
+
+.. autocmodule:: connectionmanager_private.h
+    :members:

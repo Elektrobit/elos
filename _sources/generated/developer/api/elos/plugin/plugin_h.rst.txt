@@ -1,5 +1,0 @@
-plugin.h
-========
-
-.. autocmodule:: elos/plugin/plugin.h
-    :members:

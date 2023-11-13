@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>plugincontrol_load.c &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for plugincontrol_load.c</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+
+<div class="viewcode-block" id="c._GNU_SOURCE"><span class="cp">#define _GNU_SOURCE</span></div>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;plugincontrol_load.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;dlfcn.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/log.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/mutex.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;samconf/samconf.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/eventfd.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/plugincontrol/thread.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;plugincontrol_private.h&quot;</span>
+
+<span class="c1">// Note: Helper functions are meant to be called only internally, due to that we don&#39;t need value validity checks.</span>
+<span class="c1">//       These normally would be marked &#39;static&#39;, but are not to make unit testing easier.</span>
+
+<div class="viewcode-block" id="c.elosPluginControlLoadHelperSearchFile"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosPluginControlLoadHelperSearchFile</span><span class="p">(</span><span class="n">elosPluginControl_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">newFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">path</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">file</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">access</span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">F_OK</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">R_OK</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;access on file &#39;%s&#39; failed (returned: %d, %s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">newFile</span><span class="p">,</span><span class="w"> </span><span class="n">retVal</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">samconfConfigStatusE_t</span><span class="w"> </span><span class="n">configResult</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">fileName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">configResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samconfConfigGetString</span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;File&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">fileName</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">configResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAMCONF_CONFIG_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;samconfConfigGet &#39;File&#39; failed : %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">configResult</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fileName</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="o">*</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asprintf</span><span class="p">(</span><span class="o">&amp;</span><span class="n">newFile</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%s/%s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">fileName</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;asprintf failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;asprintf returned an empty string&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">access</span><span class="p">(</span><span class="n">newFile</span><span class="p">,</span><span class="w"> </span><span class="n">F_OK</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">R_OK</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;access on file &#39;%s&#39; failed (returned: %d, %s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">newFile</span><span class="p">,</span><span class="w"> </span><span class="n">retVal</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+<span class="w">                    </span><span class="n">free</span><span class="p">(</span><span class="n">newFile</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newFile</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosPluginControlLoadHelperGetConfig"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosPluginControlLoadHelperGetConfig</span><span class="p">(</span><span class="n">elosPluginControl_t</span><span class="w"> </span><span class="o">*</span><span class="n">control</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">pluginConfig</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">errStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosPluginControlLoadHelperSearchFile</span><span class="p">(</span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">file</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">dlHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlopen</span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">RTLD_LAZY</span><span class="p">);</span>
+<span class="w">            </span><span class="n">errStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlerror</span><span class="p">();</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">dlHandle</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">errStr</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;dlopen failed with: &#39;%s&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">errStr</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">void</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">**</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">pluginConfig</span><span class="p">);</span>
+
+<span class="w">                </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlsym</span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">dlHandle</span><span class="p">,</span><span class="w"> </span><span class="n">ELOS_PLUGINCONTROL_CONFIG_NAME</span><span class="p">);</span>
+<span class="w">                </span><span class="n">errStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlerror</span><span class="p">();</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">errStr</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;dlsym failed with: &#39;%s&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">errStr</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">elosPluginConfig_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">pluginConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">pluginConfig</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">pluginType</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">pluginConfig</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;plugin id:%d has wrong type (expected: %d, found: %d)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">id</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">pluginType</span><span class="p">,</span><span class="w"> </span><span class="n">pluginConfig</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pluginConfig</span><span class="o">-&gt;</span><span class="n">load</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;plugin id:%d has no load function set (.load == NULL)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pluginConfig</span><span class="o">-&gt;</span><span class="n">unload</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;plugin id:%d has no unload function set (.unload == NULL)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pluginConfig</span><span class="o">-&gt;</span><span class="n">start</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;plugin id:%d has no start function set (.start == NULL)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pluginConfig</span><span class="o">-&gt;</span><span class="n">stop</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;plugin id:%d has no stop function set (.stop == NULL)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosPluginControlLoad"><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosPluginControlLoad</span><span class="p">(</span><span class="n">elosPluginControl_t</span><span class="w"> </span><span class="o">*</span><span class="n">control</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">control</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Invalid parameter&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">loadNeeded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">PLUGIN_STATE_INITIALIZED</span><span class="p">:</span>
+<span class="w">                </span><span class="n">loadNeeded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">PLUGIN_STATE_INVALID</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">PLUGIN_STATE_STARTED</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">PLUGIN_STATE_STOPPED</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">PLUGIN_STATE_LOADED</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">PLUGIN_STATE_UNLOADED</span><span class="p">:</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">PLUGIN_STATE_ERROR</span><span class="p">:</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Plugin is not in state &#39;INITIALIZED&#39;: state=%d&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">state</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                </span><span class="n">safuLogErrF</span><span class="p">(</span><span class="s">&quot;Plugin is in unknown state &#39;%d&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">state</span><span class="p">);</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loadNeeded</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elosPluginControlLoadHelperGetConfig</span><span class="p">(</span><span class="n">control</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;elosPluginControlLoadHelperGetConfig failed&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">workerThread</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">elosPluginControlWorkerThread</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">control</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;pthread_create failed&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">atomic_fetch_and</span><span class="p">(</span><span class="o">&amp;</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="o">~</span><span class="n">ELOS_PLUGIN_FLAG_WORKERRUNNING</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">atomic_fetch_or</span><span class="p">(</span><span class="o">&amp;</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">ELOS_PLUGIN_FLAG_WORKERRUNNING</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">eventfd_t</span><span class="w"> </span><span class="n">efdVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eventfd_read</span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">sync</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">efdVal</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">safuLogErrErrno</span><span class="p">(</span><span class="s">&quot;eventfd_read failed&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">state</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PLUGIN_STATE_LOADED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">safuLogErr</span><span class="p">(</span><span class="s">&quot;Plugin not in state &#39;LOADED&#39; after worker thread execution&quot;</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">control</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">.</span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PLUGIN_STATE_ERROR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test/index.html">Verification Strategy or how we test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,11 @@
+connectionmanager
+=================
+
+.. toctree::
+    :maxdepth: 4
+
+    clientauthorization_types_h
+    clientconnection_defines_h
+    clientconnection_types_h
+    connectionmanager_types_h
+    types_h

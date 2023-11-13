@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>Components &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="eloslog" href="eloslog/index.html" />
+    <link rel="prev" title="common" href="../common/index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="components">
+<h1>Components<a class="headerlink" href="#components" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eloslog/index.html">eloslog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="eloslog/index.html#createeloseventfromlog">CreateElosEventFromLog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eloslog/index.html#logsafufallback">LogSafuFallback</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="event/index.html">canonical event format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event/index.html#date">date</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event/index.html#source">source</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#design-decision-source-description">Design decision – source description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#severity">severity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#hardware-hypervisor-id">hardware- / hypervisor-ID</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#classification">classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#examples-for-converting-non-canonical-into-canonical-input">Examples for converting non canonical into canonical input</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="event/index.html#event-filtering-and-mapping">Event Filtering and Mapping</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#mapping">Mapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#filtering">Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#rule-sources">Rule Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#translation-engine">Translation engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event/index.html#rule-evaluation-engine">Rule evaluation engine</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="eventlogging/index.html">Event Logging</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="eventlogging/index.html#logaggregator-detailed-design-api">LogAggregator - Detailed Design (API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventlogging/index.html#design-decision-storage-backend">Design Decision – Storage backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventlogging/index.html#storage-backend-interface-detailed-design-api">Storage backend Interface - Detailed Design (API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventlogging/index.html#json-backend-detailed-design-api">Json Backend - Detailed Design (API)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="eventprocessor/index.html">EventProcessor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="eventprocessor/index.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventprocessor/index.html#component-diagram">Component Diagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventprocessor/index.html#interface">Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventprocessor/index.html#eventprocessor-subcomponents">EventProcessor subcomponents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="logger/index.html">logger</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="logger/index.html#default-logger">Default Logger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logger/index.html#eloslog">elosLog</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rpnfilter/index.html">RpnFilter</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rpnfilter/index.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpnfilter/index.html#filter-syntax">Filter Syntax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpnfilter/index.html#interface">Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpnfilter/index.html#usage">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scanner/index.html">Scanner</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scanner/index.html#buildin-scanner-examples">build’in scanner (examples)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scanner/index.html#scanner-api">Scanner-API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scanner_manager/index.html">Scanner Manager</a></li>
+</ul>
+</div>
+<section id="component-structure">
+<h2>Component Structure<a class="headerlink" href="#component-structure" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>elos/src/components/&lt;component name&gt;/
+├── CMakeLists.txt
+├── interface
+│   └── elos
+│       └── &lt;component name&gt;
+│           ├── defines.h
+│           └── types.h
+├── private
+│   ├── &lt;sub component name&gt;
+│   │   └── &lt;sub component name&gt;.c
+│   └── &lt;component name&gt;
+│       └── &lt;component name&gt;.c
+└── public
+    └── elos
+        └── &lt;component name&gt;
+            └── &lt;component name&gt;.h
+</pre></div>
+</div>
+<section id="interface">
+<h3>interface<a class="headerlink" href="#interface" title="Link to this heading">¶</a></h3>
+<p>Contain header files only shared inside the elos build.</p>
+<p><em>Header-files</em>
+<em>C-Source-files</em></p>
+<p>target_addinclude_dir(xyt INTERFACE ./interface/)</p>
+</section>
+<section id="private">
+<h3>private<a class="headerlink" href="#private" title="Link to this heading">¶</a></h3>
+<p>Contain the actual source files.</p>
+<ul class="simple">
+<li><p>Header-files are private and only used by the c-files in private.
+Use include <cite>#include “my_private.h”</cite></p></li>
+<li><p>function in c-files have only public linkage if corresponding protoytpe is defined in a headerifle in <cite>public</cite>.</p></li>
+</ul>
+</section>
+<section id="public">
+<h3>public<a class="headerlink" href="#public" title="Link to this heading">¶</a></h3>
+<p>Contain header files that should be packaged and deployed with elos.</p>
+<ul class="simple">
+<li><p>means link private-code into target which using public interface, avoid static linking</p></li>
+</ul>
+<p><em>Header-files</em>
+<em>C-Source-files</em> : No c-Files shall be in public</p>
+</section>
+<section id="define-components-to-be-installed">
+<h3>define components to be installed<a class="headerlink" href="#define-components-to-be-installed" title="Link to this heading">¶</a></h3>
+</section>
+<section id="build-results">
+<h3>Build results<a class="headerlink" href="#build-results" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>elos/build/&lt;build type&gt;/cmake/src/eventprocessor/
+├── CMakeFiles
+│   └── ...
+├── cmake_install.cmake
+├── lib&lt;component name&gt;_static.a
+└── lib&lt;component name&gt;_static_weak.a
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>lib&lt;component name&gt;_static.a:
+* linked into the final binary
+* target for unit tests</p></li>
+<li><p>lib&lt;component name&gt;_static_weak.a:
+* copy of the lib&lt;component name&gt;_static.a but with the functions symbols are marked as weak to enable mocking
+* target for unit test if mocking of internal functions is required
+* used for unit test of other components if mocking is required</p></li>
+<li><p><em>header files to be deployed</em></p></li>
+</ul>
+</section>
+<section id="unit-tests">
+<h3>Unit tests<a class="headerlink" href="#unit-tests" title="Link to this heading">¶</a></h3>
+<p>Typically each c-Files get compiled as object file and collected in the
+corresponding <cite>lib&lt;component name&gt;_static.a</cite>. So for each c-files a
+corresponding unit test suite shall exists. See [../test/index.rst] for details
+on how to write and utilise unit test.</p>
+</section>
+<section id="component-interface">
+<h3>Component Interface<a class="headerlink" href="#component-interface" title="Link to this heading">¶</a></h3>
+<p>Elos use a unified set of functions for a component or object.
+All are optional and shall be only implemented if needed, but if needed use the
+corresponding prototype below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/**
+ * Allocate memory for `sizeof(elosComponent_t)` and store the address in
+ * `component*` pointer.
+ * Shall call elosComponentNameInitialize.
+ * If the function failed `component*` shall be unchanged.
+ *
+ * Parameter:
+ *     component (elosComponent_t**): point to a elosComponent_t pointer, where
+ *                                    to store address of the new allocated
+ *                                    object. Shall be unchanged on failure.
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
+safuResultE_t elosComponentNameNew(elosComponent_t **component);
+
+/**
+ * Initialize the component with default values to be safely used.
+ *
+ * Parameter:
+ *     component (elosComponent_t*): point to a elosComponent_t, which shall be
+ *                                   initialized with defaults.
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
+safuResultE_t elosComponentNameInitialize(elosComponent_t *component);
+
+/**
+ * Copy the memory contents to a elosComponent_t from a source elosComponent_t
+ * and also make a deep copy each member.
+ *
+ * Parameter:
+ *     to (elosComponent_t*): pointer to the destination component, on failure
+ *                            the state of  elosComponent_t shall be unchanged.
+ *     from (elosComponent_t*): pointer to the source component
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
+safuResultE_t elosComponentNameDeepCopy(elosComponent_t *to, elosComponent_t const *from);
+
+/**
+ * Allocate new memory for a elosComponent_t and make a shallow copy of the
+ * memory contents of the source elosComponent_t.
+ *
+ * Parameter:
+ *     to (elosComponent_t*): pointer to the destination component pointer, on
+ *                            failure the state of  elosComponent_t shall be
+ *                            unchanged.
+ *     from (elosComponent_t*): pointer to the source component
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
+safuResultE_t elosComponentNameClone(elosComponent_t **to, elosComponent_t const *from);
+
+/**
+ * Shall cleanup and free all members of elosComponent_t.
+ *
+ * Parameter:
+ *     component (elosComponent_t*): pointer to a elosComponent_t, of which all
+ *                                   memebers shall be freed.
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
+safuResultE_t elosComponentNameDeleteMembers(elosComponent_t *component);
+
+/**
+ * Shall free elosComponent_t itself.
+ *
+ * Parameter:
+ *     component (elosComponent_t*): pointer to a elosComponent_t, which shall
+ *                                   be freed.
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
+safuResultE_t elosComponentNameDelete(elosComponent_t *component);
+</pre></div>
+</div>
+</section>
+<section id="build-process-in-detail">
+<h3>Build process in detail<a class="headerlink" href="#build-process-in-detail" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>compile all c-files and collect in static component library -&gt; component ==&gt; static library</p></li>
+<li><p>create weak component library</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Developers</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../clients/index.html">elos-clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../common/index.html">common</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/index.html">Demos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../elosd/index.html">elosd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../libelos/index.html">libelos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../libelosplugin/index.html">libelosplugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plugins/index.html">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../version/index.html">Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#the-input-and-output-data-formats">The input and output data formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#components">Components</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../test/index.html">Verification Strategy or how we test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Elos Source</a><ul>
+      <li>Previous: <a href="../common/index.html" title="previous chapter">common</a></li>
+      <li>Next: <a href="eloslog/index.html" title="next chapter">eloslog</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/src/components/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

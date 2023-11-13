@@ -1,5 +1,0 @@
-vector.h
-========
-
-.. autocmodule:: elos/plugin/vector.h
-    :members:

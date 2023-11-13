@@ -1,0 +1,5 @@
+libelosplugin.h
+===============
+
+.. autocmodule:: elos/libelosplugin/libelosplugin.h
+    :members:

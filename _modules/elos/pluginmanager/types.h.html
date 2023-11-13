@@ -35,7 +35,7 @@
 <span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
 <span class="cp">#pragma once</span>
 
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/plugin/types.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/plugincontrol/types.h&quot;</span>
 
 <span class="cp">#ifndef PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE</span>
 <div class="viewcode-block" id="c.PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE"><span class="cp">#define PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE 8</span></div>
@@ -52,7 +52,7 @@
 
 <div class="viewcode-block" id="c.elosPluginManager"><div class="viewcode-block" id="c.elosPluginManager_t"><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">elosPluginManager</span><span class="w"> </span><span class="p">{</span>
 <div class="viewcode-block" id="c.elosPluginManager.state"><div class="viewcode-block" id="c.elosPluginManager_t.state"><span class="w">    </span><span class="n">elosPluginManagerStateE_t</span><span class="w"> </span><span class="n">state</span><span class="p">;</span></div></div>
-<div class="viewcode-block" id="c.elosPluginManager.pluginVector"><div class="viewcode-block" id="c.elosPluginManager_t.pluginVector"><span class="w">    </span><span class="n">elosPluginVector_t</span><span class="w"> </span><span class="n">pluginVector</span><span class="p">;</span></div></div>
+<div class="viewcode-block" id="c.elosPluginManager.pluginVector"><div class="viewcode-block" id="c.elosPluginManager_t.pluginVector"><span class="w">    </span><span class="n">elosPluginControlVector_t</span><span class="w"> </span><span class="n">pluginVector</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosPluginManager.config"><div class="viewcode-block" id="c.elosPluginManager_t.config"><span class="w">    </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosPluginManager.errStr"><div class="viewcode-block" id="c.elosPluginManager_t.errStr"><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="n">errStr</span><span class="p">;</span></div></div>
 <div class="viewcode-block" id="c.elosPluginManager.nextId"><div class="viewcode-block" id="c.elosPluginManager_t.nextId"><span class="w">    </span><span class="n">elosPluginId_t</span><span class="w"> </span><span class="n">nextId</span><span class="p">;</span><span class="w">  </span><span class="c1">// Placeholder that should be replaced with idManager in the future</span></div></div>
@@ -83,11 +83,14 @@
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../test/index.html">Verification Strategy or how we test</a></li>
 </ul>
 
 <div class="relations">

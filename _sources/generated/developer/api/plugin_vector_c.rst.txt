@@ -1,4 +1,0 @@
-plugin_vector.c
-===============
-
-.. autocmodule:: plugin_vector.c

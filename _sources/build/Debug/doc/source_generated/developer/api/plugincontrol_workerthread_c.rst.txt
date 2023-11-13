@@ -1,0 +1,4 @@
+plugincontrol_workerthread.c
+============================
+
+.. autocmodule:: plugincontrol_workerthread.c

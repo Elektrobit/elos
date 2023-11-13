@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>elos/connectionmanager/clientconnection.h &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elos/connectionmanager/clientconnection.h</h1><div class="highlight"><pre>
+<span></span><span class="c1">// SPDX-License-Identifier: MIT</span>
+<span class="cp">#pragma once</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;safu/result.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/connectionmanager/clientconnection_types.h&quot;</span>
+
+<div class="viewcode-block" id="c.elosClientConnectionInitialize"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/connectionmanager/clientconnection_h.html#c.elosClientConnectionInitialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Initializes a new ClientConnection.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientConnection: ClientConnection structure that will be initialized</span>
+<span class="cm"> *      param: Parameters for initialization. Also see clientconnection_types.h</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientConnectionInitialize</span><span class="p">(</span><span class="n">elosClientConnection_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientConnection</span><span class="p">,</span>
+<span class="w">                                             </span><span class="n">elosClientConnectionParam_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosClientConnectionStart"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/connectionmanager/clientconnection_h.html#c.elosClientConnectionStart">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Creates a worker thread using the given socketFd for communication.</span>
+<span class="cm"> * Each ClientConnection can only handle one worker thread,</span>
+<span class="cm"> * calling Start a second time will result in an error.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientConnection: The ClientConnection to be started</span>
+<span class="cm"> *      socketFd: The socketFd that shall be used for communication</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientConnectionStart</span><span class="p">(</span><span class="n">elosClientConnection_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientConnection</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">socketFd</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosClientConnectionStop"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/connectionmanager/clientconnection_h.html#c.elosClientConnectionStop">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Stops the currently active worker thread.</span>
+<span class="cm"> * Start can be called again with a new socketFd after</span>
+<span class="cm"> * a ClientConnection has been stopped.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientConnection: The ClientConnection to be stopped</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientConnectionStop</span><span class="p">(</span><span class="n">elosClientConnection_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientConnection</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosClientConnectionDeleteMembers"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/connectionmanager/clientconnection_h.html#c.elosClientConnectionDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Frees member resources used be the given ClientConnection.</span>
+<span class="cm"> * Will also automatically Stop an active worker thread</span>
+<span class="cm"> * before freeing up the resources.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientConnection: ClientConnection whose members shall be freed</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientConnectionDeleteMembers</span><span class="p">(</span><span class="n">elosClientConnection_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientConnection</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosClientConnectionIsActive"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/connectionmanager/clientconnection_h.html#c.elosClientConnectionIsActive">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Checks if the given ClientConnection has been started or not.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      clientConnection: The ClientConnection to be checked</span>
+<span class="cm"> *      active: set to &#39;true&#39; if a connection is active/started, &#39;false&#39; otherwise.</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
+<span class="cm"> *      - SAFU_RESULT_OK on success</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientConnectionIsActive</span><span class="p">(</span><span class="n">elosClientConnection_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientConnection</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="o">*</span><span class="n">active</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="c.elosClientConnectionWorker"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/connectionmanager/clientconnection_h.html#c.elosClientConnectionWorker">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Worker thread function used by pthread_create()</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      ptr: Pointer to a ClientConnection struct</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - Always NULL</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">elosClientConnectionWorker</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="p">);</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../test/index.html">Verification Strategy or how we test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

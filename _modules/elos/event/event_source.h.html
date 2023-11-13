@@ -40,7 +40,7 @@
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/event/event_types.h&quot;</span>
 
-<div class="viewcode-block" id="c.elosEventSourceNew"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceNew">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceNew"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceNew">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Allocates a new event.</span>
 <span class="cm"> *</span>
 <span class="cm"> * Info:</span>
@@ -54,7 +54,7 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceNew</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">**</span><span class="n">eventSource</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosEventSourceDeleteMembers"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceDeleteMembers"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Frees all members of an event.</span>
 <span class="cm"> *</span>
 <span class="cm"> * Parameters:</span>
@@ -62,7 +62,7 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="kt">void</span><span class="w"> </span><span class="nf">elosEventSourceDeleteMembers</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventSource</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosEventSourceDelete"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDelete">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceDelete"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDelete">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Frees an event allocated with :c:func:`elosEventSourceNew()`</span>
 <span class="cm"> * or :c:func:`losEventSourceDeepCopy()`.</span>
 <span class="cm"> *</span>
@@ -71,7 +71,7 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="kt">void</span><span class="w"> </span><span class="nf">elosEventSourceDelete</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">eventSource</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosEventSourceSerialize"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceSerialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceSerialize"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceSerialize">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Saves the members of an :c:type:`elosEventSource_t` into a JSON formatted string.</span>
 <span class="cm"> *</span>
 <span class="cm"> * Parameters:</span>
@@ -83,7 +83,7 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceSerialize</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">toJsonString</span><span class="p">,</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosEventSourceDeserialize"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeserialize">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceDeserialize"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeserialize">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Stores the information of a JSON formatted string into a elosEventSource_t object.</span>
 <span class="cm"> *</span>
 <span class="cm"> * Parameters:</span>
@@ -95,7 +95,7 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceDeserialize</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fromJsonString</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosEventSourceDeepCopy"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeepCopy">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceDeepCopy"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceDeepCopy">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Duplicates elosEventSource_t with its members</span>
 <span class="cm"> *</span>
 <span class="cm"> * Info:</span>
@@ -110,7 +110,7 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceDeepCopy</span><span class="p">(</span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosEventSourceToJsonObject"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceToJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceToJsonObject"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceToJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Converts the information from an event</span>
 <span class="cm"> * and stores them into an existing JSON object`.</span>
 <span class="cm"> *</span>
@@ -123,7 +123,7 @@
 <span class="cm"> ******************************************************************/</span>
 <span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosEventSourceToJsonObject</span><span class="p">(</span><span class="n">json_object</span><span class="w"> </span><span class="o">*</span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">elosEventSource_t</span><span class="w"> </span><span class="o">*</span><span class="n">from</span><span class="p">);</span></div>
 
-<div class="viewcode-block" id="c.elosEventSourceFromJsonObject"><a class="viewcode-back" href="../../../generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceFromJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
+<div class="viewcode-block" id="c.elosEventSourceFromJsonObject"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/event/event_source_h.html#c.elosEventSourceFromJsonObject">[docs]</a><span class="cm">/*******************************************************************</span>
 <span class="cm"> * Converts the information from a JSON object</span>
 <span class="cm"> * and stores them into an existing event.</span>
 <span class="cm"> *</span>
@@ -158,11 +158,14 @@
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/UserManual.html">Users</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Demos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/api/index.html">elos API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/developer/index.html">Developers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../test/index.html">Verification Strategy or how we test</a></li>
 </ul>
 
 <div class="relations">

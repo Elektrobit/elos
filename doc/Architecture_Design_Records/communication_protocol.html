@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../_static/favicon_16x16.png" sizes="16x11" rel="icon" type="image/png">
+    <link href="../../_static/favicon_32x32.png" sizes="32x21" rel="icon" type="image/png">
+    <title>Design Decision – communication protocol &#8212; elos  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="The project documentation" href="../index.html" />
+    <link rel="prev" title="Design Decisions - Enforce usage of _FORTIFY_SOURCE" href="usage_of_FORTIFY_SOURCE.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="design-decision-communication-protocol">
+<h1>Design Decision – communication protocol<a class="headerlink" href="#design-decision-communication-protocol" title="Link to this heading">¶</a></h1>
+<section id="requirements">
+<h2>Requirements:<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Easy to extend and human readable</p></li>
+<li><p>Message producer do not need to know anything about message consumers</p></li>
+<li><p>“scale able” and therefore it works for a view as good for many participants,
+which means the number of participants can change constantly during runtime</p></li>
+</ul>
+</section>
+<section id="possible-approaches">
+<h2>Possible approaches :<a class="headerlink" href="#possible-approaches" title="Link to this heading">¶</a></h2>
+<p>A) Binary protocol</p>
+<ul class="simple">
+<li><p>More size efficient then text based</p></li>
+<li><p>Difficult to use i.e. on command line for shell scripting without dedicated utilities</p></li>
+<li><p>Not human readable</p></li>
+<li><p>BSON could be a possible solution</p>
+<ul>
+<li><p>Extendable</p></li>
+<li><p>More efficient then text based, due to no text parsing overhead</p></li>
+</ul>
+</li>
+</ul>
+<p>B) text based protocol</p>
+<ul class="simple">
+<li><p>Easy to use i.e. on command line</p></li>
+<li><p>Human readable</p></li>
+<li><p>Somewhat laborious to use in low level languages like C</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p>
+<ul>
+<li><p>Readable but compact in size</p></li>
+<li><p>Well known / supported</p></li>
+<li><p>Structured and type support</p></li>
+<li><p>Not as cycle efficient as binary protocols due to parsing overhead</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="decision">
+<h2>Decision:<a class="headerlink" href="#decision" title="Link to this heading">¶</a></h2>
+<p>Use a JSON based protocol as:</p>
+<ul class="simple">
+<li><p>Is easy to extend , important for future feature requests</p></li>
+<li><p>Easy to use on command line, many tools/libraries available and proven in use</p></li>
+<li><p>Basic type support: possible to encode integer, floating points strings, objects/maps and arrays</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/elos_blue.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../../index.html">elos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ADRs</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#list-of-adrs">List of ADRs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../test/index.html">Verification Strategy or how we test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Architecture Design Records</a><ul>
+      <li>Previous: <a href="usage_of_FORTIFY_SOURCE.html" title="previous chapter">Design Decisions - Enforce usage of _FORTIFY_SOURCE</a></li>
+      <li>Next: <a href="../index.html" title="next chapter">The project documentation</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, wolfgang.gehrhardt@emlix.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../_sources/doc/Architecture_Design_Records/communication_protocol.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -42,7 +42,7 @@
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/eventfd.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
 
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/clientmanager/clientconnection.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/connectionmanager/clientconnection.h&quot;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/eventprocessor/eventprocessor.h&quot;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elos/messages/message_handler.h&quot;</span>
 
@@ -60,8 +60,8 @@
 <div class="viewcode-block" id="c._workerDataInitialize"><span class="k">static</span><span class="w"> </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">_workerDataInitialize</span><span class="p">(</span><span class="n">elosClientConnection_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientConnection</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">safuResultE_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
 <span class="w">    </span><span class="n">elosClientConnectionData_t</span><span class="w"> </span><span class="o">*</span><span class="n">workerData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">clientConnection</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">;</span>
-<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">eqIdElements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLIENTMANAGER_EVENTQUEUEIDVECTOR_SIZE</span><span class="p">;</span>
-<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">efnIdElements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CLIENTMANAGER_EVENTFILTERNODEIDVECTOR_SIZE</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">eqIdElements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CONNECTIONMANAGER_EVENTQUEUEIDVECTOR_SIZE</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">efnIdElements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ELOS_CONNECTIONMANAGER_EVENTFILTERNODEIDVECTOR_SIZE</span><span class="p">;</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">retVal</span><span class="p">;</span>
 
 <span class="w">    </span><span class="n">retVal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuVecCreate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">workerData</span><span class="o">-&gt;</span><span class="n">eventQueueIdVector</span><span class="p">,</span><span class="w"> </span><span class="n">eqIdElements</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elosEventQueueId_t</span><span class="p">));</span>
@@ -238,11 +238,14 @@
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../generated/UserManual.html">Users</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../demo.html">Demos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../generated/api/index.html">elos API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../generated/developer/index.html">Developers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../generated/ADRs/adrs.html">Architecture Design Records</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/userManual.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/Debug/doc/source_generated/api/index.html">public API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/index.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/Debug/doc/source_generated/developer/api/index.html">Complete API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/Architecture_Design_Records/index.html">ADRs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/index.html">How we document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test/index.html">Verification Strategy or how we test</a></li>
 </ul>
 
 <div class="relations">

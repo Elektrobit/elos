@@ -1,0 +1,5 @@
+plugincontrol.h
+===============
+
+.. autocmodule:: elos/plugincontrol/plugincontrol.h
+    :members:

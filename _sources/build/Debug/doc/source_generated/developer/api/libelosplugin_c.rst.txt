@@ -1,0 +1,4 @@
+libelosplugin.c
+===============
+
+.. autocmodule:: libelosplugin.c

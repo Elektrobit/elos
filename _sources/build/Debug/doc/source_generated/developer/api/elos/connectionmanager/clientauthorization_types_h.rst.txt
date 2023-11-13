@@ -1,0 +1,5 @@
+clientauthorization_types.h
+===========================
+
+.. autocmodule:: elos/connectionmanager/clientauthorization_types.h
+    :members:

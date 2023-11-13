@@ -1,0 +1,5 @@
+plugincontrol_private.h
+=======================
+
+.. autocmodule:: plugincontrol_private.h
+    :members:

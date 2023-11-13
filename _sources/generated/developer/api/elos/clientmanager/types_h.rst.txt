@@ -1,5 +1,0 @@
-types.h
-=======
-
-.. autocmodule:: elos/clientmanager/types.h
-    :members:
