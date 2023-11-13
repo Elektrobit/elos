@@ -5,6 +5,10 @@
 #define ELOS_CONFIG_ROOT "/root/elos/"
 #endif
 
+#ifndef ELOS_CONFIG_CLIENTINPUTS
+#define ELOS_CONFIG_CLIENTINPUTS ELOS_CONFIG_ROOT "/ClientInputs"
+#endif
+
 #ifndef ELOS_CONFIG_EVENTLOGGING
 #define ELOS_CONFIG_EVENTLOGGING ELOS_CONFIG_ROOT "EventLogging/"
 #endif
