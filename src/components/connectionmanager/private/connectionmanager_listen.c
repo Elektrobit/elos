@@ -189,6 +189,7 @@ void *elosConnectionManagerThreadListen(void *ptr) {
         if (retVal != 0) {
             safuLogWarnErrnoValue("Closing listenFd failed (possible memory leak)", retVal);
         }
+        connectionManager->fd = -1;
     }
 
     atomic_fetch_and(&connectionManager->flags, ~ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE);
