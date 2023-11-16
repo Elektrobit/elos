@@ -1,3 +1,6 @@
+
+![build](https://github.com/Elektrobit/elos/actions/workflows/build-and-test.yml/badge.svg)
+
 # Event Logging and Management System (elos)
 
 <img src="doc/static/elos_blue.svg" width=20% height=20% align="right">
