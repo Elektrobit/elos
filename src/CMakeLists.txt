@@ -5,6 +5,7 @@ include(weak_library.cmake)
 
 set(ELOSD_PORT "54321")
 set(ELOSD_INTERFACE "0.0.0.0")
+set(ELOSD_CONNECTION_LIMIT 200)
 set(ELOSD_CONFIG_PATH ${CMAKE_INSTALL_FULL_SYSCONFDIR}/elos)
 set(ELOSD_CONFIG_FILE "/etc/elos/elosd.json")
 set(ELOSD_SCANNER_PATH ${CMAKE_INSTALL_FULL_LIBDIR}/elos/scanner)

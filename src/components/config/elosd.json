@@ -4,6 +4,7 @@
             "UseEnv": false,
             "Port": 54321,
             "Interface": "127.0.0.1",
+            "ConnectionLimit": 200,
             "LogFilter": "",
             "LogLevel": "DEBUG",
             "EventBlacklist": ".event.messageCode 2000 EQ",

@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <safu/log.h>
 #include <samconf/samconf.h>
+#include <stdlib.h>
 #include <sys/eventfd.h>
 
 #include "connectionmanager_private.h"
