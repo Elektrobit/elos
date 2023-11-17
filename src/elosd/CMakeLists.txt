@@ -34,6 +34,7 @@ target_link_libraries(
     pluginmanager_static
     eventlogging_static
     connectionmanager_static
+    clientmanager_static
     messagehandler_static
     scanner_manager_static
     elos_scanner_interface

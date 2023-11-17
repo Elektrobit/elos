@@ -13,5 +13,6 @@ typedef struct elosClientManagerParam {
 typedef struct elosClientManager {
     elosPluginManager_t *pluginManager;
     samconfConfig_t const *config;
+    const char *searchPath;
     elosPluginControlPtrVector_t pluginControlPtrVector;
 } elosClientManager_t;

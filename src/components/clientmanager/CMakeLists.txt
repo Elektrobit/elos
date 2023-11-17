@@ -6,10 +6,8 @@ create_interface_library(
   FROM
     clientmanager
   LIBRARIES
-    rpnfilter_interface
     eventlogging_interface
     pluginmanager_interface
-    elos_event_interface
     samconf::samconf_interface
 )
 
@@ -34,12 +32,10 @@ target_link_libraries(
     eventlogging_interface
     clientmanager_interface
     elos_common_interface
-    elos_event_static
     pluginmanager_static
     config_static
     safu::safu
     samconf::samconf
-    eventfilter_static
 )
 
 set_property(TARGET clientmanager_static PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -48,8 +44,6 @@ create_weak_library(
   FROM
     clientmanager_static
   WEAKEN_DEPENDENCIES
-    elos_event_static
-    eventfilter_static
     pluginmanager_static
     config_static
 )

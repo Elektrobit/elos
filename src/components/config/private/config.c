@@ -138,6 +138,11 @@ const char *elosConfigGetElosdScannerPath(const samconfConfig_t *config) {
     return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "Path", "ELOS_SCANNER_PATH", ELOSD_SCANNER_PATH);
 }
 
+const char *elosConfigGetElosdClientPath(const samconfConfig_t *config) {
+    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_CLIENTINPUTS "PluginSearchPath", "ELOS_CLIENT_PATH",
+                                          ELOSD_CLIENT_PATH);
+}
+
 const char *elosConfigGetElosdBackendPath(const samconfConfig_t *config) {
     return elosConfigGetElosdOptionString(config, ELOS_CONFIG_EVENTLOGGING "PluginSearchPath", "ELOS_BACKEND_PATH",
                                           ELOSD_BACKEND_PATH);
