@@ -87,6 +87,7 @@ RUN python -m venv /home/$USER/.venv \
      sphinx-c-autodoc \
      sphinx-copybutton \
      sphinx-favicon \
+     sphinxcontrib-plantuml \
      sphinxcontrib-programoutput
 
 # install sphinx-c-autodoc dependedncies

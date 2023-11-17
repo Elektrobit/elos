@@ -18,6 +18,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinxcontrib.programoutput',
+    'sphinxcontrib.plantuml',
     'sphinx_favicon',
 
     # copy button on code blocks in HTML doc
@@ -53,6 +54,11 @@ favicons = [
     "favicon_16x16.png",
     "favicon_32x32.png",
 ]
+
+# plantuml
+plantuml_output_format = 'png'
+plantuml_batch_size = 100
+plantuml_cache_path = 'build/_plantum'
 
 # c-autodoc
 c_autodoc_roots = [
