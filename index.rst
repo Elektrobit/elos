@@ -28,6 +28,7 @@ Welcome to elos's documentation!
    ADRs <doc/Architecture_Design_Records/index>
    How we document <doc/index>
    Verification Strategy or how we test <test/index>
+   GitHub CI <.github/index>
 
 
 Indices and tables
