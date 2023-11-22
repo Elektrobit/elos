@@ -9,6 +9,10 @@ BUILD_TYPE="${1:-Debug}"
 rm -rf $RESULT_DIR/smoketest_results
 mkdir -p $RESULT_DIR/smoketest_results
 
+if [ "${CI:-false}" = true ]; then
+    export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR:-"$(realpath "${BUILD_DIR}/tmp")"}"
+fi
+
 export ENABLED_TESTS="${2:-""}"
 export DISABLED_TESTS=""
 BASE_DIR=$BASE_DIR BUILD_TYPE=$BUILD_TYPE \

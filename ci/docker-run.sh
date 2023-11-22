@@ -2,6 +2,12 @@
 #
 # create and run docker build env
 #
+IT="-it"
+if [ "${CI}" = true ]; then
+    echo "Running in CI"
+    IT=""
+fi
+
 CMD_PATH="$(realpath "$(dirname "$0")")"
 BASE_DIR="$(realpath "$CMD_PATH/..")"
 . "$BASE_DIR/ci/common_names.sh"
@@ -33,7 +39,7 @@ if [ "$SSH_AUTH_SOCK" ]; then
     SSH_AGENT_OPTS="-v $SSH_AGENT_SOCK:/run/ssh-agent -e SSH_AUTH_SOCK=/run/ssh-agent"
 fi
 
-docker run --rm -it $SSH_AGENT_OPTS \
+docker run --rm ${IT} $SSH_AGENT_OPTS \
     -v $BASE_DIR:/base \
     -w /base \
     -e GIT_USER_TOKEN="${GIT_USER_TOKEN}" \
