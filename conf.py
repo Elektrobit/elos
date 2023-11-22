@@ -31,6 +31,8 @@ extensions = [
     'sphinx_c_autodoc.viewcode',
 ]
 
+myst_enable_extensions = ["tasklist"]
+
 templates_path = ['doc/_templates']
 exclude_patterns = ['build/*/cmake/_deps/*', 'README.md']
 source_suffix = {
