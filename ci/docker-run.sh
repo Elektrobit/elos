@@ -2,16 +2,17 @@
 #
 # create and run docker build env
 #
-IT="-it"
-if [ "${CI}" = true ]; then
-    echo "Running in CI"
-    IT=""
-fi
-
 CMD_PATH="$(realpath "$(dirname "$0")")"
 BASE_DIR="$(realpath "$CMD_PATH/..")"
 . "$BASE_DIR/ci/common_names.sh"
 IMAGE_NAME="${PROJECT}-build"
+
+IT="-it"
+if [ "${CI}" = true ]; then
+    echo "Running in CI"
+    . "$BASE_DIR/ci/ignored_sources.sh"
+    IT=""
+fi
 
 if [ -f "${HOME}/.ssh/asmcov_token" ]; then
     echo "Loading asmcov token from ${HOME}/.ssh/asmcov_token."
@@ -43,6 +44,8 @@ docker run --rm ${IT} $SSH_AGENT_OPTS \
     -v $BASE_DIR:/base \
     -w /base \
     -e GIT_USER_TOKEN="${GIT_USER_TOKEN}" \
+    -e UNUSED_SOURCES="${UNUSED_SOURCES}" \
+    -e IGNORE_SOURCES="${IGNORE_SOURCES}" \
     --privileged \
     --device=/dev/kmsg \
     $IMAGE_NAME $@
