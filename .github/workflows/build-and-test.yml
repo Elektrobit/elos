@@ -1,5 +1,5 @@
 
-name: Build
+name: Build & Test
 on: [push]
 
 jobs:
@@ -73,3 +73,84 @@ jobs:
         with:
           name: ${{ matrix.build_type}}-cmake
           path: build/${{ matrix.build_type}}/cmake
+
+  utest:
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          build-essential \
+          cmake \
+          curl \
+          git \
+          libcmocka-dev \
+          libcurl4-openssl-dev \
+          libesmtp-dev \
+          libjson-c-dev \
+          liblog4c-dev \
+          libmnl-dev \
+          libsqlite3-0 \
+          libsqlite3-dev \
+          libssl-dev \
+          ninja-build \
+          pkg-config \
+          python-is-python3 \
+          python3-pip \
+          python3-venv \
+          sqlite3
+      - name: checkout and build cmocka_extensions
+        run: |
+          git clone https://github.com/Elektrobit/cmocka_extensions.git /tmp/cmocka_extensions
+          cmake -B /tmp/cmocka_extensions/build /tmp/cmocka_extensions -DUNIT_TESTS=off -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          make -C /tmp/cmocka_extensions/build all
+          sudo make -C /tmp/cmocka_extensions/build install
+      - name: checkout and build cmocka_mocks
+        run: |
+          git clone https://github.com/Elektrobit/cmocka_mocks.git /tmp/cmocka_mocks
+          cmake -B /tmp/cmocka_mocks/build /tmp/cmocka_mocks -DUNIT_TESTS=off -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          make -C /tmp/cmocka_mocks/build all
+          sudo make -C /tmp/cmocka_mocks/build install
+      - name: checkout and build safu
+        run: |
+          git clone https://github.com/Elektrobit/safu.git /tmp/safu
+          cmake -B /tmp/safu/build /tmp/safu -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          make -C /tmp/safu/build all
+          sudo make -C /tmp/safu/build install
+      - name: checkout and build samconf
+        run: |
+          git clone https://github.com/Elektrobit/samconf.git /tmp/samconf
+          cmake -B /tmp/samconf/build /tmp/samconf -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          make -C /tmp/samconf/build all
+          sudo make -C /tmp/samconf/build install
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.build_type}}-cmake
+          path: build/${{ matrix.build_type}}/cmake
+      - name: make build/${{ matrix.build_type }}/cmake executables executable
+        run: |
+          for test in $(find build/${{ matrix.build_type }}/cmake/ -name "*_utest"); do
+            chmod +x $test
+          done
+          chmod +x build/${{ matrix.build_type }}/cmake/test/tsan/eventdispatcher/elosEventDispatcherWorker/test_eventdispatcher_elosEventDispatcherWorker_tsan
+          chmod +x build/${{ matrix.build_type }}/cmake/src/clients/coredump/elos-coredump
+          chmod +x build/${{ matrix.build_type }}/cmake/src/demos/demo*
+          chmod +x build/${{ matrix.build_type }}/cmake/src/demos/elos*
+          chmod +x build/${{ matrix.build_type }}/cmake/src/demos/syslog_example
+          chmod +x build/${{ matrix.build_type }}/cmake/src/demos/tinyElosc
+          chmod +x build/${{ matrix.build_type }}/cmake/src/demos/elos_log4c_demo/elos_log4c_demo
+      - name: run Unit-Tests
+        run: ci/run_utest.sh ${{ matrix.build_type }}
+      - name: save test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.build_type}}-utests
+          path: build/${{ matrix.build_type}}/result/unit_test
+
+
