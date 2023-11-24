@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../../../../search.html" />
     <link rel="next" title="config" href="config.html" />
-    <link rel="prev" title="common" href="../common/common.html" />
+    <link rel="prev" title="defines.h" href="defines_h.html" />
    
   <link rel="stylesheet" href="../../../../../../../../_static/custom.css" type="text/css" />
   
@@ -38,6 +38,26 @@
   <section id="config-h">
 <h1>config.h<a class="headerlink" href="#config-h" title="Link to this heading">¶</a></h1>
 <p>// SPDX-License-Identifier: MIT</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.elosConfigGetElosdConnectionLimit">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">elosConfigGetElosdConnectionLimit</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">samconfConfig_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">config</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.elosConfigGetElosdConnectionLimit" title="Link to this definition">¶</a><br /><a class="reference internal" href="../../../../../../../../_modules/elos/config/config.h.html#c.elosConfigGetElosdConnectionLimit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Get the connection limit from config</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<span><span class="c-expr sig sig-inline c"><span class="n">samconfConfig_t</span><span class="p">*</span></span></span>) – elos configuration struct</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>set connection value on success</p></li>
+<li><p>default value(200)  on failure</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -67,191 +87,192 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">public API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../../src/index.html">Developers</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Complete API Reference</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../common/message_h.html">message.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../common/process_h.html">process.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../common/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../common/common.html">common</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">config.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html">config</a></li>
-<li class="toctree-l2"><a class="reference internal" href="defines_h.html">defines.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/event_h.html">event.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/event_source_h.html">event_source.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/event_vector_h.html">event_vector.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/event.html">event</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/event_message_codes_h.html">event_message_codes.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/event_types_h.html">event_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/eventqueue_types_h.html">eventqueue_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../event/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/eventbuffer_h.html">eventbuffer.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/eventbuffer.html">eventbuffer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/defines_h.html">defines.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/eventdispatcher_h.html">eventdispatcher.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/eventdispatcher.html">eventdispatcher</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/defines_h.html">defines.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/builder_h.html">builder.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/eventfilter_h.html">eventfilter.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/execute_h.html">execute.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/vector_h.html">vector.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/eventfilter.html">eventfilter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/eventfilter_types_h.html">eventfilter_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/step_types_h.html">step_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventfilter/vector_types_h.html">vector_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventlogging/LogAggregator_h.html">LogAggregator.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventlogging/eventlogging.html">eventlogging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventlogging/StorageBackend_h.html">StorageBackend.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventlogging/LogAggregatorTypes_h.html">LogAggregatorTypes.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventlogging/PluginFilterLoader_h.html">PluginFilterLoader.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventfiltermanager_h.html">eventfiltermanager.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventfilternode_h.html">eventfilternode.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventprocessor_h.html">eventprocessor.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventqueue_h.html">eventqueue.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventqueuemanager_h.html">eventqueuemanager.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/idmanager_h.html">idmanager.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventprocessor.html">eventprocessor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/defines_h.html">defines.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventfilter_types_h.html">eventfilter_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventqueue_types_h.html">eventqueue_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../pluginmanager/pluginmanager_h.html">pluginmanager.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../pluginmanager/pluginmanager.html">pluginmanager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../pluginmanager/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/builder_h.html">builder.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/execute_h.html">execute.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/processfilter_h.html">processfilter.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/vector_h.html">vector.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/processfilter.html">processfilter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/processfilter_types_h.html">processfilter_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/step_types_h.html">step_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../processfilter/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/builder_h.html">builder.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/execute_h.html">execute.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/vector_h.html">vector.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/rpnfilter_h.html">rpnfilter.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/rpnfilter.html">rpnfilter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/builder_types_h.html">builder_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/execute_types_h.html">execute_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/rpnfilter_types_h.html">rpnfilter_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/step_types_h.html">step_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_c.html">eventdispatcher.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_c.html">rpnfilter_builder.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_stop_c.html">connectionmanager_stop.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_listen_c.html">connectionmanager_listen.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../StorageBackend_c.html">StorageBackend.c</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../rpnfilter/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/rpnfilter_h.html">rpnfilter.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/vector_h.html">vector.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/step_types_h.html">step_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/execute_h.html">execute.h</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../rpnfilter/vector_types_h.html">vector_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../scanner/scanner_h.html">scanner.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../scanner/scanner.html">scanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientauthorization_h.html">clientauthorization.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientauthorizedprocesses_h.html">clientauthorizedprocesses.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientblacklist_h.html">clientblacklist.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientconnection_h.html">clientconnection.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/connectionmanager_h.html">connectionmanager.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/connectionmanager.html">connectionmanager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientauthorization_types_h.html">clientauthorization_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientconnection_defines_h.html">clientconnection_defines.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientconnection_types_h.html">clientconnection_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/connectionmanager_types_h.html">connectionmanager_types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/plugincontrol_h.html">plugincontrol.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/thread_h.html">thread.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/vector_h.html">vector.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/plugincontrol.html">plugincontrol</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/builder_h.html">builder.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/execute_types_h.html">execute_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/builder_types_h.html">builder_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/rpnfilter_types_h.html">rpnfilter_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rpnfilter/rpnfilter.html">rpnfilter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../libelosplugin/types_h.html">types.h</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../libelosplugin/libelosplugin_h.html">libelosplugin.h</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../libelosplugin/libelosplugin.html">libelosplugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../libelosplugin/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../config_c.html">config.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../event_c.html">event.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../event_source_c.html">event_source.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../event_vector_c.html">event_vector.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventbuffer_c.html">eventbuffer.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_c.html">eventdispatcher.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_dispatch_c.html">eventdispatcher_dispatch.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_private_h.html">eventdispatcher_private.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_worker_c.html">eventdispatcher_worker.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_c.html">eventfilter.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_builder_compile_c.html">eventfilter_builder_compile.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_builder_tokenize_c.html">eventfilter_builder_tokenize.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_execute_c.html">eventfilter_execute.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../StorageBackend_c.html">StorageBackend.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../LogAggregator_c.html">LogAggregator.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../PluginFilterLoader_c.html">PluginFilterLoader.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfiltermanager_c.html">eventfiltermanager.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfilternode_c.html">eventfilternode.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfilternodevector_c.html">eventfilternodevector.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfiltermanager.html">eventfiltermanager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventfilternodevector_h.html">eventfilternodevector.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventprocessor_c.html">eventprocessor.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventqueuevector_h.html">eventqueuevector.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventprocessor.html">eventprocessor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueue_c.html">eventqueue.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueuemanager_c.html">eventqueuemanager.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueuevector_c.html">eventqueuevector.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueue.html">eventqueue</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_c.html">pluginmanager.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_entry_c.html">pluginmanager_entry.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_load_c.html">pluginmanager_load.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_remove_c.html">pluginmanager_remove.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_unload_c.html">pluginmanager_unload.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../processfilter_c.html">processfilter.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../processfilter_builder_compile_c.html">processfilter_builder_compile.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../processfilter_builder_tokenize_c.html">processfilter_builder_tokenize.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../processfilter_execute_c.html">processfilter_execute.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_c.html">rpnfilter.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_c.html">rpnfilter_builder.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_compile_c.html">rpnfilter_builder_compile.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_finalize_c.html">rpnfilter_builder_finalize.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_tokenize_c.html">rpnfilter_builder_tokenize.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_execute_c.html">rpnfilter_execute.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_vector_c.html">rpnfilter_vector.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../clientauthorization_c.html">clientauthorization.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../clientauthorizedprocesses_c.html">clientauthorizedprocesses.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../clientblacklist_c.html">clientblacklist.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../clientconnection_c.html">clientconnection.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../clientconnection_worker_c.html">clientconnection_worker.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/event_h.html">event.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/eventqueue_types_h.html">eventqueue_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/event_vector_h.html">event_vector.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/event_types_h.html">event_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/event_message_codes_h.html">event_message_codes.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/event_source_h.html">event_source.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../event/event.html">event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/eventbuffer.html">eventbuffer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/defines_h.html">defines.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventbuffer/eventbuffer_h.html">eventbuffer.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanner/scanner.html">scanner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanner/scanner_h.html">scanner.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../common/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../common/process_h.html">process.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../common/message_h.html">message.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../common/common.html">common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/connectionmanager.html">connectionmanager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/connectionmanager_types_h.html">connectionmanager_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/connectionmanager_h.html">connectionmanager.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientauthorizedprocesses_h.html">clientauthorizedprocesses.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientauthorization_h.html">clientauthorization.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientconnection_types_h.html">clientconnection_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientconnection_h.html">clientconnection.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientauthorization_types_h.html">clientauthorization_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientblacklist_h.html">clientblacklist.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../connectionmanager/clientconnection_defines_h.html">clientconnection_defines.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/plugincontrol_h.html">plugincontrol.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/vector_h.html">vector.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/thread_h.html">thread.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plugincontrol/plugincontrol.html">plugincontrol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/eventdispatcher_h.html">eventdispatcher.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/defines_h.html">defines.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventdispatcher/eventdispatcher.html">eventdispatcher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventlogging/StorageBackend_h.html">StorageBackend.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventlogging/LogAggregator_h.html">LogAggregator.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventlogging/LogAggregatorTypes_h.html">LogAggregatorTypes.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventlogging/PluginFilterLoader_h.html">PluginFilterLoader.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventlogging/eventlogging.html">eventlogging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventfilternode_h.html">eventfilternode.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventprocessor_h.html">eventprocessor.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/defines_h.html">defines.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventqueue_h.html">eventqueue.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventqueue_types_h.html">eventqueue_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/idmanager_h.html">idmanager.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventprocessor.html">eventprocessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventqueuemanager_h.html">eventqueuemanager.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventfilter_types_h.html">eventfilter_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventprocessor/eventfiltermanager_h.html">eventfiltermanager.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/processfilter_h.html">processfilter.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/vector_h.html">vector.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/step_types_h.html">step_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/execute_h.html">execute.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/builder_h.html">builder.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/processfilter.html">processfilter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../processfilter/processfilter_types_h.html">processfilter_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pluginmanager/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pluginmanager/pluginmanager.html">pluginmanager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pluginmanager/pluginmanager_h.html">pluginmanager.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="defines_h.html">defines.h</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">config.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/vector_h.html">vector.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/step_types_h.html">step_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/execute_h.html">execute.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/vector_types_h.html">vector_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/eventfilter_types_h.html">eventfilter_types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/eventfilter_h.html">eventfilter.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/builder_h.html">builder.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../eventfilter/eventfilter.html">eventfilter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_c.html">connectionmanager.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_listen_c.html">connectionmanager_listen.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_private_h.html">connectionmanager_private.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_start_c.html">connectionmanager_start.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_stop_c.html">connectionmanager_stop.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_c.html">plugincontrol.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_vector_c.html">rpnfilter_vector.c</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_load_c.html">plugincontrol_load.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_load_h.html">plugincontrol_load.h</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_private_h.html">plugincontrol_private.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_vector_c.html">plugincontrol_vector.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_workerthread_c.html">plugincontrol_workerthread.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../kmsg_mapper_h.html">kmsg_mapper.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_execute_c.html">eventfilter_execute.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../SqlBackendPlugin_c.html">SqlBackendPlugin.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../clientauthorizedprocesses_c.html">clientauthorizedprocesses.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../NoSqlBackend_h.html">NoSqlBackend.h</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../kmsg_c.html">kmsg.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../kmsg_mapper_c.html">kmsg_mapper.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../scanner/shmem/types_h.html">types.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../scanner/shmem/shmem.html">shmem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../scanner/scanner.html">scanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../shmem_h.html">shmem.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../shmem_config_c.html">shmem_config.c</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../shmem_config_h.html">shmem_config.h</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../shmem_helpers_h.html">shmem_helpers.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../shmem_ringbuffer_c.html">shmem_ringbuffer.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../shmem_ringbuffer_h.html">shmem_ringbuffer.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../shmem_c.html">shmem.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../logline_mapper_h.html">logline_mapper.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../logline_mapper_c.html">logline_mapper.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../syslog_c.html">syslog.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../InfluxDb_h.html">InfluxDb.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../InfluxDbBackend_c.html">InfluxDbBackend.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../InfluxDbBackendPlugin_c.html">InfluxDbBackendPlugin.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JsonBackend_h.html">JsonBackend.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JsonBackend_c.html">JsonBackend.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JsonBackendPlugin_c.html">JsonBackendPlugin.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../NoSqlBackend_h.html">NoSqlBackend.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../NoSqlBackend_c.html">NoSqlBackend.c</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../SqlBackend_h.html">SqlBackend.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../clientauthorization_c.html">clientauthorization.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InfluxDbBackendPlugin_c.html">InfluxDbBackendPlugin.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../scanner/scanner.html">scanner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../scanner/shmem/types_h.html">types.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../scanner/shmem/shmem.html">shmem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JsonBackend_h.html">JsonBackend.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../shmem_config_c.html">shmem_config.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_unload_c.html">pluginmanager_unload.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../shmem_ringbuffer_h.html">shmem_ringbuffer.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_private_h.html">connectionmanager_private.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../processfilter_builder_tokenize_c.html">processfilter_builder_tokenize.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_workerthread_c.html">plugincontrol_workerthread.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InfluxDb_h.html">InfluxDb.h</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../SqlBackend_c.html">SqlBackend.c</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../SqlQueries_h.html">SqlQueries.h</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../SqlBackendPlugin_c.html">SqlBackendPlugin.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../syslog_c.html">syslog.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_vector_c.html">plugincontrol_vector.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_c.html">rpnfilter.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../PluginFilterLoader_c.html">PluginFilterLoader.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_private_h.html">eventdispatcher_private.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../event_c.html">event.c</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../libelosplugin_c.html">libelosplugin.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../SqlQueries_h.html">SqlQueries.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfiltermanager_c.html">eventfiltermanager.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfilternodevector_c.html">eventfilternodevector.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfilternode_c.html">eventfilternode.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfiltermanager/eventfiltermanager.html">eventfiltermanager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_dispatch_c.html">eventdispatcher_dispatch.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_execute_c.html">rpnfilter_execute.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../logline_mapper_c.html">logline_mapper.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../shmem_ringbuffer_c.html">shmem_ringbuffer.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_remove_c.html">pluginmanager_remove.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JsonBackendPlugin_c.html">JsonBackendPlugin.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../clientconnection_c.html">clientconnection.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventprocessor_c.html">eventprocessor.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventprocessor.html">eventprocessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventqueuevector_h.html">eventqueuevector.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventprocessor/eventfilternodevector_h.html">eventfilternodevector.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../LogAggregator_c.html">LogAggregator.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_c.html">eventfilter.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventbuffer_c.html">eventbuffer.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../processfilter_c.html">processfilter.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_c.html">pluginmanager.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../processfilter_execute_c.html">processfilter_execute.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../kmsg_mapper_h.html">kmsg_mapper.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_load_c.html">pluginmanager_load.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../logline_mapper_h.html">logline_mapper.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventdispatcher_worker_c.html">eventdispatcher_worker.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_c.html">plugincontrol.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../clientconnection_worker_c.html">clientconnection_worker.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../connectionmanager_start_c.html">connectionmanager_start.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../event_source_c.html">event_source.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_builder_compile_c.html">eventfilter_builder_compile.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../clientblacklist_c.html">clientblacklist.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../event_vector_c.html">event_vector.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_tokenize_c.html">rpnfilter_builder_tokenize.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../processfilter_builder_compile_c.html">processfilter_builder_compile.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventfilter_builder_tokenize_c.html">eventfilter_builder_tokenize.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../shmem_h.html">shmem.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../config_c.html">config.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pluginmanager_entry_c.html">pluginmanager_entry.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InfluxDbBackend_c.html">InfluxDbBackend.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../NoSqlBackend_c.html">NoSqlBackend.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../plugincontrol_load_h.html">plugincontrol_load.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../shmem_c.html">shmem.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JsonBackend_c.html">JsonBackend.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_finalize_c.html">rpnfilter_builder_finalize.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpnfilter_builder_compile_c.html">rpnfilter_builder_compile.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueuevector_c.html">eventqueuevector.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueuemanager_c.html">eventqueuemanager.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueue.html">eventqueue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../eventqueue/eventqueue_c.html">eventqueue.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../kmsg_mapper_c.html">kmsg_mapper.c</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../../doc/index.html">How we document</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../../test/index.html">Verification Strategy or how we test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../.github/index.html">GitHub CI</a></li>
 </ul>
 
 <div class="relations">
@@ -259,7 +280,7 @@
 <ul>
   <li><a href="../../../../../../../../index.html">Documentation overview</a><ul>
   <li><a href="../../index.html">Elos API</a><ul>
-      <li>Previous: <a href="../common/common.html" title="previous chapter">common</a></li>
+      <li>Previous: <a href="defines_h.html" title="previous chapter">defines.h</a></li>
       <li>Next: <a href="config.html" title="next chapter">config</a></li>
   </ul></li>
   </ul></li>

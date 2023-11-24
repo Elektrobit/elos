@@ -4,7 +4,7 @@ eventprocessor
 .. toctree::
     :maxdepth: 4
 
-    defines_h
     eventfilter_types_h
-    eventqueue_types_h
     types_h
+    eventqueue_types_h
+    defines_h

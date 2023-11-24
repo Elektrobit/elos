@@ -79,12 +79,12 @@
 <span class="n">safuResultE_t</span><span class="w"> </span><span class="nf">elosClientConnectionStop</span><span class="p">(</span><span class="n">elosClientConnection_t</span><span class="w"> </span><span class="o">*</span><span class="n">clientConnection</span><span class="p">);</span></div>
 
 <div class="viewcode-block" id="c.elosClientConnectionDeleteMembers"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/connectionmanager/clientconnection_h.html#c.elosClientConnectionDeleteMembers">[docs]</a><span class="cm">/*******************************************************************</span>
-<span class="cm"> * Frees member resources used be the given ClientConnection.</span>
+<span class="cm"> * Frees all resources used be the given ClientConnection.</span>
 <span class="cm"> * Will also automatically Stop an active worker thread</span>
 <span class="cm"> * before freeing up the resources.</span>
 <span class="cm"> *</span>
 <span class="cm"> * Parameters:</span>
-<span class="cm"> *      clientConnection: ClientConnection whose members shall be freed</span>
+<span class="cm"> *      clientConnection: The ClientConnection to be freed</span>
 <span class="cm"> * Returns:</span>
 <span class="cm"> *      - SAFU_RESULT_FAILED on error</span>
 <span class="cm"> *      - SAFU_RESULT_OK on success</span>
@@ -143,6 +143,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../doc/index.html">How we document</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../test/index.html">Verification Strategy or how we test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../.github/index.html">GitHub CI</a></li>
 </ul>
 
 <div class="relations">

@@ -514,6 +514,7 @@ By default the elosd config options, stored in '/etc/elos/elosd.json' do look li
             "UseEnv": false,
             "Port": 54321,
             "Interface": "127.0.0.1",
+            "ConnectionLimit": 200,
             "LogFilter": "connectionmanager.c;dispatcher.c;message_handler.c;message_event_create.c;message_event_push.c",
             "LogLevel": "DEBUG",
             "EventBlacklist": ".event.messageCode 2000 EQ",
@@ -574,6 +575,7 @@ option will be used instead. If the config option is missing or not readable, el
 * **UseEnv**: Define if elosd will allow overwrite configuration values by environment variables
 * **Port**: The network port number elosd shall use (`ELOSD_PORT`, default value: `54321`)
 * **Interface**: The IPv4 address the elosd server will have (`ELOSD_INTERFACE` default value: `"0.0.0.0"`)
+* **ConnectionLimit**: The maximum number of clients that can be connecte to the server simultaneously(`ELOSD_CONNECTION_LIMIT` default value: `200`)
 * **LogFilter**: Only log messages from these C-Files are shown, don't touch it except you know what you're doing (`ELOS_LOG_FILTER` default value: `""`); files are separated by `;` i.e. `"first.c;second.c"`
 * **LogLevel**: Severity levels deciding how much information will be printed from no messages to extremely detailed the levels are:
 Off, Fatal, Error, Warn, Info, Debug and Verbose (`ELOS_LOG_LEVEL` default value: `"Debug"`)

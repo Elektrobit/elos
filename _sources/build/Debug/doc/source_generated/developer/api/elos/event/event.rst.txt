@@ -4,7 +4,7 @@ event
 .. toctree::
     :maxdepth: 4
 
-    event_message_codes_h
     event_types_h
-    eventqueue_types_h
     types_h
+    eventqueue_types_h
+    event_message_codes_h

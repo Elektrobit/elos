@@ -85,10 +85,11 @@
 
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">useEnv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">getEnvValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">safuGetEnvOr</span><span class="p">(</span><span class="n">envVarName</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">endPtr</span><span class="p">;</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">getEnvValue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtol</span><span class="p">(</span><span class="n">getEnvValue</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
-<span class="w">            </span><span class="n">validValNotPresent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINVAL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ERANGE</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strtol</span><span class="p">(</span><span class="n">getEnvValue</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">endPtr</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<span class="w">            </span><span class="n">validValNotPresent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">endPtr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">getEnvValue</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ERANGE</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINVAL</span><span class="p">;</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 
@@ -118,6 +119,11 @@
 
 <div class="viewcode-block" id="c.elosConfigGetElosdPort"><span class="kt">int</span><span class="w"> </span><span class="nf">elosConfigGetElosdPort</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">elosConfigGetElosdOptionInt</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">ELOS_CONFIG_ROOT</span><span class="w"> </span><span class="s">&quot;Port&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ELOSD_PORT&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ELOSD_PORT</span><span class="p">);</span>
+<span class="p">}</span></div>
+
+<div class="viewcode-block" id="c.elosConfigGetElosdConnectionLimit"><span class="kt">int</span><span class="w"> </span><span class="nf">elosConfigGetElosdConnectionLimit</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">elosConfigGetElosdOptionInt</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">ELOS_CONFIG_ROOT</span><span class="w"> </span><span class="s">&quot;ConnectionLimit&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ELOSD_CONNECTION_LIMIT&quot;</span><span class="p">,</span>
+<span class="w">                                       </span><span class="n">ELOSD_CONNECTION_LIMIT</span><span class="p">);</span>
 <span class="p">}</span></div>
 
 <div class="viewcode-block" id="c.elosConfigGetElosdInterface"><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">elosConfigGetElosdInterface</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -211,6 +217,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../doc/Architecture_Design_Records/index.html">ADRs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../doc/index.html">How we document</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../test/index.html">Verification Strategy or how we test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../.github/index.html">GitHub CI</a></li>
 </ul>
 
 <div class="relations">

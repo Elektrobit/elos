@@ -43,6 +43,16 @@
 
 <div class="viewcode-block" id="c.elosConfigLoad"><span class="kt">int</span><span class="w"> </span><span class="nf">elosConfigLoad</span><span class="p">(</span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">**</span><span class="n">config</span><span class="p">);</span></div>
 <div class="viewcode-block" id="c.elosConfigGetElosdPort"><span class="kt">int</span><span class="w"> </span><span class="nf">elosConfigGetElosdPort</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">);</span></div>
+<div class="viewcode-block" id="c.elosConfigGetElosdConnectionLimit"><a class="viewcode-back" href="../../../build/Debug/doc/source_generated/developer/api/elos/config/config_h.html#c.elosConfigGetElosdConnectionLimit">[docs]</a><span class="cm">/*******************************************************************</span>
+<span class="cm"> * Get the connection limit from config</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      config (samconfConfig_t *): elos configuration struct</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      - set connection value on success</span>
+<span class="cm"> *      - default value(200)  on failure</span>
+<span class="cm"> ******************************************************************/</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">elosConfigGetElosdConnectionLimit</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">);</span></div>
 <div class="viewcode-block" id="c.elosConfigGetElosdInterface"><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">elosConfigGetElosdInterface</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">);</span></div>
 <div class="viewcode-block" id="c.elosConfigGetElosdLogFilter"><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">elosConfigGetElosdLogFilter</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">);</span></div>
 <div class="viewcode-block" id="c.elosConfigGetElosdLogLevel"><span class="n">safuLogLevelE_t</span><span class="w"> </span><span class="nf">elosConfigGetElosdLogLevel</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">samconfConfig_t</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">);</span></div>
@@ -84,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../doc/index.html">How we document</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../test/index.html">Verification Strategy or how we test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../.github/index.html">GitHub CI</a></li>
 </ul>
 
 <div class="relations">

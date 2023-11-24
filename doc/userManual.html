@@ -499,6 +499,7 @@ You can change the location to another place if you like, in the way described b
 <span class="w">            </span><span class="nt">&quot;UseEnv&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
 <span class="w">            </span><span class="nt">&quot;Port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">54321</span><span class="p">,</span>
 <span class="w">            </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;ConnectionLimit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
 <span class="w">            </span><span class="nt">&quot;LogFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;connectionmanager.c;dispatcher.c;message_handler.c;message_event_create.c;message_event_push.c&quot;</span><span class="p">,</span>
 <span class="w">            </span><span class="nt">&quot;LogLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span>
 <span class="w">            </span><span class="nt">&quot;EventBlacklist&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;.event.messageCode 2000 EQ&quot;</span><span class="p">,</span>
@@ -560,6 +561,7 @@ option will be used instead. If the config option is missing or not readable, el
 <li><p><strong>UseEnv</strong>: Define if elosd will allow overwrite configuration values by environment variables</p></li>
 <li><p><strong>Port</strong>: The network port number elosd shall use (<code class="docutils literal notranslate"><span class="pre">ELOSD_PORT</span></code>, default value: <code class="docutils literal notranslate"><span class="pre">54321</span></code>)</p></li>
 <li><p><strong>Interface</strong>: The IPv4 address the elosd server will have (<code class="docutils literal notranslate"><span class="pre">ELOSD_INTERFACE</span></code> default value: <code class="docutils literal notranslate"><span class="pre">&quot;0.0.0.0&quot;</span></code>)</p></li>
+<li><p><strong>ConnectionLimit</strong>: The maximum number of clients that can be connecte to the server simultaneously(<code class="docutils literal notranslate"><span class="pre">ELOSD_CONNECTION_LIMIT</span></code> default value: <code class="docutils literal notranslate"><span class="pre">200</span></code>)</p></li>
 <li><p><strong>LogFilter</strong>: Only log messages from these C-Files are shown, don’t touch it except you know what you’re doing (<code class="docutils literal notranslate"><span class="pre">ELOS_LOG_FILTER</span></code> default value: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>); files are separated by <code class="docutils literal notranslate"><span class="pre">;</span></code> i.e. <code class="docutils literal notranslate"><span class="pre">&quot;first.c;second.c&quot;</span></code></p></li>
 <li><p><strong>LogLevel</strong>: Severity levels deciding how much information will be printed from no messages to extremely detailed the levels are:
 Off, Fatal, Error, Warn, Info, Debug and Verbose (<code class="docutils literal notranslate"><span class="pre">ELOS_LOG_LEVEL</span></code> default value: <code class="docutils literal notranslate"><span class="pre">&quot;Debug&quot;</span></code>)</p></li>
@@ -1135,6 +1137,7 @@ listen for the corresponding response command. An example  written in python is 
 <li class="toctree-l1"><a class="reference internal" href="Architecture_Design_Records/index.html">ADRs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="index.html">How we document</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../test/index.html">Verification Strategy or how we test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../.github/index.html">GitHub CI</a></li>
 </ul>
 
 <div class="relations">

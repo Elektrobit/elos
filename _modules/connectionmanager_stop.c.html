@@ -63,7 +63,7 @@
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">retVal</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                </span><span class="n">safuLogWarnErrnoValue</span><span class="p">(</span><span class="s">&quot;Joining ConnectionManager worker failed (possible memory leak)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">retVal</span><span class="p">);</span>
 <span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_FAILED</span><span class="p">;</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SAFU_RESULT_OK</span><span class="p">;</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">            </span><span class="n">atomic_fetch_and</span><span class="p">(</span><span class="o">&amp;</span><span class="n">connectionManager</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="o">~</span><span class="n">ELOS_CONNECTIONMANAGER_THREAD_NOT_JOINED</span><span class="p">);</span>
 <span class="w">        </span><span class="p">}</span>
@@ -104,6 +104,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../doc/Architecture_Design_Records/index.html">ADRs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../doc/index.html">How we document</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../test/index.html">Verification Strategy or how we test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../.github/index.html">GitHub CI</a></li>
 </ul>
 
 <div class="relations">

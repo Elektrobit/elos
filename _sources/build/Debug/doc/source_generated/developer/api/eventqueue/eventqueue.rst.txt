@@ -4,6 +4,6 @@ eventqueue
 .. toctree::
     :maxdepth: 4
 
-    eventqueue_c
     eventqueuemanager_c
+    eventqueue_c
     eventqueuevector_c

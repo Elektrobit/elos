@@ -84,7 +84,7 @@ Example:
 </div>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elosc -v
-elosc-0.50.9.a076d6a60
+elosc-0.51.3.0bb56df
 </pre></div>
 </div>
 <p>To subscribe on any event :</p>
@@ -155,7 +155,7 @@ ERROR: Connection to elosd failed!
 <h2>demo_libelos_v2 – publish subscrie demo using libelos<a class="headerlink" href="#demo-libelos-v2-publish-subscrie-demo-using-libelos" title="Link to this heading">¶</a></h2>
 <p>To verify the elos version use :</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ demo_libelos_v2 -v
-libelos_demo-0.50.9.a076d6a60
+libelos_demo-0.51.3.0bb56df
 </pre></div>
 </div>
 </section>
@@ -207,18 +207,18 @@ consumer: 4
 messageCount: 1000
 
 messagesPublished: 4000
-messagesConsumed: 3946
+messagesConsumed: 4000
 messagesLostByLimit: 0
 
-publishTimes.min: 0.000604msec
-publishTimes.avg: 0.002370msec
-publishTimes.max: 0.036009msec
-publishTimes.sum: 9.481148msec
+publishTimes.min: 0.000924msec
+publishTimes.avg: 0.002423msec
+publishTimes.max: 0.041053msec
+publishTimes.sum: 9.692238msec
 
-consumerTimes.min: 0.000321msec
-consumerTimes.avg: 0.001817msec
-consumerTimes.max: 0.027963msec
-consumerTimes.sum: 7.266079msec
+consumerTimes.min: 0.000666msec
+consumerTimes.avg: 0.002147msec
+consumerTimes.max: 0.032447msec
+consumerTimes.sum: 8.587142msec
 </pre></div>
 </div>
 <p>To benchmark the event buffers on a target to find optimal configuration :</p>
@@ -230,17 +230,17 @@ messageCount: 1000
 
 messagesPublished: 100000
 messagesConsumed: 100000
-messagesLostByLimit: 2015
+messagesLostByLimit: 4223
 
-publishTimes.min: 0.000000msec
-publishTimes.avg: 0.002614msec
-publishTimes.max: 0.074854msec
-publishTimes.sum: 261.411381msec
+publishTimes.min: 0.000990msec
+publishTimes.avg: 0.003445msec
+publishTimes.max: 0.095455msec
+publishTimes.sum: 344.469022msec
 
-consumerTimes.min: 0.000359msec
-consumerTimes.avg: 0.004622msec
-consumerTimes.max: 0.192344msec
-consumerTimes.sum: 46.216929msec
+consumerTimes.min: 0.000837msec
+consumerTimes.avg: 0.006746msec
+consumerTimes.max: 0.075929msec
+consumerTimes.sum: 67.464368msec
 </pre></div>
 </div>
 </section>
@@ -343,18 +343,6 @@ and an appender for the logged message should be set in the config file.</p>
 <a class="reference external" href="https://log4c.sourceforge.net/">https://log4c.sourceforge.net/</a></p>
 <p>For the elos_log4c_demo application a separate category <code class="docutils literal notranslate"><span class="pre">log4c.elos.demo.log4cdemo</span></code> with an appender <code class="docutils literal notranslate"><span class="pre">elos</span></code> is created in the config file <code class="docutils literal notranslate"><span class="pre">log4crc</span></code> as shown above. The category is the log message destination. The appender outputs the log message to the specified output. An example of an log4c appender can be found here : <a class="reference external" href="https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_appenders.c">https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_appenders.c</a>. The output can be an output stream, file, syslog etc. The <code class="docutils literal notranslate"><span class="pre">elos_appender</span></code> has a layout <code class="docutils literal notranslate"><span class="pre">elos_layout</span></code> which formats the log message using the formatter <code class="docutils literal notranslate"><span class="pre">elos_formatter</span></code>. An example ofa log4c formatter can be found here : <a class="reference external" href="https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_formatters.c">https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_formatters.c</a>. The <code class="docutils literal notranslate"><span class="pre">elos_formatter</span></code> formats the log message using pattern strings and sends the formatted string back to the appender to be released out.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ elos_log4c_demo
-ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
-elos error can not connect to elos and failed!
-publishing log4c message to elos failed
-ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
-elos error can not connect to elos and failed!
-publishing log4c message to elos failed
-ERROR: connect to 127.0.0.1:54321 failed! - file &#39;libelos.c&#39;, line 88, elosConnectTcpip()
-elos error can not connect to elos and failed!
-publishing log4c message to elos failed
-connecting elos appender to event log scanner...
-connecting elos appender to event log scanner...
-connecting elos appender to event log scanner...
 </pre></div>
 </div>
 </section>
@@ -415,6 +403,7 @@ connecting elos appender to event log scanner...
 <li class="toctree-l1"><a class="reference internal" href="../../doc/Architecture_Design_Records/index.html">ADRs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../doc/index.html">How we document</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../test/index.html">Verification Strategy or how we test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../.github/index.html">GitHub CI</a></li>
 </ul>
 
 <div class="relations">

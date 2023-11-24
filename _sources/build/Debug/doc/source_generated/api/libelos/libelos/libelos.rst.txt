@@ -4,5 +4,5 @@ libelos
 .. toctree::
     :maxdepth: 4
 
-    libelos_h
     libeloslog_h
+    libelos_h

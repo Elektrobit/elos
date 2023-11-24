@@ -4,6 +4,6 @@ common
 .. toctree::
     :maxdepth: 4
 
+    types_h
     message_h
     process_h
-    types_h

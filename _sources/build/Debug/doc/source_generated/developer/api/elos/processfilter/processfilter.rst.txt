@@ -4,6 +4,6 @@ processfilter
 .. toctree::
     :maxdepth: 4
 
-    processfilter_types_h
     step_types_h
     types_h
+    processfilter_types_h
