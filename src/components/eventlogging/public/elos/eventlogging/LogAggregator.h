@@ -8,8 +8,6 @@
 
 #include "elos/event/event.h"
 #include "elos/eventlogging/LogAggregatorTypes.h"
-#include "elos/eventlogging/StorageBackend.h"
-#include "elos/pluginmanager/pluginmanager.h"
 
 safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLogAggregatorParam_t const *param);
 safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elosEvent_t *);

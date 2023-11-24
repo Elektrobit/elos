@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-#include "elos/eventlogging/StorageBackend.h"
+#include "elos/storagemanager/StorageBackend.h"
 
 #include <safu/common.h>
 #include <safu/log.h>

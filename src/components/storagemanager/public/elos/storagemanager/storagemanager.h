@@ -5,8 +5,8 @@
 #include <safu/vector.h>
 #include <samconf/samconf.h>
 
-#include "elos/storagemanager/storagemanager_types.h"
 #include "elos/pluginmanager/pluginmanager.h"
+#include "elos/storagemanager/storagemanager_types.h"
 
 /**
  * Initialize the storage manager with default values to be safely used.
@@ -21,7 +21,8 @@
  *         SAFU_RESULT_OK – on success.
  *         SAFU_RESULT_FAILURE – on failure.
  */
-safuResultE_t elosStorageManagerInitialize(elosStorageManager_t *storageManager, elosStorageManagerParam_t const *param);
+safuResultE_t elosStorageManagerInitialize(elosStorageManager_t *storageManager,
+                                           elosStorageManagerParam_t const *param);
 
 /**
  * Start storage manager with storage plugins

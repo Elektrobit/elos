@@ -6,7 +6,6 @@ create_interface_library(
   FROM
     eventlogging
   LIBRARIES
-    pluginmanager_interface
     rpnfilter_interface
     elos_event_interface
     safu::safu_interface
@@ -18,8 +17,6 @@ add_library(
   eventlogging_static
   STATIC
     ./private/LogAggregator.c
-    ./private/StorageBackend.c
-    ./private/PluginFilterLoader.c
 )
 
 target_include_directories(
@@ -36,8 +33,8 @@ target_link_libraries(
     eventlogging_interface
     elos_common_interface
     elos_event_static
-    pluginmanager_static
     config_static
+    storagemanager_static
     safu::safu
     samconf::samconf
     eventfilter_static

@@ -6,6 +6,7 @@ create_interface_library(
   FROM
     storagemanager
   LIBRARIES
+    elos_event_interface
     storagemanager_interface
     pluginmanager_interface
     samconf::samconf_interface
@@ -15,6 +16,9 @@ create_interface_library(
 add_library(
   storagemanager_static
   STATIC
+    ./private/PluginFilterLoader.c
+    ./private/StorageBackend.c
+    ./private/storagebackend_vector.c
     ./private/storagemanager.c
 )
 
@@ -30,7 +34,7 @@ target_link_libraries(
   storagemanager_static
   PUBLIC
     storagemanager_interface
-    storagemanager_interface
+    eventfilter_static
     elos_common_interface
     pluginmanager_static
     config_static

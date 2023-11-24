@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-#include "elos/eventlogging/PluginFilterLoader.h"
+#include "elos/storagemanager/PluginFilterLoader.h"
 
 #include <safu/log.h>
 #include <samconf/samconf.h>
 
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventfilter/vector.h"
-#include "elos/eventlogging/StorageBackend.h"
+#include "elos/storagemanager/StorageBackend.h"
 
 safuResultE_t elosPluginFilterLoaderLoad(elosPluginControl_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;

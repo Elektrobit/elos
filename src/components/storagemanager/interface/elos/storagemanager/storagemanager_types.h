@@ -4,6 +4,7 @@
 #include <samconf/samconf_types.h>
 
 #include "elos/pluginmanager/types.h"
+#include "elos/storagemanager/StorageBackend.h"
 
 /*******************************************************************
  * Initialization parameters for a new storage manager component
@@ -31,4 +32,5 @@ typedef struct elosStorageManager {
     samconfConfig_t const *config;
     const char *searchPath;
     elosPluginControlPtrVector_t pluginControlPtrVector;
+    elosStorageBackendPtrVector_t backends;
 } elosStorageManager_t;

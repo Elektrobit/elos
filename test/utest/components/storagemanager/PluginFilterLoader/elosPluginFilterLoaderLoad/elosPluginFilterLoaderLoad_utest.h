@@ -2,7 +2,7 @@
 #pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
-#include <elos/eventlogging/PluginFilterLoader.h>
+#include <elos/storagemanager/PluginFilterLoader.h>
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginFilterLoaderLoadErrInvalidParameter)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginFilterLoaderLoadErrNoFiltersDefined)

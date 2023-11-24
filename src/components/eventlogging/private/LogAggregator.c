@@ -8,17 +8,11 @@
 #include "elos/config/config.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventfilter/vector.h"
-#include "elos/eventlogging/PluginFilterLoader.h"
+#include "elos/storagemanager/StorageBackend.h"
 #include "safu/log.h"
 #include "safu/mutex.h"
 
 static pthread_mutex_t elosLogAggregatorMutex = PTHREAD_MUTEX_INITIALIZER;
-
-static int _loadFilter(void const *element, UNUSED void const *data) {
-    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
-    elosPluginFilterLoaderLoad(plugin);
-    return 0;
-}
 
 safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLogAggregatorParam_t const *param) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -26,47 +20,29 @@ safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLog
     if ((logAggregator == NULL) || (param == NULL)) {
         safuLogErr("Called elosLogAggregatorStart with NULL-parameter");
         result = SAFU_RESULT_FAILED;
-    } else if ((param->config == NULL) || (param->pluginManager == NULL)) {
+    } else if ((param->config == NULL) || (param->storageManager == NULL)) {
         safuLogErr("Parameter struct passed to elosLogAggregatorStart contains NULL-pointers");
         result = SAFU_RESULT_FAILED;
     } else {
         SAFU_PTHREAD_MUTEX_LOCK(&elosLogAggregatorMutex, result = SAFU_RESULT_FAILED);
         if (result == SAFU_RESULT_OK) {
-            samconfConfigStatusE_t status;
-            int retVal;
-
             logAggregator->lock = &elosLogAggregatorMutex;
-            logAggregator->pluginManager = param->pluginManager;
-
-            retVal = safuVecCreate(&logAggregator->pluginControlPtrVector, 1, sizeof(elosPluginControl_t *));
-            if (retVal < 0) {
-                safuLogErr("safuVecCreate failed");
-            } else {
-                status = samconfConfigGet(param->config, ELOS_CONFIG_EVENTLOGGING, &logAggregator->config);
-                if (status != SAMCONF_CONFIG_OK) {
-                    safuLogErr("Loading LogAggregator config failed");
-                } else {
-                    char const *searchPath;
-
-                    searchPath = elosConfigGetElosdBackendPath(param->config);
-                    if (searchPath == NULL) {
-                        safuLogErr("elosConfigGetElosdBackendPath failed");
-                        result = SAFU_RESULT_FAILED;
-                    } else {
-                        elosPluginTypeE_t type = PLUGIN_TYPE_STORAGEBACKEND;
-
-                        result = elosPluginManagerLoad(logAggregator->pluginManager, type, logAggregator->config,
-                                                       searchPath, &logAggregator->pluginControlPtrVector);
-                        if (result != SAFU_RESULT_OK) {
-                            safuLogWarn("elosPluginManagerLoad executed with errors");
-                        } else {
-                            safuVecIterate(&logAggregator->pluginControlPtrVector, _loadFilter, NULL);
-                        }
-                    }
-                }
-            }
-
+            logAggregator->backends = &param->storageManager->backends;
             SAFU_PTHREAD_MUTEX_UNLOCK(&elosLogAggregatorMutex, result = SAFU_RESULT_FAILED);
+        }
+    }
+
+    return result;
+}
+
+safuResultE_t elosLogAggregatorShutdown(elosLogAggregator_t *logAggregator) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    if ((logAggregator != NULL) && (logAggregator->lock != NULL)) {
+        SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(logAggregator->lock, result);
+        if (result == SAFU_RESULT_OK) {
+            logAggregator->backends = NULL;
+            SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
         }
     }
 
@@ -80,19 +56,17 @@ typedef struct _addHelperData {
 
 static int _logAggregatorAddHelper(void const *element, void const *data) {
     _addHelperData_t *helperData = (_addHelperData_t *)data;
-    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((ELOS_PLUGINCONTROL_FLAG_HAS_STARTED_BIT(&plugin->flags) == false) || (plugin->context.data == NULL)) {
-        safuLogErrF("Backend plugin->id: %d is not configured correctly", plugin->context.id);
+    if ((element == NULL) || (*(elosStorageBackend_t **)element == NULL) || (data == NULL)) {
+        safuLogErr("StorageBackend is not configured correctly");
     } else {
-        elosStorageBackend_t *backend = (elosStorageBackend_t *)plugin->context.data;
-
+        elosStorageBackend_t *backend = *(elosStorageBackend_t **)element;
         result = elosStorageBackendAccepts(backend, helperData->event);
         if (result == SAFU_RESULT_OK) {
             result = backend->persist(backend, helperData->event);
             if (result != SAFU_RESULT_OK) {
-                safuLogErrF("Backend 'Persist' for plugin->id: %d failed", plugin->context.id);
+                safuLogErrF("Persist event in backend: %s failed", backend->name);
             }
         } else if (result == SAFU_RESULT_NOT_FOUND) {
             result = SAFU_RESULT_OK;
@@ -118,52 +92,13 @@ safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elo
             _addHelperData_t helperData = {.event = event, result = SAFU_RESULT_OK};
             int retVal;
 
-            retVal = safuVecIterate(&logAggregator->pluginControlPtrVector, _logAggregatorAddHelper, &helperData);
+            retVal = safuVecIterate(logAggregator->backends, _logAggregatorAddHelper, &helperData);
             if (retVal < 0) {
                 safuLogErr("Iterating through the backends failed");
                 result = SAFU_RESULT_FAILED;
             } else if (helperData.result != SAFU_RESULT_OK) {
                 safuLogWarn("Errors happened in at least one backend");
                 result = SAFU_RESULT_FAILED;
-            }
-
-            SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
-        }
-    }
-
-    return result;
-}
-
-static int _unloadFilter(void const *element, UNUSED void const *data) {
-    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
-    elosStorageBackend_t *backend = (elosStorageBackend_t *)plugin->context.data;
-    elosEventFilterVectorDeleteMembers(&backend->filter);
-    return 0;
-}
-
-safuResultE_t elosLogAggregatorShutdown(elosLogAggregator_t *logAggregator) {
-    safuResultE_t result = SAFU_RESULT_OK;
-
-    if ((logAggregator != NULL) && (logAggregator->lock != NULL)) {
-        SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(logAggregator->lock, result);
-        if (result == SAFU_RESULT_OK) {
-            int retVal;
-
-            if (logAggregator->pluginManager != NULL) {
-                safuResultE_t funcResult;
-
-                safuVecIterate(&logAggregator->pluginControlPtrVector, _unloadFilter, NULL);
-
-                funcResult =
-                    elosPluginManagerUnload(logAggregator->pluginManager, &logAggregator->pluginControlPtrVector);
-                if (funcResult != SAFU_RESULT_OK) {
-                    result = funcResult;
-                }
-
-                retVal = safuVecFree(&logAggregator->pluginControlPtrVector);
-                if (retVal < 0) {
-                    result = SAFU_RESULT_FAILED;
-                }
             }
 
             SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
@@ -181,18 +116,15 @@ typedef struct _findEventHelperData {
 
 static int _logAggregatorFindEventsHelper(void const *element, void const *data) {
     _findEventHelperData_t *helperData = (_findEventHelperData_t *)data;
-    elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((ELOS_PLUGINCONTROL_FLAG_HAS_STARTED_BIT(&plugin->flags) == false) || (plugin->context.data == NULL)) {
-        safuLogErrF("Backend plugin->id: %d is not configured correctly", plugin->context.id);
+    if ((element == NULL) || (*(elosStorageBackend_t **)element == NULL) || (data == NULL)) {
+        safuLogErr("StorageBackend is not configured correctly");
     } else {
-        elosStorageBackend_t *backend = (elosStorageBackend_t *)plugin->context.data;
-
+        elosStorageBackend_t *backend = *(elosStorageBackend_t **)element;
         result = backend->findEvent(backend, helperData->filter, helperData->eventVector);
         if (result != SAFU_RESULT_OK) {
-            safuLogErrF("Backend 'FindEvent' for plugin->id: %d failed", plugin->context.id);
-            helperData->result = result;
+            safuLogErrF("Find event in backend: %s failed", backend->name);
         }
     }
 
@@ -220,7 +152,7 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
             safuLogErrF("Failed to create filter for rule '%s'", rule);
         } else {
             int retVal;
-            _findEventHelperData_t const helperData = {
+            _findEventHelperData_t helperData = {
                 .filter = &filter,
                 .eventVector = events,
                 .result = SAFU_RESULT_OK,
@@ -230,8 +162,7 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
 
             SAFU_PTHREAD_MUTEX_LOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
             if (result == SAFU_RESULT_OK) {
-                retVal =
-                    safuVecIterate(&logAggregator->pluginControlPtrVector, _logAggregatorFindEventsHelper, &helperData);
+                retVal = safuVecIterate(logAggregator->backends, _logAggregatorFindEventsHelper, &helperData);
                 if (retVal < 0) {
                     safuLogErr("Iterating through the backends failed");
                     result = SAFU_RESULT_FAILED;
