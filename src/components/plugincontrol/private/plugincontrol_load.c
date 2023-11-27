@@ -126,27 +126,14 @@ safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
 
     if (control == NULL) {
         safuLogErr("Invalid parameter");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&control->flags) == false) {
+        safuLogErr("Component is not initialized");
+    } else if (ELOS_PLUGINCONTROL_FLAG_HAS_PLUGINERROR_BIT(&control->flags) == true) {
+        safuLogErr("PluginControl is in an invalid state due to Plugin errors");
     } else {
-        bool loadNeeded = false;
+        result = SAFU_RESULT_OK;
 
-        switch (control->context.state) {
-            case PLUGIN_STATE_INITIALIZED:
-                loadNeeded = true;
-                break;
-            case PLUGIN_STATE_INVALID:
-            case PLUGIN_STATE_STARTED:
-            case PLUGIN_STATE_STOPPED:
-            case PLUGIN_STATE_LOADED:
-            case PLUGIN_STATE_UNLOADED:
-            case PLUGIN_STATE_ERROR:
-                safuLogErrF("Plugin is not in state 'INITIALIZED': state=%d'", control->context.state);
-                break;
-            default:
-                safuLogErrF("Plugin is in unknown state '%d'", control->context.state);
-                break;
-        }
-
-        if (loadNeeded == true) {
+        if (ELOS_PLUGINCONTROL_FLAG_PUSH_LOADED_BIT(&control->flags) == true) {
             int retVal;
 
             result = elosPluginControlLoadHelperGetConfig(control);
@@ -154,14 +141,13 @@ safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
                 safuLogErr("elosPluginControlLoadHelperGetConfig failed");
             }
 
-            if (result == SAFU_RESULT_OK) {
+            if ((result == SAFU_RESULT_OK) && (ELOS_PLUGINCONTROL_FLAG_PUSH_WORKER_BIT(&control->flags) == true)) {
                 retVal = pthread_create(&control->workerThread, 0, elosPluginControlWorkerThread, (void *)control);
                 if (retVal < 0) {
                     safuLogErrErrno("pthread_create failed");
-                    atomic_fetch_and(&control->flags, ~ELOS_PLUGIN_FLAG_WORKERRUNNING);
+                    atomic_fetch_or(&control->flags, SAFU_FLAG_ERROR_BIT);
+                    atomic_fetch_and(&control->flags, ~ELOS_PLUGINCONTROL_FLAG_WORKER_BIT);
                     result = SAFU_RESULT_FAILED;
-                } else {
-                    atomic_fetch_or(&control->flags, ELOS_PLUGIN_FLAG_WORKERRUNNING);
                 }
             }
 
@@ -172,17 +158,8 @@ safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_read failed");
                     result = SAFU_RESULT_FAILED;
-                } else {
-                    if (control->context.state != PLUGIN_STATE_LOADED) {
-                        safuLogErr("Plugin not in state 'LOADED' after worker thread execution");
-                        result = SAFU_RESULT_FAILED;
-                    }
                 }
             }
-        }
-
-        if (result != SAFU_RESULT_OK) {
-            control->context.state = PLUGIN_STATE_ERROR;
         }
     }
 

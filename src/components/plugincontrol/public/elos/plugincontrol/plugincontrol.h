@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "elos/plugincontrol/defines.h"
 #include "elos/plugincontrol/types.h"
 
 safuResultE_t elosPluginControlInitialize(elosPluginControl_t *control, elosPluginControlParam_t const *param);

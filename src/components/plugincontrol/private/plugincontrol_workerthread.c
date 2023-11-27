@@ -16,16 +16,13 @@ void *elosPluginControlWorkerThread(void *data) {
 
     result = control->pluginConfig->load(&control->context);
     if (result != SAFU_RESULT_OK) {
-        control->context.state = PLUGIN_STATE_ERROR;
         safuLogErr("plugin load function call failed");
-    } else {
-        control->context.state = PLUGIN_STATE_LOADED;
+    }
 
-        retVal = eventfd_write(control->context.sync, 1);
-        if (retVal < 0) {
-            safuLogErrErrno("pthread_cond_wait failed");
-            result = SAFU_RESULT_FAILED;
-        }
+    retVal = eventfd_write(control->context.sync, 1);
+    if (retVal < 0) {
+        safuLogErrErrno("pthread_cond_wait failed");
+        result = SAFU_RESULT_FAILED;
     }
 
     if (result == SAFU_RESULT_OK) {
@@ -36,15 +33,10 @@ void *elosPluginControlWorkerThread(void *data) {
             safuLogErrErrno("eventfd_read (sync) failed");
             result = SAFU_RESULT_FAILED;
         } else {
-            control->context.state = PLUGIN_STATE_STARTED;
-
             result = control->pluginConfig->start(&control->context);
             if (result != SAFU_RESULT_OK) {
-                control->context.state = PLUGIN_STATE_ERROR;
                 safuLogErr("plugin load function call failed");
             } else {
-                control->context.state = PLUGIN_STATE_STOPPED;
-
                 retVal = eventfd_write(control->context.sync, 1);
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_write (worker.sync) failed");
@@ -52,6 +44,10 @@ void *elosPluginControlWorkerThread(void *data) {
                 }
             }
         }
+    }
+
+    if (result != SAFU_RESULT_OK) {
+        atomic_fetch_or(&control->flags, ELOS_PLUGINCONTROL_FLAG_PLUGINERROR_BIT);
     }
 
     return NULL;
