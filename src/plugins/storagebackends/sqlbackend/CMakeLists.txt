@@ -30,6 +30,7 @@ target_link_libraries(
     eventfilter_static
     libelosplugin
     plugincontrol_interface
+    storagemanager_static
     samconf::samconf
     safu::safu
     $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_SQL}>:${SQLITE3_LIBRARIES}>

@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #include "elos/eventfilter/eventfilter.h"
-#include "elos/eventlogging/StorageBackend.h"
+#include "elos/storagemanager/StorageBackend.h"
 
 static safuResultE_t _backendStart(elosStorageBackend_t *backend) {
     safuResultE_t result = SAFU_RESULT_FAILED;

@@ -34,6 +34,7 @@ target_link_libraries(
     eventfilter_static
     libelosplugin
     plugincontrol_interface
+    storagemanager_static
     samconf::samconf
     safu::safu
     CURL::libcurl

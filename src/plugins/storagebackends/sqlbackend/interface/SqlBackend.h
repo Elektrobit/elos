@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 
-#include "elos/eventlogging/StorageBackend.h"
+#include "elos/storagemanager/StorageBackend.h"
 #include "safu/common.h"
 #include "safu/vector.h"
 
