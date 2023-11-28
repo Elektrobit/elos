@@ -95,8 +95,6 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
 
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
-    } else if ((plugin->state != PLUGIN_STATE_LOADED) && (plugin->state != PLUGIN_STATE_STOPPED)) {
-        safuLogErrF("Plugin is not in state 'LOADED' or 'STOPPED' (state=%d)", plugin->state);
     } else {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);
         result = SAFU_RESULT_OK;
