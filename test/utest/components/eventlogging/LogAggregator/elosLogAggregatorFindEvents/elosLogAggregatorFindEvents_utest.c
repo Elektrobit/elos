@@ -104,7 +104,7 @@ void elosLogAggregatorFindEventsUtestCreateLogAggregator(void **state) {
 
     result = elosPluginControlNew(&plugin, &pluginParam);
     assert_int_equal(result, SAFU_RESULT_OK);
-    plugin->context.state = PLUGIN_STATE_STARTED;
+    atomic_fetch_or(&plugin->flags, (SAFU_FLAG_INITIALIZED_BIT | ELOS_PLUGINCONTROL_FLAG_STARTED_BIT));
     plugin->context.data = safuAllocMem(NULL, sizeof(elosStorageBackend_t));
     memcpy(plugin->context.data, &dummyBackend, sizeof(elosStorageBackend_t));
 

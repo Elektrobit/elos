@@ -45,7 +45,7 @@ void elosTestElosPluginControlInitializeSuccess(void **state) {
 
         result = elosPluginControlInitialize(&test->plugin, &param);
         assert_int_equal(result, SAFU_RESULT_OK);
-        assert_int_equal(test->plugin.context.state, PLUGIN_STATE_INITIALIZED);
+        assert_int_equal(test->plugin.flags, SAFU_FLAG_INITIALIZED_BIT);
         assert_ptr_equal(test->plugin.context.config, param.config);
         assert_ptr_equal(test->plugin.context.data, param.data);
         assert_int_equal(test->plugin.context.id, param.id);
