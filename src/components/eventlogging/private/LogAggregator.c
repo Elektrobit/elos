@@ -83,7 +83,7 @@ static int _logAggregatorAddHelper(void const *element, void const *data) {
     elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((plugin->context.state != PLUGIN_STATE_STARTED) || (plugin->context.data == NULL)) {
+    if ((ELOS_PLUGINCONTROL_FLAG_HAS_STARTED_BIT(&plugin->flags) == false) || (plugin->context.data == NULL)) {
         safuLogErrF("Backend plugin->id: %d is not configured correctly", plugin->context.id);
     } else {
         elosStorageBackend_t *backend = (elosStorageBackend_t *)plugin->context.data;
@@ -184,7 +184,7 @@ static int _logAggregatorFindEventsHelper(void const *element, void const *data)
     elosPluginControl_t *plugin = *(elosPluginControl_t **)element;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((plugin->context.state != PLUGIN_STATE_STARTED) || (plugin->context.data == NULL)) {
+    if ((ELOS_PLUGINCONTROL_FLAG_HAS_STARTED_BIT(&plugin->flags) == false) || (plugin->context.data == NULL)) {
         safuLogErrF("Backend plugin->id: %d is not configured correctly", plugin->context.id);
     } else {
         elosStorageBackend_t *backend = (elosStorageBackend_t *)plugin->context.data;
