@@ -2,4 +2,5 @@
 
 add_subdirectory(elosClientManagerInitialize)
 add_subdirectory(elosClientManagerStart)
+add_subdirectory(elosClientManagerStop)
 add_subdirectory(elosClientManagerDeleteMembers)
