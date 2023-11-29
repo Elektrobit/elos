@@ -1,0 +1,120 @@
+
+name: Build Documentation
+on: [ push, workflow_dispatch ]
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          binutils-dev \
+          build-essential \
+          clang-format \
+          clang-tidy \
+          cmake \
+          curl \
+          expat \
+          gdb \
+          git \
+          gnuplot \
+          jq \
+          libcmocka-dev \
+          libcsv-dev \
+          libcurl4-openssl-dev \
+          libesmtp-dev \
+          libiberty-dev \
+          libjson-c-dev \
+          liblog4c-dev \
+          libmnl-dev \
+          libsqlite3-0 \
+          libsqlite3-dev \
+          libssl-dev \
+          linux-tools-generic \
+          locales \
+          net-tools \
+          netcat \
+          ninja-build \
+          openssl \
+          pandoc \
+          pandoc-plantuml-filter \
+          pkg-config \
+          python-is-python3 \
+          python3-pip \
+          python3-venv \
+          sqlite3 \
+          wget \
+          zlib1g-dev
+      - name: checkout and build cmocka_extensions
+        run: |
+          git clone https://github.com/Elektrobit/cmocka_extensions.git /tmp/cmocka_extensions
+          cmake -B /tmp/cmocka_extensions/build /tmp/cmocka_extensions -DUNIT_TESTS=off -DCMAKE_BUILD_TYPE=Debug
+          make -C /tmp/cmocka_extensions/build all
+          sudo make -C /tmp/cmocka_extensions/build install
+      - name: checkout and build cmocka_mocks
+        run: |
+          git clone https://github.com/Elektrobit/cmocka_mocks.git /tmp/cmocka_mocks
+          cmake -B /tmp/cmocka_mocks/build /tmp/cmocka_mocks -DUNIT_TESTS=off -DCMAKE_BUILD_TYPE=Debug
+          make -C /tmp/cmocka_mocks/build all
+          sudo make -C /tmp/cmocka_mocks/build install
+      - name: checkout and build safu
+        run: |
+          git clone https://github.com/Elektrobit/safu.git /tmp/safu
+          cmake -B /tmp/safu/build /tmp/safu -DCMAKE_BUILD_TYPE=Debug
+          make -C /tmp/safu/build all
+          sudo make -C /tmp/safu/build install
+      - name: checkout and build samconf
+        run: |
+          git clone https://github.com/Elektrobit/samconf.git /tmp/samconf
+          cmake -B /tmp/samconf/build /tmp/samconf -DCMAKE_BUILD_TYPE=Debug
+          make -C /tmp/samconf/build all
+          sudo make -C /tmp/samconf/build install
+      - name: Build elos
+        env:
+          DESTDIR: ${{ github.workspace }}/build/Debug/dist 
+        run: |
+          cmake -B ./build/Debug/cmake . -DCMAKE_BUILD_TYPE=Debug
+          make -C ./build/Debug/cmake all install
+      - name: setup python Virtual env
+        run: |
+          python -m venv ${{ github.workspace }}/.venv
+          . ${{ github.workspace }}/.venv/bin/activate
+          python -m pip install \
+          beautifulsoup4  \
+          myst-parser \
+          sphinx \
+          sphinx-c-autodoc \
+          sphinx-copybutton \
+          sphinx-favicon \
+          sphinxcontrib-programoutput
+      - name: install libcland 16 for sphinx c autodoc
+        # needet as long as libclang 16 isn't packaged in ubuntu-latest
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          echo "" | sudo tee -a /etc/apt/sources.list
+          echo "# for llvm 16 packages" | sudo tee -a /etc/apt/sources.list
+          echo "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main" | sudo tee -a /etc/apt/sources.list
+          echo "deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main" | sudo tee -a /etc/apt/sources.list
+          cat /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install -y libclang1-16
+          sudo ln -s /usr/lib/x86_64-linux-gnu/libclang-16.so.1 /usr/lib/libclang-16.so
+      - name: Build Documentation
+        run: ci/build_doc.sh
+        env:
+          SPHINX_VENV: "${{ github.workspace }}/.venv"
