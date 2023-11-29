@@ -2,6 +2,7 @@
 
 add_subdirectory(clientmanager)
 add_subdirectory(connectionmanager)
+add_subdirectory(pluginmanager)
 add_subdirectory(event)
 add_subdirectory(eventbuffer)
 add_subdirectory(eventdispatcher)
