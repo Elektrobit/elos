@@ -1,5 +1,6 @@
 
 ![build](https://github.com/Elektrobit/elos/actions/workflows/build-and-test.yml/badge.svg)
+![documentation](https://github.com/Elektrobit/elos/actions/workflows/build-documentation.yml/badge.svg)
 
 # Event Logging and Management System (elos)
 
