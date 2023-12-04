@@ -1,0 +1,2 @@
+Plugin Manager
+==============

@@ -14,6 +14,8 @@ Components
    rpnfilter/index
    scanner/index
    scanner_manager/index
+   clientmanager/index
+   pluginmanager/index
 
 
 Component Structure
