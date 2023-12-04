@@ -62,11 +62,7 @@ Elos API
 " > ${SPHINX_GENERATED_SOURCE_DIR}/api/index.rst
 }
 
-function createDeveloperApiDocu() {
-    local API_INDEX_TABLE=""
-    local MODULE_PATHS=$(find ${ELOS_SOURCE_SOURCE_DIR} -name "public" -or -name "interface" -type d -exec dirname {} \;)
-
-    for MODULE_PATH in $MODULE_PATHS; do
+function createModuleApiDoc() {
         local MODULE=$(basename ${MODULE_PATH})
         echo "build doc for ${MODULE} in ${MODULE_PATH}"
         case "${MODULE}" in
@@ -99,7 +95,20 @@ function createDeveloperApiDocu() {
             fi
             ;;
         esac
+
+}
+
+function createDeveloperApiDocu() {
+    local API_INDEX_TABLE=""
+    local MODULE_PATHS=$(find ${ELOS_SOURCE_SOURCE_DIR} -name "public" -or -name "interface" -type d -exec dirname {} \;)
+
+    API_JOB_IDS=""
+    for MODULE_PATH in $MODULE_PATHS; do
+        createModuleApiDoc "${MODULE_PATH}" &
+        API_JOB_IDS="${API_JOB_IDS} $!"
     done
+
+    wait ${API_JOB_IDS}
 
     # remove generated but unsued files
     rm -r ${SPHINX_GENERATED_SOURCE_DIR}/developer/api/elos/elos.rst
