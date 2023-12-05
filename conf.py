@@ -141,5 +141,8 @@ c_autodoc_roots = [
     './src/plugins/storagebackends/influxdbbackend/interface/',
     './src/plugins/storagebackends/influxdbbackend/private/',
 ]
+c_autodoc_compilation_args = [
+#    '-DSPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS',
+]
 
 set_type_checking_flag = True
