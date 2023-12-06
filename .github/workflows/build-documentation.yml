@@ -112,3 +112,25 @@ jobs:
         run: ci/build_doc.sh
         env:
           SPHINX_VENV: "${{ github.workspace }}/.venv"
+      - name: pack documentation for GitHub pages
+        run: |
+          tar \
+          --dereference --hard-dereference \
+          --directory "${{ github.workspace }}/build/Debug/doc/html/" \
+          -cvf "$RUNNER_TEMP/artifact.tar" \
+          .
+      - name: save documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          if-no-files-found: error
+
+  publish-gh-pages:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_name == 'main' }}
+    needs: documentation
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
