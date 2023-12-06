@@ -10,9 +10,6 @@
 
 #include "elos/common/types.h"
 
-#define ELOS_PLUGIN_FLAG_WORKERRUNNING              SAFU_FLAG_CUSTOM_START_BIT
-#define ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(__f) ((atomic_load(__f) & ELOS_PLUGIN_FLAG_WORKERRUNNING) != 0)
-
 typedef struct elosPluginControlFuncEntry {
     char *name;
     elosPluginFunc_t *ptr;

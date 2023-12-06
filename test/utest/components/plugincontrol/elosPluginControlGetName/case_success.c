@@ -18,7 +18,7 @@ int elosTestElosPluginControlGetNameSuccessSetup(UNUSED void **state) {
     config->children = NULL;
     config->childCount = 0;
 
-    pluginTest->plugin.context.state = PLUGIN_STATE_INVALID;
+    atomic_store(&pluginTest->plugin.flags, SAFU_FLAG_INITIALIZED_BIT);
     pluginTest->plugin.context.config = config;
     *state = pluginTest;
     return 0;

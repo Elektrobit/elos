@@ -21,7 +21,6 @@ typedef enum elosPluginStateE {
 } elosPluginStateE_t;
 
 typedef struct elosPluginContext {
-    elosPluginStateE_t state;
     samconfConfig_t const *config;
     elosPluginId_t id;
     void *data;

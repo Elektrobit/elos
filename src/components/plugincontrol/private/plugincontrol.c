@@ -24,10 +24,8 @@ safuResultE_t elosPluginControlInitialize(elosPluginControl_t *control, elosPlug
         safuLogErr("Invalid parameter");
     } else if ((param->path != NULL) && ((param->config == NULL) || (param->file != NULL))) {
         safuLogErr("Invalid value combination in parameter struct");
-    } else if (param->pluginType == PLUGIN_TYPE_INVALID) {
-        safuLogErr("pluginType is not specified (pluginType == PLUGIN_TYPE_INVALID)");
-    } else if (control->context.state != PLUGIN_STATE_INVALID) {
-        safuLogErr("The given plugin struct is not in state 'PLUGIN_STATE_INVALID'");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&control->flags) == true) {
+        safuLogErr("Component is already initialized");
     } else {
         int eventFdWorker;
         int eventFdSync;
@@ -69,17 +67,14 @@ safuResultE_t elosPluginControlInitialize(elosPluginControl_t *control, elosPlug
                         control->pluginType = param->pluginType;
                         control->path = param->path;
                         control->sync = eventFdSync;
-                        atomic_store(&control->flags, SAFU_FLAG_NONE);
+                        atomic_store(&control->flags, SAFU_FLAG_INITIALIZED_BIT);
                     }
                 }
             }
         }
 
         if (result != SAFU_RESULT_OK) {
-            control->context.state = PLUGIN_STATE_ERROR;
             elosPluginControlDeleteMembers(control);
-        } else {
-            control->context.state = PLUGIN_STATE_INITIALIZED;
         }
     }
 
@@ -115,43 +110,30 @@ safuResultE_t elosPluginControlStart(elosPluginControl_t *control) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (control == NULL) {
-        safuLogErr("NULL parameter");
+        safuLogErr("Invalid parameter");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&control->flags) == false) {
+        safuLogErr("Component is not initialized");
+    } else if (ELOS_PLUGINCONTROL_FLAG_HAS_LOADED_BIT(&control->flags) == false) {
+        safuLogErr("Plugin is not loaded");
+    } else if (ELOS_PLUGINCONTROL_FLAG_HAS_PLUGINERROR_BIT(&control->flags) == true) {
+        safuLogErr("PluginControl is in an invalid state due to Plugin errors");
     } else {
-        bool startNeeded = false;
+        result = SAFU_RESULT_OK;
 
-        switch (control->context.state) {
-            case PLUGIN_STATE_LOADED:
-                startNeeded = true;
-                break;
-            case PLUGIN_STATE_INVALID:
-            case PLUGIN_STATE_INITIALIZED:
-            case PLUGIN_STATE_STARTED:
-            case PLUGIN_STATE_STOPPED:
-            case PLUGIN_STATE_UNLOADED:
-            case PLUGIN_STATE_ERROR:
-                _LOG_ERR_CONTROL_WRONG_STATE(control, "LOADED");
-                break;
-            default:
-                _LOG_ERR_CONTROL_UNKNOWN_STATE(control);
-                break;
-        }
-
-        if (startNeeded == true) {
+        if (ELOS_PLUGINCONTROL_FLAG_PUSH_STARTED_BIT(&control->flags) == true) {
             int retVal;
 
             retVal = eventfd_write(control->sync, 1);
             if (retVal < 0) {
                 safuLogErrErrno("eventfd_write (sync) failed");
+                result = SAFU_RESULT_FAILED;
             } else {
                 eventfd_t efdVal = 0;
 
                 retVal = eventfd_read(control->context.sync, &efdVal);
                 if (retVal < 0) {
                     safuLogErrErrno("eventfd_read (worker.sync) failed");
-                } else if (control->context.state != PLUGIN_STATE_STARTED) {
-                    _LOG_ERR_CONTROL_WRONG_STATE(control, "STARTED");
-                } else {
-                    result = SAFU_RESULT_OK;
+                    result = SAFU_RESULT_FAILED;
                 }
             }
         }
@@ -165,41 +147,31 @@ safuResultE_t elosPluginControlStop(elosPluginControl_t *control) {
 
     if (control == NULL) {
         safuLogErr("NULL parameter");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&control->flags) == false) {
+        safuLogErr("Component is not initialized");
+    } else if (ELOS_PLUGINCONTROL_FLAG_HAS_LOADED_BIT(&control->flags) == false) {
+        safuLogErr("Plugin is not loaded");
     } else {
-        bool stopNeeded = false;
+        result = SAFU_RESULT_OK;
 
-        switch (control->context.state) {
-            case PLUGIN_STATE_STARTED:
-                stopNeeded = true;
-                break;
-            case PLUGIN_STATE_INVALID:
-            case PLUGIN_STATE_INITIALIZED:
-            case PLUGIN_STATE_STOPPED:
-            case PLUGIN_STATE_LOADED:
-            case PLUGIN_STATE_UNLOADED:
-            case PLUGIN_STATE_ERROR:
-                _LOG_ERR_CONTROL_WRONG_STATE(control, "STARTED");
-                break;
-            default:
-                _LOG_ERR_CONTROL_UNKNOWN_STATE(control);
-                break;
-        }
+        if (ELOS_PLUGINCONTROL_FLAG_PULL_STARTED_BIT(&control->flags) == true) {
+            if ((control->pluginConfig != NULL) && (control->pluginConfig->stop != NULL)) {
+                if (ELOS_PLUGINCONTROL_FLAG_HAS_PLUGINERROR_BIT(&control->flags) == true) {
+                    safuLogWarn("PluginControl had errors during Plugin operation; Trying to stop Plugin.");
+                }
 
-        if ((stopNeeded == true) && (control->pluginConfig != NULL) && (control->pluginConfig->stop != NULL)) {
-            result = control->pluginConfig->stop(&control->context);
-            if (result != SAFU_RESULT_OK) {
-                safuLogErrF("PluginWorker stop call failed for %s", control->context.config->key);
-            } else {
-                eventfd_t efdVal = 0;
-                int retVal;
-
-                retVal = eventfd_read(control->context.sync, &efdVal);
-                if (retVal < 0) {
-                    safuLogErrErrno("eventfd_read (worker.sync) failed");
-                } else if (control->context.state != PLUGIN_STATE_STOPPED) {
-                    _LOG_ERR_CONTROL_WRONG_STATE(control, "STOPPED");
+                result = control->pluginConfig->stop(&control->context);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErrF("PluginWorker stop call failed for %s", control->context.config->key);
                 } else {
-                    result = SAFU_RESULT_OK;
+                    eventfd_t efdVal = 0;
+                    int retVal;
+
+                    retVal = eventfd_read(control->context.sync, &efdVal);
+                    if (retVal < 0) {
+                        safuLogErrErrno("eventfd_read (worker.sync) failed");
+                        result = SAFU_RESULT_FAILED;
+                    }
                 }
             }
         }
@@ -213,50 +185,42 @@ safuResultE_t elosPluginControlUnload(elosPluginControl_t *control) {
 
     if (control == NULL) {
         safuLogErr("Invalid parameter");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&control->flags) == false) {
+        safuLogErr("The given PluginControl is not initialized");
     } else {
-        bool unloadNeeded = true;
+        result = SAFU_RESULT_OK;
 
-        switch (control->context.state) {
-            case PLUGIN_STATE_LOADED:
-            case PLUGIN_STATE_STOPPED:
-            case PLUGIN_STATE_ERROR:
-                break;
-            case PLUGIN_STATE_STARTED:
-                result = elosPluginControlStop(control);
-                if (result != SAFU_RESULT_OK) {
-                    safuLogErr("elosPluginControlStop failed");
-                }
-                break;
-            case PLUGIN_STATE_INITIALIZED:
-            case PLUGIN_STATE_UNLOADED:
-                unloadNeeded = false;
-                break;
-            default:
-                _LOG_ERR_CONTROL_UNKNOWN_STATE(control);
-                result = SAFU_RESULT_FAILED;
-                unloadNeeded = false;
-                break;
+        if (ELOS_PLUGINCONTROL_FLAG_HAS_PLUGINERROR_BIT(&control->flags) == true) {
+            safuLogWarn("PluginControl had errors during Plugin operation; Trying to unload Plugin.");
         }
 
-        if (unloadNeeded == true) {
-            if (ELOS_PLUGIN_FLAG_HAS_WORKERRUNNING_BIT(&control->flags) == true) {
-                int retVal = pthread_join(control->workerThread, NULL);
+        if (ELOS_PLUGINCONTROL_FLAG_HAS_STARTED_BIT(&control->flags) == true) {
+            result = elosPluginControlStop(control);
+            if (result != SAFU_RESULT_OK) {
+                safuLogErr("elosPluginControlStop failed");
+            }
+        }
+
+        if (ELOS_PLUGINCONTROL_FLAG_PULL_LOADED_BIT(&control->flags) == true) {
+            if ((ELOS_PLUGINCONTROL_FLAG_PULL_WORKER_BIT(&control->flags) == true)) {
+                int retVal;
+
+                retVal = pthread_join(control->workerThread, NULL);
                 if (retVal < 0) {
                     safuLogErr("Plugin: pthread_join failed!");
                     result = SAFU_RESULT_FAILED;
-                } else {
-                    atomic_fetch_and(&control->flags, ~ELOS_PLUGIN_FLAG_WORKERRUNNING);
                 }
             }
 
             if ((control->pluginConfig != NULL) && (control->pluginConfig->unload != NULL)) {
-                result = control->pluginConfig->unload(&control->context);
-                if (result != SAFU_RESULT_OK) {
+                safuResultE_t subResult;
+
+                subResult = control->pluginConfig->unload(&control->context);
+                if (subResult != SAFU_RESULT_OK) {
                     safuLogWarn("PluginWorker: Unload function failed (might result in memory leaks)");
+                    result = SAFU_RESULT_FAILED;
                 }
             }
-
-            control->context.state = PLUGIN_STATE_UNLOADED;
         }
     }
 
@@ -267,33 +231,15 @@ safuResultE_t elosPluginControlDeleteMembers(elosPluginControl_t *control) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (control != NULL) {
-        bool cleanupNeeded = false;
+        if (SAFU_FLAG_HAS_INITIALIZED_BIT(&control->flags) == true) {
+            int retVal;
 
-        switch (control->context.state) {
-            case PLUGIN_STATE_LOADED:
-            case PLUGIN_STATE_STARTED:
-            case PLUGIN_STATE_STOPPED:
-            case PLUGIN_STATE_ERROR:
+            if (ELOS_PLUGINCONTROL_FLAG_HAS_LOADED_BIT(&control->flags) == true) {
                 result = elosPluginControlUnload(control);
                 if (result != SAFU_RESULT_OK) {
-                    safuLogWarn("elosPluginControlUnload failed (might result in memory leaks)");
+                    safuLogErr("elosPluginControlStop failed");
                 }
-                cleanupNeeded = true;
-                break;
-            case PLUGIN_STATE_INITIALIZED:
-            case PLUGIN_STATE_UNLOADED:
-                cleanupNeeded = true;
-                break;
-            case PLUGIN_STATE_INVALID:
-                break;
-            default:
-                _LOG_ERR_CONTROL_UNKNOWN_STATE(control);
-                result = SAFU_RESULT_FAILED;
-                break;
-        }
-
-        if (cleanupNeeded == true) {
-            int retVal;
+            }
 
             if (control->dlHandle != NULL) {
                 retVal = dlclose(control->dlHandle);
@@ -352,11 +298,15 @@ safuResultE_t elosPluginControlDelete(elosPluginControl_t **control) {
 safuResultE_t elosPluginControlGetName(const elosPluginControl_t *control, const char **name) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (control != NULL && control->context.config != NULL && name != NULL) {
+    if ((control == NULL) || (name == NULL)) {
+        safuLogErr("Invalid parameter");
+    } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&control->flags) == false) {
+        safuLogErr("Component is not initialized");
+    } else if (control->context.config == NULL) {
+        safuLogErr("Plugin has no configuration");
+    } else {
         *name = control->context.config->key;
         result = SAFU_RESULT_OK;
-    } else {
-        safuLogErr("Invalid parameters");
     }
 
     return result;

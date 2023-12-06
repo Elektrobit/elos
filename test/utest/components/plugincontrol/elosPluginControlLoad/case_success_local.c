@@ -45,7 +45,7 @@ int _customPthreadCreate(UNUSED pthread_t *__restrict__ __newthread, UNUSED cons
     safuResultE_t result;
 
     // Convice the plugin we're loaded so we don't have to do start/stop here too
-    pluginControl->context.state = PLUGIN_STATE_LOADED;
+    atomic_fetch_or(&pluginControl->flags, ELOS_PLUGINCONTROL_FLAG_LOADED_BIT);
 
     // Also simulate the plugin function calls used during the thread creation
     result = pluginConfig->load(&pluginControl->context);

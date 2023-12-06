@@ -10,6 +10,7 @@ Components
    eventlogging/index
    eventprocessor/index
    logger/index
+   plugincontrol/index
    rpnfilter/index
    scanner/index
    scanner_manager/index
@@ -118,7 +119,7 @@ corresponding prototype below:
     *     component (elosComponent_t**): point to a elosComponent_t pointer, where
     *                                    to store address of the new allocated
     *                                    object. Shall be unchanged on failure.
-    * 
+    *
     * Returns:
     *     safuResultE_t:
     *         SAFU_RESULT_OK – on success.
@@ -132,7 +133,7 @@ corresponding prototype below:
     * Parameter:
     *     component (elosComponent_t*): point to a elosComponent_t, which shall be
     *                                   initialized with defaults.
-    * 
+    *
     * Returns:
     *     safuResultE_t:
     *         SAFU_RESULT_OK – on success.
@@ -145,10 +146,10 @@ corresponding prototype below:
     * and also make a deep copy each member.
     *
     * Parameter:
-    *     to (elosComponent_t*): pointer to the destination component, on failure 
+    *     to (elosComponent_t*): pointer to the destination component, on failure
     *                            the state of  elosComponent_t shall be unchanged.
     *     from (elosComponent_t*): pointer to the source component
-    * 
+    *
     * Returns:
     *     safuResultE_t:
     *         SAFU_RESULT_OK – on success.
@@ -165,7 +166,7 @@ corresponding prototype below:
     *                            failure the state of  elosComponent_t shall be
     *                            unchanged.
     *     from (elosComponent_t*): pointer to the source component
-    * 
+    *
     * Returns:
     *     safuResultE_t:
     *         SAFU_RESULT_OK – on success.
@@ -179,7 +180,7 @@ corresponding prototype below:
     * Parameter:
     *     component (elosComponent_t*): pointer to a elosComponent_t, of which all
     *                                   memebers shall be freed.
-    * 
+    *
     * Returns:
     *     safuResultE_t:
     *         SAFU_RESULT_OK – on success.
@@ -193,7 +194,7 @@ corresponding prototype below:
     * Parameter:
     *     component (elosComponent_t*): pointer to a elosComponent_t, which shall
     *                                   be freed.
-    * 
+    *
     * Returns:
     *     safuResultE_t:
     *         SAFU_RESULT_OK – on success.
