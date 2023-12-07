@@ -19,8 +19,6 @@ int elosTestElosMessageEventPublishEventEmptySetup(UNUSED void **state) {
     assert_int_equal(data->conn->blacklist.memorySize, 0);
     data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(data->conn->sharedData);
-    data->conn->sharedData->eventProcessor = safuAllocMem(NULL, sizeof(elosEventProcessor_t));
-    assert_non_null(data->conn->sharedData->eventProcessor);
 
     data->response = elosMessageHandlerResponseCreate(NULL);
     assert_non_null(data->response);
@@ -48,7 +46,6 @@ int elosTestElosMessageEventPublishEventEmptyTeardown(UNUSED void **state) {
     elosUtestState_t *data = *state;
     json_object_put(data->response);
     free(data->msg);
-    free(data->conn->sharedData->eventProcessor);
     free(data->conn->sharedData);
     free(data->conn);
     elosEventDelete(data->event);

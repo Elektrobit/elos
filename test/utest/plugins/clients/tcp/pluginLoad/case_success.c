@@ -26,6 +26,5 @@ void elosTestPluginLoadSuccess(UNUSED void **state) {
 
     assert_int_equal(result, SAFU_RESULT_OK);
 
-    plugin.state = PLUGIN_STATE_LOADED;
     elosPluginConfig.unload(&plugin);
 }

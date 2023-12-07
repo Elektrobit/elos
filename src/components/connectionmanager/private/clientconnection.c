@@ -23,8 +23,6 @@
 #include "elos/connectionmanager/clientblacklist.h"
 #include "elos/connectionmanager/connectionmanager.h"
 #include "elos/eventbuffer/eventbuffer.h"
-#include "elos/eventdispatcher/eventdispatcher.h"
-#include "elos/eventprocessor/eventprocessor.h"
 #include "elos/messages/message_handler.h"
 
 #define _TRIGGERFD_VALUE 1
@@ -54,29 +52,16 @@ safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConne
                 safuLogErrErrnoValue("eventfd creation (trigger) failed", clientConnection->triggerFd);
             } else {
                 elosClientConnectionSharedData_t *sharedData = clientConnection->sharedData;
-                elosEventBufferParam_t eventBufferParam = {
-                    .limitEventCount = ELOS_EVENTBUFFER_DEFAULT_LIMIT,
-                };
+                safuResultE_t subResult;
 
-                result = elosEventBufferInitialize(&clientConnection->eventBuffer, &eventBufferParam);
-                if (result != SAFU_RESULT_OK) {
-                    safuLogErrValue("Creating EventBuffer failed", result);
-                } else {
-                    result = elosEventDispatcherBufferAdd(sharedData->eventDispatcher, &clientConnection->eventBuffer);
-                    if (result != SAFU_RESULT_OK) {
-                        safuLogErrValue("Adding EventBuffer to EventDispatcher failed", result);
-                    } else {
-                        safuResultE_t subResult;
-
-                        clientConnection->isTrusted = false;
-                        subResult = elosBlacklistInitialize(&clientConnection->blacklist, sharedData->config);
-                        if (subResult == SAFU_RESULT_FAILED) {
-                            safuLogWarn("blacklist initialization failed");
-                        }
-
-                        atomic_store(&clientConnection->flags, SAFU_FLAG_INITIALIZED_BIT);
-                    }
+                clientConnection->isTrusted = false;
+                subResult = elosBlacklistInitialize(&clientConnection->blacklist, sharedData->config);
+                if (subResult == SAFU_RESULT_FAILED) {
+                    safuLogWarn("blacklist initialization failed");
                 }
+
+                atomic_store(&clientConnection->flags, SAFU_FLAG_INITIALIZED_BIT);
+                result = SAFU_RESULT_OK;
             }
         }
     }
@@ -98,19 +83,6 @@ safuResultE_t elosClientConnectionDeleteMembers(elosClientConnection_t *clientCo
                     safuLogWarn("Stopping ClientConnection failed (possible memory leak)");
                     result = SAFU_RESULT_FAILED;
                 }
-            }
-
-            stepResult = elosEventDispatcherBufferRemove(clientConnection->sharedData->eventDispatcher,
-                                                         &clientConnection->eventBuffer);
-            if (stepResult != SAFU_RESULT_OK) {
-                safuLogWarn("Removing EventBuffer from EventDispatcher failed");
-                result = SAFU_RESULT_FAILED;
-            }
-
-            stepResult = elosEventBufferDeleteMembers(&clientConnection->eventBuffer);
-            if (stepResult != SAFU_RESULT_OK) {
-                safuLogWarn("Deleting EventBuffer members failed");
-                result = SAFU_RESULT_FAILED;
             }
 
             stepResult = elosBlacklistDelete(&clientConnection->blacklist);

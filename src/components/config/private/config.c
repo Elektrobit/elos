@@ -84,16 +84,15 @@ static inline const char *elosConfigGetElosdOptionString(const samconfConfig_t *
 }
 
 int elosConfigGetElosdPort(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionInt(config, ELOS_CONFIG_ROOT "Port", "ELOSD_PORT", ELOSD_PORT);
+    return elosConfigGetElosdOptionInt(config, "/Config/Port", "ELOSD_PORT", ELOSD_PORT);
 }
 
 int elosConfigGetElosdConnectionLimit(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionInt(config, ELOS_CONFIG_ROOT "ConnectionLimit", "ELOSD_CONNECTION_LIMIT",
-                                       ELOSD_CONNECTION_LIMIT);
+    return elosConfigGetElosdOptionInt(config, "/Config/ConnectionLimit", "ELOSD_CONNECTION_LIMIT", ELOSD_CONNECTION_LIMIT);
 }
 
 const char *elosConfigGetElosdInterface(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_ROOT "Interface", "ELOSD_INTERFACE", ELOSD_INTERFACE);
+    return elosConfigGetElosdOptionString(config, "/Config/Interface", "ELOSD_INTERFACE", ELOSD_INTERFACE);
 }
 
 const char *elosConfigGetElosdLogFilter(const samconfConfig_t *config) {

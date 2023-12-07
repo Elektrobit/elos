@@ -27,10 +27,9 @@ target_link_libraries(
     connectionmanager_interface
     elos_common_interface
     eventbuffer_static
-    eventprocessor_static
-    eventlogging_static
     elos_event_static
     logger_static
+    libelosplugin
     safu::safu
     version
 )
@@ -42,7 +41,5 @@ create_weak_library(
     messagehandler_static
   WEAKEN_DEPENDENCIES
     eventbuffer_static
-    eventprocessor_static
-    eventlogging_static
     elos_event_static
 )

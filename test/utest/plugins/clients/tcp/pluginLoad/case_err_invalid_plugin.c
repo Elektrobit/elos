@@ -17,7 +17,7 @@ void elosTestPluginLoadErrInvalidPlugin(UNUSED void **state) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     TEST("pluginLoad");
-    SHOULD("loading the plugin fails because of a invalid plugin");
+    SHOULD("load the plugin and fail because of an invalid plugin parameter");
 
     PARAM("plugin is NULL");
     result = elosPluginConfig.load(NULL);

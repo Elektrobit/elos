@@ -23,8 +23,6 @@ int elosTestElosMessageEventPublishSuccessSetup(void **state) {
     assert_int_equal(data->conn->blacklist.memorySize, 0);
     data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(data->conn->sharedData);
-    data->conn->sharedData->eventProcessor = safuAllocMem(NULL, sizeof(elosEventProcessor_t));
-    assert_non_null(data->conn->sharedData->eventProcessor);
 
     data->response = elosMessageHandlerResponseCreate(NULL);
     assert_non_null(data->response);
@@ -51,7 +49,6 @@ int elosTestElosMessageEventPublishSuccessTeardown(void **state) {
     elosUtestState_t *data = *state;
     json_object_put(data->response);
     free(data->msg);
-    free(data->conn->sharedData->eventProcessor);
     free(data->conn->sharedData);
     free(data->conn);
     elosEventDelete(data->event);
@@ -91,6 +88,10 @@ static int _check_event(const long unsigned int parameter, const long unsigned i
     return result;
 }
 
+static safuResultE_t _mockElosPluginPublish(UNUSED elosPlugin_t *const plugin, UNUSED const elosEvent_t *const event) {
+    return SAFU_RESULT_OK;
+}
+
 void elosTestElosMessageEventPublishSuccess(void **state) {
     safuResultE_t ret;
     elosUtestState_t *data = *state;
@@ -103,10 +104,7 @@ void elosTestElosMessageEventPublishSuccess(void **state) {
     expect_check(elosEventBufferWrite, event, _check_event, data->event);
     will_return(elosEventBufferWrite, SAFU_RESULT_OK);
 
-    MOCK_FUNC_AFTER_CALL(elosLogAggregatorAdd, 0);
-    expect_value(elosLogAggregatorAdd, logAggregator, data->conn->sharedData->logAggregator);
-    expect_check(elosLogAggregatorAdd, event, _check_event, data->event);
-    will_return(elosLogAggregatorAdd, SAFU_RESULT_OK);
+    data->conn->plugin->publish = _mockElosPluginPublish;
 
     MOCK_FUNC_AFTER_CALL(elosMessageHandlerSendJson, 0)
     expect_any(elosMessageHandlerSendJson, conn);

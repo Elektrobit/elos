@@ -64,7 +64,7 @@ safuResultE_t elosAuthorizedProcessInitialize(safuVec_t *authorizedprocesses, co
     }
 
     if (result == SAFU_RESULT_OK) {
-        status = samconfConfigGet(config, ELOS_CONFIG_ROOT "authorizedProcesses", &authProcConfig);
+        status = samconfConfigGet(config, "/Config/authorizedProcesses", &authProcConfig);
         if (status != SAMCONF_CONFIG_OK) {
             safuLogErr("Given configuration does not have authorized process filters");
             result = SAFU_RESULT_FAILED;

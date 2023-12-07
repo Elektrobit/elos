@@ -32,8 +32,6 @@ int elosTestelosMessageEventPublishBlacklistFilterCreateErrorSetup(void **state)
 
     data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(data->conn->sharedData);
-    data->conn->sharedData->eventProcessor = safuAllocMem(NULL, sizeof(elosEventProcessor_t));
-    assert_non_null(data->conn->sharedData->eventProcessor);
 
     const char mockErrString[] = "event authorization failed";
     data->response = elosMessageHandlerResponseCreate(mockErrString);
@@ -61,7 +59,6 @@ int elosTestelosMessageEventPublishBlacklistFilterCreateErrorTeardown(void **sta
     elosUtestState_t *data = *state;
     json_object_put(data->response);
     free(data->msg);
-    free(data->conn->sharedData->eventProcessor);
     free(data->conn->sharedData);
     elosEventFilterDeleteMembers(&data->conn->blacklist);
     free(data->conn);
@@ -135,11 +132,6 @@ void elosTestelosMessageEventPublishBlacklistFilterCreateError(void **state) {
     expect_value(elosEventBufferWrite, eventBuffer, &data->conn->eventBuffer);
     expect_check(elosEventBufferWrite, event, _check_event, &errorEvent);
     will_return(elosEventBufferWrite, SAFU_RESULT_OK);
-
-    MOCK_FUNC_ENABLE(elosLogAggregatorAdd);
-    expect_value(elosLogAggregatorAdd, logAggregator, data->conn->sharedData->logAggregator);
-    expect_check(elosLogAggregatorAdd, event, _check_event, &errorEvent);
-    will_return(elosLogAggregatorAdd, SAFU_RESULT_OK);
 
     MOCK_FUNC_ENABLE(elosMessageHandlerSendJson)
     expect_any(elosMessageHandlerSendJson, conn);

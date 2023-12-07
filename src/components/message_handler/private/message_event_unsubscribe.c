@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/json.h>
 #include <safu/log.h>
 
 #include "elos/common/types.h"
-#include "elos/eventprocessor/eventfiltermanager.h"
-#include "elos/eventprocessor/eventqueuemanager.h"
 #include "elos/messages/message_handler.h"
 
 safuResultE_t elosMessageEventUnsubscribe(elosClientConnection_t *conn, elosMessage_t const *const msg) {
@@ -26,21 +25,14 @@ safuResultE_t elosMessageEventUnsubscribe(elosClientConnection_t *conn, elosMess
             safuLogErrF("eventQueueId '%d' is invalid", eventQueueId);
             errStr = "Invalid value for 'eventQueueId'";
         } else {
-            safuLogDebugF("Removing filters from event queue %d.", eventQueueId);
-            result = elosEventFilterManagerNodeRemoveByEventQueueId(
-                &conn->sharedData->eventProcessor->eventFilterManager, eventQueueId);
-            if (result == SAFU_RESULT_OK) {
-                safuLogDebugF("Removing event queue %d.", eventQueueId);
-                result = elosEventQueueManagerEntryDelete(&conn->sharedData->eventProcessor->eventQueueManager,
-                                                          eventQueueId);
-                if (result != SAFU_RESULT_OK) {
-                    safuLogErrF("elosEventQueueManagerEntryDelete failed with eventQueueId '%d'", eventQueueId);
-                    errStr = "Removing the EventQueue failed";
-                }
-            } else {
+            elosSubscription_t subscription = {ELOS_ID_INVALID};
+            result = elosPluginUnsubscribe(conn->sharedData->plugin, conn->data.subscriber, &subscription);
+            if (result != SAFU_RESULT_OK) {
                 safuLogErrF("elosEventFilterManagerNodeRemoveByEventQueueId failed with eventQueueId '%d'",
                             eventQueueId);
                 errStr = "Removing the EventQueue filters failed";
+            } else {
+                safuLogDebugF("subscription removed for event queue %d.", eventQueueId);
             }
         }
 

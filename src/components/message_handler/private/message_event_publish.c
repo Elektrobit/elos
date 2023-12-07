@@ -6,8 +6,6 @@
 #include "elos/event/event.h"
 #include "elos/eventbuffer/eventbuffer.h"
 #include "elos/eventfilter/eventfilter.h"
-#include "elos/eventlogging/LogAggregator.h"
-#include "elos/eventprocessor/eventprocessor.h"
 #include "elos/logger/logger.h"
 #include "elos/messages/message_handler.h"
 #include "safu/common.h"
@@ -106,17 +104,7 @@ safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_
         }
 
         if (retval == SAFU_RESULT_OK) {
-            safuResultE_t bufferResult = elosEventBufferWrite(&conn->eventBuffer, &event);
-            if (bufferResult != SAFU_RESULT_OK) {
-                errstr = "Writing into the EventBuffer failed";
-                retval = SAFU_RESULT_FAILED;
-                safuLogErr(errstr);
-            }
-
-            safuResultE_t loggerResult = elosLogAggregatorAdd(conn->sharedData->logAggregator, &event);
-            if (loggerResult != SAFU_RESULT_OK) {
-                safuLogWarn("elosLogAggregatorAdd failed");
-            }
+            elosPluginPublish(conn->sharedData->plugin, conn->data.publisher, &event);
         }
 
         elosEventDeleteMembers(&event);

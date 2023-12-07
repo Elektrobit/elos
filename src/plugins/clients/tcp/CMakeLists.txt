@@ -22,6 +22,7 @@ target_link_libraries(
     client_tcp_interface
     elos_common_interface
     libelosplugin
+    connectionmanager_static
     samconf::samconf
 )
 

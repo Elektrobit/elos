@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <netinet/in.h>
+#include <safu/flags.h>
 #include <safu/vector.h>
 #include <samconf/samconf_types.h>
 #include <semaphore.h>
 
 #include "elos/connectionmanager/clientconnection_defines.h"
-#include "elos/eventdispatcher/types.h"
 #include "elos/eventfilter/eventfilter_types.h"
-#include "elos/eventlogging/LogAggregatorTypes.h"
-#include "elos/eventprocessor/types.h"
 
 typedef safuVec_t elosEventFilterNodeIdVector_t;
 typedef safuVec_t elosEventQueueIdVector_t;
@@ -19,30 +18,26 @@ typedef safuVec_t elosEventQueueIdVector_t;
  * Data structures used exclusively by the worker thread
  *
  * Members:
- *   eventFilterNodeIdVector: FilterNodes used by the connection
- *   eventQueueIdVector: EventQueues used by the connection
+ *   publisher: exclusiv for the connection
+ *   subscriber: exclusiv for the connection
  ******************************************************************/
 typedef struct elosClientConnectionData {
-    elosEventFilterNodeIdVector_t eventFilterNodeIdVector;
-    elosEventQueueIdVector_t eventQueueIdVector;
+    struct elosPublisher *publisher;
+    struct elosSubscriber *subscriber;
 } elosClientConnectionData_t;
 
 /*******************************************************************
  * Data structures shared between all connections of a ConnectionManager
  *
  * Members:
- *   logAggregator: Used for persistent logging of Events
  *   connectionSemaphore: Used for waiting until a connection is available
- *   eventDispatcher: Used for registering the EventBuffers of each Connection
- *   eventProcessor: Used for FilterNode/EventQueue handling
  *   config: Static configuration variables
+ *   plugin: reference to the plugin instance
  ******************************************************************/
 typedef struct elosClientConnectionSharedData {
-    elosLogAggregator_t *logAggregator;
     sem_t connectionSemaphore;
-    elosEventDispatcher_t *eventDispatcher;
-    elosEventProcessor_t *eventProcessor;
     samconfConfig_t *config;
+    elosPlugin_t *plugin;
 } elosClientConnectionSharedData_t;
 
 /*******************************************************************
@@ -59,7 +54,6 @@ typedef struct elosClientConnectionSharedData {
  *   data: worker thread local data
  *   isTrusted: 'true' if the connection is trusted
  *   blacklist: blacklist filters
- *   eventBuffer: Buffer for incoming Events.
  ******************************************************************/
 typedef struct elosClientConnection {
     safuFlags_t flags;
@@ -72,7 +66,6 @@ typedef struct elosClientConnection {
     elosClientConnectionData_t data;
     bool isTrusted;
     elosEventFilter_t blacklist;
-    elosEventBuffer_t eventBuffer;
 } elosClientConnection_t;
 
 /*******************************************************************

@@ -16,7 +16,7 @@ safuResultE_t elosBlacklistInitialize(elosEventFilter_t *blacklist, samconfConfi
         safuLogErr("Invalid argument");
     } else {
         *blacklist = (elosEventFilter_t)ELOS_EVENTFILTER_INIT;
-        status = samconfConfigGetString(config, ELOS_CONFIG_ROOT "EventBlacklist", &paramstring);
+        status = samconfConfigGetString(config,  "/Config/EventBlacklist", &paramstring);
         if (status == SAMCONF_CONFIG_OK) {
             if (paramstring != NULL && paramstring[0] != '\0') {
                 elosEventFilterParam_t param = {.filterString = paramstring};

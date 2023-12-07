@@ -26,10 +26,8 @@ static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionMa
     if (retVal != 0) {
         safuLogErrErrnoValue("sem_init failed!", retVal);
     } else {
-        sharedData->logAggregator = param->logAggregator;
-        sharedData->eventProcessor = param->eventProcessor;
-        sharedData->eventDispatcher = param->eventDispatcher;
         sharedData->config = param->config;
+        sharedData->plugin = param->plugin;
         result = SAFU_RESULT_OK;
     }
 
@@ -113,8 +111,7 @@ safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectio
 
     if ((connectionManager == NULL) || (param == NULL)) {
         safuLogErr("Invalid parameter NULL");
-    } else if ((param->config == NULL) || (param->eventDispatcher == NULL) || (param->eventProcessor == NULL) ||
-               (param->logAggregator == NULL)) {
+    } else if (param->config == NULL) {
         safuLogErr("Invalid value NULL in parameter struct");
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&connectionManager->flags) == true) {
         safuLogErr("The given ConnectionManager is already initialized");

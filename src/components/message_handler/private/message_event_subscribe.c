@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/json.h>
 #include <safu/log.h>
 
 #include "elos/common/types.h"
-#include "elos/eventprocessor/eventfiltermanager.h"
-#include "elos/eventprocessor/eventprocessor.h"
-#include "elos/eventprocessor/eventqueuemanager.h"
 #include "elos/messages/message_handler.h"
 
 safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessage_t const *const msg) {
@@ -14,14 +12,11 @@ safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessag
     json_object *request = NULL;
     json_object *jResponse = NULL;
     json_object *jFilterArray = NULL;
-
+    const elosSubscription_t *subscription = NULL;
     const char *errStr = NULL;
     char **filterStrings = NULL;
     size_t arrayLength;
     int retval;
-    elosEventProcessor_t *eventProcessor = conn->sharedData->eventProcessor;
-    elosEventFilterNodeId_t eventFilterNodeId = ELOS_ID_INVALID;
-    elosEventQueueId_t eventQueueId = ELOS_ID_INVALID;
     safuResultE_t result = SAFU_RESULT_OK;
 
     request = json_tokener_parse(msg->json);
@@ -75,25 +70,11 @@ safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessag
     }
 
     if (errStr == NULL) {
-        result = elosEventProcessorFilterNodeCreateWithQueue(eventProcessor, (char const **)filterStrings, arrayLength,
-                                                             &eventQueueId, &eventFilterNodeId);
+        result = elosPluginSubscribe(conn->sharedData->plugin, conn->data.subscriber,
+                                     (char const *const *)filterStrings, arrayLength, &subscription);
         if (result == SAFU_RESULT_FAILED) {
-            safuLogErrF("%s", "elosEventProcessorFilterNodeCreateWithQueue failed");
-            safuLogDebugF("%s", "failed to create eventQueue and/or eventFilterNode");
-            errStr = "failed to initialize eventFilterNode/eventQueue";
-        } else {
-            // These will be made obsolete in the future with eventProcessor improvements
-            retval = safuVecPush(&conn->data.eventFilterNodeIdVector, &eventFilterNodeId);
-            if (retval < 0) {
-                safuLogErrF("safuVecPush with filterNodeId '%u' failed", eventFilterNodeId);
-                errStr = "failed to push eventFilterNodeId";
-            } else {
-                retval = safuVecPush(&conn->data.eventQueueIdVector, &eventQueueId);
-                if (retval < 0) {
-                    safuLogErrF("safuVecPush with eventQueueId '%u' failed", eventQueueId);
-                    errStr = "failed to push eventQueueId";
-                }
-            }
+            safuLogErr("failed to subscribe");
+            errStr = "failed to subscribe";
         }
     }
 
@@ -122,7 +103,7 @@ safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessag
         } else {
             json_object *jRet;
 
-            jRet = safuJsonAddNewInt64(jEqIdArray, NULL, eventQueueId);
+            jRet = safuJsonAddNewInt64(jEqIdArray, NULL, subscription->eventQueueId);
             if (jRet == NULL) {
                 safuLogErrF("%s", "safuJsonAddNewInt64 failed");
                 safuLogDebugF("%s", "failed to add eventqueueid to array");
@@ -140,15 +121,6 @@ safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessag
             result = SAFU_RESULT_FAILED;
         }
         json_object_put(jResponse);
-    }
-
-    if (result == SAFU_RESULT_FAILED) {
-        if (eventFilterNodeId != ELOS_ID_INVALID) {
-            elosEventFilterManagerNodeRemove(&eventProcessor->eventFilterManager, eventFilterNodeId);
-        }
-        if (eventQueueId != ELOS_ID_INVALID) {
-            elosEventQueueManagerEntryDelete(&eventProcessor->eventQueueManager, eventQueueId);
-        }
     }
 
     return result;

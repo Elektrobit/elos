@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/json.h>
 #include <safu/log.h>
 
 #include "elos/common/types.h"
-#include "elos/eventprocessor/eventprocessor.h"
 #include "elos/messages/message_handler.h"
+#include "elos/event/event_vector.h"
 
 safuResultE_t elosMessageEventQueueRead(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     struct json_object *jRequest = NULL;
@@ -34,7 +35,8 @@ safuResultE_t elosMessageEventQueueRead(elosClientConnection_t *conn, elosMessag
     }
 
     if (errStr == NULL) {
-        result = elosEventProcessorQueueRead(conn->sharedData->eventProcessor, eventQueueId, &eventVector);
+        elosSubscription_t subscription = {.eventQueueId=eventQueueId, .eventFilterNodeId=ELOS_ID_INVALID};
+        result = elosPluginReadQueue(conn->sharedData->plugin, conn->data.subscriber, &subscription, &eventVector);
         if (result != SAFU_RESULT_OK) {
             safuLogErrF("elosEventProcessorQueueRead failed with eventQueueId '%d'", eventQueueId);
             errStr = "Reading from the EventQueue failed";

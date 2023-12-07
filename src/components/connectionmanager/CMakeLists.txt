@@ -46,11 +46,9 @@ target_link_libraries(
     elos_event_static
     config_static
     eventbuffer_static
-    eventdispatcher_static
-    eventprocessor_static
     processfilter_static
-    eventlogging_static
     messagehandler_static
+    libelosplugin
     safu::safu
     ${LIBMNL_LIBRARIES}
 )
@@ -64,9 +62,6 @@ create_weak_library(
     elos_event_static
     config_static
     eventbuffer_static
-    eventdispatcher_static
-    eventprocessor_static
     processfilter_static
-    eventlogging_static
     messagehandler_static
 )

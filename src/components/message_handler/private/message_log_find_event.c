@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/common.h>
 #include <safu/json.h>
 #include <safu/log.h>
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "elos/event/event_vector.h"          // elosEventVector<Initialize, ToJsonObject, DeleteMembers>
-#include "elos/eventlogging/LogAggregator.h"  // elosLogAggregatorFindEvents
+#include "elos/event/event_vector.h"  // elosEventVector<Initialize, ToJsonObject, DeleteMembers>
 #include "elos/messages/message_handler.h"
 
 // The vector will grow using realloc, if more events than VEC_START_SIZE are pushed to it
@@ -40,7 +40,6 @@ static safuResultE_t _getFilterRuleFromJsonMessage(char **filterRule, const char
 
 safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     safuResultE_t result = SAFU_RESULT_OK;
-    elosLogAggregator_t *logAggregator = NULL;
     char *filterRule = NULL;
     const char *errStr = NULL;
     struct json_object *eventVecJarr = NULL;
@@ -76,8 +75,7 @@ safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_
     }
 
     if (result == SAFU_RESULT_OK) {
-        logAggregator = conn->sharedData->logAggregator;
-        result = elosLogAggregatorFindEvents(logAggregator, filterRule, &eventVector);
+        result = elosPluginFindEvents(conn->sharedData->plugin, filterRule, &eventVector);
         if (result != SAFU_RESULT_OK) {
             errStr = "Failed to find events";
             safuLogErrF("%s", errStr);

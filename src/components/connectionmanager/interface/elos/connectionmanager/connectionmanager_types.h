@@ -9,11 +9,6 @@
 
 #include "elos/connectionmanager/clientauthorization_types.h"
 #include "elos/connectionmanager/clientconnection_types.h"
-#include "elos/eventbuffer/types.h"
-#include "elos/eventdispatcher/types.h"
-#include "elos/eventfilter/eventfilter_types.h"
-#include "elos/eventlogging/LogAggregatorTypes.h"
-#include "elos/eventprocessor/types.h"
 
 #define ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT    200
 #define ELOS_CONNECTIONMANAGER_LISTEN_QUEUE_LENGTH 200
@@ -59,13 +54,9 @@ typedef struct elosConnectionManager {
  *
  * Members:
  *   config: Static configuration variables
- *   eventDispatcher: Used for registering the EventBuffers of each ClientConnection
- *   eventProcessor: Used for FilterNode/EventQueue handling
- *   logAggregator: Used for persistent logging of Events
+ *   plugin: The plugin context to interact with elos.
  ******************************************************************/
 typedef struct elosConnectionManagerParam {
     samconfConfig_t *config;
-    elosEventDispatcher_t *eventDispatcher;
-    elosEventProcessor_t *eventProcessor;
-    elosLogAggregator_t *logAggregator;
+    elosPlugin_t *plugin;
 } elosConnectionManagerParam_t;

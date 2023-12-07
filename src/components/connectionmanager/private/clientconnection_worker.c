@@ -2,6 +2,7 @@
 
 #define _GNU_SOURCE
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <errno.h>
 #include <poll.h>
 #include <safu/log.h>
@@ -22,20 +23,14 @@
 
 static safuResultE_t _workerDataInitialize(elosClientConnection_t *clientConnection) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    elosClientConnectionData_t *workerData = &clientConnection->data;
-    uint32_t const eqIdElements = ELOS_CONNECTIONMANAGER_EVENTQUEUEIDVECTOR_SIZE;
-    uint32_t const efnIdElements = ELOS_CONNECTIONMANAGER_EVENTFILTERNODEIDVECTOR_SIZE;
-    int retVal;
 
-    retVal = safuVecCreate(&workerData->eventQueueIdVector, eqIdElements, sizeof(elosEventQueueId_t));
-    if (retVal != 0) {
-        safuLogErrValue("Creating EventQueueId vector failed", retVal);
+    result = elosPluginCreatePublisher(clientConnection->sharedData->plugin, &clientConnection->data.publisher);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("Failed to create publisher for client");
     } else {
-        retVal = safuVecCreate(&workerData->eventFilterNodeIdVector, efnIdElements, sizeof(elosEventFilterNodeId_t));
-        if (retVal != 0) {
-            safuLogErrValue("Creating EventFilterNodeId vector failed", retVal);
-        } else {
-            result = SAFU_RESULT_OK;
+        result = elosPluginCreateSubscriber(clientConnection->sharedData->plugin, &clientConnection->data.subscriber);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("Failed to create subscriber for client");
         }
     }
 
@@ -44,57 +39,17 @@ static safuResultE_t _workerDataInitialize(elosClientConnection_t *clientConnect
 
 safuResultE_t _workerDataDeleteMembers(elosClientConnection_t *clientConnection) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    elosClientConnectionData_t *workerData = &clientConnection->data;
-    elosEventProcessor_t *eventProcessor = clientConnection->sharedData->eventProcessor;
-    uint32_t elements;
-    int retVal;
 
-    elements = safuVecElements(&workerData->eventFilterNodeIdVector);
-    for (uint32_t idx = 0; idx < elements; idx += 1) {
-        elosEventFilterNodeId_t *id;
-
-        id = safuVecGet(&workerData->eventFilterNodeIdVector, idx);
-        if (id == NULL) {
-            safuLogWarnF("safuVecGet with 'idx:%u' failed", idx);
-            result = SAFU_RESULT_FAILED;
-        } else {
-            result = elosEventProcessorFilterNodeRemove(eventProcessor, *id);
-            if (result != SAFU_RESULT_OK) {
-                safuLogWarnF("elosEventProcessorFilterNodeRemove with 'idx:%u, id:%u' failed", idx, *id);
-            }
-        }
+    result = elosPluginUnsubscribeAll(clientConnection->sharedData->plugin, clientConnection->data.subscriber);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("cleanup subscriptions failed");
     }
 
-    retVal = safuVecFree(&workerData->eventFilterNodeIdVector);
-    if (retVal < 0) {
-        safuLogWarn("safuVecFree failed");
-        result = SAFU_RESULT_FAILED;
-    }
-
-    elements = safuVecElements(&workerData->eventQueueIdVector);
-    for (uint32_t idx = 0; idx < elements; idx += 1) {
-        elosEventFilterNodeId_t *id;
-
-        id = safuVecGet(&workerData->eventQueueIdVector, idx);
-        if (id == NULL) {
-            safuLogErrF("safuVecGet with 'idx:%u' failed", idx);
-            result = SAFU_RESULT_FAILED;
-        } else {
-            result = elosEventProcessorQueueRemove(eventProcessor, *id);
-            if (result != SAFU_RESULT_OK) {
-                safuLogErrF("elosEventProcessorQueueRemove with 'idx:%u, id:%u' failed", idx, *id);
-            }
-        }
-    }
-
-    retVal = safuVecFree(&workerData->eventQueueIdVector);
-    if (retVal < 0) {
-        safuLogWarn("safuVecFree failed");
-        result = SAFU_RESULT_FAILED;
-    }
+    result = elosPluginDeletePublisher(clientConnection->sharedData->plugin, clientConnection->data.publisher);
+    result = elosPluginDeleteSubscriber(clientConnection->sharedData->plugin, clientConnection->data.subscriber);
 
     if (clientConnection->fd != -1) {
-        retVal = close(clientConnection->fd);
+        int retVal = close(clientConnection->fd);
         if (retVal != 0) {
             safuLogWarnErrnoValue("Closing socketFd failed", retVal);
             result = SAFU_RESULT_FAILED;

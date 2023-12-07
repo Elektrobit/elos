@@ -33,7 +33,6 @@
 #include "elos/common/process.h"
 #include "elos/connectionmanager/clientauthorizedprocesses.h"
 #include "elos/connectionmanager/types.h"
-#include "elos/plugincontrol/types.h"
 
 #define LIBMNL_OK    0
 #define LIBMNL_ERROR 1

@@ -12,9 +12,6 @@ int elosTestElosMessageEventQueueReadErrQueueReadSetup(void **state) {
 
 int elosTestElosMessageEventQueueReadErrQueueReadTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
-
-    elosEventProcessorDeleteMembers(&test->eventProcessor);
-
     return 0;
 }
 
