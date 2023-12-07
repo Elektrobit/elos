@@ -40,3 +40,11 @@ which leaves the build artefacts under `/tmp/artifacts`
 ### known issues
 
 - job artefacts lose their permissions so executables are no longer set as executable when downloaded in a different job
+   - a possibility to fix that ist to run `chmod` on all files needing specific permissions.
+     for example to make all utests in the Release build folder executable:
+     ```bash
+     for test in $(find build/Release/cmake/ -name "*_utest"); do
+         chmod +x $test
+     done
+     ```
+- uploading and downloading artefacts with `actions/upload-artifact@v3` & `actions/download-artifact@v3` takes a very long time, especially with artefacts containing a lot of (small) files.

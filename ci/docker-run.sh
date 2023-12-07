@@ -16,7 +16,7 @@ fi
 
 if [ -f "${HOME}/.ssh/asmcov_token" ]; then
     echo "Loading asmcov token from ${HOME}/.ssh/asmcov_token."
-    source "${HOME}/.ssh/asmcov_token"
+    . "${HOME}/.ssh/asmcov_token"
 fi
 
 echo "==> create docker image"
