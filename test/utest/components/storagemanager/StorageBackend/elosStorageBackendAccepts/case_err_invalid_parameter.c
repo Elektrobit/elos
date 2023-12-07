@@ -21,7 +21,7 @@ void _testelosStorageBackendAcceptsErrInvalidParameterParam(const char *paramete
 
 void elosTestElosStorageBackendAcceptsErrInvalidParameter(UNUSED void **state) {
     TEST("elosStorageBackendAccepts");
-    SHOULD("%s", "Test if invalid parameter are processed correctly");
+    SHOULD("Test if invalid parameter are processed correctly");
 
     elosEvent_t event = {0};
     _testelosStorageBackendAcceptsErrInvalidParameterParam("backend is NULL", NULL, &event);

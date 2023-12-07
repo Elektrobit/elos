@@ -22,7 +22,7 @@ int elosTestElosPluginFilterLoaderLoadErrNoFilterSectionDefinedTeardown(UNUSED v
 void elosTestElosPluginFilterLoaderLoadErrNoFilterSectionDefined(UNUSED void **state) {
     samconfConfig_t *config = *(samconfConfig_t **)state;
     TEST("elosPluginFilterLoaderLoad");
-    SHOULD("%s", "test if no \"Filter\" section is defined, backend is setup properly");
+    SHOULD("test if no \"Filter\" section is defined, backend is setup properly");
 
     elosStorageBackend_t backend = {0};
     elosPluginControl_t plugin = {.context = {.config = config, .data = &backend}};

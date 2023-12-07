@@ -49,7 +49,7 @@ int elosTestElosStorageBackendAcceptsSuccessTeardown(UNUSED void **state) {
 
 void elosTestElosStorageBackendAcceptsSuccess(UNUSED void **state) {
     TEST("elosStorageBackendAccepts");
-    SHOULD("%s", "test if SAFU_RESULT_OK is returned if filter rules for a backend matches given filters");
+    SHOULD("test if SAFU_RESULT_OK is returned if filter rules for a backend matches given filters");
 
     for (size_t i = 0; i < ARRAY_SIZE(elosTestTable); i++) {
         PARAM("test row %zu", i);

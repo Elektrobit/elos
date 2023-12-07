@@ -27,7 +27,7 @@ int elosTestElosPluginFilterLoaderLoadSuccessTeardown(UNUSED void **state) {
 void elosTestElosPluginFilterLoaderLoadSuccess(UNUSED void **state) {
     samconfConfig_t *config = *(samconfConfig_t **)state;
     TEST("elosPluginFilterLoaderLoad");
-    SHOULD("%s", "test if filter from a config section are loaded properly");
+    SHOULD("test if filter from a config section are loaded properly");
 
     elosStorageBackend_t backend = {0};
     elosPluginControl_t plugin = {.context = {.config = config, .data = &backend}};

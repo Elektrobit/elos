@@ -24,7 +24,7 @@ int elosTestElosPluginFilterLoaderLoadErrNoFiltersDefinedTeardown(UNUSED void **
 void elosTestElosPluginFilterLoaderLoadErrNoFiltersDefined(UNUSED void **state) {
     samconfConfig_t *config = *(samconfConfig_t **)state;
     TEST("elosPluginFilterLoaderLoad");
-    SHOULD("%s", "test if \"Filter\" section contains no filters, backend is setup properly");
+    SHOULD("test if \"Filter\" section contains no filters, backend is setup properly");
 
     elosStorageBackend_t backend = {0};
     elosPluginControl_t plugin = {.context = {.config = config, .data = &backend}};

@@ -22,7 +22,7 @@ void _testelosPluginFilterLoaderLoadErrInvalidParameterParam(const char *paramet
 
 void elosTestElosPluginFilterLoaderLoadErrInvalidParameter(UNUSED void **state) {
     TEST("elosPluginFilterLoaderLoad");
-    SHOULD("%s", "Test if invalid parameter are processed correctly");
+    SHOULD("Test if invalid parameter are processed correctly");
 
     _testelosPluginFilterLoaderLoadErrInvalidParameterParam("plugin is NULL", NULL);
 
