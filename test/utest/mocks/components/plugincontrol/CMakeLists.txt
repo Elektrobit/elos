@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+
+create_mock_lib(
+  NAME
+    mock_plugincontrol
+  SOURCES
+    mock_plugincontrol.c
+    mock_plugincontrol_vector.c
+  INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  LIBRARIES
+    plugincontrol_static_weak
+    cmocka_extensions::cmocka_extensions
+  WRAP_FLAG
+    MOCK_PLUGIN_CONTROL_FUNC_LINKER_WRAPPING
+  WRAPS
+    elosPluginControlInitialize
+    elosPluginControlNew
+    elosPluginControlLoad
+    elosPluginControlUnload
+    elosPluginControlStart
+    elosPluginControlStop
+    elosPluginControlDeleteMembers
+    elosPluginControlDelete
+    elosPluginControlGetName
+    elosPluginControlVectorInitialize
+    elosPluginControlVectorPush
+    elosPluginControlVectorIterate
+    elosPluginControlVectorGetById
+    elosPluginControlVectorRemoveById
+    elosPluginControlVectorDeleteMembers
+)
