@@ -20,21 +20,21 @@ static inline char *_upperString(const char *src) {
 }
 
 static inline const char *_getConnectionString(const char *backendName) {
-    const char *prefix = "ELOS_STORAGE_BACKEND_"; 
+    const char *prefix = "ELOS_STORAGE_BACKEND_";
     const char *postfix = "_CONNECTION";
     const size_t prefixLen = strlen(prefix);
     const size_t postfixLen = strlen(postfix);
     const size_t nameLen = strlen(backendName);
     char *envVar = safuAllocMem(NULL, sizeof(char) * (prefixLen + postfixLen + nameLen + 1));
-    char *upperName = _upperString(backendName); 
+    char *upperName = _upperString(backendName);
     strcpy(envVar, prefix);
-    strcpy(envVar + prefixLen, upperName); 
+    strcpy(envVar + prefixLen, upperName);
     strcpy(envVar + prefixLen + nameLen, postfix);
     const char *ret = safuGetEnvOr(envVar, "");
     free(envVar);
     free(upperName);
     return ret;
-} 
+}
 
 safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -122,8 +122,6 @@ safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
 
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
-    } else if ((plugin->state != PLUGIN_STATE_LOADED) && (plugin->state != PLUGIN_STATE_STOPPED)) {
-        safuLogErrF("Plugin is not in state 'LOADED' or 'STOPPED' (state=%d)", plugin->state);
     } else {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);
         result = SAFU_RESULT_OK;
