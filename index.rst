@@ -29,6 +29,7 @@ Welcome to elos's documentation!
    How we document <doc/index>
    Verification Strategy or how we test <test/index>
    GitHub CI <.github/index>
+   Build Configurations/Options <ci/index>
 
 
 Indices and tables
