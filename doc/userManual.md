@@ -429,18 +429,24 @@ zlib1g-dev libiberty-dev wget jq libjson-c-dev curl gdb netcat net-tools linux-t
 sqlite3 libsqlite3-0 libsqlite3-dev
 ```
 
+And install [safu](https://github.com/Elektrobit/safu) and [samconf](https://github.com/Elektrobit/samconf) from source
+
+```
+git clone https://github.com/Elektrobit/safu.git /tmp/safu/
+cmake -B /tmp/safu/build/ /tmp/safu/ -D UNIT_TESTS=OFF
+make -C /tmp/safu/build/
+sudo make -C /tmp/safu/build/ install
+
+git clone https://github.com/Elektrobit/samconf.git /tmp/samconf/
+cmake -B /tmp/samconf/build/ /tmp/samconf/ -D UNIT_TESTS=OFF
+make -C /tmp/samconf/build/
+sudo make -C /tmp/samconf/build/ install
+```
+
 Then navigate to the directory where you have stored the elos project and use the following command lines to build and install it:
 
 ```
-cmake -B ./build-safu/ ./safu/ -D UNIT_TESTS=OFF
-make -C build-safu/
-sudo make -C build-safu/ install
-
-cmake -B ./build-samconf/ ./samconf/ -D UNIT_TESTS=OFF
-make -C build-samconf/
-sudo make -C build-samconf/ install
-
-cmake -B ./build-elos/ ./elos/ -D UNIT_TESTS=OFF
+cmake -B ./build-elos/ . -D UNIT_TESTS=OFF
 make -C build-elos/
 sudo make -C build-elos/ install
 

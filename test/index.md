@@ -64,8 +64,8 @@ Details:
 * covers all parts of src/
 * structure is &lt;component-name&gt;/&lt;compilation-unit-name&gt;/public_function_name/case_&lt;error|exterr|successful|...&gt;.c
 * how to run the utest from git project root:
-  * call |`./elos/ci/run_utest.sh`| to run the unit tests for the debug build
-  * call |`./elos/ci/run_utest.sh Release`| to run the unit tests for the release build
+  * call |`./ci/run_utest.sh`| to run the unit tests for the debug build
+  * call |`./ci/run_utest.sh Release`| to run the unit tests for the release build
 
 * coverage is proven by asmcov, because gcov has dependencies on glibc and the test actually mock libc functions to achieve 100% branch coverage. (gcov and libc mocking doesn't work)
 * executed by CI-pipeline
@@ -91,7 +91,7 @@ Currently two usage scenarios are supported:
 ##### To create a complete coverage report for the project simply run:
 
 ```
-./elos/ci/create_coverage.sh
+./ci/create_coverage.sh
 ```
 
 The results can be found in `./build-coverage/coverage_results`
@@ -108,24 +108,24 @@ make -C ./build-coverage
 2. run the coverage suite
 
 ```
-BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh functionName [otherFunctionName] [compilationUnitName]
+BUILD_DIR=./build-coverage ./test/coverage/run_asmcov.sh functionName [otherFunctionName] [compilationUnitName]
 
 ## only run the test for safuVecCreate
-BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh vecCreate
+BUILD_DIR=./build-coverage ./test/coverage/run_asmcov.sh vecCreate
 
 ## only run the test for safuVecCreate and elosEventSerialize
-BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh vecCreate eventSerialize
+BUILD_DIR=./build-coverage ./test/coverage/run_asmcov.sh vecCreate eventSerialize
 
 ## only run the all tests for the compilation unit vector.c
-BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh vector
+BUILD_DIR=./build-coverage ./test/coverage/run_asmcov.sh vector
 
 ## only run the all tests for the compilation unit vector.c and event.c
-BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh vector event
+BUILD_DIR=./build-coverage ./test/coverage/run_asmcov.sh vector event
 
-## run all test that match the pattern `test_*_utest` and located in elos/build/${BUILD_TYPE}/cmake/test/utest
-BUILD_DIR=./build-coverage ./elos/test/coverage/run_asmcov.sh
+## run all test that match the pattern `test_*_utest` and located in build/${BUILD_TYPE}/cmake/test/utest
+BUILD_DIR=./build-coverage ./test/coverage/run_asmcov.sh
 ```
-The results can be found in `elos/build/${BUILD_TYPE}/coverage_results`
+The results can be found in `build/${BUILD_TYPE}/coverage_results`
 
 To use a custom install location of asmcov set `ASMCOV_DIR` and point to the
 location where the asmcov binaries are installed.
@@ -149,14 +149,14 @@ Details:
 #### how to run the smoke test from git project root:
 
 ```shell
-./elos/ci/build.sh [Release]
+./ci/build.sh [Release]
 ```
-* call `./elos/ci/run_smoketests.sh` to run the smoketests for the debug build
-* call `./elos/ci/run_smoketests.sh Release` to run the smoketests for the release build
+* call `./ci/run_smoketests.sh` to run the smoketests for the debug build
+* call `./ci/run_smoketests.sh Release` to run the smoketests for the release build
 
 #### Run on a target
 
-To run the smoketest install all content in `elos/tests/smoketest` to a custom
+To run the smoketest install all content in `tests/smoketest` to a custom
 location on the target system. Currently it is not packaged and installed by
 elos build system itself.
 
@@ -197,7 +197,7 @@ some settings. The following Environment variables can be used :
 
 `export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/some/location`
 
-default is : elos/build/${BUILD_TYPE}/dist/usr/local/lib
+default is : build/${BUILD_TYPE}/dist/usr/local/lib
 
 * Use PATH to include custom locations for elos
 
@@ -209,13 +209,13 @@ default is: ${PATH}:${DIST_DIR}/usr/local/bin"
 
 `export SMOKETEST_DIR=/some/location`
 
-default is : elos/test/smoketest/
+default is : test/smoketest/
 
 * Use SMOKETEST_RESULT_DIR to define where to store smoke tests results
 
 `export SMOKETEST_RESULT_DIR=/some/write/able/location`
 
-default is : "elos/build/${BUILD_TYPE}/result/smoketest_results"
+default is : "build/${BUILD_TYPE}/result/smoketest_results"
 
 * Use SMOKETEST_TMP_DIR to define where to store intermediate results and or runtime files like sockets, pipes etc.
 
@@ -381,20 +381,19 @@ cd eb-baseos-lab
 The directory structure for integration test is as show below.
 
 ```bash
-elos
-├── test
-    ├── integration
-        ├── testmodule
-            ├── test.robot
-            ├── subtestmodule
-                ├── subtest.robot
+test
+├── integration
+    ├── testmodule
+        ├── test.robot
+        ├── subtestmodule
+            ├── subtest.robot
 ```
 
-New test suites are added to ```elos/test/integration```.
+New test suites are added to ```test/integration```.
 
 ##### Coding Guidelines
 
-The coding guidelines for robot static code analysis are as given in ```elos/test/integartion/scripts/robot_linter_config.txt```. The
+The coding guidelines for robot static code analysis are as given in ```test/integartion/scripts/robot_linter_config.txt```. The
 guide lines are quite liberal as default and can be further restricted depending on the user requirements. The default guidelines are
 as follows:
 
@@ -434,11 +433,11 @@ Is Connected
     RETURN    ${value}
 ```
 
-1. Create file ```new_test_suite.robot``` file under ```elos/test/integration/new_module```.
+1. Create file ```new_test_suite.robot``` file under ```test/integration/new_module```.
 2. Copy the above code into ```new_test_suite.robot```
 3. Change test variables to target under test (TUT) values.
-4. To run test start target elosd container by ```./elos/ci/docker-target-run.sh``` first.
-5. In a separate terminal start robot container by ```./elos/ci/docker-integration-run.sh```
+4. To run test start target elosd container by ```./ci/docker-target-run.sh``` first.
+5. In a separate terminal start robot container by ```./ci/docker-integration-run.sh```
 6. Inside the robot container run all tests using script ```PROJECT="elos" ./scripts/run-integration-tests.sh```
 7. The test results are stored in ```report/new_module```
 8. In order to run individual test use
@@ -536,7 +535,7 @@ Details:
 ```
 cmake -B build elos
 make -C build
-./elos/ci/run_benchmarks.sh
+./ci/run_benchmarks.sh
 ```
 
 #### Profiling
@@ -549,7 +548,7 @@ make -C build
 * how to run the benchmarks from git project root:
 
 ```
-cd ./elos/test/profiling
+cd ./test/profiling
 sudo ./perf.sh setcap        # Allow profiling without root rights
 ./perf.sh clean              # Removes build and profiling files
 ./perf.sh build              # Build the project with the profiling flag

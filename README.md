@@ -18,7 +18,7 @@ The elos documentation can be found here: https://elektrobit.github.io/elos/
 ### Try elos
 
 ```bash
-./elos/ci/docker-target-run.sh
+./ci/docker-target-run.sh
 ...
 ci@2153762153:/$ elosc -f "1 1 EQ"
 ...
@@ -32,7 +32,7 @@ docker exec -ti <elos_container_name> bash
 ci@2153762153:/$ elosc -p '{"payload": "Hello elos"}'
 ```
 
-For detailed build instructions have a look into `./elos/ci/docker-target-run.sh`
+For detailed build instructions have a look into `./ci/docker-target-run.sh`
 and/or consult the documentation https://elektrobit.github.io/elos .
 
 
@@ -41,7 +41,7 @@ and/or consult the documentation https://elektrobit.github.io/elos .
 elos uses CMake for building:
 
 ```bash
-cmake -B ./build ./elos
+cmake -B ./build ./
 make -C ./build all
 make -C ./build install
 ```
@@ -49,7 +49,7 @@ make -C ./build install
 or use the CI hooks
 
 ```bash
-./elos/ci/build.sh [Release]
+./ci/build.sh [Release]
 ```
 
 
@@ -57,16 +57,16 @@ or use the CI hooks
 
 For a quick start to get hands on the code and start coding use :
 ```bash
-./elos/ci/docker-run.sh
+./ci/docker-run.sh
 ```
 You are now in a ready to use development environment. To build elos and all
 dependencies run:
 ```bash
-ci@62209400:/base$ ./elos/ci/build.sh
+ci@62209400:/base$ ./ci/build.sh
 ```
 To start elosd and play with your changes:
 ```bash
-ci@62209400:/base$ ./elos/test/smoketest/smoketest_interactive.sh
+ci@62209400:/base$ ./test/smoketest/smoketest_interactive.sh
 [elos-interactive]$ elosd&
 ...
 [elos-interactive]$ elosc -f "1 1 EQ"
