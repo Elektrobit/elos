@@ -460,6 +460,8 @@ The last instruction (ldconfig) updates the symbolic links for shared libraries,
 
 If these lines of code succeeded, than congrats: You have successfully installed a working elos daemon.
 
+A more detailed description of the different build options can be found [here](/ci/index).
+
 #### Packing
 Creating the debian packages for elos and the other elos tools is possible by
 calling
