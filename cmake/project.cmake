@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.52.3)
+set(ELOS_VERSION 0.52.4)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
