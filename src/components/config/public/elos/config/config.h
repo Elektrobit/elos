@@ -25,6 +25,7 @@ safuLogLevelE_t elosConfigGetElosdLogLevel(const samconfConfig_t *config);
 const char *elosConfigGetElosdStorageBackendJsonFile(const samconfConfig_t *config);
 const char *elosConfigGetElosdScannerPath(const samconfConfig_t *config);
 const char *elosConfigGetElosdBackendPath(const samconfConfig_t *config);
+const char *elosConfigGetElosdClientPath(const samconfConfig_t *config);
 const char *elosConfigGetElosdScannerKmsgFile(const samconfConfig_t *config);
 const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config);
 

@@ -2,17 +2,44 @@
     "root": {
         "elos": {
             "UseEnv": false,
-            "Port": 54321,
-            "Interface": "127.0.0.1",
             "ConnectionLimit": 200,
             "LogFilter": "",
             "LogLevel": "DEBUG",
             "EventBlacklist": ".event.messageCode 2000 EQ",
-	    "authorizedProcesses": [
-	      ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
-	      ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
-	      ".process.pid 1 EQ"
-	    ],
+            "authorizedProcesses": [
+                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                ".process.pid 1 EQ"
+            ],
+            "ClientInputs": {
+                "PluginSearchPath": "/usr/local/lib/elos/client",
+                "Plugins": {
+                    "LocalTcpClient": {
+                        "File": "client_dummy.so",
+                        "Run": "always",
+                        "Config": {
+                            "Port": 54321,
+                            "Interface": "127.0.0.1",
+                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "authorizedProcesses": [
+                                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.pid 1 EQ"
+                            ]
+                        }
+                    },
+                    "PublicTcpClient": {
+                        "File": "client_dummy.so",
+                        "Run": "always",
+                        "Config": {
+                            "Port": 5422,
+                            "Interface": "0.0.0.0",
+                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "authorizedProcesses": []
+                        }
+                    }
+                }
+            },
             "EventLogging": {
                 "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
                 "Plugins": {
@@ -29,9 +56,9 @@
                         "Filters": [
                             "1 1 EQ"
                         ],
-			"Config" : {
-				"StoragePath": ""
-			}
+                        "Config": {
+                            "StoragePath": ""
+                        }
                     }
                 }
             },

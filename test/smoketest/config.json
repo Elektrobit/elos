@@ -2,17 +2,44 @@
     "root": {
         "elos": {
             "UseEnv": true,
-            "Port": 54321,
-            "Interface": "0.0.0.0",
             "ConnectionLimit": 200,
             "LogLevel": "DEBUG",
             "LogFilter": "",
             "EventBlacklist": ".event.messageCode 2000 EQ",
-	    "authorizedProcesses": [
-		    ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
-		    ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
-		    ".process.pid 1 EQ"
-	    ],
+            "authorizedProcesses": [
+                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                ".process.pid 1 EQ"
+            ],
+            "ClientInputs": {
+                "PluginSearchPath": "/usr/local/lib/elos/client",
+                "Plugins": {
+                    "LocalTcpClient": {
+                        "File": "client_dummy.so",
+                        "Run": "always",
+                        "Config": {
+                            "Port": 54321,
+                            "Interface": "127.0.0.1",
+                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "authorizedProcesses": [
+                                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.pid 1 EQ"
+                            ]
+                        }
+                    },
+                    "PublicTcpClient": {
+                        "File": "client_dummy.so",
+                        "Run": "always",
+                        "Config": {
+                            "Port": 5422,
+                            "Interface": "0.0.0.0",
+                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "authorizedProcesses": []
+                        }
+                    }
+                }
+            },
             "EventLogging": {
                 "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
                 "Plugins": {
@@ -34,9 +61,9 @@
                     "SQLBackend": {
                         "File": "backend_sql.so",
                         "Run": "always",
-			"Config": {
-			    "ConnectionPath": ""
-			}
+                        "Config": {
+                            "ConnectionPath": ""
+                        }
                     },
                     "SkippedDummy": {
                         "File": "backend_dummy.so",
@@ -48,10 +75,12 @@
                         "Filter": [
                             "1 1 EQ"
                         ],
-			"Config" : {
-				"StoragePath": "/tmp/elosd_%host%_%date%_%count%.log",
-				"Flags": ["O_SYNC"]
-			}
+                        "Config": {
+                            "StoragePath": "/tmp/elosd_%host%_%date%_%count%.log",
+                            "Flags": [
+                                "O_SYNC"
+                            ]
+                        }
                     }
                 }
             },

@@ -14,6 +14,7 @@ export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH:-$SMOKETEST_TMP_DIR/elosd_syslog.sock
 export ELOS_KMSG_FILE=${ELOS_KMSG_FILE:-$SMOKETEST_TMP_DIR/elosd_kmsg.log}
 export ELOS_STORAGE_BACKEND_JSON_FILE=${ELOS_STORAGE_BACKEND_JSON_FILE:-$SMOKETEST_TMP_DIR/elosd_storage.json}
 export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$DIST_DIR/usr/local/lib/elos/scanner"}
+export ELOS_CLIENT_PATH=${ELOS_CLIENT_PATH-"$DIST_DIR/usr/local/lib/elos/client"}
 export ELOS_BACKEND_PATH=${ELOS_BACKEND_PATH-"$DIST_DIR/usr/local/lib/elos/backend"}
 export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
 export ELOS_LOG_LEVEL=DEBUG
