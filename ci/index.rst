@@ -12,7 +12,43 @@ Different options on how to build
    - can be configured to use `FetchContent`_ with variables but generally depends on them being installed already.
 
 ..  _FetchContent: https://cmake.org/cmake/help/latest/module/FetchContent.html
- 
+
+Build Confugruations
+====================
+
+`cmake & make` without any options (default)
+--------------------------------------------
+
+.. code-block::
+
+   cmake -B build/ .
+   make -C build/
+
+Builds everything except for the NoSQL and InfluxDB backend.
+Everything is build in Debug mode.
+
+.. code-block::
+
+   make -C build/ install
+
+Installs everything except `mock_libelos`.
+
+Can be configured with the options described in section :ref:`cmake-options`.
+
+`ci/build.sh`
+-------------
+
+Intended for easier building of different configurations while developing and in CI.
+
+.. code-block::
+
+   ci/build.sh [BUILD_TARGET]
+
+Builds everything except for the NoSQL and InfluxDB backend.
+By default the BUILD_TARGET is Debug.
+The build folder is set to `build/BUILD_TARGET/cmake` and everything is also directly installed into `build/BUILD_TARGET/dist/` (except for `mock_libelos`).
+
+Additional configurations are described in :ref:`buildsh-options`.
 
 Output
 ======
@@ -123,6 +159,8 @@ Dependencies
 Options
 =======
 
+.. _cmake-options:
+
 cmake options
 -------------
 - CMAKE_BUILD_TYPE: (default "Debug")
@@ -132,6 +170,8 @@ cmake options
 - ELOSD_EVENTLOGGING_BACKEND_SQL: (default ON) Build the sqlite3 bakend plugin
 - ELOSD_EVENTLOGGING_BACKEND_NOSQL: (default OFF) Build the NoSQL backend plugin
 - ELOSD_EVENTLOGGING_BACKEND_INFLUXDB: (default OFF) Build the InfluxDB backend plugin
+
+.. _buildsh-options:
 
 ci/build.sh options
 -------------------
