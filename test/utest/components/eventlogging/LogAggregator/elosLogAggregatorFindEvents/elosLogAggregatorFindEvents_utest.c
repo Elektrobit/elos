@@ -2,8 +2,8 @@
 #include "elosLogAggregatorFindEvents_utest.h"
 
 #include "elos/eventfilter/eventfilter.h"
-#include "elos/eventlogging/StorageBackend.h"
 #include "elos/plugincontrol/plugincontrol.h"
+#include "elos/storagemanager/StorageBackend.h"
 
 TEST_SUITE_FUNC_PROTOTYPES(elosLogAggregatorFindEventsUtest)
 
@@ -89,9 +89,6 @@ static safuResultE_t _backendFindFunc(elosStorageBackend_t *backend, elosRpnFilt
 
 void elosLogAggregatorFindEventsUtestCreateLogAggregator(void **state) {
     elosUteststateT_t *testState = *state;
-    safuResultE_t result;
-    elosPluginControl_t *plugin = NULL;
-    elosPluginControlParam_t pluginParam = {.id = 42};
     elosStorageBackend_t dummyBackend = {
         .name = "utBackend",
         .backendData = testState->eventJsonString,
@@ -102,30 +99,26 @@ void elosLogAggregatorFindEventsUtestCreateLogAggregator(void **state) {
     };
     int retVal;
 
-    result = elosPluginControlNew(&plugin, &pluginParam);
-    assert_int_equal(result, SAFU_RESULT_OK);
-    atomic_fetch_or(&plugin->flags, (SAFU_FLAG_INITIALIZED_BIT | ELOS_PLUGINCONTROL_FLAG_STARTED_BIT));
-    plugin->context.data = safuAllocMem(NULL, sizeof(elosStorageBackend_t));
-    memcpy(plugin->context.data, &dummyBackend, sizeof(elosStorageBackend_t));
-
     testState->logAggregator.lock = safuAllocMem(NULL, sizeof(pthread_mutex_t));
     memset(testState->logAggregator.lock, 0, sizeof(pthread_mutex_t));
     retVal = pthread_mutex_init(testState->logAggregator.lock, NULL);
     assert_int_equal(retVal, 0);
 
-    safuVecCreate(&testState->logAggregator.pluginControlPtrVector, 1, sizeof(elosPluginControl_t *));
-    safuVecPush(&testState->logAggregator.pluginControlPtrVector, &plugin);
+    elosStorageBackend_t *backend = safuAllocMem(NULL, sizeof(elosStorageBackend_t));
+    memcpy(backend, &dummyBackend, sizeof(elosStorageBackend_t));
+
+    safuVecCreate(testState->logAggregator.backends, 1, sizeof(elosStorageBackend_t *));
+    safuVecPush(testState->logAggregator.backends, &backend);
 }
 
 void elosLogAggregatorFindEventsUtestFreeLogAggregator(void **state) {
     elosUteststateT_t *testState = *state;
-    elosPluginControl_t *plugin;
+    elosStorageBackend_t *backend = NULL;
 
-    plugin = *(elosPluginControl_t **)safuVecGetLast(&testState->logAggregator.pluginControlPtrVector);
-    assert_non_null(plugin);
-    free(plugin->context.data);
-    free(plugin);
-    safuVecFree(&testState->logAggregator.pluginControlPtrVector);
+    backend = *(elosStorageBackend_t **)safuVecGetLast(testState->logAggregator.backends);
+    assert_non_null(backend);
+    free(backend);
+    safuVecFree(testState->logAggregator.backends);
 
     elosLogAggregatorShutdown(&testState->logAggregator);
     pthread_mutex_destroy(testState->logAggregator.lock);

@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <elos/storagemanager/storagemanager.h>
+#include <elos/storagemanager/vector.h>
 #include <samconf/samconf_types.h>
 
-#include "elos/pluginmanager/types.h"
-
 typedef struct elosLogAggregatorParam {
-    elosPluginManager_t *pluginManager;
     samconfConfig_t *config;
+    elosStorageManager_t *storageManager;
 } elosLogAggregatorParam_t;
 
 typedef struct elosLogAggregator {
-    elosPluginManager_t *pluginManager;
     pthread_mutex_t *lock;
     samconfConfig_t const *config;
-    elosPluginControlPtrVector_t pluginControlPtrVector;
+    elosStorageManager_t *storageManager;
+    elosStorageBackendPtrVector_t *backends;
 } elosLogAggregator_t;

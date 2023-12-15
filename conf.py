@@ -118,6 +118,9 @@ c_autodoc_roots = [
     './src/components/scanner_manager/interface',
     './src/components/scanner_manager/private',
     './src/components/scanner_manager/public',
+    './src/components/storagemanager/interface',
+    './src/components/storagemanager/private',
+    './src/components/storagemanager/public',
     './src/libelos/public',
     './src/libelos/public/elos',
     './src/libelosplugin/public',
@@ -137,6 +140,9 @@ c_autodoc_roots = [
     './src/plugins/storagebackends/sqlbackend/private/',
     './src/plugins/storagebackends/influxdbbackend/interface/',
     './src/plugins/storagebackends/influxdbbackend/private/',
+]
+c_autodoc_compilation_args = [
+#    '-DSPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS',
 ]
 
 set_type_checking_flag = True

@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosStorageManagerDeleteMembers)
+add_subdirectory(elosStorageManagerInitialize)
+add_subdirectory(elosStorageManagerStart)
+add_subdirectory(elosStorageManagerStop)

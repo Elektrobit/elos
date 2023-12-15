@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "SqlQueries.h"
-#include "elos/eventlogging/StorageBackend.h"
+#include "elos/storagemanager/StorageBackend.h"
 
 #define BACKEND_NAME "SQLite"
 

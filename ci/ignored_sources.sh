@@ -4,5 +4,6 @@ export IGNORE_SOURCES=" \
   src/components/plugincontrol/public/elos/plugincontrol/vector.h \
   src/components/rpnfilter/public/elos/rpnfilter/vector.h \
   src/components/eventfilter/public/elos/eventfilter/vector.h \
+  src/components/storagemanager/public/elos/storagemanager/vector.h \
   "
 export UNUSED_SOURCES=""

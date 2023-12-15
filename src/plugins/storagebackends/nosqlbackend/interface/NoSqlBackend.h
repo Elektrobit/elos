@@ -3,7 +3,7 @@
 #define __ELOS_NOSQLBACKEND_H__
 
 #include "elos/eventfilter/eventfilter.h"
-#include "elos/eventlogging/StorageBackend.h"
+#include "elos/storagemanager/StorageBackend.h"
 #include "safu/common.h"
 #include "safu/vector.h"
 
