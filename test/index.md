@@ -223,6 +223,13 @@ default is : "build/${BUILD_TYPE}/result/smoketest_results"
 
 default is: "/tmp/elosd"
 
+* Use `SMOKETEST_ENABLE_COMPILE_TESTS` to enable complie test. This tests if all necessary header and library files are packet for installation.
+  Set `SMOKETEST_ENABLE_COMPILE_TESTS` to any value other then empty to activate the tests.
+
+`export SMOKETEST_ENABLE_COMPILE_TESTS="YES"`
+
+default is: ""
+
 * Use ELOS_SYSLOG_PATH to define an alternative location for the syslog unix domain socket
 
 `export ELOS_SYSLOG_PATH=/some/write/able/location/mysyslog.socket`

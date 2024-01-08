@@ -13,6 +13,7 @@ export NETSTAT=$(which netstat 2>/dev/null || which ss 2> /dev/null || echo "no 
 export SMOKETEST_DIR=${SMOKETEST_DIR-$TEST_SOURCE_DIR}
 export SMOKETEST_RESULT_DIR=${SMOKETEST_RESULT_DIR-"$BUILD_DIR/result/smoketest_results"}
 export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"/tmp/elosd"}"
+export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
 
 export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"${SMOKETEST_TMP_DIR}/elosd.syslog.socket"}
 export ELOS_KMSG_FILE=${ELOS_KMSG_FILE-"${SMOKETEST_TMP_DIR}/elosd.kmsg"}
@@ -642,6 +643,33 @@ smoketest_dual_json_plugin() {
     return $TEST_RESULT
 }
 
+smoketest_compile_program_using_libelos() {
+    prepare_env "compile_program_using_libelos"
+    TEST_RESULT=0
+
+    log "Try to compile simple program using libelos"
+    printf '#include <elos/libelos/libelos.h>\nint main(int argc, char* argv[]){return 0;}' \
+        | gcc -v -xc -lelos -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -o "${SMOKETEST_TMP_DIR}/testlibelos" - \
+        >> "$RESULT_DIR/libelos.log" 2>&1
+    if [ $? -ne 0 ]; then
+        log_err "failed to compile test program for libelos"
+        TEST_RESULT=1
+    fi
+
+    log "Try to compile syslog demo using libelos"
+    gcc -v  \
+        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -o "${SMOKETEST_TMP_DIR}/testlibelos_syslog" "${TEST_SOURCE_DIR}/../../src/demos/syslog.c" \
+        -lelos -lsafu \
+        >> "$RESULT_DIR/libelos.log" 2>&1
+    if [ $? -ne 0 ]; then
+        log_err "failed to compile test program for libelos"
+        TEST_RESULT=1
+    fi
+
+    return $TEST_RESULT
+}
 
 
 # $1 - test name
@@ -699,5 +727,9 @@ call_test "locale" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "find_event" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "backend_dummy" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "dual_json_plugin" || FAILED_TESTS=$((FAILED_TESTS+1))
+
+if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
+    call_test "compile_program_using_libelos" || FAILED_TESTS=$((FAILED_TESTS+1))
+fi
 
 exit ${FAILED_TESTS}
