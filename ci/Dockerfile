@@ -81,14 +81,15 @@ ENV DOCKERBUILD=1
 RUN python -m venv /home/$USER/.venv \
   && . /home/$USER/.venv/bin/activate \
   && python -m pip install \
-     beautifulsoup4  \
-	 myst-parser \
-     sphinx \
-     sphinx-c-autodoc \
-     sphinx-copybutton \
-     sphinx-favicon \
-     sphinxcontrib-plantuml \
-     sphinxcontrib-programoutput
+     beautifulsoup4==4.12.2  \
+     clang==16.0.1.1 \
+     myst-parser==2.0.0 \
+     sphinx==7.2.6 \
+     sphinx-c-autodoc==1.3.0 \
+     sphinx-copybutton==0.5.2 \
+     sphinx-favicon==1.0.1 \
+     sphinxcontrib-plantuml==0.27 \
+     sphinxcontrib-programoutput==0.17
 
 # install sphinx-c-autodoc dependedncies
 RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
