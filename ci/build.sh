@@ -48,7 +48,6 @@ if [ $OPTION_PACKAGE -eq 1 ]; then
 fi
 
 . "$BASE_DIR/ci/common_names.sh"
-. "$BASE_DIR/ci/dependency_sources.sh"
 
 CMAKE_BUILD_DIR=$BUILD_DIR/cmake
 export LOCAL_INSTALL_DIR=${LOCAL_INSTALL_DIR:-$DIST_DIR}
