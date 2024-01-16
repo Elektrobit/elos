@@ -6,6 +6,7 @@ create_interface_library(
     elos_event
   LIBRARIES
     safu::safu_interface
+  INSTALL
 )
 
 add_library(
