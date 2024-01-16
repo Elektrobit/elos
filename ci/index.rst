@@ -35,6 +35,43 @@ Installs everything except `mock_libelos`.
 
 Can be configured with the options described in section :ref:`cmake-options`.
 
+`ci/install_deps.py`
+--------------------
+
+Indendet to easier install the dependencies `cmocka_extensions`, `cmocka_mocks`, `safu` & `samconf`
+
+.. code-block::
+
+   ci/install_deps.py
+
+By default it installes from the main branch of the GitHub repositories.
+The behavior can be modified by putting a `dependencies.json` in the root of the project.
+
+.. code-block:: json
+
+   {
+      "safu": {
+         "path": "../safu"
+      },
+      "samconf": {
+         "url": "https://github.com/Elektrobit/samconf.git",
+         "tag": "samconf-0.49.3"
+      },
+      "cmocka_mocks": {
+         "url": "https://github.com/Elektrobit/cmocka_mocks.git",
+         "commit": "2206cfbcf315b3c7381f9b9f4aa29238b18c1a6b",
+         "cmake_opts": ["-D", "UNIT_TESTS=off"]
+      },
+      "cmocka_extensions": {
+         "branch": "main"
+      }
+   }
+
+If no URL or path is provided the default is used.
+A path is used as is without checking the branch, tag or commit and includes local changes that aren't commited jet.
+
+These dependencies get installed into `build/deps/` and if provided with an URL the sources can be found in `build/deps/src`.
+
 `ci/build.sh`
 -------------
 
