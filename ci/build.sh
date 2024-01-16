@@ -49,6 +49,8 @@ fi
 
 . "$BASE_DIR/ci/common_names.sh"
 
+"$BASE_DIR/ci/install_deps.py"
+
 CMAKE_BUILD_DIR=$BUILD_DIR/cmake
 export LOCAL_INSTALL_DIR=${LOCAL_INSTALL_DIR:-$DIST_DIR}
 CMAKE_PARAM="${CMAKE_PARAM} -DCMAKE_PREFIX_PATH=${BASE_DIR}/build/deps"
