@@ -13,6 +13,8 @@ expected behavior.
    :maxdepth: 1
    :caption: Contents:
 
+   Mock Generator <tools/mock/index>
+
 Coding Guideline
 ----------------
 
