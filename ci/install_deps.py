@@ -63,30 +63,38 @@ def checkout(dependencies):
             print("nothing to do for local repository!")
 
 
-def single_install(dependency, config):
+def single_install(dependency, config, args):
     print(f"## {dependency}")
     config["build"] = path.join(config["path"], "build")
     cmake_opts = config["cmake_opts"] if "cmake_opts" in config else []
     cmd = ["cmake", "-B", config["build"], config["path"],
-           "-DCMAKE_BUILD_TYPE=Release", "-G", "Ninja",
-           f"-DCMAKE_INSTALL_PREFIX={INSTALL_PATH}", *cmake_opts]
+           "-DCMAKE_BUILD_TYPE=Release", "-G", "Ninja"]
+    if not args.global_install:
+        cmd.append(f"-DCMAKE_INSTALL_PREFIX={INSTALL_PATH}")
+    cmd.extend(cmake_opts)
     cp = run_cmd(cmd)
     if cp.returncode != 0:
         print(f"FAILED cmake for {dependency}")
         return False
 
     cmd = ["ninja", "-C", config["build"],
-           f"-j{multiprocessing.cpu_count()}", "all", "install"]
+           f"-j{multiprocessing.cpu_count()}", "all"]
     cp = run_cmd(cmd)
     if cp.returncode != 0:
-        print(f"FAILED to build and install {dependency}")
+        print(f"FAILED to build {dependency}")
+        return False
+    cmd = ["sudo"] if args.global_install else []
+    cmd.extend(["ninja", "-C", config["build"], "install"])
+    cp = run_cmd(cmd)
+    if cp.returncode != 0:
+        print(f"FAILED to install {dependency}")
         return False
     return True
 
 
-def build_and_install(dependencies):
+def build_and_install(dependencies, args):
     for dependency in ["cmocka_extensions", "cmocka_mocks", "safu", "samconf"]:
-        if not single_install(dependency, dependencies[dependency]):
+        if not single_install(dependency, dependencies[dependency], args):
             break
 
 
@@ -95,6 +103,9 @@ def arguments():
     parser.add_argument('-c', '--config', default=DEFAULT_USER_CONFIG,
                         help="the user config for dependencies"
                         f" (default {DEFAULT_USER_CONFIG})")
+    parser.add_argument('-G', '--global', action='store_true',
+                        dest='global_install',
+                        help="install the dependencies globaly")
     return parser.parse_args()
 
 
@@ -104,4 +115,4 @@ if __name__ == '__main__':
     print("# Checkout")
     checkout(deps)
     print("# build")
-    build_and_install(deps)
+    build_and_install(deps, args)
