@@ -5,17 +5,18 @@ import os
 import os.path as path
 import subprocess
 import multiprocessing
+import argparse
 
 BASE_DIR = path.abspath(path.join(path.dirname(path.abspath(__file__)), '..'))
 CHECKOUT_PATH = path.join(BASE_DIR, "build/deps/src")
 INSTALL_PATH = path.join(BASE_DIR, "build/deps")
+DEFAULT_USER_CONFIG=path.join(BASE_DIR, "dependencies.json")
 
 
-def dependency_sources(user_config="dependencies.json"):
+def dependency_sources(user_config=DEFAULT_USER_CONFIG):
     defaults = path.join(BASE_DIR, "ci/dependency_default.json")
     with open(defaults, "r") as d:
         dependency = json.load(d)
-    user_config = path.join(BASE_DIR, user_config)
     if os.path.isfile(user_config):
         with open(user_config, "r") as u:
             dependency_user = json.load(u)
@@ -89,10 +90,17 @@ def build_and_install(dependencies):
             break
 
 
+def arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', default=DEFAULT_USER_CONFIG,
+                        help="the user config for dependencies"
+                        f" (default {DEFAULT_USER_CONFIG})")
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
-    deps = dependency_sources()
+    args = arguments()
+    deps = dependency_sources(user_config=args.config)
     print("# Checkout")
     checkout(deps)
     print("# build")
