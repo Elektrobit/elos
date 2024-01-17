@@ -11,6 +11,7 @@ BASE_DIR = path.abspath(path.join(path.dirname(path.abspath(__file__)), '..'))
 CHECKOUT_PATH = path.join(BASE_DIR, "build/deps/src")
 INSTALL_PATH = path.join(BASE_DIR, "build/deps")
 DEFAULT_USER_CONFIG=path.join(BASE_DIR, "dependencies.json")
+TEST_DEPS = ["cmocka_extensions", "cmocka_mocks"]
 
 
 def dependency_sources(user_config=DEFAULT_USER_CONFIG):
@@ -30,8 +31,10 @@ def run_cmd(cmd):
     print(*cmd)
     return subprocess.run(cmd)
 
-def checkout(dependencies):
+def checkout(dependencies, args):
     for dep, conf in dependencies.items():
+        if dep in TEST_DEPS and args.no_tests:
+            continue
         reop_path = path.join(CHECKOUT_PATH, dep)
         print(f"## {dep}")
         if "path" not in conf:
@@ -69,6 +72,8 @@ def single_install(dependency, config, args):
     cmake_opts = config["cmake_opts"] if "cmake_opts" in config else []
     cmd = ["cmake", "-B", config["build"], config["path"],
            "-DCMAKE_BUILD_TYPE=Release", "-G", "Ninja"]
+    if args.no_tests:
+        cmd.append("-DUNIT_TESTS=off")
     if not args.global_install:
         cmd.append(f"-DCMAKE_INSTALL_PREFIX={INSTALL_PATH}")
     cmd.extend(cmake_opts)
@@ -83,6 +88,7 @@ def single_install(dependency, config, args):
     if cp.returncode != 0:
         print(f"FAILED to build {dependency}")
         return False
+
     cmd = ["sudo"] if args.global_install else []
     cmd.extend(["ninja", "-C", config["build"], "install"])
     cp = run_cmd(cmd)
@@ -93,7 +99,9 @@ def single_install(dependency, config, args):
 
 
 def build_and_install(dependencies, args):
-    for dependency in ["cmocka_extensions", "cmocka_mocks", "safu", "samconf"]:
+    deps = [] if args.no_tests else TEST_DEPS
+    deps.extend(["safu", "samconf"])
+    for dependency in deps:
         if not single_install(dependency, dependencies[dependency], args):
             break
 
@@ -106,6 +114,8 @@ def arguments():
     parser.add_argument('-G', '--global', action='store_true',
                         dest='global_install',
                         help="install the dependencies globaly")
+    parser.add_argument('--no-tests', action='store_true',
+                        help="dont install cmocka_extensions & cmocka_mocks")
     return parser.parse_args()
 
 
@@ -113,6 +123,6 @@ if __name__ == '__main__':
     args = arguments()
     deps = dependency_sources(user_config=args.config)
     print("# Checkout")
-    checkout(deps)
+    checkout(deps, args)
     print("# build")
     build_and_install(deps, args)
