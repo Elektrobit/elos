@@ -16,6 +16,7 @@ fi
 export ENABLED_TESTS="${2:-""}"
 export DISABLED_TESTS=""
 export SMOKETEST_ENABLE_COMPILE_TESTS="YES"
+export LD_LIBRARY_PATH="$BASE_DIR/build/deps/lib"
 BASE_DIR=$BASE_DIR BUILD_TYPE=$BUILD_TYPE \
 $BASE_DIR/test/smoketest/smoketest.sh | \
 tee "$RESULT_DIR/smoketest_results/smoktests.log"
