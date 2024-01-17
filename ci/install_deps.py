@@ -25,6 +25,9 @@ def dependency_sources(user_config="dependencies.json"):
 
     return dependency
 
+def run_cmd(cmd):
+    print(*cmd)
+    return subprocess.run(cmd)
 
 def checkout(dependencies):
     for dep, conf in dependencies.items():
@@ -34,7 +37,7 @@ def checkout(dependencies):
             conf["path"] = reop_path
             if path.exists(reop_path):
                 cmd = ["git", "-C", conf["path"], "fetch"]
-                subprocess.run(cmd)
+                run_cmd(cmd)
                 cmd = ["git", "-C", conf["path"], "checkout"]
                 if "commit" in conf:
                     cmd.append(conf["commit"])
@@ -42,7 +45,7 @@ def checkout(dependencies):
                     cmd.append(conf["tag"])
                 elif "branch" in conf:
                     cmd.append(conf["branch"])
-                subprocess.run(cmd)
+                run_cmd(cmd)
                 continue
             cmd = ["git", "clone", conf["url"], conf["path"]]
             if "tag" in conf:
@@ -51,10 +54,10 @@ def checkout(dependencies):
             elif "branch" in conf:
                 cmd.append("-b")
                 cmd.append(conf["branch"])
-            subprocess.run(cmd)
+            run_cmd(cmd)
             if "commit" in conf:
                 cmd = ["git", "-C", conf["path"], "checkout", conf["commit"]]
-                subprocess.run(cmd)
+                run_cmd(cmd)
         else:
             print("nothing to do for local repository!")
 
@@ -66,14 +69,14 @@ def single_install(dependency, config):
     cmd = ["cmake", "-B", config["build"], config["path"],
            "-DCMAKE_BUILD_TYPE=Release", "-G", "Ninja",
            f"-DCMAKE_INSTALL_PREFIX={INSTALL_PATH}", *cmake_opts]
-    cp = subprocess.run(cmd)
+    cp = run_cmd(cmd)
     if cp.returncode != 0:
         print(f"FAILED cmake for {dependency}")
         return False
 
     cmd = ["ninja", "-C", config["build"],
            f"-j{multiprocessing.cpu_count()}", "all", "install"]
-    cp = subprocess.run(cmd)
+    cp = run_cmd(cmd)
     if cp.returncode != 0:
         print(f"FAILED to build and install {dependency}")
         return False
@@ -84,6 +87,8 @@ def build_and_install(dependencies):
     for dependency in ["cmocka_extensions", "cmocka_mocks", "safu", "samconf"]:
         if not single_install(dependency, dependencies[dependency]):
             break
+
+
 
 
 if __name__ == '__main__':
