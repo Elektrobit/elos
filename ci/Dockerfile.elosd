@@ -34,9 +34,10 @@ RUN chmod 644 /etc/elos/elosd.json
 
 ENV SOURCES_URI=$SOURCES_URI
 RUN env
-RUN ci/build.sh Release
-
-RUN sudo cp -rnv /home/elos/build/Release/dist/usr/* /usr/
+RUN ci/install_deps.py --global --no-tests
+RUN cmake -B /tmp/elos/build . -DCMAKE_BUILD_TYPE=Release -G Ninja -DUNIT_TESTS=off
+RUN ninja -C /tmp/elos/build all
+RUN sudo ninja -C /tmp/elos/build install
 
 COPY ./test/integration/service/elosd.service /etc/init.d/elosd
 RUN chmod a+x /etc/init.d/elosd
