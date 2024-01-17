@@ -66,16 +66,24 @@ def single_install(dependency, config):
     cmd = ["cmake", "-B", config["build"], config["path"],
            "-DCMAKE_BUILD_TYPE=Release", "-G", "Ninja",
            f"-DCMAKE_INSTALL_PREFIX={INSTALL_PATH}", *cmake_opts]
-    subprocess.run(cmd)
+    cp = subprocess.run(cmd)
+    if cp.returncode != 0:
+        print(f"FAILED cmake for {dependency}")
+        return False
 
     cmd = ["ninja", "-C", config["build"],
            f"-j{multiprocessing.cpu_count()}", "all", "install"]
-    subprocess.run(cmd)
+    cp = subprocess.run(cmd)
+    if cp.returncode != 0:
+        print(f"FAILED to build and install {dependency}")
+        return False
+    return True
 
 
 def build_and_install(dependencies):
     for dependency in ["cmocka_extensions", "cmocka_mocks", "safu", "samconf"]:
-        single_install(dependency, dependencies[dependency])
+        if not single_install(dependency, dependencies[dependency]):
+            break
 
 
 if __name__ == '__main__':
