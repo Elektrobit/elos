@@ -69,6 +69,9 @@ def checkout(dependencies, args):
 def single_install(dependency, config, args):
     print(f"## {dependency}")
     config["build"] = path.join(config["path"], "build")
+    if args.clean_first:
+        cmd = ["rm", "-rf", config["build"]]
+        run_cmd(cmd)
     cmake_opts = config["cmake_opts"] if "cmake_opts" in config else []
     cmd = ["cmake", "-B", config["build"], config["path"],
            "-DCMAKE_BUILD_TYPE=Release", "-G", "Ninja"]
@@ -116,6 +119,8 @@ def arguments():
                         help="install the dependencies globaly")
     parser.add_argument('--no-tests', action='store_true',
                         help="dont install cmocka_extensions & cmocka_mocks")
+    parser.add_argument('--clean-first', action='store_true',
+                        help="clean cmake caches first")
     return parser.parse_args()
 
 
