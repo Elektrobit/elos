@@ -23,6 +23,7 @@ for element in "$@"; do
 done
 
 set -- $PARAM
+INSTALL_DEP_OPTIONS=""
 if [ $# -gt 1 ]; then
     echo "error: only one build-type allowed"
     exit 1
@@ -34,6 +35,7 @@ elif [ $OPTION_CI -eq 1 ]; then
     CMAKE_PARAM="-DENABLE_CI=1"
     OPTION_CLEAN=1
     OPTION_VERBOSE=1
+    INSTALL_DEP_OPTIONS="${INSTALL_DEP_OPTIONS} --ci"
 fi
 
 BUILD_TYPE="${1:-Debug}"
@@ -49,7 +51,7 @@ fi
 
 . "$BASE_DIR/ci/common_names.sh"
 
-"$BASE_DIR/ci/install_deps.py"
+"$BASE_DIR/ci/install_deps.py" $INSTALL_DEP_OPTIONS
 
 CMAKE_BUILD_DIR=$BUILD_DIR/cmake
 export LOCAL_INSTALL_DIR=${LOCAL_INSTALL_DIR:-$DIST_DIR}
