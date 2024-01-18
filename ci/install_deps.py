@@ -6,6 +6,7 @@ import os.path as path
 import subprocess
 import multiprocessing
 import argparse
+import sys
 
 BASE_DIR = path.abspath(path.join(path.dirname(path.abspath(__file__)), '..'))
 CHECKOUT_PATH = path.join(BASE_DIR, "build/deps/src")
@@ -35,13 +36,15 @@ def checkout(dependencies, args):
     for dep, conf in dependencies.items():
         if dep in TEST_DEPS and args.no_tests:
             continue
-        reop_path = path.join(CHECKOUT_PATH, dep)
+        repo_path = path.join(CHECKOUT_PATH, dep)
         print(f"## {dep}")
         if "path" not in conf:
-            conf["path"] = reop_path
-            if path.exists(reop_path):
+            conf["path"] = repo_path
+            if path.exists(repo_path):
                 cmd = ["git", "-C", conf["path"], "fetch"]
-                run_cmd(cmd)
+                cp = run_cmd(cmd)
+                if cp.returncode != 0:
+                    return False
                 cmd = ["git", "-C", conf["path"], "checkout"]
                 if "commit" in conf:
                     cmd.append(conf["commit"])
@@ -49,7 +52,9 @@ def checkout(dependencies, args):
                     cmd.append(conf["tag"])
                 elif "branch" in conf:
                     cmd.append(conf["branch"])
-                run_cmd(cmd)
+                cp = run_cmd(cmd)
+                if cp.returncode != 0:
+                    return False
                 continue
             cmd = ["git", "clone", conf["url"], conf["path"]]
             if "tag" in conf:
@@ -58,12 +63,17 @@ def checkout(dependencies, args):
             elif "branch" in conf:
                 cmd.append("-b")
                 cmd.append(conf["branch"])
-            run_cmd(cmd)
+            cp = run_cmd(cmd)
+            if cp.returncode != 0:
+                return False
             if "commit" in conf:
                 cmd = ["git", "-C", conf["path"], "checkout", conf["commit"]]
-                run_cmd(cmd)
+                cp = run_cmd(cmd)
+                if cp.returncode != 0:
+                    return False
         else:
             print("nothing to do for local repository!")
+    return True
 
 
 def single_install(dependency, config, args):
@@ -108,7 +118,8 @@ def build_and_install(dependencies, args):
     deps.extend(["safu", "samconf"])
     for dependency in deps:
         if not single_install(dependency, dependencies[dependency], args):
-            break
+            return False
+    return True
 
 
 def arguments():
@@ -132,6 +143,9 @@ if __name__ == '__main__':
     args = arguments()
     deps = dependency_sources(user_config=args.config)
     print("# Checkout")
-    checkout(deps, args)
+    if not checkout(deps, args):
+        sys.exit(1)
     print("# build")
-    build_and_install(deps, args)
+    if not build_and_install(deps, args):
+        sys.exit(2)
+    sys.exit(0)
