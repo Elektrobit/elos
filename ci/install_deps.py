@@ -79,6 +79,8 @@ def single_install(dependency, config, args):
         cmd.append("-DUNIT_TESTS=off")
     if not args.global_install:
         cmd.append(f"-DCMAKE_INSTALL_PREFIX={INSTALL_PATH}")
+    if args.ci:
+        cmd.append("-DENABLE_CI=1")
     cmd.extend(cmake_opts)
     cp = run_cmd(cmd)
     if cp.returncode != 0:
@@ -119,6 +121,8 @@ def arguments():
                         help="install the dependencies globaly")
     parser.add_argument('--no-tests', action='store_true',
                         help="dont install cmocka_extensions & cmocka_mocks")
+    parser.add_argument('--ci', action='store_true',
+                        help="run cmake with CI flag")
     parser.add_argument('--clean-first', action='store_true',
                         help="clean cmake caches first")
     return parser.parse_args()
