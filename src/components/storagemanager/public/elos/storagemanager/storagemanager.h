@@ -8,6 +8,8 @@
 #include "elos/pluginmanager/pluginmanager.h"
 #include "elos/storagemanager/storagemanager_types.h"
 
+__BEGIN_DECLS
+
 /**
  * Initialize the storage manager with default values to be safely used.
  *
@@ -62,3 +64,5 @@ safuResultE_t elosStorageManagerStop(elosStorageManager_t *storageManager);
  *         SAFU_RESULT_FAILURE – on failure.
  */
 safuResultE_t elosStorageManagerDeleteMembers(elosStorageManager_t *storageManager);
+
+__END_DECLS

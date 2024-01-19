@@ -5,6 +5,8 @@
 
 #include "elos/storagemanager/StorageBackend.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Initialize a new vector with a initial size of `count`. Uses internaly
  * `safuVecCreate`to create the new vector. It is undefined behavior if a
@@ -103,3 +105,5 @@ safuResultE_t elosStorageBackendPtrVectorRemoveByName(elosStorageBackendPtrVecto
  *     - SAFU_RESULT_FAILED in error case
  ******************************************************************/
 safuResultE_t elosStorageBackendPtrVectorDeleteMembers(elosStorageBackendPtrVector_t *backends);
+
+__END_DECLS

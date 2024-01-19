@@ -26,6 +26,8 @@ typedef struct elosScannerCallbackData {
     void *logAggregator;
 } elosScannerCallbackData_t;
 
+__BEGIN_DECLS
+
 typedef struct elosScannerCallback {
     safuResultE_t (*eventPublish)(elosScannerCallbackData_t *data, const elosEvent_t *event);
     safuResultE_t (*eventLog)(elosScannerCallbackData_t *data, const elosEvent_t *event);
@@ -46,5 +48,7 @@ elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const 
 elosScannerResultE_t elosScannerRun(elosScannerSession_t *session);
 elosScannerResultE_t elosScannerStop(elosScannerSession_t *session);
 elosScannerResultE_t elosScannerFree(elosScannerSession_t *session);
+
+__END_DECLS
 
 #endif

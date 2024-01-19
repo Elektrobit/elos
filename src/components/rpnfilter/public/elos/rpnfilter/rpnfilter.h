@@ -3,6 +3,8 @@
 
 #include "elos/rpnfilter/rpnfilter_types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Function:     elosRpnFilterInit
  *------------------------------------------------------------------
@@ -148,3 +150,5 @@ elosRpnFilterResultE_t elosRpnFilterExecute(const elosRpnFilter_t *filter, const
  ******************************************************************/
 elosRpnFilterResultE_t elosRpnFilterExecuteResult(const elosRpnFilter_t *filter, const elosRpnFilterStack_t *input,
                                                   elosRpnFilterStack_t *output);
+
+__END_DECLS

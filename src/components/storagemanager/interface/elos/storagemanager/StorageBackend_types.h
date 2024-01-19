@@ -11,6 +11,8 @@
 struct elosStorageBackend;
 typedef struct elosStorageBackend elosStorageBackend_t;
 
+__BEGIN_DECLS
+
 #ifdef SPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS
 /**
  * A hook to be called by the system to run an instance of the Storage Backend
@@ -107,5 +109,7 @@ struct elosStorageBackend {
  * A `safuVect_t` to store `StorageBackend_t*`
  */
 typedef safuVec_t elosStorageBackendPtrVector_t;
+
+__END_DECLS
 
 #endif /* __ELOS_EVENTLOGGING_STORAGEBACKEND_H__ */

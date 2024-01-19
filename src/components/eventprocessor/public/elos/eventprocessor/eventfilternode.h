@@ -10,6 +10,8 @@
 #include "elos/eventprocessor/idmanager.h"
 #include "elos/eventprocessor/types.h"
 
+__BEGIN_DECLS
+
 // Standard interface functions
 safuResultE_t elosEventFilterNodeInitialize(elosEventFilterNode_t *eventFilterNode,
                                             elosEventFilterNodeParam_t const *param);
@@ -22,3 +24,5 @@ safuResultE_t elosEventFilterNodePush(elosEventFilterNode_t *eventFilterNode, ch
 
 safuResultE_t elosEventFilterNodeProcess(elosEventFilterNode_t *eventFilterNode,
                                          elosEventFilterStack_t const *filterStack, elosEvent_t const *event);
+
+__END_DECLS

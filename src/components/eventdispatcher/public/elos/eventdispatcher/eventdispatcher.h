@@ -6,6 +6,8 @@
 #include "elos/eventdispatcher/defines.h"
 #include "elos/eventdispatcher/types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Allocates space for and intialize an new EventDispatcher
  *
@@ -138,3 +140,5 @@ safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatche
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBuffer);
+
+__END_DECLS

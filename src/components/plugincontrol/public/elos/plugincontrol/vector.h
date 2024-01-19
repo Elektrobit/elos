@@ -4,6 +4,8 @@
 #include "elos/plugincontrol/plugincontrol.h"
 #include "safu/vector.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Initialized a PluginControl vector data structure.
  *
@@ -80,3 +82,5 @@ safuResultE_t elosPluginControlVectorRemoveById(elosPluginControlVector_t *contr
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosPluginControlVectorDeleteMembers(elosPluginControlVector_t *controlVector);
+
+__END_DECLS

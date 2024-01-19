@@ -7,6 +7,8 @@
 #include "safu/common.h"
 #include "safu/vector.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Allocate a new event vector.
  *
@@ -128,5 +130,7 @@ void elosEventVectorDeleteMembers(elosEventVector_t *eventVector);
  *      eventVector (elosEventVector_t *): the event vector to free.
  ******************************************************************/
 void elosEventVectorDelete(elosEventVector_t *eventVector);
+
+__END_DECLS
 
 #endif /* ELOS_EVENT_VECTOR_H */

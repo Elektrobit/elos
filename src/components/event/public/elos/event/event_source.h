@@ -6,6 +6,8 @@
 
 #include "elos/event/event_types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Allocates a new event.
  *
@@ -101,3 +103,5 @@ safuResultE_t elosEventSourceToJsonObject(json_object *to, const elosEventSource
  *      - `SAFU_RESULT_FAILED` on failure.
  ******************************************************************/
 safuResultE_t elosEventSourceFromJsonObject(elosEventSource_t *to, const json_object *from);
+
+__END_DECLS

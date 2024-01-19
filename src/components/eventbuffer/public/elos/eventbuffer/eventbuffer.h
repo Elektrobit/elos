@@ -5,6 +5,8 @@
 #include "elos/eventbuffer/defines.h"
 #include "elos/eventbuffer/types.h"
 
+__BEGIN_DECLS
+
 safuResultE_t elosEventBufferNew(elosEventBuffer_t **eventBuffer, elosEventBufferParam_t const *const param);
 safuResultE_t elosEventBufferInitialize(elosEventBuffer_t *eventBuffer, elosEventBufferParam_t const *const param);
 safuResultE_t elosEventBufferRead(elosEventBuffer_t *eventBuffer, size_t priority, elosEventPtrVector_t *eventPtrVector,
@@ -13,3 +15,5 @@ safuResultE_t elosEventBufferWrite(elosEventBuffer_t *eventBuffer, elosEvent_t c
 safuResultE_t elosEventBufferSetWriteTrigger(elosEventBuffer_t *eventBuffer, int eventfd);
 safuResultE_t elosEventBufferDeleteMembers(elosEventBuffer_t *eventBuffer);
 safuResultE_t elosEventBufferDelete(elosEventBuffer_t **eventBuffer);
+
+__END_DECLS

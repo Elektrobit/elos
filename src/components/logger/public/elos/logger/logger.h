@@ -22,6 +22,8 @@ typedef struct elosLogger {
     safuFlags_t flags;
 } elosLogger_t;
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Initializes the event buffer member of the provided logger and sets
  * the loggers flag to initialized.
@@ -94,3 +96,5 @@ safuResultE_t elosLoggerGetDefaultLogger(elosLogger_t **logger);
  ******************************************************************/
 void elosLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity, uint64_t classification,
              const char *logMessage);
+
+__END_DECLS

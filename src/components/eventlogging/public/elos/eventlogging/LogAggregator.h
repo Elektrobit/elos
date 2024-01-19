@@ -9,9 +9,13 @@
 #include "elos/event/event.h"
 #include "elos/eventlogging/LogAggregatorTypes.h"
 
+__BEGIN_DECLS
+
 safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLogAggregatorParam_t const *param);
 safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elosEvent_t *);
 safuResultE_t elosLogAggregatorShutdown(elosLogAggregator_t *logAggregator);
 safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule, safuVec_t *events);
+
+__END_DECLS
 
 #endif /* __ELOS_LOGAGGREGATOR_H__ */
