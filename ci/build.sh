@@ -51,7 +51,7 @@ fi
 
 . "$BASE_DIR/ci/common_names.sh"
 
-"$BASE_DIR/ci/install_deps.py" $INSTALL_DEP_OPTIONS
+"$BASE_DIR/ci/install_deps.py" --clean-first $INSTALL_DEP_OPTIONS
 
 CMAKE_BUILD_DIR=$BUILD_DIR/cmake
 export LOCAL_INSTALL_DIR=${LOCAL_INSTALL_DIR:-$DIST_DIR}
