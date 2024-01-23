@@ -11,7 +11,7 @@ import sys
 BASE_DIR = path.abspath(path.join(path.dirname(path.abspath(__file__)), '..'))
 CHECKOUT_PATH = path.join(BASE_DIR, "build/deps/src")
 INSTALL_PATH = path.join(BASE_DIR, "build/deps")
-DEFAULT_USER_CONFIG=path.join(BASE_DIR, "dependencies.json")
+DEFAULT_USER_CONFIG = path.join(BASE_DIR, "dependencies.json")
 TEST_DEPS = ["cmocka_extensions", "cmocka_mocks"]
 
 
@@ -28,9 +28,18 @@ def dependency_sources(user_config=DEFAULT_USER_CONFIG):
 
     return dependency
 
+
+def get_with_priority(config, *keys):
+    for key in keys:
+        if key in config:
+            return config[key]
+    return None
+
+
 def run_cmd(cmd):
     print(*cmd)
     return subprocess.run(cmd)
+
 
 def checkout(dependencies, args):
     for dep, conf in dependencies.items():
@@ -46,23 +55,18 @@ def checkout(dependencies, args):
                 if cp.returncode != 0:
                     return False
                 cmd = ["git", "-C", conf["path"], "checkout"]
-                if "commit" in conf:
-                    cmd.append(conf["commit"])
-                elif "tag" in conf:
-                    cmd.append(conf["tag"])
-                elif "branch" in conf:
-                    cmd.append(conf["branch"])
+                ref = get_with_priority(conf, "commit", "tag", "branch")
+                if ref is not None:
+                    cmd.append(ref)
                 cp = run_cmd(cmd)
                 if cp.returncode != 0:
                     return False
                 continue
             cmd = ["git", "clone", conf["url"], conf["path"]]
-            if "tag" in conf:
+            ref = get_with_priority(conf, "tag", "branch")
+            if ref is not None:
                 cmd.append("-b")
-                cmd.append(conf["tag"])
-            elif "branch" in conf:
-                cmd.append("-b")
-                cmd.append(conf["branch"])
+                cmd.append(ref)
             cp = run_cmd(cmd)
             if cp.returncode != 0:
                 return False
@@ -124,9 +128,12 @@ def build_and_install(dependencies, args):
 
 def arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', default=DEFAULT_USER_CONFIG,
+    parser.add_argument('-c', '--config',
+                        default=os.getenv('ELOS_DEPENDENCY_CONFIG',
+                                          DEFAULT_USER_CONFIG),
                         help="the user config for dependencies"
-                        f" (default {DEFAULT_USER_CONFIG})")
+                        f" (default {DEFAULT_USER_CONFIG}"
+                        " or enviroment variable ELOS_DEPENDENCY_CONFIG)")
     parser.add_argument('-G', '--global', action='store_true',
                         dest='global_install',
                         help="install the dependencies globaly")
