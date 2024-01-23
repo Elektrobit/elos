@@ -151,10 +151,9 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
         if (SAFU_FLAG_HAS_INITIALIZED_BIT(&connectionManager->flags) == true) {
             safuResultE_t iterResult;
 
-            iterResult = elosConnectionManagerStop(connectionManager);
-            if (iterResult != SAFU_RESULT_OK) {
-                safuLogWarn("Stopping ConnectionManager failed (possible memory leak)");
-                result = SAFU_RESULT_FAILED;
+            if (atomic_load(&connectionManager->flags) &
+                (ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE | ELOS_CONNECTIONMANAGER_THREAD_NOT_JOINED)) {
+                safuLogWarn("Not been properly terminated before deleted");
             }
 
             for (int i = 0; i < ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT; i += 1) {
