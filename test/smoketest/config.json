@@ -61,8 +61,11 @@
                     "SQLBackend": {
                         "File": "backend_sql.so",
                         "Run": "always",
+                        "Filter": [
+                            "1 1 EQ"
+                        ],
                         "Config": {
-                            "ConnectionPath": ""
+                            "ConnectionPath": "/tmp/elos.sqlite"
                         }
                     },
                     "SkippedDummy": {
