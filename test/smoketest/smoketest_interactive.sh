@@ -4,7 +4,7 @@ BUILD_TYPE="${1:-Debug}"
 BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE/"
 DIST_DIR="${BUILD_DIR}/dist"
 
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH-""}:"${DIST_DIR}/usr/local/lib"
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH-""}:"${DIST_DIR}/usr/local/lib:${BASE_DIR}/build/deps/lib"
 export PATH=${PATH}:"${DIST_DIR}/usr/local/bin"
 export SMOKETEST_DIR=${SMOKETEST_DIR-"$(dirname "$0")"}
 export SMOKETEST_RESULT_DIR=${SMOKETEST_RESULT_DIR-"$BUILD_DIR/result/smoketest_results"}
