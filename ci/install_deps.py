@@ -10,6 +10,7 @@ import sys
 
 BASE_DIR = path.abspath(path.join(path.dirname(path.abspath(__file__)), '..'))
 CHECKOUT_PATH = path.join(BASE_DIR, "build/deps/src")
+BUILD_PATH = path.join(BASE_DIR, "build/deps/build")
 INSTALL_PATH = path.join(BASE_DIR, "build/deps")
 DEFAULT_USER_CONFIG = path.join(BASE_DIR, "dependencies.json")
 TEST_DEPS = ["cmocka_extensions", "cmocka_mocks"]
@@ -83,7 +84,7 @@ def checkout(dependencies, args):
 
 def single_install(dependency, config, args):
     print(f"## {dependency}")
-    config.setdefault("build", path.join(config["path"], "build"))
+    config.setdefault("build", path.join(BUILD_PATH, dependency))
     if args.clean_first:
         cmd = ["rm", "-rf", config["build"]]
         run_cmd(cmd)
