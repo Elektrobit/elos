@@ -38,7 +38,8 @@ def get_with_priority(config, *keys):
 
 def run_cmd(cmd):
     print(*cmd)
-    return subprocess.run(cmd)
+    expanded_cmd = [os.path.expandvars(x) for x in cmd]
+    return subprocess.run(expanded_cmd)
 
 
 def checkout(dependencies, args):
