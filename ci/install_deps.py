@@ -83,7 +83,7 @@ def checkout(dependencies, args):
 
 def single_install(dependency, config, args):
     print(f"## {dependency}")
-    config["build"] = path.join(config["path"], "build")
+    config.setdefault("build", path.join(config["path"], "build"))
     if args.clean_first:
         cmd = ["rm", "-rf", config["build"]]
         run_cmd(cmd)
