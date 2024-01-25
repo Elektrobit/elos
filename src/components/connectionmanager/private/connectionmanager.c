@@ -153,7 +153,9 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
 
             if (atomic_load(&connectionManager->flags) &
                 (ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE | ELOS_CONNECTIONMANAGER_THREAD_NOT_JOINED)) {
-                safuLogWarn("Not been properly terminated before deleted");
+                safuLogWarn(
+                    "An attempt is being made to delete the ConnectionManager without it being properly terminated "
+                    "first.");
             }
 
             for (int i = 0; i < ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT; i += 1) {
