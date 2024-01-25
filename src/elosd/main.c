@@ -82,18 +82,15 @@ int elosServerShutdown(struct serverContext *ctx) {
     if (elosStorageManagerStop(&ctx->storageManager) != SAFU_RESULT_OK) {
         safuLogErr("Stopping storage manager failed!");
         result = EXIT_FAILURE;
-    } else {
-        if (elosStorageManagerDeleteMembers(&ctx->storageManager) != SAFU_RESULT_OK) {
-            safuLogErr("Deleting storage manager failed!");
-            result = EXIT_FAILURE;
-        }
-    }
-    if (elosConnectionManagerDeleteMembers(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
-        safuLogErr("Deleting connection manager failed!");
+    } else if (elosStorageManagerDeleteMembers(&ctx->storageManager) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting storage manager failed!");
         result = EXIT_FAILURE;
     }
-    if (elosConnectionManagerDeleteMembers(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
+    if (elosConnectionManagerStop(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
         safuLogErr("Stoping connection manager failed!");
+        result = EXIT_FAILURE;
+    } else if (elosConnectionManagerDeleteMembers(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting connection manager failed!");
         result = EXIT_FAILURE;
     }
     if (elosScannerManagerStop(&ctx->scannerManagerContext) != NO_ERROR) {

@@ -133,6 +133,12 @@ Shutting down..."
         esac
     done < ${SMOKETEST_TMP_DIR}/expected_elosd_logs.txt
 
+    grep -e "WARNING\|ERROR" $RESULT_DIR/elosd.txt > /dev/null 2>&1
+    if [ $? -ne 1 ]; then
+        FAIL=$((FAIL+1))
+        log_err "Elos log contains WARNINGS or ERRORS"
+    fi
+
     return $FAIL
 }
 

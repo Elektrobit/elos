@@ -18,8 +18,6 @@ safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectio
 
 /*******************************************************************
  * Frees member resources used by the given ConnectionManager data structure.
- * Will also automatically stop an active worker thread before
- * freeing up the used resources.
  *
  * Parameters:
  *      connectionManager: ConnectionManager whose members shall be freed
