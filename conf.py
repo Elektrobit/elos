@@ -35,7 +35,7 @@ extensions = [
 myst_enable_extensions = ["tasklist"]
 
 templates_path = ['doc/_templates']
-exclude_patterns = ['build/*/cmake/_deps/*', 'README.md', '.venv']
+exclude_patterns = ['build/deps/**', 'build/*/cmake/_deps/*', 'README.md', '.venv']
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',

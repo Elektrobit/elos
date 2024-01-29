@@ -46,13 +46,6 @@ make -C ./build all
 make -C ./build install
 ```
 
-or use the CI hooks
-
-```bash
-./ci/build.sh [Release]
-```
-
-
 ## Development
 
 For a quick start to get hands on the code and start coding use :

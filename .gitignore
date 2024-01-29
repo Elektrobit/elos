@@ -1,4 +1,7 @@
 
+# local dependency confifiguration 
+dependencies.json
+
 # Temporary folders for building and/or testing
 __pycache__
 _build

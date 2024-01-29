@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.21)
-include(cmake/ConfigureLibrary.cmake)
 include(cmake/project.cmake)
 
 project(elos LANGUAGES C VERSION ${ELOS_VERSION})
@@ -12,15 +11,6 @@ project_add_documentation_target(
   MARKDOWN
     ${CMAKE_SOURCE_DIR}/documentation/documentation.md
 )
-
-list(APPEND CMAKE_PREFIX_PATH "${INSTALL_DIR}/usr/local/lib/cmake")
-
-if(UNIT_TESTS)
-  configureLibrary(cmocka_extensions "${CMOCKA_EXTENSIONS_URI}" "${CMOCKA_EXTENSIONS_REF}")
-  configureLibrary(cmocka_mocks "${CMOCKA_MOCKS_URI}" "${CMOCKA_MOCKS_REF}")
-endif(UNIT_TESTS)
-configureLibrary(safu "${SAFU_URI}" "${SAFU_REF}")
-configureLibrary(samconf "${SAMCONF_URI}" "${SAMCONF_REF}")
 
 option(ELOSD_EVENTLOGGING_BACKEND_SQL "Build sqlite3 bakend plugin" ON)
 option(ELOSD_EVENTLOGGING_BACKEND_NOSQL "Build NoSQL backend plugin" OFF)

@@ -1,0 +1,14 @@
+{
+	"safu": {
+		"url":  "https://github.com/Elektrobit/safu.git"
+	},
+	"samconf": {
+		"url": "https://github.com/Elektrobit/samconf.git"
+	},
+	"cmocka_mocks": {
+		"url": "https://github.com/Elektrobit/cmocka_mocks.git"
+	},
+	"cmocka_extensions": {
+		"url": "https://github.com/Elektrobit/cmocka_extensions.git"
+	}
+}

@@ -10,6 +10,7 @@ BENCHMARK_RESULT_DIR=${BENCHMARK_RESULT_DIR:-"$RESULT_DIR/benchmark_results"}
 export BUILD_TYPE
 export BENCHMARK_RESULT_DIR
 export BUILD_DIR
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$BASE_DIR/build/deps/lib:$DIST_DIR/usr/local/lib"
 
 $BASE_DIR/test/benchmark/fullstack_1-1.sh
 $BASE_DIR/test/benchmark/fullstack_1-n.sh

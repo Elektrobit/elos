@@ -8,8 +8,6 @@ BASE_DIR="$(realpath "$CMD_PATH/..")"
 IMAGE_NAME="${PROJECT}"
 TARGET_NAME="${PROJECT}-target"
 
-. "$BASE_DIR/ci/dependency_sources.sh"
-
 echo "==> create docker image"
 cd $BASE_DIR
 docker build \
