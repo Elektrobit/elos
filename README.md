@@ -86,7 +86,7 @@ Be aware this is a smoketest environment so it is very verbose.
    created by cmake in the build directory. Run therefore:
 
    ```
-   ln -s build/compile_commands.json
+   ln -s build/<BUILD_TYPE>/cmake/compile_commands.json
    ```
 
 ## Dependencies
