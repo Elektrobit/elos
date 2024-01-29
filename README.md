@@ -98,55 +98,34 @@ Be aware this is a smoketest environment so it is very verbose.
 
 ## Folders
 
+In general each folder and subfolder should contain a `index.rst` or `.md`
+files to explain there content by themself. This shall give a brief overview
+where to start when looking for something specific.
+
 ### ci
 
-Scripts to be used by CI pipelines to build , run various tests and checks.
+Scripts to be used by CI pipelines to build, run various tests and checks.
 
-### documentation
+### cmake
 
-More detailed documentation on the event logging and management system.
+Contains cmake extensions and scripts to simplify and generalize recurring tasks.
 
-### packaging
+### doc
 
-Contains some files to help out some external build systems which are not part of this project.
+Contains :
+
+* static assets for the documentation
+* the Architecture Design Records
+* documentation on the documentation itself
+* other documents
 
 ### src
 
 Contains the actual productive sources.
 
-#### src/common
-
-Contains common shared code.
-
-#### src/demo
-
-Contains simple demonstration applications.
-
-#### src/elosd
-
-The sources for the event logging and management system daemon itself.
-
-#### src/libelos
-
-Contains header and source files for a shared library that can be used
-to communicate with the event logging and management system daemon (elosd).
-
-#### src/log
-
-A log library used by elos to consolidate logging.
-
-#### src/scanner
-
-Contains the sources for event logging and management system specific shared libraries,
-these are responsible for monitoring for different events on the target system.
-
-#### src/version
-
-The sources to manage the version always in the same way.
-
 ### test
 
-Contains all test related sources. See the documenation for details.
+Contains all test related sources. See the documentation for details.
 
 
 ## License
