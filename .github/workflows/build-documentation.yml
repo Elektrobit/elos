@@ -46,8 +46,10 @@ jobs:
           net-tools \
           netcat \
           ninja-build \
+          nodejs \
           openssl \
           pkg-config \
+          plantuml \
           python-is-python3 \
           python3-pip \
           python3-venv \
@@ -90,11 +92,13 @@ jobs:
           . ${{ github.workspace }}/.venv/bin/activate
           python -m pip install \
           beautifulsoup4  \
+          clang==16.0.1.1 \
           myst-parser \
           sphinx \
           sphinx-c-autodoc \
           sphinx-copybutton \
           sphinx-favicon \
+          sphinxcontrib-plantuml \
           sphinxcontrib-programoutput
       - name: install libcland 16 for sphinx c autodoc
         # needet as long as libclang 16 isn't packaged in ubuntu-latest
