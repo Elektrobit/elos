@@ -27,8 +27,6 @@ WORKDIR /home/elos
 
 COPY ./ /home/elos
 
-RUN git clean -dfx /home/elos
-
 RUN mkdir /etc/elos
 COPY ./test/integration/service/config.json /etc/elos/elosd.json
 RUN chmod 644 /etc/elos/elosd.json
