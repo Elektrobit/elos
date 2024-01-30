@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(safu)
+find_package(safu 0.50.1 REQUIRED)
 find_package(samconf)
 find_package(mongoc-1.0 REQUIRED)
 

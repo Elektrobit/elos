@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(safu REQUIRED)
+find_package(safu 0.50.1 REQUIRED)
 
 add_library(
   messagehandler_static

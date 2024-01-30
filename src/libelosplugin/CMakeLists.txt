@@ -2,7 +2,7 @@
 include(../../cmake/shared_library.cmake)
 
 find_package(samconf REQUIRED)
-find_package(safu REQUIRED)
+find_package(safu 0.50.1 REQUIRED)
 
 create_interface_library(
   FROM

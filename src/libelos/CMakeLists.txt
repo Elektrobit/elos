@@ -2,7 +2,7 @@
 include(../../cmake/shared_library.cmake)
 
 find_package(json-c REQUIRED)
-find_package(safu REQUIRED)
+find_package(safu 0.50.1 REQUIRED)
 
 add_library(
   libelos
