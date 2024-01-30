@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 find_package(safu 0.50.1 REQUIRED)
-find_package(samconf REQUIRED)
+find_package(samconf 0.50.1 REQUIRED)
 
 create_unit_test(
   NAME
