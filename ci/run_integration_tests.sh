@@ -44,6 +44,7 @@ docker build \
     $BUILD_ARG \
     --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
     --build-arg SOURCES_URI="${SOURCES_URI}" \
+    ${ELOS_DEPENDENCY_CONFIG:+--build-arg ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
     --tag ${ELOSD_IMAGE_NAME} -f $BASE_DIR/ci/Dockerfile.elosd .
 
 if [ $? -ne 0 ]; then
@@ -56,6 +57,7 @@ docker build \
     $BUILD_ARG \
     --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
     --build-arg SOURCES_URI="${SOURCES_URI}" \
+    ${ELOS_DEPENDENCY_CONFIG:+--build-arg ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
     --tag ${TEST_IMAGE_NAME} -f $BASE_DIR/ci/Dockerfile.robot .
 
 if [ $? -ne 0 ]; then

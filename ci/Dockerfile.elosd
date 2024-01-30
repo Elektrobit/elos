@@ -6,6 +6,7 @@ ARG GID=1000
 ARG TARGET_USER_NAME=target
 ARG TARGET_PASSWORD=target123
 ARG SOURCES_URI=https://github.com/emlix/
+ARG ELOS_DEPENDENCY_CONFIG="./ci/dependencies.json"
 ARG CMAKE_PARAM=""
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -33,6 +34,7 @@ COPY ./test/integration/service/config.json /etc/elos/elosd.json
 RUN chmod 644 /etc/elos/elosd.json
 
 ENV SOURCES_URI=$SOURCES_URI
+ENV ELOS_DEPENDENCY_CONFIG=$ELOS_DEPENDENCY_CONFIG
 RUN env
 RUN ci/install_deps.py --global --no-tests --clean-first
 RUN cmake -B /tmp/elos/build . -DCMAKE_BUILD_TYPE=Release -G Ninja -DUNIT_TESTS=off

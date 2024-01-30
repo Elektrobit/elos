@@ -66,6 +66,10 @@ pipeline {
     gitlabBuilds(builds: stages() )
     buildDiscarder(logRotator(numToKeepStr: env.BRANCH_NAME == "master"? "1000": env.BRANCH_NAME == "integration"?"1000":"3"))
   }
+  environment {
+    SOURCES_URI = "${SOURCES_URI}"
+    ELOS_DEPENDENCY_CONFIG="./ci/dependencies_emlix.json"
+  }
   agent none
   stages {
     stage("Elos Run") {
@@ -74,8 +78,8 @@ pipeline {
           when { anyOf {
             equals expected: true, actual: stages().findAll{"baseos-lab".toLowerCase().contains(it.toLowerCase())}.any{true}
           }}
-        steps {
-          updateGitlabCommitStatus name: 'baseos-lab', state: 'skipped'
+          steps {
+            updateGitlabCommitStatus name: 'baseos-lab', state: 'skipped'
             gitlabCommitStatus("baseos-lab") {
               script {
                 echo "triggering eb-baseos-elos-baseos-lab Pipeline with elos Branch '${BRANCH_NAME}'"
@@ -96,7 +100,7 @@ pipeline {
                   reuseNode true
                   additionalBuildArgs "--build-arg USER=jenkins \
                                 --build-arg UID=\$(id -u) --build-arg GID=\$(id -g) --build-arg ASMCOV_URI=${ASMCOV_URI}"
-                  args "--privileged --userns=keep-id -e SOURCES_URI=${SOURCES_URI}"
+                  args "--privileged --userns=keep-id -e SOURCES_URI=${SOURCES_URI} -e ELOS_DEPENDENCY_CONFIG=${ELOS_DEPENDENCY_CONFIG}"
                   label "podman"
               }
             }
@@ -264,7 +268,6 @@ pipeline {
           environment {
             DOCKER_BUILDKIT = 0
 	    BUILD_ARG = "--build-arg USER=jenkins"
-            SOURCES_URI = "${SOURCES_URI}"
           }
           steps {
             gitlabCommitStatus("integration test") {
