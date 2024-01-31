@@ -14,6 +14,7 @@ docker build \
     --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
     --build-arg CMAKE_PARAM="${CMAKE_PARAM}" \
     --build-arg SOURCES_URI="${SOURCES_URI}" \
+    ${ELOS_DEPENDENCY_CONFIG:+--build-arg ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
     --tag ${IMAGE_NAME} -f $BASE_DIR/ci/Dockerfile.elosd .
 
 cd $BASE_DIR/ci

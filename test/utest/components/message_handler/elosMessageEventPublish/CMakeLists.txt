@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 find_package(cmocka_mocks)
 find_package(json-c)
-find_package(safu)
+find_package(safu 0.50.1 REQUIRED)
 
 create_unit_test(
   NAME

@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-find_package(safu REQUIRED)
-find_package(samconf REQUIRED)
+find_package(safu 0.50.1 REQUIRED)
+find_package(samconf 0.50.1 REQUIRED)
 
 add_executable(
   elosd

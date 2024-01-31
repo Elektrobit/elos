@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(samconf REQUIRED)
+find_package(samconf 0.50.1 REQUIRED)
 
 add_compile_definitions(ELOSD_LOG_PREFIX="${ELOSD_LOG_PREFIX}")
 

@@ -45,7 +45,20 @@ Indendet to easier install the dependencies `cmocka_extensions`, `cmocka_mocks`,
    ci/install_deps.py
 
 By default it installes from the main branch of the GitHub repositories.
-The behavior can be modified by putting a `dependencies.json` in the root of the project.
+The behavior can be modified by specifing one of the following files in this order:
+
+* file specified by `ELOS_DEPENDENCY_CONFIG` environment variable
+
+.. code-block::
+
+   export ELOS_DEPENDENCY_CONFIG=".myconfig/my_dependencies.json"
+
+* `dependencies.json` in the root of the project
+
+* `ci/dependencies_default.json` in the root of the project
+
+Each resuorce can be defined by the `[url|path][commit|branch|tag][cmake_opts]`
+options. This could look like:
 
 .. code-block:: json
 
@@ -68,7 +81,38 @@ The behavior can be modified by putting a `dependencies.json` in the root of the
    }
 
 If no URL or path is provided the default is used.
-A path is used as is without checking the branch, tag or commit and includes local changes that aren't commited jet.
+A path is used as is without checking the branch, tag or commit and includes
+local changes that aren't commited jet.
+
+The `url` property supports the evaluation of environment variables like
+`SOURCES_URI` so it is possible to define template configurations like:
+
+.. code-block:: json
+
+   {
+       "safu": {
+           "url":  "${SOURCES_URI}/safu.git",
+           "branch": "integration"
+       },
+       "samconf": {
+           "url": "${SOURCES_URI}/samconf.git",
+           "branch": "integration"
+       },
+       "cmocka_mocks": {
+           "url": "${SOURCES_URI}/cmocka_mocks.git",
+           "branch": "integration"
+       },
+       "cmocka_extensions": {
+           "url": "${SOURCES_URI}/cmocka_extensions.git",
+           "branch": "integration"
+       }
+   }
+
+and call `install_deps.py` like :
+
+.. code-block:: bash
+
+   SOURCES_URI=https://${GIT_USER_TOKEN}@github.com/Elektrobit/
 
 These dependencies get installed into `build/deps/` and if provided with an URL the sources can be found in `build/deps/src`.
 
@@ -217,39 +261,3 @@ ci/build.sh options
 - `--clean|-c` deletes the build directory before the build for a fresh start
 - `--verbose|-v` adds `-v` to the parameters for ninja
 - `--package` implicitly sets the `BUILD_TYPE` to `Release` and adds `-D PACKAGING=true` to cmake. Also implicitly sets `--clean`
-
-cmocka_extensions, cmocka_mocks, safu & samconf install options
----------------------------------------------------------------
-
-cmocka_extensions cmocka_mocks, safu and samconf can be installed just like any other library in a system include path or provided to the build via the environment variable `CMAKE_PREFIX_PATH`.
-But for now it is also possible to let the build system get them via `FetchContent`_
-
-In ci/dependenccy_sources.sh
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- SOURCES_URI: (default "https://github.com/Elektrobit/") the base url under which to find the repos.
-- DEFAULT_BRANCH: (default "integration") the branch to use if nothing else is specified
-- CMOCKA_EXTENSIONS_REPO_NAME: (default "cmocka_extensions.git") the repository name for cmocka_extensons
-- CMOCKA_EXTENSIONS_REPO_PATH: (default "${SOURCES_URI}/${CMOCKA_EXTENSIONS_REPO_NAME}") the full url to get cmocka_extensions
-- CMOCKA_EXTENSIONS_REPO_REF: (default "${DEFAULT_BRANCH}") the branch to use for cmocka_extensions
-- CMOCKA_MOCKS_REPO_NAME: (default "cmocka_mocks.git") the repository name for cmocka_mocks
-- CMOCKA_MOCKS_REPO_PATH: (default "${SOURCES_URI}/${CMOCKA_MOCKS_REPO_NAME}") the full url for cmocka_mocks
-- CMOCKA_MOCKS_REPO_REF: (default ${DEFAULT_BRANCH}") the branch to use for cmocka_mocks
-- SAFU_REPO_NAME: (default "safu.git") the repository name for safu
-- SAFU_REPO_PATH: (default "${SOURCES_URI}/${SAFU_REPO_NAME}") the full url for safu
-- SAFU_REPO_REF: (default "${DEFAULT_BRANCH}") the branch to use for safu
-- SAMCONF_REPO_NAME: (default "samconf.git") the repository name for samconf
-- SAMCONF_REPO_PATH: (default "${SOURCES_URI}/${SAMCONF_REPO_NAME}") the full url for samconf
-- SAMCONF_REPO_REF: (default "${DEFAULT_BRANCH}") the branche to use for samconf
-
-From those options the cmake parameter are generated to install `cmocka_extensions`, `mocka_mocks`, `safu` and `samconf` in the cmake call directly using `FetchContent`_
-
-- `-D CMOCKA_EXTENSIONS_URI=${CMOCKA_EXTENSIONS_REPO_PATH}`
-- `-D CMOCKA_EXTENSIONS_REF=${CMOCKA_EXTENSIONS_REPO_REF}`
-- `-D CMOCKA_MOCKS_URI=${CMOCKA_MOCKS_REPO_PATH}`
-- `-D CMOCKA_MOCKS_REF=${CMOCKA_MOCKS_REPO_REF}`
-- `-D SAFU_URI=${SAFU_REPO_PATH}`
-- `-D SAFU_REF=${SAFU_REPO_REF}`
-- `-D SAMCONF_URI=${SAMCONF_REPO_PATH}`
-- `-D SAMCONF_REF=${SAMCONF_REPO_REF}`
- 

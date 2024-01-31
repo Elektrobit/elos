@@ -43,9 +43,11 @@ fi
 docker run --rm ${IT} $SSH_AGENT_OPTS \
     -v $BASE_DIR:/base \
     -w /base \
-    -e GIT_USER_TOKEN="${GIT_USER_TOKEN}" \
-    -e UNUSED_SOURCES="${UNUSED_SOURCES}" \
-    -e IGNORE_SOURCES="${IGNORE_SOURCES}" \
+    ${GIT_USER_TOKEN:+-e GIT_USER_TOKEN="${GIT_USER_TOKEN}"} \
+    ${ELOS_DEPENDENCY_CONFIG:+-e ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
+    ${SOURCES_URI:+-e SOURCES_URI="${SOURCES_URI}"} \
+    ${UNUSED_SOURCES:+-e UNUSED_SOURCES="${UNUSED_SOURCES}"} \
+    ${IGNORE_SOURCES:+-e IGNORE_SOURCES="${IGNORE_SOURCES}"} \
     --privileged \
     --device=/dev/kmsg \
     $IMAGE_NAME $@

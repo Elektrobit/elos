@@ -1,0 +1,10 @@
+.git
+.cache
+.profile
+.cprofile
+.settings
+.asciidoctorconfig.adoc
+**/build
+*.swp
+__pycache__
+compile_commands.json
