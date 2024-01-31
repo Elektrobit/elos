@@ -119,6 +119,7 @@ pipeline {
                 steps{
                   gitlabCommitStatus("build release") {
                     sh '''#!/bin/bash -xe
+		      rm -rf ./build/deps
                       ./ci/build.sh --ci Release
                     '''
                   }
