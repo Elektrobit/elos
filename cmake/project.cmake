@@ -20,7 +20,7 @@ macro(project_set_environment)
   option(ENABLE_ANALYZER "Build with -fanalyzer" ON)
   option(ENABLE_CI "Use CI mode for building" OFF)
   option(INSTALL_UNIT_TESTS "Install unit tests" ON)
-  option(LINK_ASAN "Link with ASAN" ON)
+  option(ENABLE_ASAN "Link with ASAN" ON)
 
   add_compile_options(
     -Wshadow -Wall -Wextra -pedantic -D_DEFAULT_SOURCE
@@ -31,7 +31,7 @@ macro(project_set_environment)
   endif()
 
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    if (LINK_ASAN)
+    if (ENABLE_ASAN)
       link_libraries(asan)
       add_compile_options(-fsanitize=address)
     endif()
