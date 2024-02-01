@@ -7,6 +7,8 @@
 #include "elos/event/event.h"
 #include "elos/event/event_types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * A fallback function is to be used when the log event creation fails.
  * In this case the when log event creation fails, the elos log
@@ -31,3 +33,5 @@ void elosLogSafuFallback(elosEvent_t *event);
  ******************************************************************/
 void elosLogCreateElosEventFromLog(elosEventMessageCodeE_t messageCode, elosSeverityE_t severity,
                                    uint64_t classification, const char *logMessage, elosEvent_t *event);
+
+__END_DECLS

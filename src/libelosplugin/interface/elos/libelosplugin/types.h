@@ -28,7 +28,11 @@ typedef struct elosPluginContext {
     int stop;
 } elosPlugin_t;
 
+__BEGIN_DECLS
+
 typedef safuResultE_t(elosPluginFunc_t)(elosPlugin_t *);
+
+__END_DECLS
 
 /*******************************************************************
  * Selects the type of the plugin.

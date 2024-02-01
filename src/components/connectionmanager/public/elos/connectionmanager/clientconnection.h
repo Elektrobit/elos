@@ -4,6 +4,8 @@
 
 #include "elos/connectionmanager/clientconnection_types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Initializes a new ClientConnection.
  *
@@ -78,3 +80,5 @@ safuResultE_t elosClientConnectionIsActive(elosClientConnection_t *clientConnect
  *      - Always NULL
  ******************************************************************/
 void *elosClientConnectionWorker(void *ptr);
+
+__END_DECLS

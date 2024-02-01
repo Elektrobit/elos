@@ -3,6 +3,8 @@
 
 #include "elos/connectionmanager/types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Initializes a new ConnectionManager.
  *
@@ -50,3 +52,5 @@ safuResultE_t elosConnectionManagerStart(elosConnectionManager_t *connectionMana
  *      - SAFU_RESULT_OK on success
  ******************************************************************/
 safuResultE_t elosConnectionManagerStop(elosConnectionManager_t *connectionManager);
+
+__END_DECLS

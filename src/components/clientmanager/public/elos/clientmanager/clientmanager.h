@@ -8,6 +8,8 @@
 #include "elos/clientmanager/clientmanager_types.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
+__BEGIN_DECLS
+
 /**
  * Initialize the client manager with default values to be safely used.
  *
@@ -62,3 +64,5 @@ safuResultE_t elosClientManagerStop(elosClientManager_t *clientManager);
  *         SAFU_RESULT_FAILURE – on failure.
  */
 safuResultE_t elosClientManagerDeleteMembers(elosClientManager_t *clientManager);
+
+__END_DECLS

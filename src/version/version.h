@@ -15,6 +15,10 @@ typedef struct elosVersion {
 
 extern const elosVersion_t elosVersion;
 
+__BEGIN_DECLS
+
 const char *elosGetVersionString(void);
 void elosPrintVersion(FILE *const destination, const char *prefix) __attribute__((nonnull(1)));
 bool elosIsVersionRequested(const char *const *const argv, int argc) __attribute__((nonnull(1)));
+
+__END_DECLS

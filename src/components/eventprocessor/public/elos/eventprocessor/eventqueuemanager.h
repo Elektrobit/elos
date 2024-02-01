@@ -6,6 +6,8 @@
 #include "elos/event/event.h"
 #include "elos/eventprocessor/types.h"
 
+__BEGIN_DECLS
+
 // Standard interface functions
 safuResultE_t elosEventQueueManagerInitialize(elosEventQueueManager_t *eqm, elosEventQueueManagerParam_t const *param);
 safuResultE_t elosEventQueueManagerDeleteMembers(elosEventQueueManager_t *eqm);
@@ -28,3 +30,5 @@ safuResultE_t elosEventQueueManagerEntryRead(elosEventQueueManager_t *eqm, elosE
                                              elosEventVector_t **eventVector);
 
 safuResultE_t elosEventQueueManagerEntryPush(elosEventQueueManager_t *eqm, elosEventQueueId_t eqId, elosEvent_t *event);
+
+__END_DECLS

@@ -6,6 +6,8 @@
 
 #include "elos/pluginmanager/types.h"
 
+__BEGIN_DECLS
+
 safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, elosPluginManagerParam_t const *param);
 
 safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
@@ -33,5 +35,7 @@ safuResultE_t elosPluginManagerEntryStop(elosPluginManager_t *pluginManager, elo
 safuResultE_t elosPluginManagerEntryRemove(elosPluginManager_t *pluginManager, elosPluginId_t id);
 
 safuResultE_t elosPluginManagerDeleteMembers(elosPluginManager_t *pluginManager);
+
+__END_DECLS
 
 #endif /* __ELOS_PLUGINMANAGER_PLUGINMANAGER_H__ */

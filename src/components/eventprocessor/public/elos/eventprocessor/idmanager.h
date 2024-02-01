@@ -5,7 +5,11 @@
 
 #include "elos/eventprocessor/types.h"
 
+__BEGIN_DECLS
+
 safuResultE_t elosIdManagerInitialize(elosIdManager_t *im, elosIdManagerParam_t const *param);
 safuResultE_t elosIdManagerDeleteMemebers(elosIdManager_t *im);
 safuResultE_t elosIdManagerGenerate(elosIdManager_t *im, elosId_t *id);
 safuResultE_t elosIdManagerDestroy(elosIdManager_t *im, elosId_t id);
+
+__END_DECLS

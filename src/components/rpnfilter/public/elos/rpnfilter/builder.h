@@ -4,6 +4,8 @@
 #include "elos/rpnfilter/builder_types.h"
 #include "elos/rpnfilter/rpnfilter.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Function:     elosRpnFilterBuilderNew
  *------------------------------------------------------------------
@@ -132,3 +134,5 @@ elosRpnFilterResultE_t elosRpnFilterBuilderStackAppend(elosRpnFilterStackEntry_t
  ******************************************************************/
 elosRpnFilterResultE_t elosRpnFilterBuilderStepAppend(elosRpnFilterBuilderStepEntry_t const *step,
                                                       elosRpnFilterBuilder_t *data);
+
+__END_DECLS

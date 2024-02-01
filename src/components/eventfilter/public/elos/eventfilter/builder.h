@@ -14,6 +14,8 @@ typedef enum elosEventFilterBuilderTokenTypeE {
     EVENTFILTER_TOKEN_TYPE_COUNT,
 } elosEventFilterBuilderTokenTypeE_t;
 
+__BEGIN_DECLS
+
 elosRpnFilterResultE_t elosEventFilterBuilderCompileToken(elosRpnFilterBuilderTokenEntry_t const *token,
                                                           elosRpnFilterBuilder_t *data);
 
@@ -50,5 +52,7 @@ elosRpnFilterResultE_t elosEventFilterBuilderCompile(elosRpnFilterBuilder_t *dat
  *               - FILTER_RESULT_ERROR on failure.
  ******************************************************************/
 elosRpnFilterResultE_t elosEventFilterBuilderFinalize(elosRpnFilterBuilder_t *data, elosRpnFilter_t *filter);
+
+__END_DECLS
 
 #endif /* ELOS_EVENTFILTER_BUILDER_H */

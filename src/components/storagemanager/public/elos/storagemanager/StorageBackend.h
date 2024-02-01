@@ -3,6 +3,8 @@
 
 #include "elos/storagemanager/StorageBackend_types.h"
 
+__BEGIN_DECLS
+
 /**
  * Determine if a Storage Backend is configured to accept and process a given event.
  *
@@ -19,3 +21,5 @@
  *         internal error. Check to  error logs for details.
  **/
 safuResultE_t elosStorageBackendAccepts(const elosStorageBackend_t *backend, const elosEvent_t *event);
+
+__END_DECLS

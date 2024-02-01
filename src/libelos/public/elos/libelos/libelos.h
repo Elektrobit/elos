@@ -17,6 +17,8 @@ typedef struct elosSession {
     bool connected;
 } elosSession_t;
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Function: elosConnectTcpip
  *------------------------------------------------------------------
@@ -162,5 +164,7 @@ safuResultE_t elosLogFindEvent(elosSession_t *session, const char *filterRule, e
  *      - `true` for a valid seesion and `false` otherwise.
  ******************************************************************/
 bool elosSessionValid(elosSession_t const *session);
+
+__END_DECLS
 
 #endif

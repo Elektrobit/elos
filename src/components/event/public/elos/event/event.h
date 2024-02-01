@@ -12,6 +12,8 @@
 #include "elos/event/event_source.h"
 #include "elos/event/types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Allocates a new zero initialized event.
  *
@@ -137,3 +139,5 @@ safuResultE_t elosEventToJsonObject(json_object *to, const elosEvent_t *from);
  *      `true` if seconds and nano second of date are 0
  ******************************************************************/
 bool elosEventIsDateEmpty(const elosEvent_t *const event);
+
+__END_DECLS

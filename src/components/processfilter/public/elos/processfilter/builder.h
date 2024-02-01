@@ -13,6 +13,8 @@ typedef enum elosProcessFilterBuilderTokenTypeE {
     PROCESSFILTER_TOKEN_TYPE_COUNT,
 } elosProcessFilterBuilderTokenTypeE_t;
 
+__BEGIN_DECLS
+
 elosRpnFilterResultE_t elosProcessFilterBuilderCompileToken(elosRpnFilterBuilderTokenEntry_t const *token,
                                                             elosRpnFilterBuilder_t *data);
 
@@ -50,3 +52,5 @@ elosRpnFilterResultE_t elosProcessFilterBuilderCompile(elosRpnFilterBuilder_t *d
  *               - FILTER_RESULT_ERROR on failure.
  ******************************************************************/
 elosRpnFilterResultE_t elosProcessFilterBuilderFinalize(elosRpnFilterBuilder_t *data, elosRpnFilter_t *filter);
+
+__END_DECLS

@@ -9,6 +9,8 @@
 #include "elos/event/event_types.h"
 #include "elos/eventprocessor/types.h"
 
+__BEGIN_DECLS
+
 // Standard interface functions
 safuResultE_t elosEventFilterManagerInitialize(elosEventFilterManager_t *efm,
                                                elosEventFilterManagerParam_t const *param);
@@ -21,5 +23,7 @@ safuResultE_t elosEventFilterManagerNodeCreate(elosEventFilterManager_t *efm, ch
 safuResultE_t elosEventFilterManagerNodeRemove(elosEventFilterManager_t *efm, elosEventFilterNodeId_t efnId);
 safuResultE_t elosEventFilterManagerNodeRemoveByEventQueueId(elosEventFilterManager_t *efm, elosEventQueueId_t eqId);
 safuResultE_t elosEventFilterManagerProcess(elosEventFilterManager_t *efm, elosEvent_t const *event);
+
+__END_DECLS
 
 #endif /* ELOS_EVENTPROCESSOR_EVENTFILTERMANAGER_H */

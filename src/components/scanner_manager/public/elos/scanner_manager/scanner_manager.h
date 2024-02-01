@@ -35,18 +35,6 @@ typedef enum elosScannerManagerErrorCodeE {
     ERROR_FUNCTION_CALL = -7,
 } elosScannerManagerErrorCodeE_t;
 
-typedef struct elosScannerEntry {
-    void *dlHandle;
-    char *file;
-    pthread_t thread;
-    elosScannerStateE_t state;
-    elosScannerSession_t session;
-    elosScannerResultE_t (*funcInitialize)(elosScannerSession_t *session, const elosScannerParam_t *param);
-    elosScannerResultE_t (*funcRun)(elosScannerSession_t *session);
-    elosScannerResultE_t (*funcStop)(elosScannerSession_t *session);
-    elosScannerResultE_t (*funcFree)(elosScannerSession_t *session);
-} elosScannerEntry_t;
-
 typedef struct elosScannerManagerContext {
     safuVec_t scannerEntry;
     samconfConfig_t *config;
@@ -60,7 +48,23 @@ typedef struct elosScannerManagerParam {
     elosEventDispatcher_t *eventDispatcher;
 } elosScannerManagerParam_t;
 
+__BEGIN_DECLS
+
+typedef struct elosScannerEntry {
+    void *dlHandle;
+    char *file;
+    pthread_t thread;
+    elosScannerStateE_t state;
+    elosScannerSession_t session;
+    elosScannerResultE_t (*funcInitialize)(elosScannerSession_t *session, const elosScannerParam_t *param);
+    elosScannerResultE_t (*funcRun)(elosScannerSession_t *session);
+    elosScannerResultE_t (*funcStop)(elosScannerSession_t *session);
+    elosScannerResultE_t (*funcFree)(elosScannerSession_t *session);
+} elosScannerEntry_t;
+
 int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerManagerParam_t const *param);
 int elosScannerManagerStop(elosScannerManagerContext_t *context);
+
+__END_DECLS
 
 #endif /* ELOS_SCANNERMANAGER_H_ */

@@ -7,6 +7,8 @@
 
 #include "elos/config/defines.h"
 
+__BEGIN_DECLS
+
 int elosConfigLoad(samconfConfig_t **config);
 int elosConfigGetElosdPort(const samconfConfig_t *config);
 /*******************************************************************
@@ -28,5 +30,7 @@ const char *elosConfigGetElosdBackendPath(const samconfConfig_t *config);
 const char *elosConfigGetElosdClientPath(const samconfConfig_t *config);
 const char *elosConfigGetElosdScannerKmsgFile(const samconfConfig_t *config);
 const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config);
+
+__END_DECLS
 
 #endif

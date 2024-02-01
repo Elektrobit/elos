@@ -10,10 +10,14 @@
 
 #include "elos/common/types.h"
 
+__BEGIN_DECLS
+
 typedef struct elosPluginControlFuncEntry {
     char *name;
     elosPluginFunc_t *ptr;
 } elosPluginControlFuncEntry_t;
+
+__END_DECLS
 
 typedef struct elosPluginControlParamFuncOverride {
     char const *load;

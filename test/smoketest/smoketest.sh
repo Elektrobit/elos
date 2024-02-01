@@ -680,6 +680,62 @@ smoketest_compile_program_using_libelos() {
     return $TEST_RESULT
 }
 
+smoketest_compile_program_with_cpp() {
+    prepare_env "compile_program_with_cpp"
+    TEST_RESULT=0
+
+    log "Try to compile a simple C++ program using libelos"
+    printf "%s\n" \
+        '#include <safu/flags.h>' \
+        '#include <elos/libelos/libelos.h>' \
+        '#include <safu/ringbuffer.h>' \
+        '' \
+        'safuResultE_t deleteFunc(void *) { '\
+        '    puts("deleteFunc got called correctly");' \
+        '    return SAFU_RESULT_OK;' \
+        '}' \
+        '' \
+        'int main(int argc, char* argv[]) {' \
+        '    safuResultE_t result;'\
+        '    safuRingBuffer_t rbuf = {};' \
+        '    safuRingBufferParam_t param = {4, true, &deleteFunc};' \
+        '    uint32_t element = 0;' \
+        '    result = safuRingBufferInitialize(&rbuf, &param);' \
+        '    if (result != SAFU_RESULT_OK) { puts("init fail"); return 100; }' \
+        '    result = safuRingBufferWrite(&rbuf, &element);' \
+        '    if (result != SAFU_RESULT_OK) { puts("wr fail"); return 101; }' \
+        '    result = safuRingBufferDeleteMembers(&rbuf);' \
+        '    if (result != SAFU_RESULT_OK) { puts("del fail"); return 102; }' \
+        '    return 0;' \
+        '}' \
+        | g++ -v -xc++ -std=c++11 \
+        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
+        -o "${SMOKETEST_TMP_DIR}/testlibelos" - -lelos -lsafu \
+        >> "$RESULT_DIR/cpp_compile.log" 2>&1
+    if [ $? -ne 0 ]; then
+        log_err "failed to compile C++ test program"
+        TEST_RESULT=1
+    fi
+
+    ${SMOKETEST_TMP_DIR}/testlibelos \
+        > "$RESULT_DIR/cpp_compile_test.log" 2>&1
+    retval=$?
+    if [ $retval -ne 0 ]; then
+        log_err "failed to run C++ test program (returned $retval)"
+        TEST_RESULT=1
+    else
+        testval=$(grep -c "deleteFunc got called correctly" "$RESULT_DIR/cpp_compile_test.log")
+        if [ "$testval" != "1" ]; then
+            log_err "unexpected C++ test program output"
+            TEST_RESULT=1
+        fi
+    fi
+
+
+    return $TEST_RESULT
+}
+
 
 # $1 - test name
 # $2 - (optional) test function - valid options are [test_expect_success|test_expect_failure|test_expect_unstable]
@@ -739,6 +795,7 @@ call_test "dual_json_plugin" || FAILED_TESTS=$((FAILED_TESTS+1))
 
 if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
     call_test "compile_program_using_libelos" || FAILED_TESTS=$((FAILED_TESTS+1))
+    call_test "compile_program_with_cpp" || FAILED_TESTS=$((FAILED_TESTS+1))
 fi
 
 exit ${FAILED_TESTS}

@@ -4,6 +4,8 @@
 #include "elos/plugincontrol/defines.h"
 #include "elos/plugincontrol/types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Initializes an existing PluginControl data structure
  *
@@ -122,3 +124,5 @@ safuResultE_t elosPluginControlDelete(elosPluginControl_t **control);
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosPluginControlGetName(const elosPluginControl_t *control, const char **name);
+
+__END_DECLS

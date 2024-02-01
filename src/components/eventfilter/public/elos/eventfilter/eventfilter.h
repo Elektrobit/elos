@@ -3,6 +3,8 @@
 
 #include "elos/eventfilter/eventfilter_types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Function:     elosEventFilterInit
  *------------------------------------------------------------------
@@ -113,3 +115,5 @@ elosRpnFilterResultE_t elosEventFilterCreate(elosEventFilter_t *filter, const el
  ******************************************************************/
 elosRpnFilterResultE_t elosEventFilterExecute(elosEventFilter_t const *filter, elosEventFilterStack_t const *param,
                                               elosEvent_t *input);
+
+__END_DECLS

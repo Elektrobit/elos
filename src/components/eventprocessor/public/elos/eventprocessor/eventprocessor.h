@@ -4,6 +4,8 @@
 #include "elos/event/event_vector.h"
 #include "elos/eventprocessor/types.h"
 
+__BEGIN_DECLS
+
 safuResultE_t elosEventProcessorInitialize(elosEventProcessor_t *eventProcessor,
                                            elosEventProcessorParam_t const *param);
 
@@ -29,3 +31,5 @@ safuResultE_t elosEventProcessorQueueRead(elosEventProcessor_t *eventProcessor, 
                                           elosEventVector_t **eventVector);
 
 safuResultE_t elosEventProcessorPublish(elosEventProcessor_t *eventProcessor, elosEvent_t const *event);
+
+__END_DECLS

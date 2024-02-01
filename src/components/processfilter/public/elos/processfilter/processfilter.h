@@ -4,6 +4,8 @@
 #include "elos/common/process.h"
 #include "elos/processfilter/processfilter_types.h"
 
+__BEGIN_DECLS
+
 /*******************************************************************
  * Function:     elosProcessFilterInit
  *------------------------------------------------------------------
@@ -113,3 +115,5 @@ elosRpnFilterResultE_t elosProcessFilterCreate(elosProcessFilter_t *filter, cons
  ******************************************************************/
 elosRpnFilterResultE_t elosProcessFilterExecute(elosProcessFilter_t const *filter,
                                                 elosProcessFilterStack_t const *param, elosProcessIdentity_t *input);
+
+__END_DECLS
