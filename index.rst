@@ -30,6 +30,7 @@ Welcome to elos's documentation!
    Verification Strategy or how we test <test/index>
    GitHub CI <.github/index>
    Build Configurations <ci/index>
+   Cmake options <cmake/index>
 
 
 Indices and tables

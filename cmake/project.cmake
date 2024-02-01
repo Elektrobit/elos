@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.53.10)
+set(ELOS_VERSION 0.53.11)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -20,6 +20,7 @@ macro(project_set_environment)
   option(ENABLE_ANALYZER "Build with -fanalyzer" ON)
   option(ENABLE_CI "Use CI mode for building" OFF)
   option(INSTALL_UNIT_TESTS "Install unit tests" ON)
+  option(ENABLE_ASAN "Link with ASAN" ON)
 
   add_compile_options(
     -Wshadow -Wall -Wextra -pedantic -D_DEFAULT_SOURCE
@@ -30,9 +31,12 @@ macro(project_set_environment)
   endif()
 
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    link_libraries(asan)
+    if (ENABLE_ASAN)
+      link_libraries(asan)
+      add_compile_options(-fsanitize=address)
+    endif()
     add_compile_options(
-      -Og -g3 -DDEBUG -fsanitize=address -fno-omit-frame-pointer
+      -Og -g3 -DDEBUG -fno-omit-frame-pointer
       $<IF:$<BOOL:${ENABLE_ANALYZER}>,-fanalyzer,>
       $<IF:$<BOOL:${ENABLE_ANALYZER}>,-Wno-analyzer-malloc-leak,>
     )
