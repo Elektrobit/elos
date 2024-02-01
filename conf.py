@@ -144,5 +144,22 @@ c_autodoc_roots = [
 c_autodoc_compilation_args = [
 #    '-DSPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS',
 ]
+c_autodoc_ignore_statements = [
+    '__BEGIN_DECLS',
+    '__END_DECLS',
+]
 
 set_type_checking_flag = True
+
+import os
+
+def pre_process_C_files(app, filename, contents, *args):
+    _, file_ext = os.path.splitext(filename)
+    if file_ext == '.h':
+        modified_contents = contents[0]
+        for element in c_autodoc_ignore_statements:
+            modified_contents = modified_contents.replace(element, '')
+        contents[:] = [modified_contents]
+
+def setup(sphinx):
+    sphinx.connect("c-autodoc-pre-process", pre_process_C_files)
