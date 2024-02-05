@@ -48,6 +48,13 @@ install(TARGETS libelosplugin DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install_component_headers(COMPONENTS elos_event_static)
 
+include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
+create_pkgconfig(
+  NAME "elosplugin"
+  REQUIRES "safu >= ${safu_VERSION}, samconf >= ${samconf_VERSION}"
+  LIBS "-lelosplugin"
+)
+
 create_static_library_from_shared(
   NAME
     libelosplugin_static
