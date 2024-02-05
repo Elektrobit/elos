@@ -1,8 +1,15 @@
 # SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.21)
+
 include(cmake/project.cmake)
 
-project(elos LANGUAGES C VERSION ${ELOS_VERSION})
+project(
+  elos
+    DESCRIPTION "Event LOgging and managment System"
+    VERSION ${ELOS_VERSION}
+    LANGUAGES C
+)
+
 project_set_environment()
 project_set_version_variables()
 project_add_documentation_target(
