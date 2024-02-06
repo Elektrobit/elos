@@ -44,4 +44,5 @@ List of ADRs
    ./shmem_locking
    ./usage_of_FORTIFY_SOURCE
    ./communication_protocol
+   ./libelos_logger_concept
 
