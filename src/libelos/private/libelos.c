@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+#include <bits/stdint-uintn.h>
 #include <json-c/json_object.h>
 #include <safu/common.h>
 #include <stddef.h>
+#include <stdint.h>
 #define _DEFAULT_SOURCE 1
 
 #include <arpa/inet.h>
@@ -15,6 +17,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/un.h>
 #include <unistd.h>
 
 #include "elos/common/types.h"
@@ -100,6 +103,46 @@ safuResultE_t elosConnectTcpip(char const *host, uint16_t port, elosSession_t **
         }
     }
 
+    return result;
+}
+
+safuResultE_t elosConnectUnix(char const *path, elosSession_t **session) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    struct sockaddr_un address;
+
+    if ((path == NULL) || (session == NULL)) {
+        safuLogErr("Invalid parameter");
+    } else {
+        elosSession_t *newSession = NULL;
+
+        newSession = safuAllocMem(NULL, sizeof(elosSession_t));
+        if (newSession == NULL) {
+            safuLogErr("Memory allocation failed");
+        } else {
+            int ret;
+            int sfd = socket(AF_UNIX, SOCK_STREAM, 0);
+            if (sfd == -1) {
+                safuLogErr("socket set up failed");
+            } else {
+                memset(&address, 0, sizeof(struct sockaddr_un));
+                address.sun_family = AF_UNIX;
+                strncpy(address.sun_path, path, sizeof(address.sun_path) - 1);
+                ret = connect(sfd, (struct sockaddr *)&address, sizeof(struct sockaddr_un));
+                if (ret == -1) {
+                    safuLogErrF("connect to path : %s failed!", path);
+                } else {
+                    result = SAFU_RESULT_OK;
+                    newSession->fd = sfd;
+                    newSession->connected = true;
+                    *session = newSession;
+                }
+
+                if (result != SAFU_RESULT_OK) {
+                    free(newSession);
+                }
+            }
+        }
+    }
     return result;
 }
 
