@@ -39,7 +39,9 @@ target_link_libraries(
     mongo::mongoc_shared
 )
 
-install(TARGETS backend_nosql DESTINATION ${ELOSD_BACKEND_PATH})
+if (INSTALL_ELOS_PLUGINS)
+  install(TARGETS backend_nosql DESTINATION ${ELOSD_BACKEND_PATH})
+endif()
 
 create_static_library_from_shared(
   NAME
