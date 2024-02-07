@@ -8,6 +8,7 @@ export TEST_SOURCE_DIR="$BASE_DIR/test/smoketest"
 export BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE/"
 export DIST_DIR="${BUILD_DIR}/dist"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-""}:${DIST_DIR}/usr/local/lib"
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH-""}:${PREFIX_PATH}/lib/pkgconfig:${BASE_DIR}/build/deps/lib/pkgconfig"
 export PATH="${PATH}:${DIST_DIR}/usr/local/bin"
 export NETSTAT=$(which netstat 2>/dev/null || which ss 2> /dev/null || echo "no ${NETSTAT} compliant tool found")
 export SMOKETEST_DIR=${SMOKETEST_DIR-$TEST_SOURCE_DIR}
@@ -736,6 +737,75 @@ smoketest_compile_program_with_cpp() {
     return $TEST_RESULT
 }
 
+smoketest_compile_program_using_pkgconfig() {
+    prepare_env "compile_program_using_pkgconfig"
+    TEST_RESULT=0
+    PKGCONFIG_PARAM="--print-errors --errors-to-stdout"
+
+    # Compile program using libelos
+    log "Query libelos version with pkg-config"
+    pkgconfig_version=$(pkg-config elos --modversion ${PKGCONFIG_PARAM})
+    if [ $? -ne 0 ]; then TEST_RESULT=1; fi
+    pkgconfig_cflags=$(pkg-config elos --cflags ${PKGCONFIG_PARAM})
+    if [ $? -ne 0 ]; then TEST_RESULT=1; fi
+    pkgconfig_libs=$(pkg-config elos --libs ${PKGCONFIG_PARAM})
+    if [ $? -ne 0 ]; then TEST_RESULT=1; fi
+    if [ $TEST_RESULT -ne 0 ]; then
+        log_err "failed to query pkg-config data for libelos"
+        log_err "output for 'pkg-config elos --modversion'"
+        log_err "${elos_pkgconfig_version}"
+        log_err "output for 'pkg-config elos --cflags'"
+        log_err "${elos_pkgconfig_cflags}"
+        log_err "output for 'pkg-config elos --libs'"
+        log_err "${elos_pkgconfig_libs}"
+        TEST_RESULT=1
+    fi
+
+    log "Try to compile simple program using libelos with pkg-config"
+    printf '#include <elos/libelos/libelos.h>\nint main(int argc, char* argv[]){return 0;}' \
+        | gcc -v -xc \
+        ${pkgconfig_cflags} \
+        -o "${SMOKETEST_TMP_DIR}/testlibelos " - \
+        ${pkgconfig_libs} \
+        >> "$RESULT_DIR/libelos.log" 2>&1
+    if [ $? -ne 0 ]; then
+        log_err "failed to compile test program for libelos"
+        TEST_RESULT=1
+    fi
+
+    # Compile program using libelosplugin
+    log "Query libelosplugin version with pkg-config"
+    pkgconfig_version=$(pkg-config elosplugin --modversion ${PKGCONFIG_PARAM})
+    if [ $? -ne 0 ]; then TEST_RESULT=1; fi
+    pkgconfig_cflags=$(pkg-config elosplugin --cflags ${PKGCONFIG_PARAM})
+    if [ $? -ne 0 ]; then TEST_RESULT=1; fi
+    pkgconfig_libs=$(pkg-config elosplugin --libs ${PKGCONFIG_PARAM})
+    if [ $? -ne 0 ]; then TEST_RESULT=1; fi
+    if [ $TEST_RESULT -ne 0 ]; then
+        log_err "failed to query pkg-config data for libelosplugin"
+        log_err "output for 'pkg-config elosplugin --modversion'"
+        log_err "${pkgconfig_version}"
+        log_err "output for 'pkg-config elosplugin --cflags'"
+        log_err "${pkgconfig_cflags}"
+        log_err "output for 'pkg-config elosplugin --libs'"
+        log_err "${pkgconfig_libs}"
+        TEST_RESULT=1
+    fi
+
+    log "Try to compile simple program using libelosplugin with pkg-config"
+    printf '#include <elos/libelosplugin/libelosplugin.h>\nint main(int argc, char* argv[]){return 0;}' \
+        | gcc -v -xc \
+        ${pkgconfig_cflags} \
+        -o "${SMOKETEST_TMP_DIR}/testlibelosplugin " - \
+        ${pkgconfig_libs} \
+        >> "$RESULT_DIR/libelosplugin.log" 2>&1
+    if [ $? -ne 0 ]; then
+        log_err "failed to compile test program for libelosplugin"
+        TEST_RESULT=1
+    fi
+
+    return $TEST_RESULT
+}
 
 # $1 - test name
 # $2 - (optional) test function - valid options are [test_expect_success|test_expect_failure|test_expect_unstable]
@@ -796,6 +866,7 @@ call_test "dual_json_plugin" || FAILED_TESTS=$((FAILED_TESTS+1))
 if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
     call_test "compile_program_using_libelos" || FAILED_TESTS=$((FAILED_TESTS+1))
     call_test "compile_program_with_cpp" || FAILED_TESTS=$((FAILED_TESTS+1))
+    call_test "compile_program_using_pkgconfig" || FAILED_TESTS=$((FAILED_TESTS+1))
 fi
 
 exit ${FAILED_TESTS}
