@@ -11,12 +11,14 @@ OPTION_CI=0
 OPTION_CLEAN=0
 OPTION_VERBOSE=0
 OPTION_PACKAGE=0
+OPTION_NO_DEP=0
 for element in "$@"; do
     case $element in
         --ci)          OPTION_CI=1 ;;
         --clean|-c)    OPTION_CLEAN=1 ;;
         --verbose|-v)  OPTION_VERBOSE=1 ;;
-	--package)     OPTION_PACKAGE=1 ;;
+        --package)     OPTION_PACKAGE=1 ;;
+        --no-dep)      OPTION_NO_DEP=1 ;;
         -*)          echo "error: unknown option: $1"; exit 1 ;;
         *)           PARAM="$PARAM $element" ;;
     esac
@@ -51,7 +53,9 @@ fi
 
 . "$BASE_DIR/ci/common_names.sh"
 
-"$BASE_DIR/ci/install_deps.py" --clean-first $INSTALL_DEP_OPTIONS
+if [ $OPTION_NO_DEP -eq 0 ]; then
+    "$BASE_DIR/ci/install_deps.py" --clean-first $INSTALL_DEP_OPTIONS
+fi;
 
 CMAKE_BUILD_DIR=$BUILD_DIR/cmake
 export LOCAL_INSTALL_DIR=${LOCAL_INSTALL_DIR:-$DIST_DIR}
