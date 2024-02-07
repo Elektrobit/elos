@@ -1,29 +1,13 @@
 #!/bin/sh
 
-CMDPATH=$(realpath $(dirname $0))
-BASE_DIR=$CMDPATH/../..
+CMDPATH=$(realpath "$(dirname "$0")")
+BASE_DIR=$(realpath "${CMDPATH}/../..")
 BUILD_TYPE="${BUILD_TYPE-Debug}"
 
-export TEST_SOURCE_DIR="$BASE_DIR/test/smoketest"
-export BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE/"
-export DIST_DIR="${BUILD_DIR}/dist"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-""}:${DIST_DIR}/usr/local/lib"
-export PKG_CONFIG_PATH="${PKG_CONFIG_PATH-""}:${PREFIX_PATH}/lib/pkgconfig:${BASE_DIR}/build/deps/lib/pkgconfig"
-export PATH="${PATH}:${DIST_DIR}/usr/local/bin"
+. ${BASE_DIR}/test/smoketest/smoketest_env.sh
+
 export NETSTAT=$(which netstat 2>/dev/null || which ss 2> /dev/null || echo "no ${NETSTAT} compliant tool found")
-export SMOKETEST_DIR=${SMOKETEST_DIR-$TEST_SOURCE_DIR}
-export SMOKETEST_RESULT_DIR=${SMOKETEST_RESULT_DIR-"$BUILD_DIR/result/smoketest_results"}
-export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"/tmp/elosd"}"
 export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
-
-export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"${SMOKETEST_TMP_DIR}/elosd.syslog.socket"}
-export ELOS_KMSG_FILE=${ELOS_KMSG_FILE-"${SMOKETEST_TMP_DIR}/elosd.kmsg"}
-export ELOS_CLIENT_PATH=${ELOS_CLIENT_PATH-"$DIST_DIR/usr/local/lib/elos/client"}
-export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$DIST_DIR/usr/local/lib/elos/scanner"}
-export ELOS_BACKEND_PATH=${ELOS_BACKEND_PATH-"$DIST_DIR/usr/local/lib/elos/backend"}
-export ELOS_LOG_LEVEL=DEBUG
-
-export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
 
 prepare_env() {
     test_name=${1?:"first parameter missing"}
