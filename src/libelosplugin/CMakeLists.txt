@@ -6,11 +6,12 @@ find_package(safu 0.50.1 REQUIRED)
 
 create_interface_library(
   FROM
-  libelosplugin
+    libelosplugin
   LIBRARIES
     elos_event_interface
     samconf::samconf_interface
     safu::safu_interface
+  INSTALL
 )
 
 add_library(
