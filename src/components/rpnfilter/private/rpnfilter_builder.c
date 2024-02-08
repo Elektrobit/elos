@@ -31,15 +31,17 @@ static elosRpnFilterResultE_t _deleteMembers(elosRpnFilterBuilder_t *data) {
             continue;
         }
 
-        switch (entry->type) {
-            case RPNFILTER_VALUE_UNDEFINED:
-            case RPNFILTER_VALUE_BINARY:
-            case RPNFILTER_VALUE_STRING:
-            case RPNFILTER_VALUE_REGEX:
-                free(entry->data.ptr);
-                break;
-            default:
-                break;
+        if (entry->bytes > 0) {
+            switch (entry->type) {
+                case RPNFILTER_VALUE_UNDEFINED:
+                case RPNFILTER_VALUE_BINARY:
+                case RPNFILTER_VALUE_STRING:
+                case RPNFILTER_VALUE_REGEX:
+                    free(entry->data.ptr);
+                    break;
+                default:
+                    break;
+            }
         }
     }
     safuVecFree(&data->stack);
