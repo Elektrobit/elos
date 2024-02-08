@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 
-if (ELOS_CLIENT)
+if (ELOS_TOOLS)
   add_executable(
     elosc
     elosc.c
@@ -13,10 +13,10 @@ if (ELOS_CLIENT)
       version
   )
 
-  if (INSTALL_ELOS_CLIENT)
+  if (INSTALL_ELOS_TOOLS)
     install(TARGETS elosc DESTINATION ${CMAKE_INSTALL_BINDIR})
-  endif()
-endif()
+  endif (INSTALL_ELOS_TOOLS)
+endif (ELOS_TOOLS)
 
 if (ELOS_DEMOS)
   add_subdirectory(elos_log4c_demo)

@@ -28,8 +28,8 @@ macro(project_set_environment)
   option(ELOS_DAEMON "Build elosd" ${ELOS_BUILD_DEFAULTS})
   option(INSTALL_ELOS_DAEMON "Install elosd" ON)
 
-  option(ELOS_CLIENT "Build elosc" ${ELOS_BUILD_DEFAULTS})
-  option(INSTALL_ELOS_CLIENT "Install elosc" ON)
+  option(ELOS_TOOLS "Build elosc and other tools" ${ELOS_BUILD_DEFAULTS})
+  option(INSTALL_ELOS_TOOLS "Install elosc and other tools" ON)
 
   option(ELOS_MOCK_LIBRARY "Build the mock libraries" OFF)
   option(INSTALL_ELOS_MOCK_LIBRARY "Install the mock libraries" ON)

@@ -1,4 +1,4 @@
 # SPDX-License-Identifier: MIT
-if (INSTALL_ELOS_DEMOS)
+if (ELOS_TOOLS)
   add_subdirectory(coredump)
-endif (INSTALL_ELOS_DEMOS)
+endif (ELOS_TOOLS)

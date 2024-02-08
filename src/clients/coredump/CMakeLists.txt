@@ -11,6 +11,6 @@ target_link_libraries(
     version
 )
 
-if (INSTALL_ELOS_DEMOS)
+if (INSTALL_ELOS_TOOLS)
   install(TARGETS elos-coredump DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif (INSTALL_ELOS_DEMOS)
+endif (INSTALL_ELOS_TOOLS)
