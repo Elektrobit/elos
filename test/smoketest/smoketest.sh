@@ -703,20 +703,21 @@ smoketest_compile_program_with_cpp() {
         TEST_RESULT=1
     fi
 
-    ${SMOKETEST_TMP_DIR}/testlibelos \
-        > "$RESULT_DIR/cpp_compile_test.log" 2>&1
-    retval=$?
-    if [ $retval -ne 0 ]; then
-        log_err "failed to run C++ test program (returned $retval)"
-        TEST_RESULT=1
-    else
-        testval=$(grep -c "deleteFunc got called correctly" "$RESULT_DIR/cpp_compile_test.log")
-        if [ "$testval" != "1" ]; then
-            log_err "unexpected C++ test program output"
+    if [ "$BUILD_TYPE" = "Release" ]; then
+        ${SMOKETEST_TMP_DIR}/testlibelos \
+            > "$RESULT_DIR/cpp_compile_test.log" 2>&1
+        retval=$?
+        if [ $retval -ne 0 ]; then
+            log_err "failed to run C++ test program (returned $retval)"
             TEST_RESULT=1
+        else
+            testval=$(grep -c "deleteFunc got called correctly" "$RESULT_DIR/cpp_compile_test.log")
+            if [ "$testval" != "1" ]; then
+                log_err "unexpected C++ test program output"
+                TEST_RESULT=1
+            fi
         fi
     fi
-
 
     return $TEST_RESULT
 }
