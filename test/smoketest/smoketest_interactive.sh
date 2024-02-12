@@ -2,7 +2,7 @@ CMDPATH=$(realpath "$(dirname "$0")")
 BASE_DIR=$(realpath "${CMDPATH}/../..")
 BUILD_TYPE="${1:-Debug}"
 
-. ${BASE_DIR}/test/smoketest/smoketest_env.sh
+. ${CMDPATH}/smoketest_env.sh
 
 #config file path for log4c demo
 export LOG4C_RCPATH="${BASE_DIR}/src/demo/elos_log4c_demo"

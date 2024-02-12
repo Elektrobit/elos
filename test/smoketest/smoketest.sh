@@ -4,7 +4,7 @@ CMDPATH=$(realpath "$(dirname "$0")")
 BASE_DIR=$(realpath "${CMDPATH}/../..")
 BUILD_TYPE="${BUILD_TYPE-Debug}"
 
-. ${BASE_DIR}/test/smoketest/smoketest_env.sh
+. ${CMDPATH}/smoketest_env.sh
 
 export NETSTAT=$(which netstat 2>/dev/null || which ss 2> /dev/null || echo "no ${NETSTAT} compliant tool found")
 export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
