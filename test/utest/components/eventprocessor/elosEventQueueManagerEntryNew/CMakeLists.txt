@@ -10,7 +10,7 @@ create_unit_test(
     case_success.c
     elosEventQueueManagerEntryNew_utest.c
   LIBRARIES
-    eventprocessor_static
-    mock_eventprocessor
+    eventprocessor_static_weak
+    mock_eventprocessor_static
     safu::mock_safu
 )
