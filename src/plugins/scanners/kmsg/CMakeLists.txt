@@ -33,7 +33,10 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-install(TARGETS scanner_kmsg DESTINATION ${ELOSD_SCANNER_PATH})
+
+if (INSTALL_ELOS_PLUGINS)
+  install(TARGETS scanner_kmsg DESTINATION ${ELOSD_SCANNER_PATH})
+endif()
 
 create_static_library_from_shared(
   NAME

@@ -25,7 +25,9 @@ set_target_properties(
     VERSION ${ELOS_VERSION_MAJOR}.${ELOS_VERSION_MINOR}.${ELOS_VERSION_MICRO}
 )
 
-install(TARGETS libeloslog4c DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if (INSTALL_ELOS_DEMOS)
+  install(TARGETS libeloslog4c DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
 
 add_executable(
   elos_log4c_demo
@@ -42,7 +44,9 @@ target_link_libraries(
 )
 
 
-install(TARGETS elos_log4c_demo DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/log4crc
-        DESTINATION ../${CMAKE_INSTALL_SYSCONFDIR}/elos/elos_log4c_demo)
+if (INSTALL_ELOS_DEMOS)
+  install(TARGETS elos_log4c_demo DESTINATION ${CMAKE_INSTALL_BINDIR})
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/log4crc
+    DESTINATION ../${CMAKE_INSTALL_SYSCONFDIR}/elos/elos_log4c_demo)
+endif()
 

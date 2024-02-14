@@ -36,7 +36,9 @@ target_link_libraries(
     $<$<BOOL:${ELOSD_EVENTLOGGING_BACKEND_SQL}>:${SQLITE3_LIBRARIES}>
 )
 
-install(TARGETS backend_sql DESTINATION ${ELOSD_BACKEND_PATH})
+if (INSTALL_ELOS_PLUGINS)
+  install(TARGETS backend_sql DESTINATION ${ELOSD_BACKEND_PATH})
+endif()
 
 create_static_library_from_shared(
   NAME

@@ -22,4 +22,6 @@ target_link_libraries(
     safu::safu
 )
 
-install(TARGETS backend_dummy DESTINATION ${ELOSD_BACKEND_PATH})
+if (INSTALL_ELOS_PLUGINS)
+  install(TARGETS backend_dummy DESTINATION ${ELOSD_BACKEND_PATH})
+endif()

@@ -1,127 +1,148 @@
 # SPDX-License-Identifier: MIT
-add_subdirectory(elos_log4c_demo)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBESMTP REQUIRED libesmtp-1.0 )
+if (ELOS_TOOLS)
+  add_executable(
+    elosc
+    elosc.c
+  )
 
-add_executable(
-  demo_libelos_v2
-  demo_libelos_v2.c
-)
+  target_link_libraries(
+    elosc
+    PRIVATE
+      libelos
+      version
+  )
 
-target_link_libraries(
-  demo_libelos_v2
-  PRIVATE
-    libelos
-    version
-)
+  if (INSTALL_ELOS_TOOLS)
+    install(TARGETS elosc DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif (INSTALL_ELOS_TOOLS)
+endif (ELOS_TOOLS)
 
-install(TARGETS demo_libelos_v2 DESTINATION ${CMAKE_INSTALL_BINDIR})
+if (ELOS_DEMOS)
+  add_subdirectory(elos_log4c_demo)
 
-add_executable(
-  demo_scanner_shmem
-  demo_scanner_shmem.c
-)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBESMTP REQUIRED libesmtp-1.0 )
 
-target_link_libraries(
-  demo_scanner_shmem
-  PRIVATE
-    libelos
-    version
-)
+  add_executable(
+    demo_libelos_v2
+    demo_libelos_v2.c
+  )
 
-install(TARGETS demo_scanner_shmem DESTINATION ${CMAKE_INSTALL_BINDIR})
+  target_link_libraries(
+    demo_libelos_v2
+    PRIVATE
+      libelos
+      version
+  )
 
-add_executable(
-  syslog_example
-  syslog.c
-)
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS demo_libelos_v2 DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 
-target_link_libraries(
-  syslog_example
-  PRIVATE
-    libelos
-    version
-)
+  add_executable(
+    demo_scanner_shmem
+    demo_scanner_shmem.c
+  )
 
-install(TARGETS syslog_example DESTINATION ${CMAKE_INSTALL_BINDIR})
+  target_link_libraries(
+    demo_scanner_shmem
+    PRIVATE
+      libelos
+      version
+  )
 
-add_executable(
-  elosc
-  elosc.c
-)
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS demo_scanner_shmem DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 
-target_link_libraries(
-  elosc
-  PRIVATE
-    libelos
-    version
-)
+  add_executable(
+    syslog_example
+    syslog.c
+  )
 
-install(TARGETS elosc DESTINATION ${CMAKE_INSTALL_BINDIR})
+  target_link_libraries(
+    syslog_example
+    PRIVATE
+      libelos
+      version
+  )
 
-add_executable(
-  tinyElosc
-  tinyElosc.c
-)
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS syslog_example DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 
-target_link_libraries(
-  tinyElosc
-  PRIVATE
-    elos_common_interface
-    libelos
-    version
-)
+  add_executable(
+    tinyElosc
+    tinyElosc.c
+  )
 
-install(TARGETS tinyElosc DESTINATION ${CMAKE_INSTALL_BINDIR})
+  target_link_libraries(
+    tinyElosc
+    PRIVATE
+      elos_common_interface
+      libelos
+      version
+  )
 
-add_executable(
-  elosMon
-  elosMon.c
-)
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS tinyElosc DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 
-target_link_libraries(
-  elosMon
-  PRIVATE
-    elos_common_interface
-    esmtp
-    libelos
-    version
-)
+  add_executable(
+    elosMon
+    elosMon.c
+  )
 
-install(TARGETS elosMon DESTINATION ${CMAKE_INSTALL_BINDIR})
+  target_link_libraries(
+    elosMon
+    PRIVATE
+      elos_common_interface
+      esmtp
+      libelos
+      version
+  )
 
-add_executable(
-  demo_eloslog
-  demo_eloslog.c
-)
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS elosMon DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 
-target_link_libraries(
-  demo_eloslog
-  PRIVATE
-    elos_common_interface
-    eventprocessor_static
-    eloslog_static
-    libelos
-    version
-)
+  add_executable(
+    demo_eloslog
+    demo_eloslog.c
+  )
 
-install(TARGETS demo_eloslog DESTINATION ${CMAKE_INSTALL_BINDIR})
+  target_link_libraries(
+    demo_eloslog
+    PRIVATE
+      elos_common_interface
+      eventprocessor_static
+      eloslog_static
+      libelos
+      version
+  )
 
-add_executable(
-  demo_eventbuffer
-  demo_eventbuffer.c
-)
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS demo_eloslog DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 
-target_link_libraries(
-  demo_eventbuffer
-  PRIVATE
-    eventbuffer_static
-)
+  add_executable(
+    demo_eventbuffer
+    demo_eventbuffer.c
+  )
 
-if(CMAKE_BUILD_TYPE STREQUAL "Tsan")
-  target_link_libraries(demo_eventbuffer PRIVATE tsan)
-  target_compile_options(demo_eventbuffer PUBLIC "-fsanitize=thread")
+  target_link_libraries(
+    demo_eventbuffer
+    PRIVATE
+      eventbuffer_static
+  )
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Tsan")
+    target_link_libraries(demo_eventbuffer PRIVATE tsan)
+    target_compile_options(demo_eventbuffer PUBLIC "-fsanitize=thread")
+  endif()
+
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS demo_eventbuffer DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 endif()
-
-install(TARGETS demo_eventbuffer DESTINATION ${CMAKE_INSTALL_BINDIR})

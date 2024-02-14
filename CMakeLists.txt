@@ -26,9 +26,9 @@ option(ELOSD_EVENTLOGGING_BACKEND_INFLUXDB "Build InfluxDB backend plugin" OFF)
 add_subdirectory(src)
 if(UNIT_TESTS)
   enable_testing()
-  add_subdirectory(test/utest)
   add_subdirectory(test/tsan)
 endif(UNIT_TESTS)
+add_subdirectory(test/utest)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
