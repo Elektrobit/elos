@@ -1,8 +1,6 @@
 CMake options
 =============
 
-ENABLE_ASAN=[on|off]
---------------------
-default: on
+.. program-output:: cmake -LH 2>/dev/null | sed '0,/^-- Cache values$/d'
+   :shell:
 
-Control if elos should be build with address sanitizer
