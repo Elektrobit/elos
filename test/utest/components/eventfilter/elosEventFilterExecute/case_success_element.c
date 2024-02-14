@@ -418,6 +418,23 @@ void elosTestEloEventFilterExecuteSuccessElement(void **state) {
                      .paramCount = 1,
                      .param = {ELOS_STACK_STRING("")},
                  },
+             }},
+        {.filter = ".event.payload '' STRCMP",
+         .createResult = RPNFILTER_RESULT_OK,
+         .entryCount = 3,
+         .entry =
+             {
+                 {
+                     .result = RPNFILTER_RESULT_MATCH,
+                 },
+                 {
+                     .result = RPNFILTER_RESULT_MATCH,
+                     .event = {.payload = ""},
+                 },
+                 {
+                     .result = RPNFILTER_RESULT_NO_MATCH,
+                     .event = {.payload = "payload123"},
+                 },
              }}
     };
     // clang-format on
