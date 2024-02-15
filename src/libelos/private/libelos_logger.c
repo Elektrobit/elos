@@ -1,21 +1,38 @@
 // SPDX-License-Identifier: MIT
 
 #include <elos/libelos/libelos.h>
+#include <stdlib.h>
 
 #include "elos/eloslog/eloslog.h"
 #include "elos/libelos/libeloslog.h"
 
+static elosLogger_t *elosClientlogger = NULL;
+
+safuResultE_t elosInitLogger(elosSession_t *session) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    elosLogger_t *newlogger = safuAllocMem(NULL, sizeof(elosLogger_t));
+
+    if (session != NULL) {
+        newlogger->session = session;
+
+        elosClientlogger = newlogger;
+        result = SAFU_RESULT_OK;
+    }
+
+    return result;
+}
+
+void elosDeleteLogger() {
+    free(elosClientlogger);
+}
+
 static safuResultE_t elosLogPublishClientLogEvent(elosEvent_t *elosLogEvent) {
-    elosSession_t *session;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    result = elosConnectTcpip("127.0.0.1", 54321, &session);
-
-    if (result == SAFU_RESULT_OK) {
-        if (elosLogEvent != NULL) {
-            result = elosEventPublish(session, elosLogEvent);
-            if (result == SAFU_RESULT_OK) {
-                result = elosDisconnect(session);
+    if ((elosClientlogger != NULL) && (elosClientlogger->session != NULL)) {
+        if (elosClientlogger->session->connected == true) {
+            if (elosLogEvent != NULL) {
+                result = elosEventPublish(elosClientlogger->session, elosLogEvent);
             }
         }
     }

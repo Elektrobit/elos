@@ -35,6 +35,20 @@ __BEGIN_DECLS
 safuResultE_t elosConnectTcpip(const char *host, uint16_t port, elosSession_t **session);
 
 /*******************************************************************
+ * Function: elosConnectUnix
+ *------------------------------------------------------------------
+ * Description:
+ *      Establishes connection to elos over unix domain sokcet.
+ * Input:
+ *      - **path**:     path to unix domain socket
+ * Output:
+ *      - **session**:  session data structure used by other functions
+ * Return:
+ *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosConnectUnix(const char *path, elosSession_t **session);
+
+/*******************************************************************
  * Function: elosDisconnect
  *------------------------------------------------------------------
  * Description:
