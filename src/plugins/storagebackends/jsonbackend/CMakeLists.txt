@@ -38,7 +38,9 @@ target_link_libraries(
     safu::safu
 )
 
-install(TARGETS backend_json DESTINATION ${ELOSD_BACKEND_PATH})
+if (INSTALL_ELOS_PLUGINS)
+  install(TARGETS backend_json DESTINATION ${ELOSD_BACKEND_PATH})
+endif()
 
 create_static_library_from_shared(
   NAME

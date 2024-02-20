@@ -3,7 +3,7 @@
 # these are cache variables, so they could be overwritten with -D,
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 # which is useful in case of packing only selected components instead of the whole thing
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Event LOgging and managment System")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
 
 set(CPACK_PACKAGE_VENDOR "emlix")
 

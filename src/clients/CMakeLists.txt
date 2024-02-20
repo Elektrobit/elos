@@ -1,2 +1,4 @@
 # SPDX-License-Identifier: MIT
-add_subdirectory(coredump)
+if (ELOS_TOOLS)
+  add_subdirectory(coredump)
+endif (ELOS_TOOLS)

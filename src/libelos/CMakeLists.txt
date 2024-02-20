@@ -42,6 +42,13 @@ install(TARGETS libelos DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install_component_headers(COMPONENTS elos_common_interface elos_event_static)
 
+include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
+create_pkgconfig(
+  NAME "elos"
+  REQUIRES "safu >= ${safu_VERSION}, json-c >= 0.15"
+  LIBS "-lelos"
+)
+
 create_static_library_from_shared(
   NAME
     libelos_static

@@ -31,4 +31,6 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-install(TARGETS client_dummy DESTINATION ${ELOSD_CLIENT_PATH})
+if (INSTALL_ELOS_PLUGINS)
+  install(TARGETS client_dummy DESTINATION ${ELOSD_CLIENT_PATH})
+endif()

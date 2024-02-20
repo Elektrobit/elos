@@ -43,4 +43,6 @@ target_link_libraries(
     samconf::samconf
 )
 
-install(TARGETS elosd DESTINATION ${CMAKE_INSTALL_BINDIR})
+if (INSTALL_ELOS_DAEMON)
+  install(TARGETS elosd DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
