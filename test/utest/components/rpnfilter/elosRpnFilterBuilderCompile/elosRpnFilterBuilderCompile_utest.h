@@ -39,6 +39,7 @@ typedef struct elosTestState {
 
 elosRpnFilterResultE_t elosVerifySteps(elosRpnFilterBuilder_t **data, const elosStepTestEntry_t *entry, size_t entries);
 
+TEST_CASE_FUNC_PROTOTYPES(elos_testElosRpnFilterBuilderCompileErrInvalidFilter)
 TEST_CASE_FUNC_PROTOTYPES(elos_testElosRpnFilterBuilderCompileErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elos_testElosRpnFilterBuilderCompileSuccessCommand)
 TEST_CASE_FUNC_PROTOTYPES(elos_testElosRpnFilterBuilderCompileSuccessLocation)
