@@ -1,0 +1,15 @@
+{
+    "root": {
+        "elos": {
+            "coredump": {
+                "totalmem": 1024,
+                "maxcoredump_size": 128,
+                "totalmem_rel": 80,
+                "maxcoredump_size_rel": 10,
+                "maxcoredump_cnt": 12,
+                "coredumppath": "/tmp/coredumps",
+                "coredump_per_exe": 7
+            }
+        }
+    }
+}
