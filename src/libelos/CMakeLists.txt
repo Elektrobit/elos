@@ -9,6 +9,7 @@ add_library(
   SHARED
     private/libelos.c
     private/libelos_communication.c
+    private/libelos_constructor.c
     private/libelos_logger.c
 )
 

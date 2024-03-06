@@ -13,6 +13,10 @@ The library provides two APIs :
    -  Used to store logs (content of a log see SM_REQ001)
    -  Used to access logs (content of a log see SM_REQ001)
 
+The libelos by default doesn't log anything to stdout or stderr. Defining the
+environment variable `LIBELOS_LOG` with any value libelos will be verbose and
+print out errors, warnings etc.
+
 Design decision – Thread Safety
 -------------------------------
 
