@@ -46,7 +46,7 @@ Demo App Is Started
     [Arguments]    ${app}
 
     ${output}    ${error}    ${rc}=    Execute Command
-    ...    ${app}
+    ...    LIBELOS_LOG="yes" ${app}
     ...    return_stderr=True
     ...    return_rc=True
 

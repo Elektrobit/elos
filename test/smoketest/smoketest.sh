@@ -159,7 +159,7 @@ smoketest_client() {
     prepare_env "client"
 
     log "Starting Client Demo"
-    demo_libelos_v2 > $RESULT_DIR/client_output.txt 2>&1
+    LIBELOS_LOG="y" demo_libelos_v2 > $RESULT_DIR/client_output.txt 2>&1
 
     sed -i -e 's/[0-9]\+\([.,]\)/xyz\1/g' $RESULT_DIR/client_output.txt
 
