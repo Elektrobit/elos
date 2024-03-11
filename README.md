@@ -127,6 +127,23 @@ Contains the actual productive sources.
 
 Contains all test related sources. See the documentation for details.
 
+## Roadmap
+
+* [ ] SMART (storage health) – a scanner plugin to report SMART status changes
+* [ ] temperature – scanner plugin to report high and normal temperature
+* [ ] panic() / kexec  – a plugin to report a system crash after recovering
+* [ ] in memory storage – i.e. record elos internal events
+* [ ] mqtt backend – deliver events to MQTT broker
+* [ ] Unix-Domain socket support – alternative client connection to TCP
+* [ ] shared memory – with elos protocol
+* [ ] coredumper – manage core dumps and publish events created/dropped/discarded
+* [ ] notify about OOM-Killer invocation
+* [ ] notify about high CPU load
+* [ ] notify about high disk load / disk full
+* [ ] notify about network package drops
+* [ ] graceful integration with other logging systems (syslog-ng, journald, kerneld)
+* [ ] process monitoring –  life cycle / highest load ( memory, cpu, network, storage usage)
+* [ ] improve plugin development support (API, SDK, Repos) – multi language bindings (rust , python, ...)
 
 ## License
 
