@@ -29,7 +29,6 @@ safuResultE_t elosConnectionManagerStart(elosConnectionManager_t *connectionMana
         } else {
             retVal = pthread_setname_np(connectionManager->listenThread, "ConManager");
             if (retVal != 0) {
-
                 safuLogErr("Failed to set thread name for connection manager");
             }
 
