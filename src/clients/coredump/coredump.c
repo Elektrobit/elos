@@ -295,7 +295,7 @@ int main(int argc, char *argv[]) {
     event.payload = payloadEvent;
 
     fprintf(stdout, "connecting coredump to event log scanner...\n");
-    result = elosConnectTcpip("127.0.0.1", 54321, &session);
+    result = elosConnectTcpip("127.0.0.1", 54323, &session);
     if (result != SAFU_RESULT_OK) {
         fprintf(stderr, "coredump can not connect to elos and failed!\n");
         elosCoredumpConfigDelete(&coredumpConfig);

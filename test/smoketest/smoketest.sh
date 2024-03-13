@@ -3,6 +3,7 @@
 CMDPATH=$(realpath "$(dirname "$0")")
 BASE_DIR=$(realpath "${CMDPATH}/../..")
 BUILD_TYPE="${BUILD_TYPE-Debug}"
+ELOSD_PORT=54323
 
 . ${CMDPATH}/smoketest_env.sh
 
@@ -63,7 +64,7 @@ wait_for_file() {
 
 wait_for_elosd_socket() {
     local i=0
-    ${NETSTAT} -l | grep 54321 | grep tcp 2>&1 > /dev/null
+    ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
     while [ $? -ne 0 ]
     do
       i=$((i+1))
@@ -72,7 +73,7 @@ wait_for_elosd_socket() {
          log "Error: Waiting for elosd socket timed out"
          exit 124
       fi
-      ${NETSTAT} -l | grep 54321 | grep tcp 2>&1 > /dev/null
+      ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
     done
 }
 
@@ -88,7 +89,7 @@ smoketest_elosd() {
     wait $ELOSD_PID || true
     log "Killed Elosd"
 
-    STRINGS="listen on: ${ELOSD_INTERFACE-"0.0.0.0"}:${ELOSD_PORT-"54321"}
+    STRINGS="listen on: ${ELOSD_INTERFACE-"0.0.0.0"}:${ELOSD_PORT-"54323"}
 hardwareid: $(cat /etc/machine-id)
 log level: ${ELOS_LOG_LEVEL}
 log filter: ${ELOS_LOG_FILTER-""}
@@ -191,7 +192,7 @@ smoketest_coredump() {
     TEST_MESSAGE="THIS IS THE DUMP"
     echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger.log 2>&1
 
-    elosc -f ".event.messageCode 5005 EQ" > $RESULT_DIR/coredump_event.log 2>&1
+    elosc -P $ELOSD_PORT -f ".event.messageCode 5005 EQ" > $RESULT_DIR/coredump_event.log 2>&1
 
     if grep -q "\"messageCode\":5005" $RESULT_DIR/coredump_event.log
     then
@@ -261,7 +262,7 @@ smoketest_kmsg() {
     wait_for_file $ELOS_KMSG_FILE
 
     log "Polling KMSG"
-    elosc -s "$FILTERSTRING" > $LOG_ELOSCL 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $LOG_ELOSCL 2>&1 &
     POLL_CLIENT_PID=$!
     sleep 1s
 
@@ -327,11 +328,11 @@ smoketest_publish_poll() {
     sleep 0.5s
 
     log "Polling client 1 ..."
-    elosc -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_1.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_1.log 2>&1 &
     POLL_CLIENT_1_PID=$!
 
     log "Polling client 2 ..."
-    elosc -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_2.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_2.log 2>&1 &
     POLL_CLIENT_2_PID=$!
 
     sleep 0.5s
@@ -339,7 +340,7 @@ smoketest_publish_poll() {
     for i in `seq 1 10`; do
         local MESSAGE=$(printf "$MESSAGE_TEMPLATE" `date "+%s,0"` $i $i $i )
         log "Publish \"$MESSAGE\""
-        elosc -p "$MESSAGE" >> $RESULT_DIR/elosc_publish.log 2>&1
+        elosc -P $ELOSD_PORT -p "$MESSAGE" >> $RESULT_DIR/elosc_publish.log 2>&1
     done
 
     sleep 1s
@@ -384,7 +385,7 @@ smoketest_locale() {
     sleep 0.5s
 
     log "Start listening client"
-    elosc -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
 
     sleep 0.5s
@@ -428,7 +429,7 @@ smoketest_locale() {
     elosd > $RESULT_DIR/elosd.log 2>&1 &
     ELOSD_PID=$!
     sleep 0.5s
-    elosc -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
     sleep 0.5s
 
@@ -513,7 +514,7 @@ smoketest_find_event() {
     sleep 0.5s
 
     log "Start subscriber client ..."
-    elosc -s "$FILTERSTRING" -r 100 > $LOG_ELOSC_SUBSCRIBE 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" -r 100 > $LOG_ELOSC_SUBSCRIBE 2>&1 &
     ELOSC_SUBSCRIBE_PID=$!
     sleep 0.5s
 
@@ -522,14 +523,14 @@ smoketest_find_event() {
     log "Got event queue id $EVENT_QUEUE_ID"
 
     # Publish messages
-    elosc -p "$MESSAGE01" > $LOG_ELOSC_PUBLISH 2>&1
-    elosc -p "$MESSAGE02" >> $LOG_ELOSC_PUBLISH 2>&1
-    elosc -p "$MESSAGE03" >> $LOG_ELOSC_PUBLISH 2>&1
+    elosc -P $ELOSD_PORT -p "$MESSAGE01" > $LOG_ELOSC_PUBLISH 2>&1
+    elosc -P $ELOSD_PORT -p "$MESSAGE02" >> $LOG_ELOSC_PUBLISH 2>&1
+    elosc -P $ELOSD_PORT -p "$MESSAGE03" >> $LOG_ELOSC_PUBLISH 2>&1
     sleep 0.5s
 
     # Search in the log for specific messages
     log "Ask elosd to find matching events..."
-    elosc -f "$FILTERSTRING" > $LOG_ELOSC_FINDEVENT 2>&1
+    elosc -P $ELOSD_PORT -f "$FILTERSTRING" > $LOG_ELOSC_FINDEVENT 2>&1
 
     # Check success conditions
     ELOSC_FINDEVENT_MATCHES=$(grep -wc testEventFiltering $LOG_ELOSC_FINDEVENT)
@@ -540,7 +541,7 @@ smoketest_find_event() {
     fi
 
     # Unsubscribe from event queues
-    elosc -u "$EVENT_QUEUE_ID" > $LOG_ELOSC_UNSUBSCRIBE 2>&1
+    elosc -P $ELOSD_PORT -u "$EVENT_QUEUE_ID" > $LOG_ELOSC_UNSUBSCRIBE 2>&1
 
     #teardown
     kill -TERM $ELOSC_SUBSCRIBE_PID $ELOSD_PID
@@ -612,8 +613,8 @@ smoketest_dual_json_plugin() {
     wait_for_file $COREDUMP_FILE
     wait_for_file $JSONBACKEND_FILE
 
-    elosc -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
-    elosc -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
+    elosc -P $ELOSD_PORT -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
+    elosc -P $ELOSD_PORT -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
 
     log "Stop elosd ($ELOSD_PID)"
     kill $ELOSD_PID > /dev/null

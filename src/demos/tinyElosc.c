@@ -18,7 +18,7 @@
 #endif
 
 #ifndef PORT
-#define PORT 54321
+#define PORT 54323
 #endif
 
 #define MAX_INPUT_JSON_SIZE 4096

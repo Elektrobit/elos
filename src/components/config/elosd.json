@@ -5,6 +5,7 @@
             "ConnectionLimit": 200,
             "LogFilter": "",
             "LogLevel": "DEBUG",
+            "Port": 54321,
             "EventBlacklist": ".event.messageCode 2000 EQ",
             "authorizedProcesses": [
                 ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
