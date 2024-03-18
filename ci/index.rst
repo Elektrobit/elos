@@ -116,6 +116,11 @@ and call `install_deps.py` like :
 
 These dependencies get installed into `build/deps/` and if provided with an URL the sources can be found in `build/deps/src`.
 
+In addition the `install_deps.py` provides the following command line options to tune the install process:
+
+.. program-output:: ./ci/install_deps.py -h
+
+
 `ci/build.sh`
 -------------
 

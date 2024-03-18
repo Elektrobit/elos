@@ -93,6 +93,8 @@ def single_install(dependency, config, args):
            "-DCMAKE_BUILD_TYPE=Release", "-G", "Ninja"]
     if args.no_tests:
         cmd.append("-DUNIT_TESTS=off")
+    if args.no_mocks:
+        cmd.append(f"-D{dependency.upper()}_MOCK_LIBRARY=off")
     if not args.global_install:
         cmd.append(f"-DCMAKE_INSTALL_PREFIX={INSTALL_PATH}")
     if args.ci:
@@ -141,6 +143,8 @@ def arguments():
                         help="install the dependencies globaly")
     parser.add_argument('--no-tests', action='store_true',
                         help="dont install cmocka_extensions & cmocka_mocks")
+    parser.add_argument('--no-mocks', action='store_true',
+                        help="don't build & install mock libraries (no cmocka depenedencies)")
     parser.add_argument('--ci', action='store_true',
                         help="run cmake with CI flag")
     parser.add_argument('--clean-first', action='store_true',
