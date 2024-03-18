@@ -13,7 +13,7 @@ Different options on how to build
 
 ..  _FetchContent: https://cmake.org/cmake/help/latest/module/FetchContent.html
 
-Build Confugruations
+Build Configurations
 ====================
 
 `cmake & make` without any options (default)
@@ -38,14 +38,14 @@ Can be configured with the options described in section :ref:`cmake-options`.
 `ci/install_deps.py`
 --------------------
 
-Indendet to easier install the dependencies `cmocka_extensions`, `cmocka_mocks`, `safu` & `samconf`
+Intended to easier install the dependencies `cmocka_extensions`, `cmocka_mocks`, `safu` & `samconf`
 
 .. code-block::
 
    ci/install_deps.py
 
-By default it installes from the main branch of the GitHub repositories.
-The behavior can be modified by specifing one of the following files in this order:
+By default it installs from the main branch of the GitHub repositories.
+The behavior can be modified by specifying one of the following files in this order:
 
 * file specified by `ELOS_DEPENDENCY_CONFIG` environment variable
 
@@ -57,7 +57,7 @@ The behavior can be modified by specifing one of the following files in this ord
 
 * `ci/dependencies_default.json` in the root of the project
 
-Each resuorce can be defined by the `[url|path][commit|branch|tag][cmake_opts]`
+Each resource can be defined by the `[url|path][commit|branch|tag][cmake_opts]`
 options. This could look like:
 
 .. code-block:: json
@@ -82,7 +82,7 @@ options. This could look like:
 
 If no URL or path is provided the default is used.
 A path is used as is without checking the branch, tag or commit and includes
-local changes that aren't commited jet.
+local changes that aren't committed jet.
 
 The `url` property supports the evaluation of environment variables like
 `SOURCES_URI` so it is possible to define template configurations like:
@@ -115,6 +115,11 @@ and call `install_deps.py` like :
    SOURCES_URI=https://${GIT_USER_TOKEN}@github.com/Elektrobit/
 
 These dependencies get installed into `build/deps/` and if provided with an URL the sources can be found in `build/deps/src`.
+
+In addition the `install_deps.py` provides the following command line options to tune the install process:
+
+.. program-output:: ./ci/install_deps.py -h
+
 
 `ci/build.sh`
 -------------
@@ -248,7 +253,7 @@ cmake options
 - ENABLE_CI: (default OFF) adds `-Werror` to the compile options
 - UNIT_TESTS: (default ON) Build the unit tests
 - INSTALL_UNIT_TESTS: (default ON) install the unit tests
-- ELOSD_EVENTLOGGING_BACKEND_SQL: (default ON) Build the sqlite3 bakend plugin
+- ELOSD_EVENTLOGGING_BACKEND_SQL: (default ON) Build the sqlite3 backend plugin
 - ELOSD_EVENTLOGGING_BACKEND_NOSQL: (default OFF) Build the NoSQL backend plugin
 - ELOSD_EVENTLOGGING_BACKEND_INFLUXDB: (default OFF) Build the InfluxDB backend plugin
 
