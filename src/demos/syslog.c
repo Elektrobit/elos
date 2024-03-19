@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include <errno.h>
 #include <safu/common.h>
 #include <signal.h>
@@ -21,11 +22,48 @@
 
 bool elosSendSyslogMessage(const char *message);
 
+void _printUsage(FILE *stream, const char *const elosProgramName) {
+    fprintf(stream,
+            "Usage: %s [OPTION]...\n"
+            "  -m   syslog message\n"
+            "  -H   set host ip address\n"
+            "  -P   set host port\n"
+            "  -h   print this help\n",
+            elosProgramName);
+}
+
 int main(int argc, char *argv[]) {
-    safuResultE_t result;
+    safuResultE_t result = SAFU_RESULT_OK;
     elosSession_t *session;
+    char *host = "127.0.0.1";
+    int port = 54321;
+    int count = 0;
     char *header = "<38>Jan  1 01:41:57 sshd[240]";
-    char *payload = argc > 1 ? argv[1] : "test syslog daemon";
+    char *payload = "test syslog daemon";
+
+    while (result == SAFU_RESULT_OK) {
+        count = getopt(argc, argv, "m:H:P:h");
+        if (count == -1) {
+            break;
+        }
+        switch (count) {
+            case 'm':
+                payload = optarg;
+                break;
+            case 'H':
+                host = optarg;
+                break;
+            case 'P':
+                port = strtol(optarg, NULL, 10);
+                break;
+            case 'h':
+                _printUsage(stdout, argv[0]);
+                return EXIT_SUCCESS;
+            default:
+                fprintf(stderr, "ERROR: Unrecognized option: '-%c'\n", optopt);
+                return EXIT_FAILURE;
+        }
+    }
     char *message = malloc(strlen(header) + strlen(payload) + 1);
 
     if (message == NULL) {
@@ -47,7 +85,7 @@ int main(int argc, char *argv[]) {
     strcat(message, payload);
     sprintf(eventRule, eventRuleBase, payload);
 
-    result = elosConnectTcpip("127.0.0.1", 54323, &session);
+    result = elosConnectTcpip(host, port, &session);
     if (result != SAFU_RESULT_OK) {
         free(message);
         free(eventRule);

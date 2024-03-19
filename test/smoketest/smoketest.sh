@@ -223,7 +223,7 @@ smoketest_syslog() {
     wait_for_file $ELOS_SYSLOG_PATH
 
     log "Starting syslog test"
-    syslog_example "$TEST_MESSAGE" > $RESULT_DIR/syslog_example.log 2>&1 &
+    syslog_example -m "$TEST_MESSAGE" -P $ELOSD_PORT > $RESULT_DIR/syslog_example.log 2>&1 &
     SYSLOG_EXAMPLE_PID=$!
 
     log "wait for syslog_example to finish ..."
@@ -391,22 +391,22 @@ smoketest_locale() {
     sleep 0.5s
 
     #send valid messages
-    tinyElosc -v >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -s ".event.payload 'Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ' STRCMP" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"payload\":\"this is payload\"}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"payload\":\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p $VALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -v >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -s ".event.payload 'Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ' STRCMP" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"this is payload\"}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p $VALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
 
     #send invalid messages
-    tinyElosc -s "\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"invalid\":Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p $INVALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -s "\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"invalid\":Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p $INVALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
 
     #send empty messages
-    tinyElosc -s "" >> $RESULT_DIR/event.log 2>&1 #invalid
-    tinyElosc -p "" >> $RESULT_DIR/event.log 2>&1 #invalid
+    tinyElosc -P $ELOSD_PORT -s "" >> $RESULT_DIR/event.log 2>&1 #invalid
+    tinyElosc -P $ELOSD_PORT -p "" >> $RESULT_DIR/event.log 2>&1 #invalid
 
     #check if elosd is still alive
     local alive=0
@@ -434,9 +434,9 @@ smoketest_locale() {
     sleep 0.5s
 
     #locale tests
-    tinyElosc -p "{\"classification\":42,5}" >> $RESULT_DIR/event.log 2>&1 #invalid
-    tinyElosc -p "{\"payload\":\"42,5\"}" >> $RESULT_DIR/event.log 2>&1 #valid
-    tinyElosc -p "{\"payload\":\"$(date)\"}" >> $RESULT_DIR/event.log 2>&1 #valid
+    tinyElosc -P $ELOSD_PORT -p "{\"classification\":42,5}" >> $RESULT_DIR/event.log 2>&1 #invalid
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"42,5\"}" >> $RESULT_DIR/event.log 2>&1 #valid
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"$(date)\"}" >> $RESULT_DIR/event.log 2>&1 #valid
     sleep 0.1s
 
     #check test success
@@ -460,7 +460,7 @@ smoketest_locale() {
         success=$((success+1))
     fi
     local nonErrors=$(cat $RESULT_DIR/event.log | grep -wc "\"error\":null")
-    #note: "tinyElosc -s" always sends an additional valid eventCreate that is counted too
+    #note: "tinyElosc -P $ELOSD_PORT -s" always sends an additional valid eventCreate that is counted too
     log "found $nonErrors valid messages and expected 7"
     if [ $nonErrors -eq 7 ]; then
         success=$((success+1))
