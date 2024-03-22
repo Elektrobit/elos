@@ -18,7 +18,7 @@
 #endif
 
 #ifndef PORT
-#define PORT 54321
+#define PORT 54323
 #endif
 
 #define MAX_INPUT_JSON_SIZE 4096
@@ -236,7 +236,7 @@ static int _eventPublish(int socket, char *jsonString, char *buffer, size_t bufl
     return result;
 }
 
-static int _tcpConnect() {
+static int _tcpConnect(const char *host, int port) {
     int socketFd;
 
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -247,13 +247,13 @@ static int _tcpConnect() {
         int retVal;
         struct sockaddr_in serverAddr = {
             .sin_family = AF_INET,
-            .sin_port = htons(PORT),
-            .sin_addr.s_addr = inet_addr(IP_ADDRESS),
+            .sin_port = htons(port),
+            .sin_addr.s_addr = inet_addr(host),
         };
 
         retVal = connect(socketFd, (const struct sockaddr *)&serverAddr, sizeof(serverAddr));
         if (retVal < 0) {
-            fprintf(stderr, "ERR: connect to port %d\n", PORT);
+            fprintf(stderr, "ERR: connect to port %d\n", port);
             close(socketFd);
             socketFd = -1;
         }
@@ -268,6 +268,8 @@ static void _printUsage(FILE *stream, const char *const elosProgramName) {
             "  -s <filter>      event subscribe\n"
             "  -u <eventQueue>  unsubscribe from event queue\n"
             "  -p <payload>     raw payload to be published\n"
+            "  -H <Host-Ip>     set host ip address\n"
+            "  -P <Port>        set host port\n"
             "  -h               print this help\n"
             "  -v               get version\n\n"
             "<filter>: event filter in RPN notation\n"
@@ -279,49 +281,58 @@ static int _menu(int argc, char *argv[]) {
     char response[1500] = {0};
     int result = EXIT_FAILURE;
     int socketFd = -1;
+    char *host = "127.0.0.1";
+    int port = 54321;
     int c;
 
-    c = getopt(argc, argv, "s:u:p:vh");
-    switch (c) {
-        case 's':
-            socketFd = _tcpConnect();
-            if (socketFd >= 0) {
-                result = _eventSubscribe(socketFd, optarg, response, sizeof(response));
-                close(socketFd);
+    while ((c = getopt(argc, argv, "s:u:p:H:P:vh")) != -1) {
+        switch (c) {
+            case 's':
+                socketFd = _tcpConnect(host, port);
+                if (socketFd >= 0) {
+                    result = _eventSubscribe(socketFd, optarg, response, sizeof(response));
+                    close(socketFd);
+                    result = EXIT_SUCCESS;
+                }
+                break;
+            case 'u':
+                socketFd = _tcpConnect(host, port);
+                if (socketFd >= 0) {
+                    result = _eventUnsubscribe(socketFd, optarg, response, sizeof(response));
+                    close(socketFd);
+                    result = EXIT_SUCCESS;
+                }
+                break;
+            case 'p':
+                socketFd = _tcpConnect(host, port);
+                if (socketFd >= 0) {
+                    result = _eventPublish(socketFd, optarg, response, sizeof(response));
+                    close(socketFd);
+                    result = EXIT_SUCCESS;
+                }
+                break;
+            case 'H':
+                host = optarg;
+                break;
+            case 'P':
+                port = strtol(optarg, NULL, 10);
+                break;
+            case 'v':
+                socketFd = _tcpConnect(host, port);
+                if (socketFd >= 0) {
+                    result = _getVersion(socketFd, response, sizeof(response));
+                    close(socketFd);
+                    result = EXIT_SUCCESS;
+                }
+                break;
+            case 'h':
+                _printUsage(stdout, argv[0]);
                 result = EXIT_SUCCESS;
-            }
-            break;
-        case 'u':
-            socketFd = _tcpConnect();
-            if (socketFd >= 0) {
-                result = _eventUnsubscribe(socketFd, optarg, response, sizeof(response));
-                close(socketFd);
-                result = EXIT_SUCCESS;
-            }
-            break;
-        case 'p':
-            socketFd = _tcpConnect();
-            if (socketFd >= 0) {
-                result = _eventPublish(socketFd, optarg, response, sizeof(response));
-                close(socketFd);
-                result = EXIT_SUCCESS;
-            }
-            break;
-        case 'v':
-            socketFd = _tcpConnect();
-            if (socketFd >= 0) {
-                result = _getVersion(socketFd, response, sizeof(response));
-                close(socketFd);
-                result = EXIT_SUCCESS;
-            }
-            break;
-        case 'h':
-            _printUsage(stdout, argv[0]);
-            result = EXIT_SUCCESS;
-            break;
-        default:
-            _printUsage(stderr, argv[0]);
-            break;
+                break;
+            default:
+                _printUsage(stderr, argv[0]);
+                break;
+        }
     }
 
     return result;
