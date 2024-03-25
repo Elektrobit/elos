@@ -58,21 +58,17 @@ if [ $OPTION_NO_DEP -eq 0 ]; then
 fi;
 
 CMAKE_BUILD_DIR=$BUILD_DIR/cmake
-export LOCAL_INSTALL_DIR=${LOCAL_INSTALL_DIR:-$DIST_DIR}
-export PREFIX_PATH="${LOCAL_INSTALL_DIR}/usr/local"
+export PREFIX_PATH="${DIST_DIR}/usr/local"
 CMAKE_PARAM="${CMAKE_PARAM} -DCMAKE_PREFIX_PATH=${BASE_DIR}/build/deps"
 CMAKE_PARAM="${CMAKE_PARAM} -DCMAKE_INSTALL_PREFIX:PATH=${PREFIX_PATH}"
 
-DEP_BUILD_PARAM=""
 if [ $OPTION_CLEAN -eq 1 ]; then
-    DEP_BUILD_PARAM="$DEP_BUILD_PARAM -c"
     if [ -e "$BUILD_DIR" ]; then
         echo "Removing $BUILD_DIR ..."
         rm -rf "$BUILD_DIR"
     fi
 fi
 if [ $OPTION_VERBOSE -eq 1 ]; then
-    DEP_BUILD_PARAM="$DEP_BUILD_PARAM -v"
     NINJA_PARAM="$NINJA_PARAM -v"
 fi
 

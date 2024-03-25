@@ -25,9 +25,6 @@
 #include "elos/messages/message_handler.h"
 
 #define _TRIGGERFD_VALUE 1
-#define _TRIGGERFD_SIZE  (int)sizeof(eventfd_t)
-#define _SYNCFD_VALUE    _TRIGGERFD_VALUE
-#define _SYNCFD_SIZE     _TRIGGERFD_SIZE
 
 safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConnection,
                                              elosClientConnectionParam_t *param) {
@@ -195,7 +192,7 @@ safuResultE_t elosClientConnectionStop(elosClientConnection_t *clientConnection)
         if (ELOS_CLIENTCONNECTION_HAS_ACTIVE_BIT(&clientConnection->flags) == true) {
             atomic_fetch_and(&clientConnection->flags, ~ELOS_CLIENTCONNECTION_ACTIVE_BIT);
             retVal = eventfd_write(clientConnection->triggerFd, _TRIGGERFD_VALUE);
-            if (retVal != _TRIGGERFD_SIZE) {
+            if (retVal < 0) {
                 safuLogErrErrnoValue("eventfd_write failed", retVal);
                 result = SAFU_RESULT_FAILED;
             }

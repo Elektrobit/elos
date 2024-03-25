@@ -18,10 +18,7 @@
 #define _CASE_EWOULDBLOCK
 #endif
 
-#define _TRIGGERFD_VALUE 1
-#define _TRIGGERFD_SIZE  (int)sizeof(eventfd_t)
-#define _SYNCFD_VALUE    _TRIGGERFD_VALUE
-#define _SYNCFD_SIZE     _TRIGGERFD_SIZE
+#define _SYNCFD_VALUE 1
 
 static safuResultE_t _workerDataInitialize(elosClientConnection_t *clientConnection) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -150,7 +147,7 @@ void *elosClientConnectionWorker(void *ptr) {
                 active = false;
                 if (pollFdSet[0].revents & POLLIN) {
                     retVal = eventfd_read(clientConnection->triggerFd, &value);
-                    if (retVal != _TRIGGERFD_SIZE) {
+                    if (retVal < 0) {
                         safuLogErrErrnoValue("eventfd_read failed", retVal);
                     }
                 }
