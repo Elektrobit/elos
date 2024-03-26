@@ -41,7 +41,6 @@ if [ "$SSH_AUTH_SOCK" ]; then
 fi
 
 docker run --rm ${IT} $SSH_AGENT_OPTS \
-    --net elos-net \
     -v $BASE_DIR:/base \
     -w /base \
     ${GIT_USER_TOKEN:+-e GIT_USER_TOKEN="${GIT_USER_TOKEN}"} \
