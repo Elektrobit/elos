@@ -36,7 +36,7 @@ static inline const char *_getConnectionString(const char *backendName) {
     return ret;
 }
 
-safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
+static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
@@ -64,7 +64,7 @@ safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     return result;
 }
 
-safuResultE_t _pluginStart(elosPlugin_t *plugin) {
+static safuResultE_t _pluginStart(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
@@ -90,7 +90,7 @@ safuResultE_t _pluginStart(elosPlugin_t *plugin) {
     return result;
 }
 
-safuResultE_t _pluginStop(elosPlugin_t *plugin) {
+static safuResultE_t _pluginStop(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (plugin == NULL) {
@@ -117,7 +117,7 @@ safuResultE_t _pluginStop(elosPlugin_t *plugin) {
     return result;
 }
 
-safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
+static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (plugin == NULL) {
