@@ -135,6 +135,8 @@ c_autodoc_roots = [
     './src/plugins/scanners/syslog/private/',
     './src/plugins/scanners/shmem/interface/',
     './src/plugins/scanners/shmem/private/',
+    './src/plugins/storagebackends/dlt/interface/',
+    './src/plugins/storagebackends/dlt/private/',
     './src/plugins/storagebackends/jsonbackend/interface/',
     './src/plugins/storagebackends/jsonbackend/private/',
     './src/plugins/storagebackends/nosqlbackend/interface/',
