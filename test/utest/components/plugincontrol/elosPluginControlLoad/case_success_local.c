@@ -6,11 +6,22 @@
 
 int elosTestElosPluginControlLoadSuccessLocalSetup(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
-    samconfConfig_t config = {0};
-    safuResultE_t result;
+    samconfConfigStatusE_t ret = SAMCONF_CONFIG_OK;
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    ret = samconfConfigNew(&test->mockRootConfig);
+    assert_int_equal(ret, SAMCONF_CONFIG_OK);
+
+    ret = elosGetMockConfig(test->mockRootConfig);
+    assert_int_equal(ret, SAMCONF_CONFIG_OK);
+
+    ret = samconfConfigGet(test->mockRootConfig, "root/elos/ClientInputs/Plugins/LocalTcpClient",
+                           &test->mockPluginConfig);
+    assert_int_equal(ret, SAMCONF_CONFIG_OK);
+
     elosPluginControlParam_t param = {
         .pluginType = PLUGIN_TYPE_SCANNER,
-        .config = &config,
+        .config = test->mockPluginConfig,
         .data = &test->data,
     };
 
@@ -31,6 +42,8 @@ int elosTestElosPluginControlLoadSuccessLocalTeardown(void **state) {
 
     result = elosPluginControlDeleteMembers(&test->pluginControl);
     assert_int_equal(result, SAFU_RESULT_OK);
+
+    elosMockConfigCleanup(test->mockRootConfig);
 
     MOCK_FUNC_NEVER(pthread_join);
     MOCK_FUNC_NEVER(eventfd_read);
@@ -70,6 +83,11 @@ void elosTestElosPluginControlLoadSuccessLocal(void **state) {
     will_return_always(__wrap_eventfd_read, 0);
 
     MOCK_FUNC_ALWAYS_WITH(pthread_create, _customPthreadCreate, NULL);
+
+    MOCK_FUNC_ALWAYS(pthread_setname_np);
+    expect_any_always(__wrap_pthread_setname_np, thread);
+    expect_any_always(__wrap_pthread_setname_np, name);
+    will_return_always(__wrap_pthread_setname_np, 0);
 
     result = elosPluginControlLoad(&test->pluginControl);
     assert_int_equal(result, SAFU_RESULT_OK);

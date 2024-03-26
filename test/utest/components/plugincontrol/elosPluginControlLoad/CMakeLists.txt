@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
 find_package(cmocka_mocks REQUIRED)
+find_package(safu 0.50.1 REQUIRED)
+find_package(samconf 0.50.1 REQUIRED)
 
 create_unit_test(
   NAME
@@ -7,11 +9,14 @@ create_unit_test(
   SOURCES
     case_err_param.c
     case_success_local.c
+    createMockConfigUtil.c
     elosPluginControlLoad_functions.c
     elosPluginControlLoad_utest.c
   LIBRARIES
     plugincontrol_static
     cmocka_mocks::mock_libc
+    safu::safu
+    samconf::samconf
 )
 
 # Symbols are not exported on normal executables;

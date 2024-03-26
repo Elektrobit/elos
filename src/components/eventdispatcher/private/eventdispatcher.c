@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+// clang-format off
+#define _GNU_SOURCE
+#include <pthread.h>
+// clang-format on
+
 #include "elos/eventdispatcher/eventdispatcher.h"
 
 #include <safu/common.h>
@@ -183,6 +188,11 @@ safuResultE_t elosEventDispatcherStart(elosEventDispatcher_t *eventDispatcher) {
                     safuLogErrErrno("pthread_create failed");
                     result = SAFU_RESULT_FAILED;
                 } else {
+                    retVal = pthread_setname_np(eventDispatcher->worker.thread, "EventDispatcher");
+                    if (retVal != 0) {
+                        safuLogErr("Failed to set thread name for event dispatcher");
+                    }
+
                     eventfd_t syncValue = 0;
 
                     retVal = eventfd_read(eventDispatcher->sync, &syncValue);

@@ -53,6 +53,11 @@ void testElosEventDispatcherStartErrFunc(void **state) {
     expect_not_value(__wrap_pthread_create, __arg, NULL);
     will_return(__wrap_pthread_create, 0);
 
+    MOCK_FUNC_ALWAYS(pthread_setname_np);
+    expect_any_always(__wrap_pthread_setname_np, thread);
+    expect_any_always(__wrap_pthread_setname_np, name);
+    will_return_always(__wrap_pthread_setname_np, 0);
+
     MOCK_FUNC_AFTER_CALL(eventfd_read, 0);
     expect_any(__wrap_eventfd_read, __fd);
     expect_not_value(__wrap_eventfd_read, __value, NULL);
@@ -60,4 +65,5 @@ void testElosEventDispatcherStartErrFunc(void **state) {
 
     result = elosEventDispatcherStart(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+    pthread_mutex_unlock(&test->eventDispatcher.lock);  // Prevent dead locks further down the road
 }
