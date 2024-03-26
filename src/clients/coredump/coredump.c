@@ -534,16 +534,13 @@ int main(int argc, char *argv[]) {
         }
 
         if (ret == 0) {
-            // event source name and file name
             _replaceCharsInString(applicationPath, PATH_MAX, '_', '/');
             event.source.appName = applicationPath;
             event.source.fileName = applicationPath;
 
-            /* set up event message code and payload depending up
-               checks */
             ret = _checkAndPrepareCoredump(&coredumpConfig, coredumpAppDir);
             if (ret == 1) {
-                event.messageCode = ELOS_MSG_CODE_CORE_DUMP_DELETE;
+                event.messageCode = ELOS_MSG_CODE_CORE_DUMP_DELETED;
                 ret = snprintf(payloadEvent, PATH_MAX + 128, "core dump file %s deleted", elosOldestFile);
                 if (ret < 0 || ret >= (PATH_MAX + 128)) {
                     fprintf(stderr, "payload string create failed will be set to %s\n", elosOldestFile);
@@ -568,7 +565,7 @@ int main(int argc, char *argv[]) {
             if (ret == 1) {
                 ret = _deleteFile(coredumpTargetFile);
                 if (ret == 0) {
-                    event.messageCode = ELOS_MSG_CODE_CORE_DUMP_DISCARD;
+                    event.messageCode = ELOS_MSG_CODE_CORE_DUMP_DISCARDED;
                     ret = snprintf(payloadEvent, PATH_MAX + 128, "core dump file %s discarded", coredumpTargetFile);
                     if (ret < 0 || ret >= (PATH_MAX + 128)) {
                         fprintf(stderr, "payload string create failed will be set to %s\n", coredumpTargetFile);
@@ -585,7 +582,7 @@ int main(int argc, char *argv[]) {
             } else if (ret == -1) {
                 fprintf(stderr, "writing to coredump file returned error\n");
             } else {
-                event.messageCode = ELOS_MSG_CODE_CORE_DUMPED;
+                event.messageCode = ELOS_MSG_CODE_CORE_DUMP_CREATED;
                 ret = snprintf(payloadEvent, PATH_MAX + 128, "core dumped to %s, signal=%s, UID=%s, GID=%s",
                                coredumpTargetFile, argv[COREDUMP_SIGNAL], argv[COREDUMP_UID], argv[COREDUMP_GID]);
                 if (ret < 0 || ret >= (PATH_MAX + 128)) {

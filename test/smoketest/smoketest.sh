@@ -192,9 +192,9 @@ smoketest_coredump() {
     TEST_MESSAGE="THIS IS THE DUMP"
     echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger.log 2>&1
 
-    elosc -P $ELOSD_PORT -f ".event.messageCode 5005 EQ" > $RESULT_DIR/coredump_event.log 2>&1
+    elosc -P $ELOSD_PORT -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event.log 2>&1
 
-    if grep -q "\"messageCode\":5005" $RESULT_DIR/coredump_event.log
+    if grep -q "\"messageCode\":5100" $RESULT_DIR/coredump_event.log
     then
         log "Success coredump event logged"
     else
