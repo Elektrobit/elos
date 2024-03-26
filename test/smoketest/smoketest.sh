@@ -77,8 +77,38 @@ wait_for_elosd_socket() {
     done
 }
 
+start_dlt_mock() {
+    set -x
+
+    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
+        rm -f "${ELOS_DLT_PIPE_PATH}"
+    fi
+
+    mkfifo "${ELOS_DLT_PIPE_PATH}"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+
+    tail -f "${ELOS_DLT_PIPE_PATH}" >> /tmp/dlt_dump &
+    DLT_MOCK_PID=$!
+
+    set +x
+}
+
+stop_dlt_mock() {
+    set -x
+
+    kill "${DLT_MOCK_PID}"
+
+    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
+        rm -f "${ELOS_DLT_PIPE_PATH}"
+    fi
+
+    set +x
+}
+
 smoketest_elosd() {
     prepare_env "elosd"
+
+    start_dlt_mock
 
     log "Starting Elosd"
     elosd > $RESULT_DIR/elosd.txt 2>&1 &
@@ -88,6 +118,8 @@ smoketest_elosd() {
     find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \; &&
     wait $ELOSD_PID || true
     log "Killed Elosd"
+
+    stop_dlt_mock
 
     STRINGS="listen on: ${ELOSD_INTERFACE-"0.0.0.0"}:${ELOSD_PORT-"54323"}
 hardwareid: $(cat /etc/machine-id)

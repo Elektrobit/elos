@@ -145,4 +145,19 @@ if (ELOS_DEMOS)
   if (INSTALL_ELOS_DEMOS)
     install(TARGETS demo_eventbuffer DESTINATION ${CMAKE_INSTALL_BINDIR})
   endif()
+
+  add_executable(
+    elosDlt
+    elosDlt.c
+  )
+
+  target_link_libraries(
+    elosDlt
+    PRIVATE
+      libelosdlt
+  )
+
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS elosDlt DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
 endif()
