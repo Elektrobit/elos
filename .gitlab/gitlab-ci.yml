@@ -117,7 +117,7 @@ benchmark:
 
 code-coverage:
   rules:
-    - when: manual
+    - when: never
       allow_failure: true
   stage: test
   script:
@@ -129,7 +129,7 @@ code-coverage:
 
 publish-kpis:
   rules:
-    - when: manual
+    - when: never
       allow_failure: true
   script:
     - ci/publish_pkis.sh
