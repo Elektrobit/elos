@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: MIT
 
-#include <linux/limits.h>
-#include <stdint.h>
 #define _GNU_SOURCE
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <ftw.h>
 #include <limits.h>
+#include <linux/limits.h>
 #include <samconf/samconf.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "elos/event/event.h"
@@ -19,13 +23,13 @@
 #include "safu/common.h"
 #include "safu/log.h"
 
+#define UNUSED __attribute__((unused))
+
 #ifndef ELOS_COREDUMP_CONFIG_ROOT
 #define ELOS_COREDUMP_CONFIG_ROOT "/root/elos/coredump/"
 #endif
 
-#define BUF_SIZE             1024
-#define COREDUMP_TARGET_PATH "/tmp"
-#define COREDUMP_TOPIC_ID    42
+#define BUF_SIZE 1024
 
 /*
  * expected order of specifiers:
@@ -55,55 +59,114 @@ enum elosCoredumpSpecifiersOrderE {
 
 typedef struct elosCoredumpConfig {
     char *path;
-    unsigned long allocatedMem;
+    unsigned long maxCoredumpMem;
+    unsigned long maxCoredumpFileSize;
+    int32_t coredumpFileCount;
+    int32_t coredumpProcFileCount;
 } elosCoredumpConfig_t;
 
-int elosPrepareCorePattern(void) {
-    char executablePath[PATH_MAX];
-    ssize_t count;
-    FILE *fp;
-    int uid;
-    int nwrite;
+static char elosOldestFile[PATH_MAX + 1] = {0};
+struct timespec elosTimeModified = {0};
+static unsigned long elosCoredumpSize = 0;
+static int32_t elosCoredumpFileCount = 0;
 
-    uid = (int)geteuid();
-    if (uid != 0) {
-        fprintf(stderr, "prepare_coredump not called as root and failed!\n");
-        return -1;
-    }
-
-    count = readlink("/proc/self/exe", executablePath, PATH_MAX);
-    if ((count == -1) || (count == PATH_MAX)) {
-        fprintf(stderr, "prepare_coredump could not get its executable filepath and failed!\n");
-        return -1;
-    }
-
-    fp = fopen("/proc/sys/kernel/core_pattern", "w");
-    if (fp == NULL) {
-        fprintf(stderr, "prepare_coredump could not open /proc/sys/kernel/core_pattern and failed!\n");
-        return -1;
-    }
-
-    nwrite = fprintf(fp, "|%s %%P %%E %%u %%g %%s %%t %%h", executablePath);
-    if (nwrite != (count + 22)) {
-        fprintf(stderr, "prepare_coredump could not correctly write /proc/sys/kernel/core_pattern and failed!\n");
-        fclose(fp);
-        return -1;
-    }
-
-    fclose(fp);
-
-    fprintf(stdout, "coredump core_pattern setup done\n");
-
-    return 0;
-}
-
-void _replaceCharsInString(char *str, uint32_t len, char old, char new) {
+static void _replaceCharsInString(char *str, uint32_t len, char old, char new) {
     uint32_t i = 0;
 
     while (str[i] != '\0' && i < len) {
         if (str[i] == old) str[i] = new;
         i++;
     }
+}
+
+static int _countFile(UNUSED const char *path, UNUSED const struct stat *sizeBuf, int typeflag,
+                      UNUSED struct FTW *ftwbuf) {
+    if (typeflag == FTW_F) {
+        elosCoredumpFileCount += 1;
+    }
+    return 0;
+}
+
+static int _getCoredumpFileCount(const char *path) {
+    int ret = 0;
+    elosCoredumpFileCount = 0;
+
+    ret = nftw(path, _countFile, 20, FTW_F);
+
+    if (ret != 0) {
+        fprintf(stderr, "cannot get file count in coredump dir failed\n");
+    }
+
+    return ret;
+}
+
+static int _calculateSize(UNUSED const char *path, UNUSED const struct stat *sizeBuf, int typeflag,
+                          UNUSED struct FTW *ftwbuf) {
+    if (typeflag == FTW_F) {
+        elosCoredumpSize += sizeBuf->st_size;
+    }
+    return 0;
+}
+
+static int _getCoredumpFileSize(const char *path) {
+    int ret = 0;
+    elosCoredumpSize = 0;
+
+    ret = nftw(path, _calculateSize, 20, FTW_F);
+
+    if (ret != 0) {
+        fprintf(stderr, "cannot get file size in coredump dir failed\n");
+    }
+
+    return ret;
+}
+
+static int _checkIfOlder(const char *path, const struct stat *sizeBuf, int typeflag, UNUSED struct FTW *ftwbuf) {
+    if (typeflag == FTW_F) {
+        if (elosTimeModified.tv_sec == 0 && elosTimeModified.tv_nsec == 0) {
+            elosTimeModified.tv_sec = sizeBuf->st_mtim.tv_sec;
+            elosTimeModified.tv_nsec = sizeBuf->st_mtim.tv_nsec;
+            strcpy(elosOldestFile, path);
+        } else if (sizeBuf->st_mtim.tv_sec < elosTimeModified.tv_sec) {
+            elosTimeModified.tv_sec = sizeBuf->st_mtim.tv_sec;
+            elosTimeModified.tv_nsec = sizeBuf->st_mtim.tv_nsec;
+            strcpy(elosOldestFile, path);
+        } else if (sizeBuf->st_mtim.tv_sec == elosTimeModified.tv_sec) {
+            if (sizeBuf->st_mtim.tv_nsec < elosTimeModified.tv_nsec) {
+                elosTimeModified.tv_sec = sizeBuf->st_mtim.tv_sec;
+                elosTimeModified.tv_nsec = sizeBuf->st_mtim.tv_nsec;
+                strcpy(elosOldestFile, path);
+            }
+        }
+    }
+
+    return 0;
+}
+
+static int _findOldestEntry(const char *path) {
+    int ret = 0;
+
+    ret = nftw(path, _checkIfOlder, 20, FTW_F);
+
+    if (ret == 0) {
+        if (elosOldestFile[0] == '\0') {
+            fprintf(stdout, "no file found in path\n");
+            ret = -1;
+        }
+    }
+
+    return ret;
+}
+
+static int _deleteFile(const char *path) {
+    int ret = 0;
+
+    ret = unlink(path);
+    if (ret != 0) {
+        fprintf(stderr, "cannot delete file : %s \n", path);
+    }
+
+    return ret;
 }
 
 safuResultE_t elosCoredumpConfigInit(elosCoredumpConfig_t *coredumpConfig) {
@@ -114,8 +177,8 @@ safuResultE_t elosCoredumpConfigInit(elosCoredumpConfig_t *coredumpConfig) {
     unsigned long fileSystemSize = 0;
     const char *pathname = NULL;
     struct statvfs dirBuf = {0};
-    samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
     safuResultE_t result = SAFU_RESULT_OK;
+    samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
     int ret = 0;
 
     fprintf(stdout, "loading coredump configuration\n");
@@ -124,7 +187,7 @@ safuResultE_t elosCoredumpConfigInit(elosCoredumpConfig_t *coredumpConfig) {
     status = samconfLoad(location, false, &config);
 
     if (status != SAMCONF_CONFIG_OK) {
-        fprintf(stdout, "loading coredump configuration failed \n");
+        fprintf(stderr, "loading coredump configuration failed \n");
         result = SAFU_RESULT_FAILED;
     }
 
@@ -162,18 +225,65 @@ safuResultE_t elosCoredumpConfigInit(elosCoredumpConfig_t *coredumpConfig) {
         status = samconfConfigGetInt32(config, ELOS_COREDUMP_CONFIG_ROOT "totalmem_rel/", &relMem);
         if (status == SAMCONF_CONFIG_OK) {
             if (relMem > 0) {
-                coredumpConfig->allocatedMem = ((fileSystemSize * relMem) / 100);
-                fprintf(stdout, "coredump memory allocated : %ld\n", coredumpConfig->allocatedMem);
+                coredumpConfig->maxCoredumpMem = ((fileSystemSize * relMem) / 100);
+            } else {
+                fprintf(stderr, "coredump memory relative memory can not be zero or lesser");
+                result = SAFU_RESULT_FAILED;
             }
         } else {
             status = samconfConfigGetInt32(config, ELOS_COREDUMP_CONFIG_ROOT "totalmem/", &absMem);
             if (status == SAMCONF_CONFIG_OK) {
-                coredumpConfig->allocatedMem = absMem;
-                fprintf(stdout, "coredump memory allocated : %ld\n", coredumpConfig->allocatedMem);
+                if (absMem > 0) {
+                    coredumpConfig->maxCoredumpMem = absMem;
+                } else {
+                    fprintf(stderr, "coredump memory value can not be zero or lesser");
+                    result = SAFU_RESULT_FAILED;
+                }
             } else {
-                fprintf(stdout, "neither totalmem nor totalmem_rel is set, memory calculation failed !\n");
+                fprintf(stderr, "neither totalmem nor totalmem_rel is set, memory calculation failed !\n");
                 result = SAFU_RESULT_FAILED;
             }
+        }
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        status = samconfConfigGetInt32(config, ELOS_COREDUMP_CONFIG_ROOT "maxcoredump_size_rel/", &relMem);
+        if (status == SAMCONF_CONFIG_OK) {
+            if (relMem >= 0) {
+                coredumpConfig->maxCoredumpFileSize = ((fileSystemSize * relMem) / 100);
+            } else {
+                fprintf(stderr, "coredump per file relative memory value can not be zero or lesser");
+                result = SAFU_RESULT_FAILED;
+            }
+
+        } else {
+            status = samconfConfigGetInt32(config, ELOS_COREDUMP_CONFIG_ROOT "maxcoredump_size/", &absMem);
+            if (status == SAMCONF_CONFIG_OK) {
+                if (absMem >= 0) {
+                    coredumpConfig->maxCoredumpFileSize = absMem;
+                } else {
+                    fprintf(stderr, "coredump per file memory value can not be zero or lesser");
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+        }
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        status = samconfConfigGetInt32(config, ELOS_COREDUMP_CONFIG_ROOT "coredump_per_exe/",
+                                       &coredumpConfig->coredumpProcFileCount);
+        if (status != SAMCONF_CONFIG_OK) {
+            fprintf(stderr, "coredump count for each file can not be allocated");
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        status = samconfConfigGetInt32(config, ELOS_COREDUMP_CONFIG_ROOT "maxcoredump_cnt/",
+                                       &coredumpConfig->coredumpFileCount);
+        if (status != SAMCONF_CONFIG_OK) {
+            fprintf(stderr, "max coredump count can not be allocated");
+            result = SAFU_RESULT_FAILED;
         }
     }
 
@@ -185,139 +295,315 @@ void elosCoredumpConfigDelete(elosCoredumpConfig_t *coredumpConfig) {
     free(coredumpConfig->path);
 }
 
-int main(int argc, char *argv[]) {
-    char *p;
-    char buf[BUF_SIZE];
-    char coredumpTargetFile[PATH_MAX];
-    char applicationPath[PATH_MAX];
-    char payloadEvent[PATH_MAX + 128];
-    size_t nread;
-    ssize_t total;
-    FILE *fp;
-    int ret;
+safuResultE_t elosCoredumpPublishEvent(elosEvent_t *elosCoredumpEvent) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosSession_t *session;
+
+    fprintf(stdout, "connecting coredump to event log scanner...\n");
+
+    result = elosConnectTcpip("127.0.0.1", 54323, &session);
+    if (result == SAFU_RESULT_OK) {
+        fprintf(stdout, "send coredump event to log scanner...\n");
+        result = elosEventPublish(session, elosCoredumpEvent);
+        if (result == SAFU_RESULT_OK) {
+            fprintf(stdout, "disconnecting coredump from event log scanner...\n");
+            result = elosDisconnect(session);
+        }
+    }
+
+    return result;
+}
+
+safuResultE_t elosPrepareCorePattern(void) {
+    char executablePath[PATH_MAX] = {0};
+    const char *coredumpPattern = "%P %E %u %g %s %t %h";
+    ssize_t count = 0;
+    FILE *fp = NULL;
+    int uid = 0;
+    size_t nwrite = 0;
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    uid = (int)geteuid();
+    if (uid != 0) {
+        fprintf(stderr, "prepare_coredump not called as root and failed!\n");
+        result = SAFU_RESULT_FAILED;
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        count = readlink("/proc/self/exe", executablePath, PATH_MAX);
+        if ((count == -1) || (count == PATH_MAX)) {
+            fprintf(stderr, "prepare_coredump could not get its executable filepath and failed!\n");
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        fp = fopen("/proc/sys/kernel/core_pattern", "w");
+        if (fp == NULL) {
+            fprintf(stderr, "prepare_coredump could not open /proc/sys/kernel/core_pattern and failed!\n");
+            result = SAFU_RESULT_FAILED;
+        } else {
+            nwrite = fprintf(fp, "|%s %s", executablePath, coredumpPattern);
+            if (nwrite != (count + strlen(coredumpPattern) + 2)) {
+                fprintf(stderr,
+                        "prepare_coredump could not correctly write /proc/sys/kernel/core_pattern and failed!\n");
+                result = SAFU_RESULT_FAILED;
+            } else {
+                fprintf(stdout, "coredump core_pattern setup done\n");
+            }
+            fclose(fp);
+        }
+    }
+
+    return result;
+}
+
+static int _checkAndPrepareCoredump(elosCoredumpConfig_t *coredumpConfig, const char *appPath) {
+    int32_t procFileCount = 0;
+    int32_t totalFileCount = 0;
+    int ret = 0;
+
+    ret = _getCoredumpFileCount(coredumpConfig->path);
+    if (ret == 0) {
+        totalFileCount = elosCoredumpFileCount;
+
+        ret = _getCoredumpFileCount(appPath);
+        if (ret == 0) {
+            procFileCount = elosCoredumpFileCount;
+
+            ret = _getCoredumpFileSize(coredumpConfig->path);
+            if (ret == 0) {
+                if (procFileCount + 1 > coredumpConfig->coredumpProcFileCount ||
+                    totalFileCount + 1 > coredumpConfig->coredumpFileCount ||
+                    elosCoredumpSize + coredumpConfig->maxCoredumpFileSize > coredumpConfig->maxCoredumpMem) {
+                    if (_findOldestEntry(appPath) == 0 || _findOldestEntry(coredumpConfig->path) == 0) {
+                        if (_deleteFile(elosOldestFile) == 0) {
+                            ret = 1;
+                        } else {
+                            ret = -1;
+                        }
+                    } else {
+                        ret = -1;
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+static int _writeCoredump(const char *coredumpFile, unsigned long maxFileSize) {
+    size_t nread = 0;
+    size_t total = 0;
+    FILE *fp = NULL;
+    char buf[BUF_SIZE] = {0};
+    int ret = 0;
+
+    fp = fopen(coredumpFile, "w+");
+    if (fp == NULL) {
+        fprintf(stderr, "create coredump file '%s' failed!\n", coredumpFile);
+        ret = -1;
+    }
+
+    if (ret == 0) {
+        total = 0;
+        while ((nread = read(STDIN_FILENO, buf, BUF_SIZE)) > 0) {
+            total += nread;
+            if (total > maxFileSize) {
+                fprintf(stderr, "Coredump size exceeds max coredump file size configured \n");
+                ret = 1;
+                break;
+            }
+
+            size_t written = fwrite(buf, 1, nread, fp);
+            if (written != nread) {
+                fprintf(stderr, "write to coredump file '%s' failed!\n", coredumpFile);
+                ret = -1;
+                break;
+            }
+        }
+
+        if (ret == 1) {
+            fprintf(stdout, "Discarding coredump file : %s \n", coredumpFile);
+        } else if (ret == 0) {
+            fprintf(stdout, "wrote coredump file '%s' with %zd bytes\n", coredumpFile, total);
+        }
+
+        fclose(fp);
+    }
+
+    return ret;
+}
+
+int main(int argc, char *argv[]) {
+    char *tmpPtr = NULL;
+    char coredumpTargetFile[PATH_MAX] = {0};
+    char coredumpAppDir[PATH_MAX] = {0};
+    char applicationPath[PATH_MAX] = {0};
+    char payloadEvent[PATH_MAX + 128] = {0};
+    int ret = 0;
+    safuResultE_t result = SAFU_RESULT_OK;
+    struct stat sizeBuf = {0};
     elosCoredumpConfig_t coredumpConfig = {0};
     elosEvent_t event = {0};
-
-    fprintf(stdout, "initializing coredump configuration\n");
-    result = elosCoredumpConfigInit(&coredumpConfig);
-
-    if (result != SAFU_RESULT_OK) {
-        fprintf(stdout, "initializing coredump configuration failed \n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
 
     fprintf(stdout, "coredump started\n");
 
     if (argc == 1) {
         fprintf(stdout, "coredump called without parameter - setup core_pattern\n");
-        ret = elosPrepareCorePattern();
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return ret;
+        result = elosPrepareCorePattern();
+        if (result != SAFU_RESULT_OK) {
+            fprintf(stderr, "core dump pattern preparation failed\n");
+            ret = -1;
+        }
     } else if (argc != COREDUMP_MAX_SPECIFIER) {
         fprintf(stderr, "coredump called with invalid specifiers and failed!\n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
+        ret = -1;
+    } else {
+        fprintf(stdout, "initializing coredump configuration\n");
 
-    ret = snprintf(applicationPath, PATH_MAX, "%s", argv[COREDUMP_APP_PATH]);
-    if (ret >= PATH_MAX) {
-        fprintf(stderr, "reading application path specifier failed!\n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
-    _replaceCharsInString(applicationPath, PATH_MAX, '/', '_');
-
-    event.date.tv_sec = (time_t)strtoull(argv[COREDUMP_TIME], &p, 10);
-    if (*p != 0) {
-        fprintf(stderr, "reading timestamp specifier failed!\n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
-
-    event.source.pid = (pid_t)strtol(argv[COREDUMP_PID], &p, 10);
-    if (*p != 0) {
-        fprintf(stderr, "reading PID specifier failed!\n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
-
-    ret = snprintf(coredumpTargetFile, PATH_MAX, "%s/%s-%s-%s.coredump", coredumpConfig.path, applicationPath,
-                   argv[COREDUMP_PID], argv[COREDUMP_TIME]);
-    if (ret >= PATH_MAX) {
-        fprintf(stderr, "coredump target filename to long, failed!\n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
-
-    fp = fopen(coredumpTargetFile, "w+");
-    if (fp == NULL) {
-        fprintf(stderr, "create coredump file '%s' failed!\n", coredumpTargetFile);
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
-
-    total = 0;
-    while ((nread = read(STDIN_FILENO, buf, BUF_SIZE)) > 0) {
-        size_t written = fwrite(buf, 1, nread, fp);
-        if (written != nread) {
-            fprintf(stderr, "write to coredump file '%s' failed!\n", coredumpTargetFile);
-            fclose(fp);
-            elosCoredumpConfigDelete(&coredumpConfig);
-            return -1;
+        result = elosCoredumpConfigInit(&coredumpConfig);
+        if (result != SAFU_RESULT_OK) {
+            fprintf(stderr, "initializing coredump configuration failed \n");
+            ret = -1;
         }
-        total += nread;
-    }
-    fprintf(stdout, "wrote coredump file '%s' with %zd bytes\n", coredumpTargetFile, total);
 
-    fclose(fp);
+        if (ret == 0) {
+            event.date.tv_sec = (time_t)strtoull(argv[COREDUMP_TIME], &tmpPtr, 10);
+            if (*tmpPtr != 0) {
+                fprintf(stderr, "reading timestamp specifier failed!\n");
+                ret = -1;
+            }
+        }
 
-    _replaceCharsInString(applicationPath, PATH_MAX, '_', '/');
+        if (ret == 0) {
+            event.source.pid = (pid_t)strtol(argv[COREDUMP_PID], &tmpPtr, 10);
+            if (*tmpPtr != 0) {
+                fprintf(stderr, "reading PID specifier failed!\n");
+                ret = -1;
+            }
+        }
 
-    event.source.appName = applicationPath;
-    event.source.fileName = applicationPath;
+        if (ret == 0) {
+            event.severity = ELOS_SEVERITY_FATAL;
+            event.hardwareid = argv[COREDUMP_HOSTNAME];
+            event.classification = ELOS_CLASSIFICATION_PROCESS_ERRORS;
 
-    event.severity = ELOS_SEVERITY_FATAL;
-    event.hardwareid = argv[COREDUMP_HOSTNAME];
-    event.classification = ELOS_CLASSIFICATION_PROCESS_ERRORS;
-    event.messageCode = ELOS_MSG_CODE_CORE_DUMPED;
+            ret = snprintf(applicationPath, PATH_MAX, "%s", argv[COREDUMP_APP_PATH]);
+            if (ret >= PATH_MAX) {
+                fprintf(stderr, "reading application path specifier failed!\n");
+            } else {
+                ret = 0;
+            }
+        }
 
-    ret = snprintf(payloadEvent, PATH_MAX + 128, "core dumped to %s, signal=%s, UID=%s, GID=%s", coredumpTargetFile,
-                   argv[COREDUMP_SIGNAL], argv[COREDUMP_UID], argv[COREDUMP_GID]);
-    if (ret >= (PATH_MAX + 128)) {
-        fprintf(stderr, "coredump payload to long, failed!\n");
+        if (ret == 0) {
+            if (strchr(applicationPath, '!') != NULL) {
+                _replaceCharsInString(applicationPath, PATH_MAX, '!', '_');
+            } else if (strchr(applicationPath, '/') != NULL) {
+                _replaceCharsInString(applicationPath, PATH_MAX, '/', '_');
+            }
+
+            ret = snprintf(coredumpAppDir, PATH_MAX, "%s/%s", coredumpConfig.path, applicationPath);
+
+            if (ret >= PATH_MAX) {
+                fprintf(stderr, "coredump application dir name too long, failed!\n");
+            } else {
+                ret = 0;
+            }
+        }
+
+        if (ret == 0) {
+            if (stat(coredumpAppDir, &sizeBuf) == -1) {
+                if (mkdir(coredumpAppDir, S_IRWXU) == -1) {
+                    fprintf(stderr, "Coredump dir for process does not exit and cannot be created, failed!\n");
+                    ret = -1;
+                }
+            }
+        }
+
+        if (ret == 0) {
+            ret = snprintf(coredumpTargetFile, PATH_MAX, "%s/%s/%s-%s.coredump", coredumpConfig.path, applicationPath,
+                           argv[COREDUMP_TIME], argv[COREDUMP_PID]);
+            if (ret >= PATH_MAX) {
+                fprintf(stderr, "coredump target filename to long, failed!\n");
+            } else {
+                ret = 0;
+            }
+        }
+
+        if (ret == 0) {
+            _replaceCharsInString(applicationPath, PATH_MAX, '_', '/');
+            event.source.appName = applicationPath;
+            event.source.fileName = applicationPath;
+
+            ret = _checkAndPrepareCoredump(&coredumpConfig, coredumpAppDir);
+            if (ret == 1) {
+                event.messageCode = ELOS_MSG_CODE_CORE_DUMP_DELETED;
+                ret = snprintf(payloadEvent, PATH_MAX + 128, "core dump file %s deleted", elosOldestFile);
+                if (ret < 0 || ret >= (PATH_MAX + 128)) {
+                    fprintf(stderr, "payload string create failed will be set to %s\n", elosOldestFile);
+                    event.payload = elosOldestFile;
+                } else {
+                    event.payload = payloadEvent;
+                }
+                result = elosCoredumpPublishEvent(&event);
+                if (result != SAFU_RESULT_OK) {
+                    fprintf(stderr, "coredump event publish failed\n");
+                    ret = -1;
+                } else {
+                    ret = 0;
+                }
+            } else if (ret == -1) {
+                fprintf(stderr, "coredump check returned error\n");
+            }
+        }
+
+        if (ret == 0) {
+            ret = _writeCoredump(coredumpTargetFile, coredumpConfig.maxCoredumpFileSize);
+            if (ret == 1) {
+                ret = _deleteFile(coredumpTargetFile);
+                if (ret == 0) {
+                    event.messageCode = ELOS_MSG_CODE_CORE_DUMP_DISCARDED;
+                    ret = snprintf(payloadEvent, PATH_MAX + 128, "core dump file %s discarded", coredumpTargetFile);
+                    if (ret < 0 || ret >= (PATH_MAX + 128)) {
+                        fprintf(stderr, "payload string create failed will be set to %s\n", coredumpTargetFile);
+                        event.payload = coredumpTargetFile;
+                    } else {
+                        event.payload = payloadEvent;
+                    }
+                    result = elosCoredumpPublishEvent(&event);
+                    if (result != SAFU_RESULT_OK) {
+                        fprintf(stderr, "coredump event publish failed\n");
+                    }
+                    ret = -1;
+                }
+            } else if (ret == -1) {
+                fprintf(stderr, "writing to coredump file returned error\n");
+            } else {
+                event.messageCode = ELOS_MSG_CODE_CORE_DUMP_CREATED;
+                ret = snprintf(payloadEvent, PATH_MAX + 128, "core dumped to %s, signal=%s, UID=%s, GID=%s",
+                               coredumpTargetFile, argv[COREDUMP_SIGNAL], argv[COREDUMP_UID], argv[COREDUMP_GID]);
+                if (ret < 0 || ret >= (PATH_MAX + 128)) {
+                    fprintf(stderr, "payload string create failed will be set to %s\n", coredumpTargetFile);
+                    event.payload = coredumpTargetFile;
+                } else {
+                    event.payload = payloadEvent;
+                }
+                result = elosCoredumpPublishEvent(&event);
+                if (result != SAFU_RESULT_OK) {
+                    fprintf(stderr, "coredump event publish failed\n");
+                    ret = -1;
+                } else {
+                    fprintf(stdout, "coredump done\n");
+                    ret = 0;
+                }
+            }
+        }
+
         elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
     }
 
-    event.payload = payloadEvent;
-
-    fprintf(stdout, "connecting coredump to event log scanner...\n");
-    result = elosConnectTcpip("127.0.0.1", 54323, &session);
-    if (result != SAFU_RESULT_OK) {
-        fprintf(stderr, "coredump can not connect to elos and failed!\n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
-
-    fprintf(stdout, "send coredump event to log scanner...\n");
-    result = elosEventPublish(session, &event);
-    if (result != SAFU_RESULT_OK) {
-        fprintf(stderr, "coredump push event failed!\n"); /* no return here, try to disc. */
-    }
-
-    fprintf(stdout, "disconnecting coredump from event log scanner...\n");
-    result = elosDisconnect(session);
-    if (result != SAFU_RESULT_OK) {
-        fprintf(stderr, "coredump disconnect failed!\n");
-        elosCoredumpConfigDelete(&coredumpConfig);
-        return -1;
-    }
-    fprintf(stdout, "coredump done\n");
-
-    elosCoredumpConfigDelete(&coredumpConfig);
-
-    return ret;
+    return (ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
