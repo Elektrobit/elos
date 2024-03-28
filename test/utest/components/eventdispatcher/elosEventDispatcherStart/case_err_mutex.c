@@ -46,6 +46,11 @@ void testElosEventDispatcherStartErrMutex(void **state) {
 
     PARAM("%s", "pthread_mutex_unlock fails");
 
+    MOCK_FUNC_ALWAYS(pthread_setname_np);
+    expect_any_always(__wrap_pthread_setname_np, thread);
+    expect_any_always(__wrap_pthread_setname_np, name);
+    will_return_always(__wrap_pthread_setname_np, 0);
+
     MOCK_FUNC_AFTER_CALL(pthread_mutex_unlock, 0);
     expect_not_value(__wrap_pthread_mutex_unlock, __mutex, NULL);
     will_return(__wrap_pthread_mutex_unlock, -1);

@@ -4,6 +4,7 @@
             "UseEnv": true,
             "ConnectionLimit": 200,
             "LogLevel": "DEBUG",
+            "Port": 54323,
             "LogFilter": "",
             "EventBlacklist": ".event.messageCode 2000 EQ",
             "authorizedProcesses": [
@@ -18,7 +19,7 @@
                         "File": "client_dummy.so",
                         "Run": "always",
                         "Config": {
-                            "Port": 54321,
+                            "Port": 54323,
                             "Interface": "127.0.0.1",
                             "EventBlacklist": ".event.messageCode 2000 EQ",
                             "authorizedProcesses": [
@@ -32,7 +33,7 @@
                         "File": "client_dummy.so",
                         "Run": "always",
                         "Config": {
-                            "Port": 5422,
+                            "Port": 54322,
                             "Interface": "0.0.0.0",
                             "EventBlacklist": ".event.messageCode 2000 EQ",
                             "authorizedProcesses": []
@@ -50,13 +51,17 @@
                             ".event.messageCode 1000 NE"
                         ]
                     },
-                    "SecondDummy": {
-                        "File": "backend_dummy.so",
+                    "DLT": {
+                        "File": "backend_dlt_logger.so",
                         "Run": "always",
                         "Filter": [
-                            ".event.messageCode 1000 EQ",
-                            ".event.severity 1 EQ"
-                        ]
+                            "1 1 EQ"
+                        ],
+                        "Config": {
+                            "Connection": "/tmp/dlt",
+                            "EcuId": "ECU1",
+                            "AppId": "ELOS"
+                        }
                     },
                     "SQLBackend": {
                         "File": "backend_sql.so",

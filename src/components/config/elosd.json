@@ -5,6 +5,7 @@
             "ConnectionLimit": 200,
             "LogFilter": "",
             "LogLevel": "DEBUG",
+            "Port": 54321,
             "EventBlacklist": ".event.messageCode 2000 EQ",
             "authorizedProcesses": [
                 ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
@@ -58,6 +59,18 @@
                         ],
                         "Config": {
                             "StoragePath": ""
+                        }
+                    },
+                    "DLT": {
+                        "File": "backend_dlt_logger.so",
+                        "Run": "always",
+                        "Filter": [
+                            ".messageCode 1000 GE"
+                        ],
+                        "Config": {
+                            "Connection": "/tmp/dlt",
+                            "EcuId": "ECU1",
+                            "AppId": "ELOS"
                         }
                     }
                 }

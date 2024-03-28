@@ -1,0 +1,143 @@
+variables:
+  SOURCES_URI: "https://github.com/Elektrobit/"
+  ELOS_DEPENDENCY_CONFIG: "ci/dependencies_emlix.json"
+
+stages:
+  - build
+  - test
+
+default:
+  image: docker:24-dind
+  services:
+    - name: docker:24-dind
+      alias: docker
+  tags:
+      - "shell"
+
+before_script:
+  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+  - docker info
+  - ip a
+  - ss -antup
+  - env
+
+build-release:
+  stage: build
+  script:
+    - ci/docker-run.sh ci/build.sh --ci Release
+  artifacts:
+    paths:
+      - build/deps/
+      - build/Release/dist/
+      - build/Release/cmake/
+    exclude:
+      - build/deps/src/
+
+build-debug:
+  stage: build
+  script:
+    - ci/docker-run.sh ci/build.sh --ci Debug
+  artifacts:
+    paths:
+      - build/Debug/dist/
+      - build/Debug/cmake/
+
+integration-tests:
+  stage: test
+  variables:
+    BUILD_ARG: "--build-arg USER=gitlab-runner"
+    DOCKER_BUILDKIT: 0
+    BUILD_ID: $CI_JOB_ID
+    GIT_COMMIT: $CI_COMMIT_SHORT_SHA
+  script:
+    - ci/run_integration_tests.sh Release
+  artifacts:
+    when: always
+    paths:
+      - build/Release/result/integration/
+
+unit-test-release:
+  stage: test
+  script:
+    - ci/docker-run.sh ci/run_utest.sh Release
+  artifacts:
+    when: always
+    paths:
+      - build/Release/result/unit_test/
+    reports:
+      junit: build/Release/result/unit_test/junit.xml
+
+unit-test-debug:
+  stage: test
+  script:
+    - ci/docker-run.sh ci/run_utest.sh Debug
+  artifacts:
+    when: always
+    paths:
+      - build/Debug/result/unit_test/
+    reports:
+      junit: build/Debug/result/unit_test/junit.xml
+
+smoke-test-release:
+  stage: test
+  script:
+    - ci/docker-run.sh ci/run_smoketests.sh Release
+  artifacts:
+    when: always
+    paths:
+      - build/Release/result/smoketest_results/
+
+smoke-test-debug:
+  stage: test
+  script:
+    - ci/docker-run.sh ci/run_smoketests.sh Debug
+  artifacts:
+    when: always
+    paths:
+      - build/Debug/result/smoketest_results/
+
+code-lint:
+  stage: test
+  script:
+    - ci/docker-run.sh ci/code_lint.py --ci
+    - ci/docker-run.sh ci/checklicense.sh
+  artifacts:
+    when: always
+    paths:
+      - build/Release/cmake/lint_results/
+
+benchmark:
+  stage: test
+  script:
+    - ci/docker-run.sh ci/run_benchmarks.sh Release
+  artifacts:
+    when: always
+    paths:
+      - build/Release/result/benchmark_results/
+
+code-coverage:
+  rules:
+    - when: never
+      allow_failure: true
+  stage: test
+  script:
+    - ci/docker-run.sh ci/create_coverage.sh
+  artifacts:
+    when: always
+    paths:
+      - build/Release/cmake/coverage_results/
+
+publish-kpis:
+  rules:
+    - when: never
+      allow_failure: true
+  script:
+    - ci/publish_pkis.sh
+
+documentation:
+  stage: test
+  script:
+    - ci/docker-run.sh ci/build_doc.sh
+  artifacts:
+    paths:
+      - build/Debug/doc/

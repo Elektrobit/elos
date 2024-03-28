@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+// clang-format off
+#define _GNU_SOURCE
+#include <pthread.h>
+// clang-format on
+
 #include <safu/log.h>
 #include <sys/eventfd.h>
 
@@ -22,8 +27,12 @@ safuResultE_t elosConnectionManagerStart(elosConnectionManager_t *connectionMana
         if (retVal != 0) {
             safuLogErrErrnoValue("pthread_create failed", retVal);
         } else {
-            eventfd_t value = 0;
+            retVal = pthread_setname_np(connectionManager->listenThread, "ConManager");
+            if (retVal != 0) {
+                safuLogErr("Failed to set thread name for connection manager");
+            }
 
+            eventfd_t value = 0;
             retVal = eventfd_read(connectionManager->syncFd, &value);
             if (retVal < 0) {
                 safuLogErrErrnoValue("eventfd_read failed", retVal);

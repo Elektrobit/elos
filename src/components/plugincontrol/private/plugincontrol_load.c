@@ -1,15 +1,20 @@
 // SPDX-License-Identifier: MIT
 
+// clang-format off
 #define _GNU_SOURCE
+#include <pthread.h>
+// clang-format on
 
 #include "plugincontrol_load.h"
 
 #include <dlfcn.h>
+#include <safu/defines.h>
 #include <safu/log.h>
 #include <safu/mutex.h>
 #include <samconf/samconf.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/eventfd.h>
 #include <unistd.h>
 
@@ -148,6 +153,13 @@ safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
                     atomic_fetch_or(&control->flags, SAFU_FLAG_ERROR_BIT);
                     atomic_fetch_and(&control->flags, ~ELOS_PLUGINCONTROL_FLAG_WORKER_BIT);
                     result = SAFU_RESULT_FAILED;
+                } else {
+                    char threadName[20] = {0};
+                    strncpy(threadName, control->context.config->key, ARRAY_SIZE(threadName) - 1);
+                    retVal = pthread_setname_np(control->workerThread, threadName);
+                    if (retVal != 0) {
+                        safuLogErr("Failed to set thread name for plugin control");
+                    }
                 }
             }
 

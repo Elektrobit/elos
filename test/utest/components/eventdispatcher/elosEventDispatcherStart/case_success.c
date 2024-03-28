@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+#include <cmocka_mocks/mock_libc.h>
+
 #include "elosEventDispatcherStart_utest.h"
 
 int testElosEventDispatcherStartSuccessSetup(void **state) {
@@ -27,6 +29,11 @@ void testElosEventDispatcherStartSuccess(void **state) {
 
     TEST("elosEventDispatcherStart");
     SHOULD("%s", "test correct behaviour of elosEventDispatcherStart");
+
+    MOCK_FUNC_ALWAYS(pthread_setname_np);
+    expect_any_always(__wrap_pthread_setname_np, thread);
+    expect_any_always(__wrap_pthread_setname_np, name);
+    will_return_always(__wrap_pthread_setname_np, 0);
 
     result = elosEventDispatcherStart(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_OK);

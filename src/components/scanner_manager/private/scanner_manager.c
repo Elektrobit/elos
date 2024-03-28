@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-#ifndef _GNU_SOURCE
+// clang-format off
 #define _GNU_SOURCE
-#endif
+#include <pthread.h>
+// clang-format on
 
 #include "elos/scanner_manager/scanner_manager.h"
 
@@ -378,6 +379,11 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
                 entry->state = SCANNER_ERROR_FATAL;
                 safuLogErrErrno("pthread_create failed");
                 continue;
+            }
+
+            ret = pthread_setname_np(entry->thread, "ScannerManager");
+            if (ret != 0) {
+                safuLogErr("Failed to set thread name for scanner manager");
             }
         }
     }

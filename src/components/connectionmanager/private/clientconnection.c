@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+// clang-format off
 #define _GNU_SOURCE
+#include <pthread.h>
+// clang-format on
 
 #include "elos/connectionmanager/clientconnection.h"
 
@@ -162,8 +165,12 @@ safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection
         if (retVal != 0) {
             safuLogErrErrnoValue("Worker thread creation failed", retVal);
         } else {
-            eventfd_t value = 0;
+            retVal = pthread_setname_np(clientConnection->thread, "ClientCon");
+            if (retVal != 0) {
+                safuLogErr("Failed to set thread name for client connection");
+            }
 
+            eventfd_t value = 0;
             retVal = eventfd_read(clientConnection->syncFd, &value);
             if (retVal < 0) {
                 safuLogErrErrnoValue("eventfd_read failed", retVal);

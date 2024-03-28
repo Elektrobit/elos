@@ -3,6 +3,7 @@
 CMDPATH=$(realpath "$(dirname "$0")")
 BASE_DIR=$(realpath "${CMDPATH}/../..")
 BUILD_TYPE="${BUILD_TYPE-Debug}"
+ELOSD_PORT=54323
 
 . ${CMDPATH}/smoketest_env.sh
 
@@ -63,7 +64,7 @@ wait_for_file() {
 
 wait_for_elosd_socket() {
     local i=0
-    ${NETSTAT} -l | grep 54321 | grep tcp 2>&1 > /dev/null
+    ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
     while [ $? -ne 0 ]
     do
       i=$((i+1))
@@ -72,14 +73,40 @@ wait_for_elosd_socket() {
          log "Error: Waiting for elosd socket timed out"
          exit 124
       fi
-      ${NETSTAT} -l | grep 54321 | grep tcp 2>&1 > /dev/null
+      ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
     done
+}
+
+start_dlt_mock() {
+    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
+        rm -f "${ELOS_DLT_PIPE_PATH}"
+    fi
+
+    mkfifo "${ELOS_DLT_PIPE_PATH}"
+
+    tail -f "${ELOS_DLT_PIPE_PATH}" >> /tmp/dlt_dump &
+    DLT_MOCK_PID=$!
+}
+
+stop_dlt_mock() {
+    kill "${DLT_MOCK_PID}"
+
+    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
+        rm -f "${ELOS_DLT_PIPE_PATH}"
+    fi
 }
 
 smoketest_elosd() {
     prepare_env "elosd"
 
-    log "Starting Elosd"
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+
+    start_dlt_mock
+
+    log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
     elosd > $RESULT_DIR/elosd.txt 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
@@ -88,7 +115,11 @@ smoketest_elosd() {
     wait $ELOSD_PID || true
     log "Killed Elosd"
 
-    STRINGS="listen on: ${ELOSD_INTERFACE-"0.0.0.0"}:${ELOSD_PORT-"54321"}
+    stop_dlt_mock
+
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
+
+    STRINGS="listen on: ${ELOSD_INTERFACE-"0.0.0.0"}:${ELOSD_PORT-"54323"}
 hardwareid: $(cat /etc/machine-id)
 log level: ${ELOS_LOG_LEVEL}
 log filter: ${ELOS_LOG_FILTER-""}
@@ -123,6 +154,7 @@ Shutting down..."
         FAIL=$((FAIL+1))
         log_err "Elos log contains WARNINGS or ERRORS"
     fi
+
 
     return $FAIL
 }
@@ -191,9 +223,9 @@ smoketest_coredump() {
     TEST_MESSAGE="THIS IS THE DUMP"
     echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger.log 2>&1
 
-    elosc -f ".event.messageCode 5005 EQ" > $RESULT_DIR/coredump_event.log 2>&1
+    elosc -P $ELOSD_PORT -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event.log 2>&1
 
-    if grep -q "\"messageCode\":5005" $RESULT_DIR/coredump_event.log
+    if grep -q "\"messageCode\":5100" $RESULT_DIR/coredump_event.log
     then
         log "Success coredump event logged"
     else
@@ -222,7 +254,7 @@ smoketest_syslog() {
     wait_for_file $ELOS_SYSLOG_PATH
 
     log "Starting syslog test"
-    syslog_example "$TEST_MESSAGE" > $RESULT_DIR/syslog_example.log 2>&1 &
+    syslog_example -m "$TEST_MESSAGE" -P $ELOSD_PORT > $RESULT_DIR/syslog_example.log 2>&1 &
     SYSLOG_EXAMPLE_PID=$!
 
     log "wait for syslog_example to finish ..."
@@ -261,7 +293,7 @@ smoketest_kmsg() {
     wait_for_file $ELOS_KMSG_FILE
 
     log "Polling KMSG"
-    elosc -s "$FILTERSTRING" > $LOG_ELOSCL 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $LOG_ELOSCL 2>&1 &
     POLL_CLIENT_PID=$!
     sleep 1s
 
@@ -327,11 +359,11 @@ smoketest_publish_poll() {
     sleep 0.5s
 
     log "Polling client 1 ..."
-    elosc -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_1.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_1.log 2>&1 &
     POLL_CLIENT_1_PID=$!
 
     log "Polling client 2 ..."
-    elosc -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_2.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_2.log 2>&1 &
     POLL_CLIENT_2_PID=$!
 
     sleep 0.5s
@@ -339,7 +371,7 @@ smoketest_publish_poll() {
     for i in `seq 1 10`; do
         local MESSAGE=$(printf "$MESSAGE_TEMPLATE" `date "+%s,0"` $i $i $i )
         log "Publish \"$MESSAGE\""
-        elosc -p "$MESSAGE" >> $RESULT_DIR/elosc_publish.log 2>&1
+        elosc -P $ELOSD_PORT -p "$MESSAGE" >> $RESULT_DIR/elosc_publish.log 2>&1
     done
 
     sleep 1s
@@ -384,28 +416,28 @@ smoketest_locale() {
     sleep 0.5s
 
     log "Start listening client"
-    elosc -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
 
     sleep 0.5s
 
     #send valid messages
-    tinyElosc -v >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -s ".event.payload 'Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ' STRCMP" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"payload\":\"this is payload\"}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"payload\":\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p $VALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -v >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -s ".event.payload 'Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ' STRCMP" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"this is payload\"}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p $VALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
 
     #send invalid messages
-    tinyElosc -s "\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p "{\"invalid\":Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ}" >> $RESULT_DIR/event.log 2>&1
-    tinyElosc -p $INVALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -s "\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ\"}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p "{\"invalid\":Ϡ𝔾𝓻ÿ𝓣𝔃ë𝐋Ϡ}" >> $RESULT_DIR/event.log 2>&1
+    tinyElosc -P $ELOSD_PORT -p $INVALID_JSON_MESSAGE >> $RESULT_DIR/event.log 2>&1
 
     #send empty messages
-    tinyElosc -s "" >> $RESULT_DIR/event.log 2>&1 #invalid
-    tinyElosc -p "" >> $RESULT_DIR/event.log 2>&1 #invalid
+    tinyElosc -P $ELOSD_PORT -s "" >> $RESULT_DIR/event.log 2>&1 #invalid
+    tinyElosc -P $ELOSD_PORT -p "" >> $RESULT_DIR/event.log 2>&1 #invalid
 
     #check if elosd is still alive
     local alive=0
@@ -428,14 +460,14 @@ smoketest_locale() {
     elosd > $RESULT_DIR/elosd.log 2>&1 &
     ELOSD_PID=$!
     sleep 0.5s
-    elosc -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
+    elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
     sleep 0.5s
 
     #locale tests
-    tinyElosc -p "{\"classification\":42,5}" >> $RESULT_DIR/event.log 2>&1 #invalid
-    tinyElosc -p "{\"payload\":\"42,5\"}" >> $RESULT_DIR/event.log 2>&1 #valid
-    tinyElosc -p "{\"payload\":\"$(date)\"}" >> $RESULT_DIR/event.log 2>&1 #valid
+    tinyElosc -P $ELOSD_PORT -p "{\"classification\":42,5}" >> $RESULT_DIR/event.log 2>&1 #invalid
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"42,5\"}" >> $RESULT_DIR/event.log 2>&1 #valid
+    tinyElosc -P $ELOSD_PORT -p "{\"payload\":\"$(date)\"}" >> $RESULT_DIR/event.log 2>&1 #valid
     sleep 0.1s
 
     #check test success
@@ -459,7 +491,7 @@ smoketest_locale() {
         success=$((success+1))
     fi
     local nonErrors=$(cat $RESULT_DIR/event.log | grep -wc "\"error\":null")
-    #note: "tinyElosc -s" always sends an additional valid eventCreate that is counted too
+    #note: "tinyElosc -P $ELOSD_PORT -s" always sends an additional valid eventCreate that is counted too
     log "found $nonErrors valid messages and expected 7"
     if [ $nonErrors -eq 7 ]; then
         success=$((success+1))
@@ -513,7 +545,7 @@ smoketest_find_event() {
     sleep 0.5s
 
     log "Start subscriber client ..."
-    elosc -s "$FILTERSTRING" -r 100 > $LOG_ELOSC_SUBSCRIBE 2>&1 &
+    elosc -P $ELOSD_PORT -s "$FILTERSTRING" -r 100 > $LOG_ELOSC_SUBSCRIBE 2>&1 &
     ELOSC_SUBSCRIBE_PID=$!
     sleep 0.5s
 
@@ -522,14 +554,14 @@ smoketest_find_event() {
     log "Got event queue id $EVENT_QUEUE_ID"
 
     # Publish messages
-    elosc -p "$MESSAGE01" > $LOG_ELOSC_PUBLISH 2>&1
-    elosc -p "$MESSAGE02" >> $LOG_ELOSC_PUBLISH 2>&1
-    elosc -p "$MESSAGE03" >> $LOG_ELOSC_PUBLISH 2>&1
+    elosc -P $ELOSD_PORT -p "$MESSAGE01" > $LOG_ELOSC_PUBLISH 2>&1
+    elosc -P $ELOSD_PORT -p "$MESSAGE02" >> $LOG_ELOSC_PUBLISH 2>&1
+    elosc -P $ELOSD_PORT -p "$MESSAGE03" >> $LOG_ELOSC_PUBLISH 2>&1
     sleep 0.5s
 
     # Search in the log for specific messages
     log "Ask elosd to find matching events..."
-    elosc -f "$FILTERSTRING" > $LOG_ELOSC_FINDEVENT 2>&1
+    elosc -P $ELOSD_PORT -f "$FILTERSTRING" > $LOG_ELOSC_FINDEVENT 2>&1
 
     # Check success conditions
     ELOSC_FINDEVENT_MATCHES=$(grep -wc testEventFiltering $LOG_ELOSC_FINDEVENT)
@@ -540,7 +572,7 @@ smoketest_find_event() {
     fi
 
     # Unsubscribe from event queues
-    elosc -u "$EVENT_QUEUE_ID" > $LOG_ELOSC_UNSUBSCRIBE 2>&1
+    elosc -P $ELOSD_PORT -u "$EVENT_QUEUE_ID" > $LOG_ELOSC_UNSUBSCRIBE 2>&1
 
     #teardown
     kill -TERM $ELOSC_SUBSCRIBE_PID $ELOSD_PID
@@ -560,34 +592,41 @@ smoketest_find_event() {
     fi
 }
 
-smoketest_backend_dummy() {
-    prepare_env "backend_dummy"
+smoketest_plugins() {
+    prepare_env "plugins"
 
     LOG_ELOSD="$RESULT_DIR/elosd.log"
     TEST_RESULT=0
 
-    log "Starting elosd"
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+
+    start_dlt_mock
+
+    log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
     elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
-    sleep 1s
+    wait_for_elosd_socket
 
     log "Stop elosd ($ELOSD_PID)"
-    kill $ELOSD_PID > /dev/null
-    wait $ELOSD_PID > /dev/null
+    kill $ELOSD_PID #> /dev/null
+    wait $ELOSD_PID #> /dev/null
 
-    TEST_MATCH='/Plugin\s.Dummy/!d; /loaded/p; /started/p; /Unloading/p;'
-    TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
-    if [ "$TEST_COUNT" != "3" ]; then
-        log_err "Missing messages for Plugin 'Dummy' ($TEST_COUNT of 3 lines found)"
-        TEST_RESULT=1
-    fi
+    stop_dlt_mock
 
-    TEST_MATCH='/Plugin\s.SecondDummy/!d; /loaded/p; /started/p; /Unloading/p;'
-    TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
-    if [ "$TEST_COUNT" != "3" ]; then
-        log_err "Missing messages for Plugin 'SecondDummy' ($TEST_COUNT of 3 lines found)"
-        TEST_RESULT=1
-    fi
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
+
+    PLUGINS="Dummy DLT"
+    for plugin in ${PLUGINS}; do
+        TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
+        TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
+        if [ "$TEST_COUNT" != "4" ]; then
+            log_err "Missing messages for Plugin '${plugin}' ($TEST_COUNT of 4 lines found)"
+            TEST_RESULT=1
+        fi
+    done
 
     return $TEST_RESULT
 }
@@ -612,8 +651,8 @@ smoketest_dual_json_plugin() {
     wait_for_file $COREDUMP_FILE
     wait_for_file $JSONBACKEND_FILE
 
-    elosc -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
-    elosc -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
+    elosc -P $ELOSD_PORT -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
+    elosc -P $ELOSD_PORT -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
 
     log "Stop elosd ($ELOSD_PID)"
     kill $ELOSD_PID > /dev/null
@@ -845,7 +884,7 @@ call_test "kmsg" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "publish_poll" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "locale" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "find_event" || FAILED_TESTS=$((FAILED_TESTS+1))
-call_test "backend_dummy" || FAILED_TESTS=$((FAILED_TESTS+1))
+call_test "plugins" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "dual_json_plugin" || FAILED_TESTS=$((FAILED_TESTS+1))
 
 if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then

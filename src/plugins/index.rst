@@ -9,6 +9,7 @@ Plugins
    scanners/kmsg/index
    scanners/syslog/index
    scanners/shmem/index
+   storagebackends/dlt/index
    storagebackends/index
    storagebackends/influxdbbackend/index
    storagebackends/jsonbackend/index
