@@ -5,6 +5,4 @@ UseTab: Never
 AllowShortFunctionsOnASingleLine: Empty
 DerivePointerAlignment: false
 PointerAlignment: Right
-UseTab: Never
-IndentWidth: 4
 AlignConsecutiveMacros: true

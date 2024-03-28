@@ -3,13 +3,14 @@
 #define ELOS_CONFIG_H
 
 #include <safu/log.h>
+#include <safu/result.h>
 #include <samconf/samconf.h>
 
 #include "elos/config/defines.h"
 
 __BEGIN_DECLS
 
-int elosConfigLoad(samconfConfig_t **config);
+safuResultE_t elosConfigLoad(samconfConfig_t **config);
 int elosConfigGetElosdPort(const samconfConfig_t *config);
 /*******************************************************************
  * Get the connection limit from config

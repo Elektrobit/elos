@@ -171,3 +171,15 @@ https://log4c.sourceforge.net/
 For the elos_log4c_demo application a separate category ``log4c.elos.demo.log4cdemo`` with an appender ``elos`` is created in the config file ``log4crc`` as shown above. The category is the log message destination. The appender outputs the log message to the specified output. An example of an log4c appender can be found here : https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_appenders.c. The output can be an output stream, file, syslog etc. The ``elos_appender`` has a layout ``elos_layout`` which formats the log message using the formatter ``elos_formatter``. An example ofa log4c formatter can be found here : https://sourceforge.net/p/log4c/log4c/ci/master/tree/examples/example_formatters.c. The ``elos_formatter`` formats the log message using pattern strings and sends the formatted string back to the appender to be released out.
 
 .. command-output:: elos_log4c_demo
+
+
+elosDlt - a demo program to show useage of libelosdlt
+-----------------------------------------------------
+
+Elos provides a basic implementation of the DLT protocol to publish elos events
+to a DLT daemon. To observer the workings of libelosdlt and DLT, a dlt-daemon
+is required to be installed and running. Information about dlt-daemon
+installation and setup can be found here: https://github.com/COVESA/dlt-daemon.
+
+.. command-output:: elosDlt
+   :returncode: 1

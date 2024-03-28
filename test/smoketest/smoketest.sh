@@ -77,10 +77,36 @@ wait_for_elosd_socket() {
     done
 }
 
+start_dlt_mock() {
+    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
+        rm -f "${ELOS_DLT_PIPE_PATH}"
+    fi
+
+    mkfifo "${ELOS_DLT_PIPE_PATH}"
+
+    tail -f "${ELOS_DLT_PIPE_PATH}" >> /tmp/dlt_dump &
+    DLT_MOCK_PID=$!
+}
+
+stop_dlt_mock() {
+    kill "${DLT_MOCK_PID}"
+
+    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
+        rm -f "${ELOS_DLT_PIPE_PATH}"
+    fi
+}
+
 smoketest_elosd() {
     prepare_env "elosd"
 
-    log "Starting Elosd"
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+
+    start_dlt_mock
+
+    log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
     elosd > $RESULT_DIR/elosd.txt 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
@@ -88,6 +114,10 @@ smoketest_elosd() {
     find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \; &&
     wait $ELOSD_PID || true
     log "Killed Elosd"
+
+    stop_dlt_mock
+
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
     STRINGS="listen on: ${ELOSD_INTERFACE-"0.0.0.0"}:${ELOSD_PORT-"54323"}
 hardwareid: $(cat /etc/machine-id)
@@ -124,6 +154,7 @@ Shutting down..."
         FAIL=$((FAIL+1))
         log_err "Elos log contains WARNINGS or ERRORS"
     fi
+
 
     return $FAIL
 }
@@ -561,34 +592,41 @@ smoketest_find_event() {
     fi
 }
 
-smoketest_backend_dummy() {
-    prepare_env "backend_dummy"
+smoketest_plugins() {
+    prepare_env "plugins"
 
     LOG_ELOSD="$RESULT_DIR/elosd.log"
     TEST_RESULT=0
 
-    log "Starting elosd"
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+
+    start_dlt_mock
+
+    log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
     elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
-    sleep 1s
+    wait_for_elosd_socket
 
     log "Stop elosd ($ELOSD_PID)"
-    kill $ELOSD_PID > /dev/null
-    wait $ELOSD_PID > /dev/null
+    kill $ELOSD_PID #> /dev/null
+    wait $ELOSD_PID #> /dev/null
 
-    TEST_MATCH='/Plugin\s.Dummy/!d; /loaded/p; /started/p; /Unloading/p;'
-    TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
-    if [ "$TEST_COUNT" != "3" ]; then
-        log_err "Missing messages for Plugin 'Dummy' ($TEST_COUNT of 3 lines found)"
-        TEST_RESULT=1
-    fi
+    stop_dlt_mock
 
-    TEST_MATCH='/Plugin\s.SecondDummy/!d; /loaded/p; /started/p; /Unloading/p;'
-    TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
-    if [ "$TEST_COUNT" != "3" ]; then
-        log_err "Missing messages for Plugin 'SecondDummy' ($TEST_COUNT of 3 lines found)"
-        TEST_RESULT=1
-    fi
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
+
+    PLUGINS="Dummy DLT"
+    for plugin in ${PLUGINS}; do
+        TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
+        TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
+        if [ "$TEST_COUNT" != "4" ]; then
+            log_err "Missing messages for Plugin '${plugin}' ($TEST_COUNT of 4 lines found)"
+            TEST_RESULT=1
+        fi
+    done
 
     return $TEST_RESULT
 }
@@ -846,7 +884,7 @@ call_test "kmsg" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "publish_poll" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "locale" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "find_event" || FAILED_TESTS=$((FAILED_TESTS+1))
-call_test "backend_dummy" || FAILED_TESTS=$((FAILED_TESTS+1))
+call_test "plugins" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "dual_json_plugin" || FAILED_TESTS=$((FAILED_TESTS+1))
 
 if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
