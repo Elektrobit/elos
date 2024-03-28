@@ -38,6 +38,13 @@ target_link_options(
     -Wl,--wrap=elosSendAndReceiveJsonMessage
 )
 
+set_target_properties(
+  mock_libelos
+  PROPERTIES
+  SOVERSION ${ELOS_VERSION_MAJOR}
+  VERSION ${ELOS_VERSION_MAJOR}.${ELOS_VERSION_MINOR}.${ELOS_VERSION_MICRO}
+)
+
 if (ELOS_MOCK_LIBRARY AND INSTALL_ELOS_MOCK_LIBRARY)
   install(TARGETS mock_libelos DESTINATION ${CMAKE_INSTALL_LIBDIR})
   install(
