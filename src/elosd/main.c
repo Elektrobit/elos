@@ -16,7 +16,7 @@
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/logger/logger.h"
 #include "elos/pluginmanager/pluginmanager.h"
-#include "elos/scanner_manager/scanner_manager.h"
+#include "elos/scanner_manager_legacy/scanner_manager.h"
 #include "elos/storagemanager/storagemanager.h"
 #include "safu/common.h"
 #include "safu/log.h"
@@ -29,7 +29,7 @@ struct serverContext {
     samconfConfig_t *config;
     elosConnectionManager_t connectionManagerContext;
     elosClientManager_t clientManagerContext;
-    elosScannerManagerContext_t scannerManagerContext;
+    elosScannerManagerLegacyContext_t scannerManagerLegacyContext;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
     elosEventDispatcher_t eventDispatcher;
@@ -93,8 +93,8 @@ int elosServerShutdown(struct serverContext *ctx) {
         safuLogErr("Deleting connection manager failed!");
         result = EXIT_FAILURE;
     }
-    if (elosScannerManagerStop(&ctx->scannerManagerContext) != NO_ERROR) {
-        safuLogErr("Stopping scanner manager failed!");
+    if (elosScannerManagerLegacyStop(&ctx->scannerManagerLegacyContext) != NO_ERROR) {
+        safuLogErr("Stopping scanner manager legacy failed!");
         result = EXIT_FAILURE;
     }
     if (elosEventDispatcherDeleteMembers(&ctx->eventDispatcher) != SAFU_RESULT_OK) {
@@ -280,13 +280,13 @@ int main(int argc, char **argv) {
     }
     elosEventDispatcherBufferAdd(&context.eventDispatcher, context.logger->logEventBuffer);
 
-    safuLogDebug("Start scanner manager");
-    elosScannerManagerParam_t scannerManagerParam = {
+    safuLogDebug("Start legacy scanner manager");
+    elosScannerManagerLegacyParam_t scannerManagerLegacyParam = {
         .config = context.config,
         .logAggregator = &context.logAggregator,
         .eventDispatcher = &context.eventDispatcher,
     };
-    retval = elosScannerManagerStart(&context.scannerManagerContext, &scannerManagerParam);
+    retval = elosScannerManagerLegacyStart(&context.scannerManagerLegacyContext, &scannerManagerLegacyParam);
     if ((retval != NO_ERROR) && (retval != NO_FATAL_ERRORS)) {
         safuLogErr("elosServerScannerLoad");
         elosServerShutdown(&context);

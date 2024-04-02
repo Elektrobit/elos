@@ -22,7 +22,7 @@
 #include "elos/event/event.h"
 #include "elos/event/event_source.h"
 #include "elos/rpnfilter/builder.h"
-#include "elos/scanner/scanner.h"
+#include "elos/scanner_legacy/scanner.h"
 #include "logline_mapper.h"
 #include "safu/log.h"
 #include "safu/time.h"

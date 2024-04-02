@@ -4,7 +4,7 @@ find_package(samconf 0.50.1 REQUIRED)
 
 create_interface_library(
   FROM
-    elos_scanner
+    elos_scanner_legacy
   LIBRARIES
     eventbuffer_interface
     elos_event_interface

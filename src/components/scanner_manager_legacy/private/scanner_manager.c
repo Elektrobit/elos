@@ -5,7 +5,7 @@
 #include <pthread.h>
 // clang-format on
 
-#include "elos/scanner_manager/scanner_manager.h"
+#include "elos/scanner_manager_legacy/scanner_manager.h"
 
 #include <dirent.h>
 #include <dlfcn.h>
@@ -21,7 +21,7 @@
 #include "elos/eventbuffer/eventbuffer.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventlogging/LogAggregator.h"
-#include "elos/scanner/scanner.h"
+#include "elos/scanner_legacy/scanner.h"
 #include "safu/common.h"
 #include "safu/log.h"
 
@@ -29,7 +29,7 @@
 #define SO_EXT_LEN 3
 
 static void *_scannerThread(void *ptr) {
-    elosScannerEntry_t *entry = ptr;
+    elosScannerEntryLegacy_t *entry = ptr;
 
     entry->state = SCANNER_RUNNING;
     entry->funcRun(&entry->session);
@@ -38,8 +38,8 @@ static void *_scannerThread(void *ptr) {
     pthread_exit(NULL);
 }
 
-static elosScannerManagerErrorCodeE_t _parsePath(elosScannerManagerContext_t *context, const char *path) {
-    elosScannerManagerErrorCodeE_t errorCode = NO_ERROR;
+static elosScannerManagerLegacyErrorCodeE_t _parsePath(elosScannerManagerLegacyContext_t *context, const char *path) {
+    elosScannerManagerLegacyErrorCodeE_t errorCode = NO_ERROR;
     DIR *dirHandle = NULL;
     struct dirent *dirEnt = NULL;
     int ret;
@@ -63,7 +63,7 @@ static elosScannerManagerErrorCodeE_t _parsePath(elosScannerManagerContext_t *co
             size_t len;
 
             if (dirEnt->d_type == DT_DIR) {
-                elosScannerManagerErrorCodeE_t tmpErrorCode;
+                elosScannerManagerLegacyErrorCodeE_t tmpErrorCode;
                 const char *name = dirEnt->d_name;
                 char *subpath = NULL;
 
@@ -95,7 +95,7 @@ static elosScannerManagerErrorCodeE_t _parsePath(elosScannerManagerContext_t *co
 
             len = strlen(dirEnt->d_name);
             if ((len > SO_EXT_LEN) && (strcmp(SO_EXT, &(dirEnt->d_name[len - SO_EXT_LEN])) == 0)) {
-                elosScannerEntry_t entry = {.state = SCANNER_INVALID};
+                elosScannerEntryLegacy_t entry = {.state = SCANNER_INVALID};
 
                 ret = asprintf(&entry.file, "%s/%s", path, dirEnt->d_name);
                 if (ret < 0) {
@@ -127,8 +127,9 @@ static elosScannerManagerErrorCodeE_t _parsePath(elosScannerManagerContext_t *co
     return errorCode;
 }
 
-static elosScannerManagerErrorCodeE_t _entryFree(elosScannerManagerContext_t *context, elosScannerEntry_t *entry) {
-    elosScannerManagerErrorCodeE_t errorCode = NO_ERROR;
+static elosScannerManagerLegacyErrorCodeE_t _entryFree(elosScannerManagerLegacyContext_t *context,
+                                                       elosScannerEntryLegacy_t *entry) {
+    elosScannerManagerLegacyErrorCodeE_t errorCode = NO_ERROR;
     safuResultE_t result;
     int ret;
 
@@ -161,7 +162,7 @@ static elosScannerManagerErrorCodeE_t _entryFree(elosScannerManagerContext_t *co
     return errorCode;
 }
 
-static safuResultE_t _eventPublish(elosScannerCallbackData_t *data, const elosEvent_t *event) {
+static safuResultE_t _eventPublish(elosScannerLegacyCallbackData_t *data, const elosEvent_t *event) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((data == NULL) || (data->eventBuffer == NULL) || (event == NULL)) {
@@ -178,7 +179,7 @@ static safuResultE_t _eventPublish(elosScannerCallbackData_t *data, const elosEv
     return result;
 }
 
-static safuResultE_t _eventLog(elosScannerCallbackData_t *data, const elosEvent_t *event) {
+static safuResultE_t _eventLog(elosScannerLegacyCallbackData_t *data, const elosEvent_t *event) {
     elosLogAggregator_t *logAggregator;
     safuResultE_t result = SAFU_RESULT_OK;
 
@@ -198,8 +199,9 @@ static safuResultE_t _eventLog(elosScannerCallbackData_t *data, const elosEvent_
     return result;
 }
 
-int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerManagerParam_t const *param) {
-    elosScannerManagerErrorCodeE_t errorCode = NO_ERROR;
+int elosScannerManagerLegacyStart(elosScannerManagerLegacyContext_t *context,
+                                  elosScannerManagerLegacyParam_t const *param) {
+    elosScannerManagerLegacyErrorCodeE_t errorCode = NO_ERROR;
     const char *scannerPath = "";
     uint32_t scannerCount = 0;
     int ret;
@@ -217,7 +219,7 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
     }
 
     if (errorCode == NO_ERROR) {
-        ret = safuVecCreate(&context->scannerEntry, SCANNER_ENTRIES_INIT, sizeof(elosScannerEntry_t));
+        ret = safuVecCreate(&context->scannerEntry, SCANNER_ENTRIES_INIT, sizeof(elosScannerEntryLegacy_t));
         if (ret < 0) {
             errorCode = ERROR_VEC_MANIPULATION;
             safuLogErr("safuVecCreate");
@@ -244,7 +246,7 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
     if ((errorCode == NO_ERROR) || (errorCode == NO_FATAL_ERRORS)) {
         uint32_t i;
         for (i = 0; i < scannerCount; i++) {
-            elosScannerEntry_t *entry;
+            elosScannerEntryLegacy_t *entry;
             char *errorStr;
 
             entry = safuVecGet(&context->scannerEntry, i);
@@ -306,9 +308,9 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
     if ((errorCode == NO_ERROR) || (errorCode == NO_FATAL_ERRORS)) {
         uint32_t i;
         for (i = 0; i < scannerCount; i++) {
-            elosScannerParam_t scannerParam = {.config = context->config};
+            elosScannerLegacyParam_t scannerParam = {.config = context->config};
             elosEventBufferParam_t bufferParam = {.limitEventCount = ELOS_EVENTBUFFER_DEFAULT_LIMIT};
-            elosScannerEntry_t *entry;
+            elosScannerEntryLegacy_t *entry;
             safuResultE_t result;
             const char *fileName = NULL;
 
@@ -359,7 +361,7 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
     if ((errorCode == NO_ERROR) || (errorCode == NO_FATAL_ERRORS)) {
         uint32_t i;
         for (i = 0; i < scannerCount; i++) {
-            elosScannerEntry_t *entry;
+            elosScannerEntryLegacy_t *entry;
 
             entry = safuVecGet(&context->scannerEntry, i);
             if (entry == NULL) {
@@ -389,14 +391,14 @@ int elosScannerManagerStart(elosScannerManagerContext_t *context, elosScannerMan
     }
 
     if ((errorCode != NO_ERROR) && (errorCode != NO_FATAL_ERRORS)) {
-        elosScannerManagerStop(context);
+        elosScannerManagerLegacyStop(context);
     }
 
     return errorCode;
 }
 
-int elosScannerManagerStop(elosScannerManagerContext_t *context) {
-    elosScannerManagerErrorCodeE_t errorCode = NO_ERROR;
+int elosScannerManagerLegacyStop(elosScannerManagerLegacyContext_t *context) {
+    elosScannerManagerLegacyErrorCodeE_t errorCode = NO_ERROR;
     uint32_t scannerCount = 0;
 
     if (context == NULL) {
@@ -413,7 +415,7 @@ int elosScannerManagerStop(elosScannerManagerContext_t *context) {
     if ((errorCode == NO_ERROR) && (scannerCount > 0)) {
         uint32_t i;
         for (i = 0; i < scannerCount; i++) {
-            elosScannerEntry_t *entry;
+            elosScannerEntryLegacy_t *entry;
             int ret;
 
             entry = safuVecGet(&context->scannerEntry, i);

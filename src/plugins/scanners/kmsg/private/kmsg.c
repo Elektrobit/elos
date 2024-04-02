@@ -18,7 +18,7 @@
 #include "elos/config/config.h"
 #include "elos/event/event.h"
 #include "elos/event/event_message_codes.h"
-#include "elos/scanner/scanner.h"
+#include "elos/scanner_legacy/scanner.h"
 #include "kmsg_mapper.h"
 #include "safu/log.h"
 
@@ -44,8 +44,8 @@ struct kmsg_context {
     const samconfConfig_t *config;
 };
 
-static elosScannerResultE_t _openKmsgFile(struct kmsg_context *context) {
-    elosScannerResultE_t result = SCANNER_OK;
+static elosScannerLegacyResultE_t _openKmsgFile(struct kmsg_context *context) {
+    elosScannerLegacyResultE_t result = SCANNER_OK;
     struct stat stbuf = {0};
     int retval;
     const char *kmsgFile = elosConfigGetElosdScannerKmsgFile(context->config);
@@ -85,9 +85,9 @@ static elosScannerResultE_t _openKmsgFile(struct kmsg_context *context) {
     return result;
 }
 
-static elosScannerResultE_t _publishMessage(elosScannerSession_t *session) {
+static elosScannerLegacyResultE_t _publishMessage(elosScannerLegacySession_t *session) {
     struct kmsg_context *context = session->context;
-    elosScannerResultE_t result = SCANNER_OK;
+    elosScannerLegacyResultE_t result = SCANNER_OK;
     char *readBuffer;
     int readBytes;
 
@@ -109,7 +109,7 @@ static elosScannerResultE_t _publishMessage(elosScannerSession_t *session) {
     }
 
     if (result == SCANNER_OK) {
-        elosScannerCallbackData_t *cbData = &session->callback.scannerCallbackData;
+        elosScannerLegacyCallbackData_t *cbData = &session->callback.scannerCallbackData;
         safuResultE_t resVal;
 
         elosEventSource_t eventSource = {.fileName = context->kmsgFile};
@@ -142,7 +142,7 @@ static elosScannerResultE_t _publishMessage(elosScannerSession_t *session) {
     return result;
 }
 
-elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
+elosScannerLegacyResultE_t elosScannerFree(elosScannerLegacySession_t *session) {
     struct kmsg_context *context = session->context;
     if (context != NULL) {
         close(context->kmsgPollFd);
@@ -161,9 +161,10 @@ elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
     return SCANNER_OK;
 }
 
-elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const elosScannerParam_t *param) {
+elosScannerLegacyResultE_t elosScannerInitialize(elosScannerLegacySession_t *session,
+                                                 const elosScannerLegacyParam_t *param) {
     struct kmsg_context *context = NULL;
-    elosScannerResultE_t result = SCANNER_OK;
+    elosScannerLegacyResultE_t result = SCANNER_OK;
 
     context = (struct kmsg_context *)calloc(1, sizeof(struct kmsg_context));
     if (context == NULL) {
@@ -204,8 +205,8 @@ elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const 
     return result;
 }
 
-elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
-    elosScannerResultE_t result = SCANNER_OK;
+elosScannerLegacyResultE_t elosScannerRun(elosScannerLegacySession_t *session) {
+    elosScannerLegacyResultE_t result = SCANNER_OK;
     struct kmsg_context *context = session->context;
     struct pollfd fds[] = {
         {.fd = context->cmdPollFd, .events = POLLIN},
@@ -254,10 +255,10 @@ elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
     return result;
 }
 
-elosScannerResultE_t elosScannerStop(elosScannerSession_t *session) {
+elosScannerLegacyResultE_t elosScannerStop(elosScannerLegacySession_t *session) {
     struct kmsg_context *context = session->context;
     const scanner_command_t command = SCANNER_CMD_STOP;
-    elosScannerResultE_t result = SCANNER_OK;
+    elosScannerLegacyResultE_t result = SCANNER_OK;
     ssize_t retval = 0;
 
     retval = write(context->cmdPollFd, &command, sizeof(scanner_command_t));

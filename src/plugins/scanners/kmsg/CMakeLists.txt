@@ -19,7 +19,7 @@ set_target_properties(scanner_kmsg PROPERTIES PREFIX "")
 target_link_libraries(
   scanner_kmsg
   PRIVATE
-    elos_scanner_interface
+    elos_scanner_legacy_interface
     elos_event_static
     config_static
   PUBLIC

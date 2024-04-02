@@ -19,9 +19,9 @@ build’in scanner (examples)
 Scanner-API
 -----------
 
-The ScannerManager loads and initializes a Scanner. After successful
-initialization the ScannerManager calls the scannerRun method in a
-dedicated thread. If the ScannerManager is asked to stop all or a
+The ScannerManagerLegacy loads and initializes a Scanner. After successful
+initialization the ScannerManagerLegacy calls the scannerRun method in a
+dedicated thread. If the ScannerManagerLegacy is asked to stop all or a
 particular Scanner, it will signal it to the corresponding Scanner and
 join the Scanner threads.
 
@@ -44,26 +44,26 @@ one of the build’in scanner source as an example.
 
    #include <stdio.h>
 
-   #include "elos/scanner/scanner.h"
+   #include "elos/scanner_legacy/scanner.h"
 
-   elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, UNUSED const elosScannerParam_t *param) {
-       printf("[my scanner] is initializied\n");
+   elosScannerResultE_t elosScannerLegacyInitialize(elosScannerLegacySession_t *session, UNUSED const elosScannerLegacyParam_t *param) {
+       printf("[my legacy scanner] is initializied\n");
        return SCANNER_OK;
    }
 
-   elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
-       printf("[my scanner] is runnig\n");
-       printf("[my scanner] has finished\n");
+   elosScannerResultE_t elosScannerLegacyRun(elosScannerLegacySession_t *session) {
+       printf("[my legacy scanner] is runnig\n");
+       printf("[my legacy scanner] has finished\n");
        return SCANNER_OK;
    }
 
-   elosScannerResultE_t elosScannerStop(elosScannerSession_t *session) {
-       printf("[my scanner] stop requested\n");
+   elosScannerResultE_t elosScannerLegacyStop(elosScannerLegacySession_t *session) {
+       printf("[my legacy scanner] stop requested\n");
        return SCANNER_OK;
    }
 
-   elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
-       printf("[my scanner] gets freed\n");
+   elosScannerResultE_t elosScannerLegacyFree(elosScannerLegacySession_t *session) {
+       printf("[my legacy scanner] gets freed\n");
        free(session->context);
        return SCANNER_OK;
    }
@@ -72,7 +72,7 @@ one of the build’in scanner source as an example.
 
 ::
 
-   gcc --shared -o example_scanner.so example_scanner.c -I elos/src/scanner/include/
+   gcc --shared -o example_scanner.so example_scanner.c -I elos/src/scanner_legacy/include/
 
 -  copy / install example_scanner.so to ELOS_SCANNER_PATH
 
