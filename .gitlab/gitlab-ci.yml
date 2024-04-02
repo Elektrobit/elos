@@ -39,7 +39,7 @@ build-release:
   needs:
     - build-dependencies
   script:
-    - ci/docker-run.sh ci/build.sh --ci Release --no-deps
+    - ci/docker-run.sh ci/build.sh --ci Release
   artifacts:
     paths:
       - build/Release/dist/
@@ -51,7 +51,7 @@ build-debug:
   needs:
     - build-dependencies
   script:
-    - ci/docker-run.sh ci/build.sh --ci Debug --no-deps
+    - ci/docker-run.sh ci/build.sh --ci Debug
   artifacts:
     paths:
       - build/Debug/dist/
