@@ -12,6 +12,7 @@ r
 release
 ci/sshconfig
 *.swp
+.cache
 
 # eclipse project files and folders
 .profile
