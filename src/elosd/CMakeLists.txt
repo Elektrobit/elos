@@ -37,6 +37,7 @@ target_link_libraries(
     clientmanager_static
     messagehandler_static
     scanner_manager_legacy_static
+    scannermanager_static
     elos_scanner_legacy_interface
     Threads::Threads
     safu::safu

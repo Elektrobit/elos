@@ -17,6 +17,7 @@
 #include "elos/logger/logger.h"
 #include "elos/pluginmanager/pluginmanager.h"
 #include "elos/scanner_manager_legacy/scanner_manager.h"
+#include "elos/scannermanager/scannermanager.h"
 #include "elos/storagemanager/storagemanager.h"
 #include "safu/common.h"
 #include "safu/log.h"
@@ -30,6 +31,7 @@ struct serverContext {
     elosConnectionManager_t connectionManagerContext;
     elosClientManager_t clientManagerContext;
     elosScannerManagerLegacyContext_t scannerManagerLegacyContext;
+    elosScannerManager_t scannerManager;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
     elosEventDispatcher_t eventDispatcher;
@@ -95,6 +97,13 @@ int elosServerShutdown(struct serverContext *ctx) {
     }
     if (elosScannerManagerLegacyStop(&ctx->scannerManagerLegacyContext) != NO_ERROR) {
         safuLogErr("Stopping scanner manager legacy failed!");
+        result = EXIT_FAILURE;
+    }
+    if (elosScannerManagerStop(&ctx->scannerManager) != SAFU_RESULT_OK) {
+        safuLogErr("Stopping scanner manager failed!");
+        result = EXIT_FAILURE;
+    } else if (elosScannerManagerDeleteMembers(&ctx->scannerManager) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting scanner manager failed!");
         result = EXIT_FAILURE;
     }
     if (elosEventDispatcherDeleteMembers(&ctx->eventDispatcher) != SAFU_RESULT_OK) {
@@ -279,6 +288,22 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
     elosEventDispatcherBufferAdd(&context.eventDispatcher, context.logger->logEventBuffer);
+
+    safuLogDebug("Initialize scanner manager");
+    elosScannerManagerParam_t const scmParam = {.config = context.config, .pluginManager = &context.pluginManager};
+    result = elosScannerManagerInitialize(&context.scannerManager, &scmParam);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosScannerManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
+    } else {
+        result = elosScannerManagerStart(&context.scannerManager);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("elosScannerManagerLoad");
+            elosServerShutdown(&context);
+            return EXIT_FAILURE;
+        }
+    }
 
     safuLogDebug("Start legacy scanner manager");
     elosScannerManagerLegacyParam_t scannerManagerLegacyParam = {
