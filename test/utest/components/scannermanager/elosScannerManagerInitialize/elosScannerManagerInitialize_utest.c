@@ -30,6 +30,7 @@ int main() {
         TEST_CASE(elosTestElosScannerManagerInitializeSuccess),
         TEST_CASE(elosTestElosScannerManagerInitializeSuccessDefaultSearchPath),
         TEST_CASE(elosTestElosScannerManagerInitializeExtErrScannerConfigNull),
+        TEST_CASE(elosTestElosScannerManagerInitializeErrInitParamNull),
     };
     return RUN_TEST_SUITE(tests, elosScannerManagerInitializeUtest);
 }
