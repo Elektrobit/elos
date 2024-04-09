@@ -93,6 +93,12 @@ static elosScannerManagerLegacyErrorCodeE_t _parsePath(elosScannerManagerLegacyC
                 continue;
             }
 
+            if ((strcmp(dirEnt->d_name, "scanner_kmsg.so") != 0) && (strcmp(dirEnt->d_name, "scanner_shmem.so") != 0) &&
+                (strcmp(dirEnt->d_name, "scanner_syslog.so") != 0)) {
+                dirEnt = readdir(dirHandle);
+                continue;
+            }
+
             len = strlen(dirEnt->d_name);
             if ((len > SO_EXT_LEN) && (strcmp(SO_EXT, &(dirEnt->d_name[len - SO_EXT_LEN])) == 0)) {
                 elosScannerEntryLegacy_t entry = {.state = SCANNER_INVALID};
