@@ -32,6 +32,7 @@ int main() {
                                        TEST_CASE(elosTestElosScannerManagerInitializeErrScannerManagerNull),
                                        TEST_CASE(elosTestElosScannerManagerInitializeErrInitParamNull),
                                        TEST_CASE(elosTestElosScannerManagerInitializeErrParamConfigNull),
+                                       TEST_CASE(elosTestElosScannerManagerInitializeErrParamPluginManagerNull),
                                        TEST_CASE(elosTestElosScannerManagerInitializeExtErrPluginVectorCreate)};
     return RUN_TEST_SUITE(tests, elosScannerManagerInitializeUtest);
 }

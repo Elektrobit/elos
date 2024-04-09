@@ -13,6 +13,7 @@ create_unit_test(
     case_exterr_plugin_vector_create.c
     case_err_scannermanager_null.c
     case_err_param_config_null.c
+    case_err_param_pluginmanager_null.c
     case_err_init_param_null.c
     createMockConfigUtil.c
     elosScannerManagerInitialize_utest.c
