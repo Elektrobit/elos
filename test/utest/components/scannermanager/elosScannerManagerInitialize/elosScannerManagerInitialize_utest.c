@@ -29,6 +29,7 @@ int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosScannerManagerInitializeSuccess),
         TEST_CASE(elosTestElosScannerManagerInitializeSuccessDefaultSearchPath),
+        TEST_CASE(elosTestElosScannerManagerInitializeExtErrScannerConfigNull),
     };
     return RUN_TEST_SUITE(tests, elosScannerManagerInitializeUtest);
 }

@@ -9,6 +9,7 @@ create_unit_test(
   SOURCES
     case_success.c
     case_success_default_search_path_null.c
+    case_exterr_scanner_config_null.c
     createMockConfigUtil.c
     elosScannerManagerInitialize_utest.c
   LIBRARIES
