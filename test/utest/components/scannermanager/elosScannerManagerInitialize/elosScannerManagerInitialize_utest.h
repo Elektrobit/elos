@@ -23,3 +23,4 @@ samconfConfigStatusE_t elosGetMockConfig(samconfConfig_t *config);
 int elosMockConfigCleanup(samconfConfig_t *config);
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeSuccess)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeSuccessDefaultSearchPath)

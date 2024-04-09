@@ -8,6 +8,7 @@ create_unit_test(
   test_scannerManager_elosScannerManagerInitialize_utest
   SOURCES
     case_success.c
+    case_success_default_search_path_null.c
     createMockConfigUtil.c
     elosScannerManagerInitialize_utest.c
   LIBRARIES

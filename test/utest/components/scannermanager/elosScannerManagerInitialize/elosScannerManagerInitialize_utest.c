@@ -26,7 +26,10 @@
 TEST_SUITE_FUNC_PROTOTYPES(elosScannerManagerInitializeUtest)
 
 int main() {
-    const struct CMUnitTest tests[] = {TEST_CASE(elosTestElosScannerManagerInitializeSuccess)};
+    const struct CMUnitTest tests[] = {
+        TEST_CASE(elosTestElosScannerManagerInitializeSuccess),
+        TEST_CASE(elosTestElosScannerManagerInitializeSuccessDefaultSearchPath),
+    };
     return RUN_TEST_SUITE(tests, elosScannerManagerInitializeUtest);
 }
 
