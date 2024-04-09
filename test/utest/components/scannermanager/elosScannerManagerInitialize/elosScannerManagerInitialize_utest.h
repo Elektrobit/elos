@@ -8,9 +8,9 @@
 #include <safu/mock_safu.h>
 #include <samconf/mock_samconf.h>
 
-#include "elos/scannermanager/scannermanager.h"
 #include "elos/config/config.h"
 #include "elos/pluginmanager/types.h"
+#include "elos/scannermanager/scannermanager.h"
 
 typedef struct elosUnitTestState {
     elosScannerManager_t scannermanager;
@@ -25,5 +25,7 @@ int elosMockConfigCleanup(samconfConfig_t *config);
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeSuccessDefaultSearchPath)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeExtErrScannerConfigNull)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeErrScannerManagerNull)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeErrInitParamNull)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeErrParamConfigNull)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosScannerManagerInitializeExtErrPluginVectorCreate)
