@@ -6,6 +6,7 @@ Components
    :caption: Contents:
 
    clientmanager/index
+   scannermanager/index
    eloslog/index
    event/index
    eventlogging/index
