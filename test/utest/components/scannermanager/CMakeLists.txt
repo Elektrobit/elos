@@ -2,3 +2,4 @@
 
 add_subdirectory(elosScannerManagerInitialize)
 add_subdirectory(elosScannerManagerStart)
+add_subdirectory(elosScannerManagerStop)
