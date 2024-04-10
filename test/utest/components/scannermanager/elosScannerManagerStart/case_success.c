@@ -11,7 +11,7 @@ int elosTestElosScannerManagerStartSuccessSetup(void **state) {
     ret = samconfConfigNew(&test->mockConfig);
     assert_int_equal(ret, SAMCONF_CONFIG_OK);
 
-    ret = elosGetMockConfig(test->mockConfig);
+    ret = elosGetMockConfig(test->mockConfig, TEST_CONFIG);
     assert_int_equal(ret, SAMCONF_CONFIG_OK);
 
     elosScannerManagerParam_t const testParam = {

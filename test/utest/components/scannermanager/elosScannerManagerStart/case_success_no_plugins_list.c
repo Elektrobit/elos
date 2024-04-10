@@ -1,9 +1,23 @@
 // SPDX-License-Identifier: MIT
 
+#include <safu/result.h>
+
 #include "elosScannerManagerStart_utest.h"
 #include "mock_pluginmanager_load.h"
 
-int elosTestElosScannerManagerStartExtErrPluginManagerLoadSetup(void **state) {
+#define NO_PLUGINS_LIST_CONFIG \
+    "{\
+    \"root\": {\
+        \"elos\": {\
+            \"UseEnv\": false,\
+            \"Scanner\": {\
+                \"PluginSearchPath\": \"/usr/local/lib/elos/scanner\"\
+            }\
+        }\
+    }\
+}"
+
+int elosTestElosScannerManagerStartSuccessNoPluginsListSetup(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     samconfConfigStatusE_t ret = SAMCONF_CONFIG_OK;
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -11,7 +25,7 @@ int elosTestElosScannerManagerStartExtErrPluginManagerLoadSetup(void **state) {
     ret = samconfConfigNew(&test->mockConfig);
     assert_int_equal(ret, SAMCONF_CONFIG_OK);
 
-    ret = elosGetMockConfig(test->mockConfig, TEST_CONFIG);
+    ret = elosGetMockConfig(test->mockConfig, NO_PLUGINS_LIST_CONFIG);
     assert_int_equal(ret, SAMCONF_CONFIG_OK);
 
     elosScannerManagerParam_t const testParam = {
@@ -29,7 +43,7 @@ int elosTestElosScannerManagerStartExtErrPluginManagerLoadSetup(void **state) {
     return 0;
 }
 
-int elosTestElosScannerManagerStartExtErrPluginManagerLoadTeardown(void **state) {
+int elosTestElosScannerManagerStartSuccessNoPluginsListTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
 
     elosMockConfigCleanup(test->mockConfig);
@@ -38,21 +52,14 @@ int elosTestElosScannerManagerStartExtErrPluginManagerLoadTeardown(void **state)
     return 0;
 }
 
-void elosTestElosScannerManagerStartExtErrPluginManagerLoad(UNUSED void **state) {
+void elosTestElosScannerManagerStartSuccessNoPluginsList(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     TEST("elosScannerManagerStart");
-    SHOULD("return SAFU_RESULT_FAILED since plugin manager load fails");
-
-    MOCK_FUNC_AFTER_CALL(elosPluginManagerLoad, 0);
-    expect_any(elosPluginManagerLoad, pluginManager);
-    expect_value(elosPluginManagerLoad, type, PLUGIN_TYPE_SCANNER);
-    expect_any(elosPluginManagerLoad, moduleConfig);
-    expect_any(elosPluginManagerLoad, pluginSearchPath);
-    expect_any(elosPluginManagerLoad, controlPtrVector);
-    will_return(elosPluginManagerLoad, SAFU_RESULT_FAILED);
+    SHOULD("start scanner manager succesfully");
 
     result = elosScannerManagerStart(&test->scannermanager);
-    assert_int_equal(result, SAFU_RESULT_FAILED);
+
+    assert_int_equal(result, SAFU_RESULT_OK);
 }

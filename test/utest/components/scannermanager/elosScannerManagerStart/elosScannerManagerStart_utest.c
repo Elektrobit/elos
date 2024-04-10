@@ -6,42 +6,22 @@
 #include <json-c/json_tokener.h>
 #include <json-c/json_types.h>
 
-#define _TEST_CONFIG \
-    "{\
-    \"root\": {\
-        \"elos\": {\
-            \"UseEnv\": false,\
-            \"Scanner\": {\
-                \"PluginSearchPath\": \"/usr/local/lib/elos/scanner\",\
-                \"Plugins\": {\
-                    \"ScannerDummy\": {\
-                        \"File\": \"scanner_dummy.so\",\
-                        \"Run\": \"always\"\
-                    },\
-                    \"DummyScanner\": {\
-                        \"File\": \"scanner_dummy.so\",\
-                        \"Run\": \"always\"\
-                    }\
-                }\
-            }\
-        }\
-    }\
-}"
-
 TEST_SUITE_FUNC_PROTOTYPES(elosScannerManagerStartUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {TEST_CASE(elosTestElosScannerManagerStartSuccess),
+                                       TEST_CASE(elosTestElosScannerManagerStartSuccessEmptyPluginsList),
+                                       TEST_CASE(elosTestElosScannerManagerStartSuccessNoPluginsList),
                                        TEST_CASE(elosTestElosScannerManagerStartErrScannerManagerNull),
                                        TEST_CASE(elosTestElosScannerManagerStartExtErrPluginManagerLoad)};
     return RUN_TEST_SUITE(tests, elosScannerManagerStartUtest);
 }
 
-samconfConfigStatusE_t elosGetMockConfig(samconfConfig_t *config) {
+samconfConfigStatusE_t elosGetMockConfig(samconfConfig_t *config, const char *json) {
     samconfConfigStatusE_t result = SAMCONF_CONFIG_OK;
     json_object *jobj = NULL;
 
-    jobj = json_tokener_parse(_TEST_CONFIG);
+    jobj = json_tokener_parse(json);
 
     result = elosUtilCreateMockConfig(jobj, false, config);
     assert_int_equal(result, SAMCONF_CONFIG_OK);
