@@ -13,7 +13,7 @@ create_unit_test(
     case_success.c
     elosMessageEventQueueRead_utest.c
   LIBRARIES
-    scanner_manager_static_weak
+    connectionmanager_static
     mock_elos_event_static
     mock_message_handler_static
     mock_eventprocessor_static

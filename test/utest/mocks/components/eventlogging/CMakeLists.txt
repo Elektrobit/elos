@@ -8,7 +8,7 @@ create_mock_lib(
   INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}
   LIBRARIES
-    scanner_manager_static_weak
+    eventlogging_static
     cmocka_extensions::cmocka_extensions
   WRAP_FLAG
     MOCK_ELOS_ELOSD_EVENTLOGGING_FUNC_LINKER_WRAPPING

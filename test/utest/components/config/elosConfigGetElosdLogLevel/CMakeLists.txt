@@ -14,7 +14,7 @@ create_unit_test(
     case_err_fallback_to_default.c
     elosConfigGetElosdLogLevel_utest.c
   LIBRARIES
-    scanner_manager_static
+    config_static
     safu::mock_safu
     samconf::mock_samconf
     cmocka_mocks::mock_libc

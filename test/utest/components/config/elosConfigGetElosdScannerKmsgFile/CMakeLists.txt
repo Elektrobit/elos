@@ -10,7 +10,7 @@ create_unit_test(
     case_success_from_default.c
     elosConfigGetElosdScannerKmsgFile_utest.c
   LIBRARIES
-    scanner_manager_static
+    config_static
     safu::mock_safu
     samconf::mock_samconf
 )

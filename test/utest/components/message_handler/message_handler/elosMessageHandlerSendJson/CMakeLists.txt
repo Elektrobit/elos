@@ -11,7 +11,7 @@ create_unit_test(
     case_exterr_send.c
     elosMessageHandlerSendJson_utest.c
   LIBRARIES
-    scanner_manager_static_weak
+    messagehandler_static_weak
     mock_message_handler_static
     elos_event_static_weak
     cmocka_mocks::mock_jsonc

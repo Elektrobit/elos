@@ -9,7 +9,7 @@ create_mock_lib(
   INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}
   LIBRARIES
-    scanner_manager_static_weak
+    messagehandler_static_weak
     cmocka_extensions::cmocka_extensions
     json-c
   WRAP_FLAG
