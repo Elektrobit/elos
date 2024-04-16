@@ -35,6 +35,20 @@ ci@2153762153:/$ elosc -p '{"payload": "Hello elos"}'
 For detailed build instructions have a look into `./ci/docker-target-run.sh`
 and/or consult the documentation https://elektrobit.github.io/elos .
 
+## Depenencies
+
+The dependencies [safu](https://github.com/Elektrobit/safu.git), [samconf](https://github.com/Elektrobit/samconf.git),
+[cmocka_mocks](https://github.com/Elektrobit/cmocka_mocks.git) and [cmocka_extensions](https://github.com/Elektrobit/cmocka_extensions.git) must be installed.
+One way to to so is the script `install_deps.py` from the `ci` folder which installs them in `build/deps/`.
+
+From the root folder run:
+
+```bash
+./ci/install_deps.py
+```
+
+for more information read the documentation for [install_deps.py](ci/index.rst#ci-install-deps-py)
+
 
 ## Building
 
@@ -88,13 +102,6 @@ Be aware this is a smoketest environment so it is very verbose.
    ```
    ln -s build/<BUILD_TYPE>/cmake/compile_commands.json
    ```
-
-## Dependencies
-
-* [cmocka_extensions](https://github.com/Elektrobit/cmocka_extensions)
-* [cmocka_mocks](https://github.com/Elektrobit/cmocka_mocks)
-* [safu](https://github.com/Elektrobit/safu).
-* [samconf](https://github.com/Elektrobit/samconf).
 
 ## Folders
 
