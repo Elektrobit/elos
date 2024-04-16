@@ -63,6 +63,16 @@
                             "AppId": "ELOS"
                         }
                     },
+                    "NoSQLBackend": {
+                        "File": "backend_nosql.so",
+                        "Run": "always",
+                        "Filter": [
+                            "1 1 EQ"
+                        ],
+                        "Config": {
+                            "ConnectionString": "mongodb://mongoadmin:secret@elos-mongo:27017"
+                        }
+                    },
                     "SQLBackend": {
                         "File": "backend_sql.so",
                         "Run": "always",

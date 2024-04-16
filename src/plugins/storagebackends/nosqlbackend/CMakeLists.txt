@@ -6,6 +6,7 @@ find_package(mongoc-1.0 REQUIRED)
 add_library(
   backend_nosql SHARED
   private/NoSqlBackend.c
+  private/NoSqlBackendPlugin.c
 )
 
 create_interface_library(
@@ -21,7 +22,7 @@ set_target_properties(backend_nosql PROPERTIES PREFIX "")
 target_include_directories(
   backend_nosql
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/interface
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(

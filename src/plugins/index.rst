@@ -11,7 +11,8 @@ Plugins
    scanners/shmem/index
    storagebackends/dlt/index
    storagebackends/index
+   storagebackends/dummy/index
    storagebackends/influxdbbackend/index
    storagebackends/jsonbackend/index
+   storagebackends/nosqlbackend/index
    storagebackends/sqlbackend/index
-   storagebackends/dummy/index

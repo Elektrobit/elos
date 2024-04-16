@@ -10,31 +10,17 @@
 
 #define BACKEND_NAME "NOSQL"
 
-#ifndef CONNECTION_STRING
-#define CONNECTION_STRING "mongodb://localhost:27017/?appname=elosd"
-#endif
-
-typedef struct elosNoSqlBackend {
-    mongoc_client_t *client;
-    mongoc_collection_t *collection;
-} elosNoSqlBackend_t;
-
-const char *_getConnectionString() {
-    return safuGetEnvOr("ELOS_STORAGE_BACKEND_NOSQL_CONNECTION", CONNECTION_STRING);
-}
-
 safuResultE_t elosNoSqlBackendStart(elosStorageBackend_t *backend) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosNoSqlBackend_t *noSqlBackend = backend->backendData;
-    const char *connectionString = _getConnectionString();
 
     safuLogDebugF("start backend %s", backend->name);
 
     mongoc_init();
 
-    noSqlBackend->client = mongoc_client_new(connectionString);
+    noSqlBackend->client = mongoc_client_new(noSqlBackend->connectionString);
     if (noSqlBackend->client == NULL) {
-        safuLogErrF("Failed to connect to : %s", connectionString);
+        safuLogErrF("Failed to connect to : %s", noSqlBackend->connectionString);
         result = SAFU_RESULT_FAILED;
     }
 
