@@ -11,6 +11,7 @@
 #include <safu/defines.h>
 #include <safu/log.h>
 #include <safu/mutex.h>
+#include <safu/result.h>
 #include <samconf/samconf.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,6 +88,7 @@ safuResultE_t elosPluginControlLoadHelperGetConfig(elosPluginControl_t *control)
             errStr = dlerror();
             if ((control->dlHandle == NULL) || (errStr != NULL)) {
                 safuLogErrF("dlopen failed with: '%s'", errStr);
+                result = SAFU_RESULT_FAILED;
             } else {
                 void const **ptr = (void const **)&(control->pluginConfig);
 
