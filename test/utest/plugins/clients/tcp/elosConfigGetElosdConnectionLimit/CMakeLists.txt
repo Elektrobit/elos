@@ -12,8 +12,10 @@ create_unit_test(
     case_err_invalid_limit_in_env.c
     case_err_non_int_limit_in_env.c
     elosConfigGetElosdConnectionLimit_utest.c
+  INCLUDES
+    "${CMAKE_SOURCE_DIR}/src/plugins/clients/tcp/private"
   LIBRARIES
-    config_static
+    client_tcp
     safu::mock_safu
     samconf::mock_samconf
 )

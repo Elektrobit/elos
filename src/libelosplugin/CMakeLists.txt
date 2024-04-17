@@ -16,6 +16,7 @@ add_library(
   libelosplugin
   SHARED
     private/libelosplugin.c
+    private/libelosPluginConfig.c
 )
 
 target_include_directories(

@@ -4,13 +4,13 @@ find_package(samconf 0.50.1 REQUIRED)
 
 create_unit_test(
   NAME
-    test_config_elosConfigGetElosdPort_utest
+    test_config_elosConfigGetElosdInterface_utest
   SOURCES
     case_success_from_env.c
     case_success_from_default.c
-    elosConfigGetElosdPort_utest.c
+    elosConfigGetElosdInterface_utest.c
   LIBRARIES
-    config_static
+    client_tcp
     safu::mock_safu
     samconf::mock_samconf
 )

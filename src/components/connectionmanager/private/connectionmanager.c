@@ -3,18 +3,19 @@
 #include "elos/connectionmanager/connectionmanager.h"
 
 #include <arpa/inet.h>
-#include <errno.h>
 #include <safu/log.h>
 #include <samconf/samconf.h>
 #include <stdlib.h>
 #include <sys/eventfd.h>
 
 #include "connectionmanager_private.h"
-#include "elos/config/config.h"
 #include "elos/connectionmanager/clientauthorization.h"
 #include "elos/connectionmanager/clientauthorizedprocesses.h"
 #include "elos/connectionmanager/clientblacklist.h"
 #include "elos/connectionmanager/clientconnection.h"
+#include "elos/libelosplugin/types.h"
+
+#include "tcpConfig.h"
 
 static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionManager,
                                            elosConnectionManagerParam_t *param) {
@@ -34,11 +35,11 @@ static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionMa
     return result;
 }
 
-static safuResultE_t _initializeListener(elosConnectionManager_t *connectionManager, samconfConfig_t const *config) {
+static safuResultE_t _initializeListener(elosConnectionManager_t *connectionManager, elosPlugin_t const *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     struct sockaddr_in *addr = &connectionManager->addr;
-    char const *interface = elosConfigGetElosdInterface(config);
-    int const port = elosConfigGetElosdPort(config);
+    char const *interface = elosTcpConfigGetInterface(plugin);
+    int const port = elosTcpConfigGetPort(plugin);
     int retVal;
 
     addr->sin_family = AF_INET;
@@ -120,7 +121,7 @@ safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectio
 
         result = _initializeSharedData(connectionManager, param);
         if (result == SAFU_RESULT_OK) {
-            result = _initializeListener(connectionManager, param->config);
+            result = _initializeListener(connectionManager, param->plugin);
             if (result == SAFU_RESULT_OK) {
                 result = _initializeConnections(connectionManager);
                 if (result == SAFU_RESULT_OK) {

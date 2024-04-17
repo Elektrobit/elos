@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: MIT
 find_package(samconf REQUIRED)
 
+add_compile_definitions(ELOSD_PORT=${ELOSD_PORT})
+add_compile_definitions(ELOSD_INTERFACE="${ELOSD_INTERFACE}")
+add_compile_definitions(ELOSD_CONNECTION_LIMIT=${ELOSD_CONNECTION_LIMIT})
+
 add_library(
   client_tcp SHARED
   private/tcp.c
+  private/tcpConfig.c
 )
 
 create_interface_library(

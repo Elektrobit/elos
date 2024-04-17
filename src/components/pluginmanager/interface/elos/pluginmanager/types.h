@@ -23,6 +23,7 @@ typedef struct elosPluginManager {
     elosPluginManagerStateE_t state;
     elosPluginControlVector_t pluginVector;
     samconfConfig_t *config;
+    bool useEnv;
     char const *errStr;
     elosPluginId_t nextId;  // Placeholder that should be replaced with idManager in the future
     elosEventProcessor_t *eventProcessor;
