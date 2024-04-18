@@ -13,7 +13,7 @@ create_unit_test(
     case_err_non_int_limit_in_env.c
     elosConfigGetElosdConnectionLimit_utest.c
   LIBRARIES
-    scanner_manager_static
+    config_static
     safu::mock_safu
     samconf::mock_samconf
 )

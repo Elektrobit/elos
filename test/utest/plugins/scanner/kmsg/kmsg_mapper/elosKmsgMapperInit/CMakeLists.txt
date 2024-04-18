@@ -11,7 +11,7 @@ create_unit_test(
     case_err_fscanf_fail.c
     elosKmsgMapperInit_utest.c
   LIBRARIES
+    elos_event_static
     scanner_kmsg_static
-    scanner_manager_static
     cmocka_mocks::mock_libc
 )

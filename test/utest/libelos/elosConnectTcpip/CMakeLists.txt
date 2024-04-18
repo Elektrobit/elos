@@ -14,7 +14,6 @@ create_unit_test(
     case_success.c
     elosConnectTcpip_utest.c
   LIBRARIES
-    scanner_manager_static_weak
     elos_event_static_weak
     libelos_static_weak
     safu::mock_safu
