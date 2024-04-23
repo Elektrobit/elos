@@ -266,3 +266,19 @@ ci/build.sh options
 - `--clean|-c` deletes the build directory before the build for a fresh start
 - `--verbose|-v` adds `-v` to the parameters for ninja
 - `--package` implicitly sets the `BUILD_TYPE` to `Release` and adds `-D PACKAGING=true` to cmake. Also implicitly sets `--clean`
+
+
+CI-Helper scripts
+=================
+
+The `ci` folder contains a bunch of helper scripts to do different CI task.
+Keeping them separated from a specific CI solution enables us to reuse the code
+and additionally use them locally during development.
+
+ci/trigger_jenkins_ci.sh
+------------------------
+
+This script can be used to trigger and monitor Jenkins pipelines. We use it to
+trigger Yocto build jobs on a Jenkins instance.
+
+.. program-output:: ./ci/trigger_jenkins_ci.sh --help

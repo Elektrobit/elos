@@ -15,7 +15,7 @@ default:
       - "shell"
 
 before_script:
-  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client jq -y )'
   - docker info
   - ip a
   - ss -antup
@@ -72,6 +72,14 @@ integration-tests:
     when: always
     paths:
       - build/Release/result/integration/
+
+baseos-lab-tests:
+  stage: test
+  needs: []
+  variables:
+    BRANCH_NAME: $CI_COMMIT_REF_NAME
+  script:
+    - ci/trigger_jenkins_ci.sh
 
 unit-test-release:
   stage: test
