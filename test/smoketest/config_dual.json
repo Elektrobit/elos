@@ -8,11 +8,15 @@
             "LogLevel": "DEBUG",
             "LogFilter": "",
             "EventBlacklist": ".event.messageCode 2000 EQ",
-	    "authorizedProcesses": [
-		    ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
-		    ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
-		    ".process.pid 1 EQ"
-	    ],
+            "authorizedProcesses": [
+                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                ".process.pid 1 EQ"
+            ],
+            "ClientInputs": {
+                "Plugins": {
+                }
+            },
             "EventLogging": {
                 "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
                 "Plugins": {
@@ -22,9 +26,9 @@
                         "Filter": [
                             ".event.messageCode 5004 EQ"
                         ],
-			"Config" : {
-				"StoragePath": "/tmp/elosd_%count%.log"
-			}
+                        "Config": {
+                            "StoragePath": "/tmp/elosd_%count%.log"
+                        }
                     },
                     "Coredump": {
                         "File": "backend_json.so",
@@ -32,9 +36,9 @@
                         "Filter": [
                             ".event.messageCode 5005 EQ"
                         ],
-			"Config" : {
-				"StoragePath": "/tmp/coredumps_%count%.log"
-			}
+                        "Config": {
+                            "StoragePath": "/tmp/coredumps_%count%.log"
+                        }
                     }
                 }
             },
