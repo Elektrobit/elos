@@ -9,6 +9,7 @@
 
 #include "elos/config/config.h"
 #include "elos/eventfilter/vector.h"
+#include "elos/pluginmanager/pluginmanager.h"
 #include "elos/storagemanager/PluginFilterLoader.h"
 #include "elos/storagemanager/StorageBackend.h"
 #include "elos/storagemanager/vector.h"
@@ -80,7 +81,7 @@ safuResultE_t elosStorageManagerStart(elosStorageManager_t *storageManager) {
         result = elosPluginManagerLoad(storageManager->pluginManager, type, storageManager->config,
                                        storageManager->searchPath, &storageManager->pluginControlPtrVector);
         if (result != SAFU_RESULT_OK) {
-            safuLogWarn("elosPluginManagerStart executed with errors");
+            safuLogWarn("elosStorageManagerStart executed with errors");
         } else {
             size_t pluginCount = safuVecElements(&storageManager->pluginControlPtrVector);
             result = elosStorageBackendPtrVectorInitialize(&storageManager->backends, pluginCount);

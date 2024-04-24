@@ -4,6 +4,7 @@
 #include <safu/log.h>
 #include <safu/vector.h>
 
+#include "elos/plugincontrol/plugincontrol.h"
 #include "elos/plugincontrol/vector.h"
 
 safuResultE_t elosPluginControlVectorInitialize(elosPluginControlVector_t *controlVector, size_t elements) {

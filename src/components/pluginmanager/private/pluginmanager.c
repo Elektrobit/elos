@@ -26,6 +26,9 @@ safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, el
             pluginManager->config = param->config;
             pluginManager->state = PLUGINMANAGER_STATE_INITIALIZED;
             pluginManager->nextId = 1;
+            pluginManager->eventProcessor = param->eventProcessor;
+            pluginManager->eventDispatcher = param->eventDispatcher;
+            pluginManager->logAggregator = param->logAggregator;
             result = SAFU_RESULT_OK;
         }
     }
