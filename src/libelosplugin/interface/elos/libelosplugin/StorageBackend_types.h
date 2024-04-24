@@ -6,7 +6,7 @@
 #include <safu/vector.h>
 
 #include "elos/event/event.h"
-#include "elos/rpnfilter/rpnfilter.h"
+#include "elos/eventfilter/eventfilter_types.h"
 
 struct elosStorageBackend;
 typedef struct elosStorageBackend elosStorageBackend_t;
@@ -63,7 +63,7 @@ typedef safuResultE_t elosStorageBackendPersist_t(elosStorageBackend_t *backend,
  *         SAFU_RESULT_FAILURE – on failure. Check the logs for details.
  */
 #endif
-typedef safuResultE_t elosStorageBackendFindEvent_t(elosStorageBackend_t *backend, elosRpnFilter_t *filter,
+typedef safuResultE_t elosStorageBackendFindEvent_t(elosStorageBackend_t *backend, elosEventFilter_t *filter,
                                                     safuVec_t *events);
 
 #ifdef SPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS
