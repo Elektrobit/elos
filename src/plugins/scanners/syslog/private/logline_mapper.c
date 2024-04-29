@@ -292,7 +292,7 @@ safuResultE_t elosLoglineMapperInit(elosLoglineMapper_t *mapper, const samconfCo
     }
 
     if (result == SAFU_RESULT_OK) {
-        status = samconfConfigGet(config, "/MappingRules/MessageCodes", &messageCodeConfig);
+        status = samconfConfigGet(config, "Config/MappingRules/MessageCodes", &messageCodeConfig);
         if (status != SAMCONF_CONFIG_OK) {
             safuLogErr("Given configuration does not have applications config nodes");
             result = SAFU_RESULT_FAILED;

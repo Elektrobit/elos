@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
+#include <elos/libelosplugin/libelosplugin.h>
+#include <elos/libelosplugin/types.h>
 #include <errno.h>
 #include <poll.h>
 #include <regex.h>
+#include <safu/result.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -23,8 +26,6 @@
 #define ELOSD_SYSLOG_PATH "/dev/log"
 #endif
 
-#define REGEX_FILTER_ACTIVE          0x01
-#define REGEX_FILTER_NEEDS_CLEANUP   0x02
 #define LOGLINE_MAPPER_NEEDS_CLEANUP (0x01 << 2)
 #define MAX_LOG_ENTRY_SIZE           4096
 #define SCANNER_NAME                 "syslog"
@@ -37,69 +38,65 @@ struct syslog_context {
     int socket;
     int cmd;
     bool running;
-    regex_t regExFilter;
     uint32_t status;
     elosLoglineMapper_t mapper;
     const samconfConfig_t *config;
+    struct elosPublisher *publisher;
 };
 
-static elosScannerLegacyResultE_t _setupSocket(struct syslog_context *context);
-static void _publishMessage(elosScannerLegacySession_t *session);
+static safuResultE_t _setupSocket(elosPlugin_t *plugin);
+static void _publishMessage(elosPlugin_t *plugin);
 
-elosScannerLegacyResultE_t elosScannerInitialize(elosScannerLegacySession_t *session,
-                                                 const elosScannerLegacyParam_t *param) {
-    const char *filterString = NULL;
-    const char *configPath = "/root/elos/Scanner/SyslogScanner";
+static safuResultE_t _pluginInit(elosPlugin_t *plugin) {
+    safuLogDebugF("Starting to initialize '%s' plugin", plugin->config->key);
     struct syslog_context *context = (struct syslog_context *)malloc(sizeof(struct syslog_context));
     if (context == NULL) {
-        return SCANNER_ERROR;
+        return SAFU_RESULT_FAILED;
     }
 
-    session->name = SCANNER_NAME;
-    session->context = context;
     context->status = 0;
     context->socket = -1;
     context->cmd = -1;
-    context->config = param->config;
+    context->config = plugin->config;
 
-    if (param != NULL && context->config != NULL) {
-        if (samconfConfigGet(context->config, configPath, &session->config) != SAMCONF_CONFIG_OK) {
-            safuLogInfo("No config for syslog scanner found");
-        }
-    }
+    plugin->data = context;
 
     context->cmd = eventfd(0, 0);
     if (context->cmd == -1) {
         safuLogErrErrno("failed to establish eventfd for command channel");
-        return SCANNER_ERROR;
+        return SAFU_RESULT_FAILED;
     }
 
-    if (samconfConfigGetString(session->config, "FilterString", &filterString) == SAMCONF_CONFIG_OK) {
-        int retval;
-        retval = regcomp(&context->regExFilter, filterString, 0);
-        if (retval != 0) {
-            safuLogErrF("regcomp for filterString '%s' failed!", filterString);
-        } else {
-            // There seems to be no easy way to detect if a regex_t is valid;
-            // This causes problems further down the line as regfree() causes
-            // segmentation faults when used on a uninitialized regex_t struct,
-            // so we have to rely on flags to make sure everything runs smoothly
-            context->status |= (REGEX_FILTER_ACTIVE | REGEX_FILTER_NEEDS_CLEANUP);
-        }
-    }
-
-    if (elosLoglineMapperInit(&context->mapper, session->config) == SAFU_RESULT_FAILED) {
+    if (elosLoglineMapperInit(&context->mapper, plugin->config) == SAFU_RESULT_FAILED) {
         safuLogErr("Failed to setup logline mapper");
-        return SCANNER_ERROR;
+        return SAFU_RESULT_FAILED;
     } else {
         context->status |= LOGLINE_MAPPER_NEEDS_CLEANUP;
     }
 
-    return _setupSocket(context);
+    elosPluginCreatePublisher(plugin, &context->publisher);
+
+    return _setupSocket(plugin);
 }
 
-elosScannerLegacyResultE_t elosScannerRun(elosScannerLegacySession_t *session) {
-    struct syslog_context *context = session->context;
+static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
+    } else {
+        if ((plugin->config == NULL) || (plugin->config->key == NULL)) {
+            safuLogErr("Given configuration is NULL or has .key set to NULL");
+        } else {
+            result = _pluginInit(plugin);
+            safuLogDebugF("Scanner Plugin '%s' has been loaded", plugin->config->key);
+        }
+    }
+    return result;
+}
+
+static safuResultE_t _pluginRunLoop(elosPlugin_t *plugin) {
+    struct syslog_context *context = plugin->data;
     struct pollfd fds[] = {
         {.fd = context->socket, .events = POLLIN},
         {.fd = context->cmd, .events = POLLIN},
@@ -110,13 +107,13 @@ elosScannerLegacyResultE_t elosScannerRun(elosScannerLegacySession_t *session) {
         int result = poll(fds, ARRAY_SIZE(fds), -1);
         if (result > 0) {
             if (fds[0].revents & POLLIN) {
-                _publishMessage(session);
+                _publishMessage(plugin);
             } else if (fds[1].revents & POLLIN) {
                 uint64_t command = 0;
                 result = read(context->cmd, &command, sizeof(command));
                 if (result != sizeof(command)) {
                     safuLogErrErrno("failed to receive command event");
-                    return SCANNER_ERROR;
+                    return SAFU_RESULT_FAILED;
                 }
                 if (command == elosScannerCmdStop) {
                     context->running = false;
@@ -129,72 +126,138 @@ elosScannerLegacyResultE_t elosScannerRun(elosScannerLegacySession_t *session) {
             continue;
         } else {
             safuLogErrErrno("polling failed, bail out");
-            return SCANNER_ERROR;
+            return SAFU_RESULT_FAILED;
         }
     }
-
-    return SCANNER_OK;
+    return SAFU_RESULT_OK;
 }
 
-elosScannerLegacyResultE_t elosScannerStop(elosScannerLegacySession_t *session) {
-    struct syslog_context *context = session->context;
+static safuResultE_t _pluginStart(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
+    } else {
+        safuLogDebugF("Scanner Dummy Plugin '%s' has been started", plugin->config->key);
+        result = elosPluginReportAsStarted(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginReportAsStarted failed");
+        } else {
+            result = _pluginRunLoop(plugin);
+            if (result == SAFU_RESULT_FAILED) {
+                safuLogErrF("Scanner loop failed for %s", plugin->config->key);
+            }
+            result = elosPluginStopTriggerWait(plugin);
+            if (result == SAFU_RESULT_FAILED) {
+                safuLogErr("elosPluginStopTriggerWait failed");
+            }
+        }
+    }
+    return result;
+}
+
+static safuResultE_t _pluginStopScannerLoop(elosPlugin_t *plugin) {
+    struct syslog_context *context = plugin->data;
     ssize_t result = 0;
     result = write(context->cmd, &elosScannerCmdStop, sizeof(elosScannerCommand_t));
     if (result == -1) {
         safuLogErrErrno("failed to send command event");
-        return SCANNER_ERROR;
+        return SAFU_RESULT_FAILED;
     }
-    return SCANNER_OK;
+    return SAFU_RESULT_OK;
 }
 
-elosScannerLegacyResultE_t elosScannerFree(elosScannerLegacySession_t *session) {
-    struct syslog_context *context = session->context;
-    if (context->status & REGEX_FILTER_NEEDS_CLEANUP) {
-        regfree(&context->regExFilter);
+static safuResultE_t _pluginStop(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
+    } else {
+        safuLogDebugF("Stopping Scanner Plugin '%s'", plugin->config->key);
+        result = _pluginStopScannerLoop(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErrF("Stopping Scanner Plugin '%s' failed", plugin->config->key);
+        }
+        result = elosPluginStopTriggerWrite(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginStopTriggerWrite failed");
+        }
     }
+
+    return result;
+}
+
+static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_OK;
+    struct syslog_context *context = (struct syslog_context *)plugin->data;
 
     if (context->status & LOGLINE_MAPPER_NEEDS_CLEANUP) {
         elosLoglineMapperDeleteMembers(&context->mapper);
     }
-
     if (context->socket > -1) {
         close(context->socket);
     }
-
     if (context->socket > -1) {
         close(context->cmd);
     }
+    // TODO decide how to handle environment variables in pluggins
+    const char *syslogPath = NULL;
+    if (samconfConfigGetString(plugin->config, "Config/SyslogPath", &syslogPath) == SAMCONF_CONFIG_OK) {
+        unlink(syslogPath);
+    } else {
+        safuLogErr("Failed to unlink syslog socket");
+        result = SAFU_RESULT_FAILED;
+    }
 
-    unlink(elosConfigGetElosdSyslogSocketPath(session->config));
-    free(session->context);
-    return SCANNER_OK;
+    result = elosPluginDeletePublisher(plugin, context->publisher);
+
+    free(plugin->data);
+    safuLogDebugF("Scanner Plugin '%s' resources freed", plugin->config->key);
+    return result;
 }
 
-static elosScannerLegacyResultE_t _setupSocket(struct syslog_context *context) {
+static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
+    } else {
+        safuLogDebugF("Unloading Scanner Plugin '%s'", plugin->config->key);
+        result = _freePluginResources(plugin);
+    }
+
+    return result;
+}
+static safuResultE_t _setupSocket(elosPlugin_t *plugin) {
+    struct syslog_context *context = plugin->data;
     struct sockaddr_un name = {.sun_family = AF_UNIX};
-    const char *syslogSocketPath = elosConfigGetElosdSyslogSocketPath(context->config);
-    strncpy(name.sun_path, syslogSocketPath, sizeof(name.sun_path) - 1);
+    const char *syslogPath = elosConfigGetElosdSyslogSocketPath(plugin->config);
+    if (samconfConfigGetString(plugin->config, "Config/SyslogPath", &syslogPath) != SAMCONF_CONFIG_OK) {
+        safuLogErrF("failed to get the syslog socket for '%s'", plugin->config->key);
+        return SAFU_RESULT_FAILED;
+    }
+    safuLogDebugF("SocketPath: %s", syslogPath);
+    strncpy(name.sun_path, syslogPath, sizeof(name.sun_path) - 1);
 
     context->socket = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (context->socket == -1) {
         safuLogErrErrno("failed to setup syslog socket");
-        return SCANNER_ERROR;
+        return SAFU_RESULT_FAILED;
     }
-    if (access(syslogSocketPath, F_OK) == 0 && unlink(syslogSocketPath) == -1) {
+    if (access(syslogPath, F_OK) == 0 && unlink(syslogPath) == -1) {
         safuLogErrErrno("failed to delete socket");
     }
 
     int result = bind(context->socket, (const struct sockaddr *)&name, sizeof(name));
     if (result == -1) {
-        safuLogErrF("failed to bind socket to '%s' - %s", syslogSocketPath, strerror(errno));
-        return SCANNER_ERROR;
+        safuLogErrF("failed to bind socket to '%s' - %s", syslogPath, strerror(errno));
+        return SAFU_RESULT_FAILED;
     }
-    return SCANNER_OK;
+    return SAFU_RESULT_OK;
 }
 
-static void _publishMessage(elosScannerLegacySession_t *session) {
-    const char *filterString = NULL;
-    struct syslog_context *context = session->context;
+static void _publishMessage(elosPlugin_t *plugin) {
+    struct syslog_context *context = plugin->data;
     char *buffer = calloc(sizeof(char), MAX_LOG_ENTRY_SIZE);
     bool publish = true;
 
@@ -211,30 +274,17 @@ static void _publishMessage(elosScannerLegacySession_t *session) {
         buffer[bytesRead] = '\0';
     }
 
-    if (context->status & REGEX_FILTER_ACTIVE) {
-        int retval;
-        retval = regexec(&context->regExFilter, buffer, 0, NULL, 0);
-        if (retval == REG_NOMATCH) {
-            publish = false;
-        } else if (retval != 0) {
-            samconfConfigGetString(session->config, "FilterString", &filterString);
-            safuLogErrF("regexec for filterString '%s' failed! Disabling filter.", filterString);
-            context->status ^= REGEX_FILTER_ACTIVE;
-        }
-    }
-
     if (publish == true) {
-        elosScannerLegacyCallbackData_t *cbData = &session->callback.scannerCallbackData;
         safuResultE_t result;
         elosEvent_t event = {0};
         elosLoglineMapperDoMapping(&context->mapper, &event, buffer);
 
-        result = session->callback.eventLog(cbData, &event);
+        result = elosPluginPublish(plugin, context->publisher, &event);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("eventPublish failed");
         }
 
-        result = session->callback.eventPublish(cbData, &event);
+        result = elosPluginStore(plugin, &event);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("eventLog failed");
         }
@@ -244,3 +294,11 @@ static void _publishMessage(elosScannerLegacySession_t *session) {
 
     free(buffer);
 }
+
+elosPluginConfig_t elosPluginConfig = {
+    .type = PLUGIN_TYPE_SCANNER,
+    .load = _pluginLoad,
+    .unload = _pluginUnload,
+    .start = _pluginStart,
+    .stop = _pluginStop,
+};

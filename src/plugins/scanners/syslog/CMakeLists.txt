@@ -22,6 +22,7 @@ target_link_libraries(
     elos_scanner_legacy_interface
     eventfilter_static
   PUBLIC
+    libelosplugin
     rpnfilter_static
     scanner_syslog_interface
     elos_common_interface
