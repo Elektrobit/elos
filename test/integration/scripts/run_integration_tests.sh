@@ -25,6 +25,9 @@ run_all()
                 --output="$TEST_NAME" --report="$TEST_NAME" "$dir" || true
       fi
   done
+  rebot --output "${TEST_OUTPUT}/elos.xml" \
+      --outputdir "${TEST_OUTPUT}" \
+      "${TEST_OUTPUT}/*/*.xml"
 }
 
 run_suite()
