@@ -9,6 +9,7 @@ Documentation       A test suite to check blacklist filter triggered mutiple tim
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections

@@ -7,6 +7,7 @@ Documentation       A test suite to check direct interaction with elosd
 
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
+Library             ../../libraries/ElosKeywords.py
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections

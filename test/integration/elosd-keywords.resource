@@ -30,19 +30,6 @@ Disconnect From Elosd
     ${rc}    Elosd Disconnect
     Should Be Equal As Integers    ${rc}    0
 
-Stop Elosd
-    [Documentation]    Stop running instance of elosd
-
-    ${rc}    Execute And Log Based On User Permissions    ${ELOS_STOP_COMMAND}    ${RETURN_RC}
-    Sleep    1s
-
-Start Elosd
-    [Documentation]    Start an instance of elosd.
-
-    ${rc}    Execute And Log Based On User Permissions    ${ELOS_START_COMMAND}    ${RETURN_RC}
-    Executable Returns No Errors    ${rc}    Unable to start an instance of elosd
-    Sleep    1s
-
 Send Message To Elosd
     [Documentation]    Send given message with version and message code to elosd Target
     [Arguments]    ${version}    ${messagecode}    ${message}
@@ -91,40 +78,6 @@ Elosd Is Stopped
     ...    ignore_case=True
 
     RETURN    ${is_stopped}
-
-Wait For Elosd To Stop
-    [Documentation]    Wait for a running elosd instance to stop.
-    ...    The wait has a time out of 30 seconds
-
-    ${stopped}    Elosd Is Stopped
-
-    WHILE    '${stopped}' == '${false}'    limit=30 seconds
-        ${stopped}    Elosd Is Stopped
-        Sleep    0.2s
-    END
-
-    Log    ${stopped}
-
-Wait Till Elosd Is Started
-    [Documentation]    Wait till elosd is started and running.
-    ...    The wait has a time out of 30 seconds
-
-    ${started}    Elosd Is Running
-
-    WHILE    '${started}' == '${false}'    limit=30 seconds
-        ${started}    Elosd Is Running
-        Sleep    0.2s
-    END
-
-    Log    ${started}
-
-Restart Elosd
-    [Documentation]    stop and start an instance of elosd.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Start Elosd
-    Wait Till Elosd Is Started
 
 Check Elosd Log For
     [Documentation]    Check the elosd log for specific part

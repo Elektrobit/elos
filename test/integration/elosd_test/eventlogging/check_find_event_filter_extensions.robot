@@ -8,6 +8,7 @@ Documentation       A test suite to check find event filter extensions in elosd
 Library             DataDriver    file=../../test_data/check_find_filter.csv    dialect=unix
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
+Library             ../../libraries/ElosKeywords.py
 
 Test Template       Check Given Find Event Filter With Error Expectation
 

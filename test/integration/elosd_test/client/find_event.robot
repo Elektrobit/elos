@@ -8,6 +8,7 @@ Documentation       A test suite to check if all published events are
 
 Library             String
 Library             SSHLibrary
+Library             ../../libraries/ElosKeywords.py
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 

@@ -8,6 +8,7 @@ Documentation       A test suite to check elos behaviour when    config file is 
 
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
+Library             ../../libraries/ElosKeywords.py
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections
