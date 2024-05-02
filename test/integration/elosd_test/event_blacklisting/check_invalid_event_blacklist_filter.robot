@@ -24,7 +24,7 @@ ${BLACKLIST_FILTER}     .event.messagecode 2010 EQ
 
     Given An Invalid Blacklist Filter Is Set
     When Unauthorized Process Tries To Publish A Blacklisted Event
-    Then A Security Event Is Published
+    Then A Blacklist Failed Event Is Published
     [Teardown]    Reset Elosd Config
 
 
@@ -46,12 +46,13 @@ Unauthorized Process Tries To Publish A Blacklisted Event
     ${rc}    Execute And Log    elosc -p '{"messageCode": 2010}'    ${RETURN_RC}
     Executable Returns An Error    ${rc}
 
-A Security Event Is Published
-    [Documentation]    Attempt to publish a blacklisted event will lead to a security event
-    ...    to be published if client is unauthorized.
+A Blacklist Failed Event Is Published
+    [Documentation]    Attempt to publish a event and appling the black list
+    ...                fails will lead to a blacklist failed (501) event if
+    ...                client is unauthorized.
 
     ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 8007 EQ"
+    ...    elosc -f ".event.messageCode 501 EQ"
     ...    ${RETURN_STDOUT}
     ...    ${RETURN_RC}
     Should Contain    ${stdout}    2010
