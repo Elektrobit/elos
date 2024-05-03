@@ -53,6 +53,7 @@ New Session Is Started
     [Documentation]    Start a new elos session
 
     Run Keyword    Restart Elosd
+    Wait Till Elosd Is Listening On
     ${SESSION_ID}=    Evaluate    ${SESSION_ID} + 1
     Set Test Variable    ${SESSION_ID}
 
