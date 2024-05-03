@@ -5,10 +5,14 @@
 *** Settings ***
 Documentation       A test suite to check find event filter extensions in elosd
 
-Library             DataDriver    file=../../test_data/check_find_filter.csv    dialect=unix
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/ElosKeywords.py
+Library             DataDriver    file=../../test_data/check_find_filter.csv    dialect=unix
+
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
+Suite Teardown      Close All Connections
 
 Test Template       Check Given Find Event Filter With Error Expectation
 

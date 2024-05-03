@@ -9,6 +9,10 @@ Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/ElosKeywords.py
 
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
+Suite Teardown      Close All Connections
+
 
 *** Variables ***
 ${ELOSD_VERSION}            1
