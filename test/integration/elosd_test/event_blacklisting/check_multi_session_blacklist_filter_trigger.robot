@@ -20,6 +20,7 @@ ${BLACKLIST_FILTER}     .event.messageCode 2010 EQ
 @{PROCESS_FILTER}       1 0 EQ    # all processes are unauthorized
 ${SESSIONS}             2
 ${CLIENTS}              2
+${SESSION_ID}           1
 
 
 *** Test Cases ***
@@ -52,6 +53,8 @@ New Session Is Started
     [Documentation]    Start a new elos session
 
     Run Keyword    Restart Elosd
+    ${SESSION_ID}=    Evaluate    ${SESSION_ID} + 1
+    Set Test Variable    ${SESSION_ID}
 
 Multiple Unauthorized Processes Try To Publish A Blacklisted Event
     [Documentation]    run multiple client to publish blacklisted filters
@@ -67,7 +70,9 @@ Multiple Unauthorized Processes Try To Publish A Blacklisted Event
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
 
-    ${rc}    Execute And Log    elosc -p '{"messageCode": 2010}'    ${RETURN_RC}
+    ${SESSION_TOKEN}=    Set Variable    01_Test_Trigger_Blacklist_Filter_Multiple_Sessions${SESSION_ID}
+    Set Test Variable    ${SESSION_TOKEN}
+    ${rc}    Execute And Log    elosc -p '{"messageCode": 2010, "payload":"${SESSION_TOKEN}"}'    ${RETURN_RC}
     Executable Returns An Error    ${rc}
 
 A Security Event Is Published
@@ -78,7 +83,7 @@ A Security Event Is Published
     ...    elosc -f ".event.messageCode 8007 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"
     ...    ${RETURN_STDOUT}
     ...    ${RETURN_RC}
-    Should Contain X Times    ${stdout}    2010    ${CLIENTS}
+    Should Contain X Times    ${stdout}    ${SESSION_TOKEN}    ${CLIENTS}
     Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
 
 Reset Elosd Config
