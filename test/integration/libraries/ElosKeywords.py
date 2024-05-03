@@ -38,6 +38,13 @@ class ElosKeywords(object):
 
         return stdout, stderr, rc
 
+    def _get_elosd_pid(self):
+        pid = -1
+        stdout, stderr, rc = self._exec_on_target("pgrep elosd")
+        if rc == 0:
+            pid = int(stdout)
+        return pid
+
     def _get_elosd_status(self):
         stdout, stderr, rc = self._exec_on_target(self.status_command)
 
@@ -116,6 +123,23 @@ class ElosKeywords(object):
             is_started = self._get_elosd_status()
 
         robot.utils.asserts.assert_true(is_started)
+
+    def is_elosd_listen_on(self, port=54321):
+        port_as_hex = hex(port).upper()[2:]  # trim leading '0X'
+        pid = self._get_elosd_pid()
+        _, _, rc = self._exec_on_target(
+            f"grep '{port_as_hex}' /proc/{pid}/net/tcp")
+        return rc == 0
+
+    def wait_till_elosd_is_listening_on(self, port=54321, timeout=30):
+        is_listening = self.is_elosd_listen_on(port)
+        start_time = time.time()
+        while not is_listening:
+            if time.time() - start_time > timeout:
+                break
+            time.sleep(0.2)
+            is_listening = self.is_elosd_listen_on(port)
+        robot.utils.asserts.assert_true(is_listening)
 
     def ensure_elosd_is_started(self):
         """

@@ -7,6 +7,7 @@ Documentation       Collection of high level keywords for direct interaction wit
 
 Resource            keywords.resource
 Library             libraries/ElosdLibrary.py
+Library             libraries/ElosKeywords.py
 Library             libraries/TemplateConfig.py
 
 
@@ -21,6 +22,7 @@ ${ELOS_SERVICE_STOP_RC}    -1
 Connect To Elosd
     [Documentation]    connect to instance of elosd
 
+    Wait Till Elosd Is Listening On    ${ELOSD_PORT}
     ${rc}    Elosd Connect    ${TARGET}    ${ELOSD_PORT}
     Should Be Equal As Integers    ${rc}    0
 
