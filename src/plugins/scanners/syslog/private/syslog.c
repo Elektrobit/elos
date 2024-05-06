@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <regex.h>
+#include <safu/common.h>
 #include <safu/result.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -195,21 +196,29 @@ static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
         elosLoglineMapperDeleteMembers(&context->mapper);
     }
     if (context->socket > -1) {
-        close(context->socket);
+        if (close(context->socket) != 0) {
+            safuLogErrErrno("Failed to close syslog socket");
+            result = SAFU_RESULT_FAILED;
+        }
     }
     if (context->socket > -1) {
-        close(context->cmd);
+        if (close(context->cmd) != 0) {
+            safuLogErrErrno("Failed to close syslog cmd socket");
+            result = SAFU_RESULT_FAILED;
+        }
     }
     // TODO decide how to handle environment variables in pluggins
-    const char *syslogPath = NULL;
-    if (samconfConfigGetString(plugin->config, "Config/SyslogPath", &syslogPath) == SAMCONF_CONFIG_OK) {
-        unlink(syslogPath);
-    } else {
-        safuLogErr("Failed to unlink syslog socket");
+    // and move the call to getEnv to be handled by samconf in a merge strategy
+    const char *defaultSyslogPath = samconfConfigGetStringOr(plugin->config, "Config/SyslogPath", ELOSD_SYSLOG_PATH);
+    const char *syslogPath = safuGetEnvOr("ELOS_SYSLOG_PATH", defaultSyslogPath);
+    if (unlink(syslogPath) != 0) {
+        safuLogErrErrno("Failed to unlink syslog socket");
         result = SAFU_RESULT_FAILED;
     }
 
-    result = elosPluginDeletePublisher(plugin, context->publisher);
+    if (elosPluginDeletePublisher(plugin, context->publisher) != SAFU_RESULT_OK) {
+        result = SAFU_RESULT_FAILED;
+    }
 
     free(plugin->data);
     safuLogDebugF("Scanner Plugin '%s' resources freed", plugin->config->key);
@@ -231,11 +240,11 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
 static safuResultE_t _setupSocket(elosPlugin_t *plugin) {
     struct syslog_context *context = plugin->data;
     struct sockaddr_un name = {.sun_family = AF_UNIX};
-    const char *syslogPath = elosConfigGetElosdSyslogSocketPath(plugin->config);
-    if (samconfConfigGetString(plugin->config, "Config/SyslogPath", &syslogPath) != SAMCONF_CONFIG_OK) {
-        safuLogErrF("failed to get the syslog socket for '%s'", plugin->config->key);
-        return SAFU_RESULT_FAILED;
-    }
+
+    // TODO: move handlying of getEnv into samconf with an apropriate merge strategy
+    const char *defaultSyslogPath = samconfConfigGetStringOr(plugin->config, "Config/SyslogPath", ELOSD_SYSLOG_PATH);
+    const char *syslogPath = safuGetEnvOr("ELOS_SYSLOG_PATH", defaultSyslogPath);
+
     safuLogDebugF("SocketPath: %s", syslogPath);
     strncpy(name.sun_path, syslogPath, sizeof(name.sun_path) - 1);
 
