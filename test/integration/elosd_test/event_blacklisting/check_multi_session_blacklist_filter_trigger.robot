@@ -11,7 +11,8 @@ Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
 Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
