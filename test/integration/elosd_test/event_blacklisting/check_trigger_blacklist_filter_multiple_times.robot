@@ -70,12 +70,3 @@ A Security Event Is Published Every Time
     ...    ${RETURN_RC}
     Should Contain X Times    ${stdout}    2010    ${CLIENTS}
     Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

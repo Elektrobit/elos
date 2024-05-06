@@ -82,10 +82,3 @@ Elosd Is Not Started
 
     ${error}=    Run Keyword And Expect Error    *    Wait Till Elosd Is Started
     Log    ${error}
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Ensure Elosd Is Stopped
-    Cleanup Template Config
-    Ensure Elosd Is Started

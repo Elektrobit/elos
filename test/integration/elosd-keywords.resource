@@ -81,6 +81,13 @@ Elosd Is Stopped
 
     RETURN    ${is_stopped}
 
+Reset Elosd Config
+    [Documentation]    reset elosd config to default during test teardown.
+
+    Ensure Elosd Is Stopped
+    Cleanup Template Config
+    Ensure Elosd Is Started
+
 Check Elosd Log For
     [Documentation]    Check the elosd log for specific part
     [Arguments]    ${part}    ${ignore_case}=False
