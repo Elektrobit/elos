@@ -35,13 +35,11 @@ ${CLIENTS}              2
 A Simple Blacklist Filter Is Set
     [Documentation]    Set a simple blacklist filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Multiple Unauthorized Processes Try To Publish A Blacklisted Event
     [Documentation]    run multiple client to publish blacklisted filters

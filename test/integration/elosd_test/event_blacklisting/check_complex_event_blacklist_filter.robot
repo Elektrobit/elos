@@ -43,13 +43,11 @@ ${BLACKLIST_FILTER}     .event.severity 3 EQ .event.classification 260 EQ AND .e
 A Complex Blacklist Filter Is Set
     [Documentation]    Set a complex blacklist filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails

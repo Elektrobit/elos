@@ -42,13 +42,11 @@ ${BLACKLIST_FILTER}         .event.messageCode 2010 EQ
 An Empty Authorized Process Filter Is Set
     [Documentation]    Set an empty authorized process filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${EMPTY_PROCESS_FILTERS}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Client Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails

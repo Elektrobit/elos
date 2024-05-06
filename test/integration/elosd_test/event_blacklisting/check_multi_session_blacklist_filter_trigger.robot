@@ -42,13 +42,11 @@ ${SESSION_ID}           1
 A Simple Blacklist Filter Is Set
     [Documentation]    Set a simple blacklist filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 New Session Is Started
     [Documentation]    Start a new elos session

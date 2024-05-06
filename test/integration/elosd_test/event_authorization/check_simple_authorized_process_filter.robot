@@ -65,25 +65,21 @@ ${BLACKLIST_FILTER}                         .event.messageCode 2010 EQ
 A Filter To Authorize Root Processes Is Set
     [Documentation]    Set a simple authorized process filter to authorize all root processes
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${FILTER_TO_ALLOW_ROOT_PROCESSES}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 A Filter To Authorize Non Root Processes Is Set
     [Documentation]    Set a simple authorized process filter to authorize all    non root processes
 
     Set Test Variable    ${AUTHORIZE_ROOT}    ${false}
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${FILTER_TO_ALLOW_NON_ROOT_PROCESSES}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Root Process Tries To Publish A Blacklisted Event
     [Documentation]    A root process tries to publish a blacklisted event

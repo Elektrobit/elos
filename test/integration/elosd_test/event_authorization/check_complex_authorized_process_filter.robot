@@ -72,13 +72,11 @@ A Filter To Authorize Elosc As Non Root Is Set
     [Documentation]    Set authorized process filter to allow elosc as non root
 
     Set Test Variable    ${AUTHORIZE_ROOT}    ${false}
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${ALLOW_ELOSC_AS_NON_ROOT}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Root Elosc Tries To Publish A Blacklisted Event
     [Documentation]    An authorized elos client tries to publish a blacklisted event
