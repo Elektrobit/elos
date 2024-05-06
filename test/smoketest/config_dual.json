@@ -14,8 +14,7 @@
                 ".process.pid 1 EQ"
             ],
             "ClientInputs": {
-                "Plugins": {
-                }
+                "Plugins": {}
             },
             "EventLogging": {
                 "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
