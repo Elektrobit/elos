@@ -11,6 +11,14 @@ define edit_config
 	jq $(1) $(CFG_FILE) | sponge $(CFG_FILE)
 endef
 
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DELOS_BUILD_DEFAULTS=off \
+		-DINSTALL_UNIT_TESTS=off \
+		-DELOS_DAEMON=on \
+		-DELOS_TOOLS=on \
+		-DELOS_PLUGINS=on
+
 override_dh_auto_install:
 	dh_auto_install
 
