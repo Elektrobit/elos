@@ -7,3 +7,7 @@
 /elos-doc/
 /.debhelper/
 /tmp/
+/elosd/
+/elosc/
+/elos-coredump/
+/*.debhelper*

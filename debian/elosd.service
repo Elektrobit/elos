@@ -1,0 +1,15 @@
+[Unit]
+Description=elosd
+After=network.target
+ConditionPathExists=/etc/elos/elosd.json
+
+[Service]
+Type=simple
+User=root
+Group=root
+RuntimeDirectory=elos
+ExecStartPre=-/usr/bin/mkdir -p /var/log/elos
+ExecStart=/usr/bin/elosd
+
+[Install]
+WantedBy=multi-user.target

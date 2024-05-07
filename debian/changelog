@@ -3,6 +3,9 @@ elos (0.57.3-6) unstable; urgency=medium
   * Edit default daemon configuration.
   * Add jq and moreutils to the build dependencies.
   * Modify build targets.
+  * Split elos package into three new packages: elosc, elosd, and
+    elos-coredump.
+  * Add systemd service file for elosd.
 
  -- Isaac True <isaac.true@emlix.com>  Tue, 07 May 2024 17:03:06 +0200
 

@@ -28,17 +28,55 @@ Architecture: any
 Depends:
  ${misc:Depends},
  ${shlibs:Depends},
+ elosd (= ${binary:Version}),
+ elosc (= ${binary:Version}),
 Description: Event logging and management with normalized output-format
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
  while providing easy access to the collected data.
+
+Package: elosd
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format daemon
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Daemon package.
+
+Package: elosc
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format client
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Client package.
+
+Package: elos-coredump
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format coredump
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Coredump utility package.
 
 Package: libelos0
 Architecture: any
 Depends:
  ${misc:Depends},
  ${shlibs:Depends},
-Description: Event logging and management with normalized output-format
+Description: Event logging and management with normalized output-format library
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
  while providing easy access to the collected data.
@@ -51,7 +89,7 @@ Depends:
  ${misc:Depends},
  libelos0 (= ${binary:Version}),
  libsamconf-dev,
-Description: Event logging and management with normalized output-format
+Description: Development package for elos
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
  while providing easy access to the collected data.
@@ -62,7 +100,7 @@ Package: elos-doc
 Architecture: all
 Depends:
  ${misc:Depends},
-Description: Event logging and management with normalized output-format
+Description: Document package for elos
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
  while providing easy access to the collected data.
