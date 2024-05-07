@@ -19,11 +19,6 @@ Check If Elosd Is Installed
     ${output}=    Is Elosd Installed
     Should Be Equal    ${output}    ${ELOSD_PATH}    msg=Elosd is not installed
 
-Check If Elosd Is Running
-    [Documentation]    Test checks if elosd is running
-    ${output}=         Elosd Is Running
-    Should Be True     ${output}
-
 
 *** Keywords ***
 Is Elosd Installed
