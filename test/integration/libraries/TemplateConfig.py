@@ -66,10 +66,15 @@ class TemplateConfig(object):
         and set that as new config."""
         par = {}
         for p in param:
-            if type(p) == dict:
+            if type(p) is dict:
                 par.update(p)
 
         values = self.default_config_core() | par | parameter
+        config = json.dumps(self.make_config_full(values), indent=4)
+        self.set_config_from_string(config)
+
+    def set_new_config_core(self, **values):
+        """Give a new configuration to use for elosd."""
         config = json.dumps(self.make_config_full(values), indent=4)
         self.set_config_from_string(config)
 
