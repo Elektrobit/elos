@@ -1,5 +1,6 @@
 import robot.utils.asserts
 import time
+import json
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
 
@@ -166,3 +167,52 @@ class ElosKeywords(object):
             self.wait_for_elosd_to_stop()
             is_stopped = not self._get_elosd_status()
         robot.utils.asserts.assert_true(is_stopped)
+
+    def _parse_elosc_result(self, stdout):
+        lines = stdout.splitlines()
+        events = []
+        for i, line in enumerate(lines):
+            if line.strip() == 'new data:' and len(lines) > i+1:
+                events.append(json.loads(lines[i + 1].strip()))
+        return events
+
+    def ensure_x_events_are_stored_with_payload(self, filter, count, payload,
+                                                timeout=10):
+        """
+        Continuously fetch elos events for a given filter and payload until
+        either expected amount is seen or a timeout occurred.
+        """
+
+        start_time = time.time()
+        expected_count = int(count)
+        retry_count = 0
+        eventCount = -1
+        while True:
+            stdout, stderr, rc = self._exec_on_target(f"elosc -f '{filter}'")
+            if rc != 0:
+                robot.utils.asserts.fail()
+
+            events = self._parse_elosc_result(stdout)
+            logger.info(
+                f"found {len(events)} events"
+                f" look for payload like '{payload}'")
+            filtered_events = []
+            for event in events:
+                if event.get("payload").find(payload) != -1:
+                    filtered_events.append(event)
+
+            eventCount = len(filtered_events)
+            logger.info(f"found {eventCount} events with payload")
+            if expected_count == eventCount:
+                break
+            elif time.time() - start_time > timeout:
+                logger.info("elosc output was:")
+                logger.info(f"stdout:\n{stdout}\nstderr:\n{stderr}\n")
+                logger.info("Fail because of timeout")
+                robot.utils.asserts.assert_equal(expected_count, eventCount)
+            else:
+                logger.info("elosc output was:")
+                logger.info(f"stdout:\n{stdout}\nstderr:\n{stderr}\n")
+                retry_count += 1
+                logger.info(f"{retry_count}. Retry as not enough events found")
+                time.sleep(0.2)

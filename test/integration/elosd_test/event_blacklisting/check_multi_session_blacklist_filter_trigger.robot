@@ -26,8 +26,9 @@ ${SESSION_ID}           1
 
 *** Test Cases ***
 01_Test_Trigger_Blacklist_Filter_Multiple_Sessions    # robocop: disable=not-capitalized-test-case-title
-    [Documentation]    Blacklist filter is triggered more than once
-    ...    in separate sessions.
+    [Documentation]    Try to trigger multiple times from different
+    ...                clients the blacklist filter and check if
+    ...                expected amount of security events are created.
     [Setup]    A Simple Blacklist Filter Is Set
 
     FOR    ${session}    IN RANGE    0    ${SESSIONS}
@@ -79,9 +80,7 @@ A Security Event Is Published
     [Documentation]    Attempt to publish a blacklisted event will lead to a security event
     ...    to be published if client is unauthorized.
 
-    ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 8007 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"
-    ...    ${RETURN_STDOUT}
-    ...    ${RETURN_RC}
-    Should Contain X Times    ${stdout}    ${SESSION_TOKEN}    ${CLIENTS}
-    Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
+    Ensure X Events Are Stored With Payload
+    ...    .event.messageCode 8007 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND
+    ...    ${CLIENTS}
+    ...    ${SESSION_TOKEN}
