@@ -37,5 +37,7 @@ RUN pip install robotframework-datadriver>=1.8.1
 RUN pip install robotframework-jsonlibrary>=0.5
 RUN pip install robotframework-robocop>=4.1.1
 RUN pip install robotframework-tidy>=4.5.0
+RUN pip install robotframework-retryfailed
+
 
 CMD /bin/bash
