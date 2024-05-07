@@ -1,0 +1,3 @@
+usr/include/elos
+usr/lib/*/pkgconfig
+usr/lib/*/libelos*.so

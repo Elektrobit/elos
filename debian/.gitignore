@@ -1,0 +1,9 @@
+/*.substvars
+/files
+/debhelper-build-stamp
+/elos/
+/libelos0/
+/libelos-dev/
+/elos-doc/
+/.debhelper/
+/tmp/

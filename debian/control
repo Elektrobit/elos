@@ -1,0 +1,68 @@
+Source: elos
+Section: admin
+Priority: optional
+Maintainer: Isaac True <isaac.true@emlix.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake,
+ git,
+ liblog4c-dev,
+ libesmtp-dev,
+ libsqlite3-dev,
+ pkg-config,
+ libcmocka-dev,
+ libsafu-dev,
+ libsamconf-dev,
+ libcmocka-mocks-dev,
+ cmocka-extensions-dev,
+Rules-Requires-Root: no
+Standards-Version: 4.6.0.1
+Homepage: https://github.com/Elektrobit/elos
+Vcs-Browser: https://github.com/Elektrobit/elos
+Vcs-Git: https://github.com/Elektrobit/elos
+
+Package: elos
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+
+Package: libelos0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Shared library package.
+
+Package: libelos-dev
+Architecture: any
+Depends:
+ ${misc:Depends},
+ libelos0 (= ${binary:Version}),
+ libsamconf-dev (= ${binary:Version}),
+Description: Event logging and management with normalized output-format
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Development package.
+
+Package: elos-doc
+Architecture: all
+Depends:
+ ${misc:Depends},
+Description: Event logging and management with normalized output-format
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Documentation package.

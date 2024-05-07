@@ -1,0 +1,30 @@
+elos (0.57.3-4) unstable; urgency=medium
+
+  * Update gbp.conf with the new branch names.
+
+ -- Isaac True <isaac.true@emlix.com>  Tue, 07 May 2024 15:56:34 +0200
+
+elos (0.57.3-3) unstable; urgency=medium
+
+  * Add libsamconf-dev to the dependencies for libelos-dev.
+  * Add the following build dependencies:
+     - pkg-config
+     - libcmocka-dev
+     - libsafu-dev
+     - libsamconf-dev
+     - libcmocka-mocks-dev
+     - cmocka-extensions-dev
+
+ -- Isaac True <isaac.true@emlix.com>  Tue, 07 May 2024 15:24:13 +0200
+
+elos (0.57.3-2) unstable; urgency=medium
+
+  * Add gbp.conf.
+
+ -- Isaac True <isaac.true@emlix.com>  Tue, 07 May 2024 14:31:00 +0200
+
+elos (0.57.3-1) unstable; urgency=medium
+
+  * Initial release.
+
+ -- Isaac True <isaac.true@emlix.com>  Mon, 06 May 2024 16:28:11 +0200
