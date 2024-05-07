@@ -1,3 +1,9 @@
+elos (0.57.3-5) unstable; urgency=medium
+
+  * Remove erroneous version specifier from libsamconf-dev.
+
+ -- Isaac True <isaac.true@emlix.com>  Tue, 07 May 2024 16:21:56 +0200
+
 elos (0.57.3-4) unstable; urgency=medium
 
   * Update gbp.conf with the new branch names.
