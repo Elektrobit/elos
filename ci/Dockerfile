@@ -7,7 +7,13 @@ ARG ASMCOV_URI="not available"
 ARG CAPSTONE_VERSION=4.0.2
 ARG TABVIEW_VERSION=1.9
 
+ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN sed -i "s,http://archive.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && sed -i "s,http://security.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && cat /etc/apt/sources.list
+
 RUN apt-get update \
  && apt-get install -y \
     binutils-dev \

@@ -8,8 +8,14 @@ ARG TARGET_PASSWORD=target123
 ARG SOURCES_URI=https://github.com/emlix/
 ARG ELOS_DEPENDENCY_CONFIG="./ci/dependencies.json"
 ARG CMAKE_PARAM=""
+ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN sed -i "s,http://archive.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && sed -i "s,http://security.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && cat /etc/apt/sources.list
+
 RUN apt-get update \
  && apt-get install -y sudo locales build-essential binutils-dev pkg-config cmake \
  git wget curl netcat net-tools ssh libssl-dev openssl ninja-build libcmocka-dev \
