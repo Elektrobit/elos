@@ -8,6 +8,7 @@ ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN apt-get update && apt-get reinstall ca-certificates -y
 RUN sed -i "s,http://archive.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
  && sed -i "s,http://security.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
  && cat /etc/apt/sources.list
