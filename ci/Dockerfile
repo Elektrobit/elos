@@ -5,8 +5,6 @@ ARG UID=1000
 ARG GID=1000
 ARG ASMCOV_URI="not available"
 ARG CAPSTONE_VERSION=4.0.2
-ARG TABVIEW_VERSION=1.9
-
 ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -80,11 +78,6 @@ RUN if [ "${ASMCOV_URI}" != "not available" ]; then git clone --depth 1 ${ASMCOV
  && make -C build \
  && make -C build install; \
  fi
-
-RUN git clone --depth 1 --branch $TABVIEW_VERSION https://gitlab.com/esr/tapview.git
-RUN cd tapview \
- && sed -i '/$(INSTALL) -m 644 $(MANPAGES)/d' Makefile\
- && make install DESTDIR=/ prefix=usr
 
 USER $USER
 ENV LC_ALL=en_US.UTF-8
