@@ -27,7 +27,6 @@ target_link_libraries(
     eventlogging_static
     config_static
     eventlogging_static
-    connectionmanager_static
     elos_scanner_interface
     safu::safu
     ${CMAKE_DL_LIBS}
@@ -46,5 +45,4 @@ create_weak_library(
     eventlogging_static
     config_static
     eventlogging_static
-    connectionmanager_static
 )

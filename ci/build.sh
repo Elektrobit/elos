@@ -11,21 +11,18 @@ OPTION_CI=0
 OPTION_CLEAN=0
 OPTION_VERBOSE=0
 OPTION_PACKAGE=0
-OPTION_NO_DEP=0
 for element in "$@"; do
     case $element in
         --ci)          OPTION_CI=1 ;;
         --clean|-c)    OPTION_CLEAN=1 ;;
         --verbose|-v)  OPTION_VERBOSE=1 ;;
         --package)     OPTION_PACKAGE=1 ;;
-        --no-dep)      OPTION_NO_DEP=1 ;;
         -*)          echo "error: unknown option: $1"; exit 1 ;;
         *)           PARAM="$PARAM $element" ;;
     esac
 done
 
 set -- $PARAM
-INSTALL_DEP_OPTIONS=""
 if [ $# -gt 1 ]; then
     echo "error: only one build-type allowed"
     exit 1
@@ -37,13 +34,12 @@ elif [ $OPTION_CI -eq 1 ]; then
     CMAKE_PARAM="-DENABLE_CI=1"
     OPTION_CLEAN=1
     OPTION_VERBOSE=1
-    INSTALL_DEP_OPTIONS="${INSTALL_DEP_OPTIONS} --ci"
 fi
 
 BUILD_TYPE="${1:-Debug}"
 
 # enable plugins to build
-CMAKE_PARAM="${CMAKE_PARAM} -DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=ON"
+CMAKE_PARAM="${CMAKE_PARAM} -DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=ON -DELOSD_EVENTLOGGING_BACKEND_NOSQL=ON"
 
 if [ $OPTION_PACKAGE -eq 1 ]; then
     CMAKE_PARAM="${CMAKE_PARAM} -D PACKAGING=true"
@@ -52,10 +48,6 @@ if [ $OPTION_PACKAGE -eq 1 ]; then
 fi
 
 . "$BASE_DIR/ci/common_names.sh"
-
-if [ $OPTION_NO_DEP -eq 0 ]; then
-    "$BASE_DIR/ci/install_deps.py" --clean-first $INSTALL_DEP_OPTIONS
-fi;
 
 CMAKE_BUILD_DIR=$BUILD_DIR/cmake
 export PREFIX_PATH="${DIST_DIR}/usr/local"

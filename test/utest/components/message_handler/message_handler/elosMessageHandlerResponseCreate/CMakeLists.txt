@@ -13,7 +13,7 @@ create_unit_test(
     case_exterr_add_new_string.c
     elosMessageHandlerResponseCreate_utest.c
   LIBRARIES
-    scanner_manager_static_weak
+    messagehandler_static
     elos_event_static_weak
     cmocka_mocks::mock_jsonc
     safu::mock_safu

@@ -15,35 +15,52 @@ default:
       - "shell"
 
 before_script:
-  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client jq -y )'
   - docker info
   - ip a
   - ss -antup
   - env
 
+build-dependencies:
+  stage: build
+  needs: []
+  script:
+    - ci/docker-run.sh ci/install_deps.py -c ci/dependencies_emlix.json
+  artifacts:
+    expire_in: 1 day 
+    paths:
+      - build/deps/
+    exclude:
+      - build/deps/src/
+      - build/deps/build/
+
 build-release:
   stage: build
+  needs:
+    - build-dependencies
   script:
     - ci/docker-run.sh ci/build.sh --ci Release
   artifacts:
     paths:
-      - build/deps/
       - build/Release/dist/
       - build/Release/cmake/
-    exclude:
-      - build/deps/src/
+      - build/Release/result/build_log.txt 
 
 build-debug:
   stage: build
+  needs:
+    - build-dependencies
   script:
     - ci/docker-run.sh ci/build.sh --ci Debug
   artifacts:
     paths:
       - build/Debug/dist/
       - build/Debug/cmake/
+      - build/Debug/result/build_log.txt 
 
 integration-tests:
   stage: test
+  needs: []
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
     DOCKER_BUILDKIT: 0
@@ -56,8 +73,19 @@ integration-tests:
     paths:
       - build/Release/result/integration/
 
+baseos-lab-tests:
+  stage: test
+  needs: []
+  variables:
+    BRANCH_NAME: $CI_COMMIT_REF_NAME
+  script:
+    - ci/trigger_jenkins_ci.sh
+
 unit-test-release:
   stage: test
+  needs:
+    - build-dependencies
+    - build-release
   script:
     - ci/docker-run.sh ci/run_utest.sh Release
   artifacts:
@@ -69,6 +97,9 @@ unit-test-release:
 
 unit-test-debug:
   stage: test
+  needs:
+    - build-dependencies
+    - build-debug
   script:
     - ci/docker-run.sh ci/run_utest.sh Debug
   artifacts:
@@ -80,6 +111,9 @@ unit-test-debug:
 
 smoke-test-release:
   stage: test
+  needs:
+    - build-dependencies
+    - build-release
   script:
     - ci/docker-run.sh ci/run_smoketests.sh Release
   artifacts:
@@ -89,6 +123,9 @@ smoke-test-release:
 
 smoke-test-debug:
   stage: test
+  needs:
+    - build-dependencies
+    - build-debug
   script:
     - ci/docker-run.sh ci/run_smoketests.sh Debug
   artifacts:
@@ -98,6 +135,9 @@ smoke-test-debug:
 
 code-lint:
   stage: test
+  needs:
+    - build-dependencies
+    - build-release
   script:
     - ci/docker-run.sh ci/code_lint.py --ci
     - ci/docker-run.sh ci/checklicense.sh
@@ -108,6 +148,9 @@ code-lint:
 
 benchmark:
   stage: test
+  needs:
+    - build-dependencies
+    - build-release
   script:
     - ci/docker-run.sh ci/run_benchmarks.sh Release
   artifacts:
@@ -120,6 +163,9 @@ code-coverage:
     - when: never
       allow_failure: true
   stage: test
+  needs:
+    - build-dependencies
+    - build-release
   script:
     - ci/docker-run.sh ci/create_coverage.sh
   artifacts:
@@ -131,11 +177,17 @@ publish-kpis:
   rules:
     - when: never
       allow_failure: true
+  needs:
+    - benchmark
+    - code-coverage
   script:
     - ci/publish_pkis.sh
 
 documentation:
-  stage: test
+  stage: build
+  needs:
+    - build-dependencies
+    - build-debug
   script:
     - ci/docker-run.sh ci/build_doc.sh
   artifacts:

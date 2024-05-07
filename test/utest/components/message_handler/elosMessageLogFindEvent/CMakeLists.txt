@@ -19,7 +19,7 @@ create_unit_test(
 
     elosMessageLogFindEvent_utest.c
   LIBRARIES
-    scanner_manager_static_weak
+    connectionmanager_static
     elos_event_static_weak
     mock_elos_event_static
     mock_log_aggregator_static

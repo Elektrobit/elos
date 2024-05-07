@@ -11,7 +11,7 @@ create_unit_test(
     case_success.c
     elosMessageGetVersion_utest.c
   LIBRARIES
-    scanner_manager_static_weak
+    connectionmanager_static
     mock_message_handler_static
     elos_event_static_weak
     safu::mock_safu

@@ -21,7 +21,7 @@ create_unit_test(
     case_response_send_failed.c
     elosMessageEventSubscribe_utest.c
   LIBRARIES
-    scanner_manager_static_weak
+    connectionmanager_static
     cmocka_mocks::mock_jsonc
     cmocka_mocks::mock_libc
     safu::mock_safu

@@ -10,7 +10,6 @@ create_unit_test(
     elosLoglineMapperDoMapping_utest.c
   LIBRARIES
     scanner_syslog
-    scanner_manager_static
     cmocka_mocks::mock_libc
     safu::mock_safu
 )

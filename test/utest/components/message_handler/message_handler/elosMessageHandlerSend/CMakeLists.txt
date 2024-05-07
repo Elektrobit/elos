@@ -11,7 +11,7 @@ create_unit_test(
     case_err_bytes_lt_msgLen.c
     elosMessageHandlerSend_utest.c
   LIBRARIES
-    scanner_manager_static_weak
+    messagehandler_static
     elos_event_static_weak
     safu::mock_safu
 )

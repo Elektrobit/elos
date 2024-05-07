@@ -32,6 +32,7 @@ if [ "$SSH_AUTH_SOCK" ]; then
 fi
 
 docker run --rm -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined $SSH_AGENT_OPTS \
+    ${LINK_NOSQL:+ --link elos-mongo} \
     --privileged \
     --name ${TARGET_NAME} \
     -w / \

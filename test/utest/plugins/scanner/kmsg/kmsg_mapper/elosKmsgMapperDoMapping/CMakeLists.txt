@@ -10,6 +10,6 @@ create_unit_test(
     case_err_missing_number.c
     elosKmsgMapperDoMapping_utest.c
   LIBRARIES
+    elos_event_static
     scanner_kmsg
-    scanner_manager_static
 )

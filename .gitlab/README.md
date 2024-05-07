@@ -18,7 +18,7 @@ The official open source repository uses the GitHub-CI.
 	- [ ] integrate the [coverage report](https://docs.gitlab.com/ee/ci/yaml/artifacts_reports.html#artifactsreportscoverage_report) into GitLab
 - [ ] publish the KPIs to a time series database
 - [x] build the documentation
-- [ ] run the [BaseOS Lab](https://gitlabintern.emlix.com/elektrobit/base-os/eb-baseos-lab) tests to test for other targets
+- [x] run the [BaseOS Lab](https://gitlabintern.emlix.com/elektrobit/base-os/eb-baseos-lab) tests to test for other targets
 
 ## How to enable the pipeline for a repository
 
