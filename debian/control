@@ -6,6 +6,8 @@ Build-Depends:
  debhelper-compat (= 13),
  cmake,
  git,
+ jq,
+ moreutils,
  liblog4c-dev,
  libesmtp-dev,
  libsqlite3-dev,
