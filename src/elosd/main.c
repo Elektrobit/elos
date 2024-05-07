@@ -185,8 +185,6 @@ int main(int argc, char **argv) {
     result = elosStorageManagerInitialize(&context.storageManager, &smParam);
     if (result != SAFU_RESULT_OK) {
         safuLogWarn("elosStorageManagerInitialize had errors during execution");
-        elosServerShutdown(&context);
-        return EXIT_FAILURE;
     } else {
         result = elosStorageManagerStart(&context.storageManager);
         if (result != SAFU_RESULT_OK) {
