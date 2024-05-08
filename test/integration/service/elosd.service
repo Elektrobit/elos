@@ -1,35 +1,48 @@
 #!/bin/bash
-
+ELOSD_LOG_FILE="/tmp/elosd.log"
+ELOSD_PID_FILE="/run/elosd.pid"
 
 start() {
-    if [ -e /run/elosd.pid ]
+    if [ -e "${ELOSD_PID_FILE}" ]
     then
         echo "elos already running"
         exit 1
     fi
 
-    touch /tmp/elosd.log
-    chmod 666 /tmp/elosd.log
+    touch "${ELOSD_LOG_FILE}"
+    chmod 666 "${ELOSD_LOG_FILE}"
 
     export ELOS_STORAGE_BACKEND_JSON_FILE="/tmp/elosd_event.log"
-    stdbuf -o 0 -e 0 /usr/local/bin/elosd > /tmp/elosd.log 2>&1 &
+    stdbuf -o 0 -e 0 /usr/local/bin/elosd > "${ELOSD_LOG_FILE}" 2>&1 &
     ELOS_PID=$!
 
     sleep 0.2s
 
     if [ -d /proc/$ELOS_PID ]
     then
-        echo $ELOS_PID > /run/elosd.pid
+        echo $ELOS_PID > "${ELOSD_PID_FILE}"
     fi
 }
 
 stop() {
-    kill $(cat /run/elosd.pid) >> /tmp/elosd.log 2>&1
-    rm -f /run/elosd.pid
+    ELOSD_PID=$(cat "${ELOSD_PID_FILE}")
+    kill ${ELOSD_PID} >> "${ELOSD_LOG_FILE}" 2>&1
+    NUMBER_RETRIES=10
+    while [ -d /proc/$(cat "${ELOSD_PID_FILE}") ]; do
+        sleep 0.2
+        if [ ${NUMBER_RETRIES} -gt 0 ]; then
+            ((NUMBER_RETRIES--))
+        else
+            echo "timeout to stop elsod, kill it now" | tee "${ELOSD_LOG_FILE}" 2>&1
+            kill -9 ${ELOSD_PID} >> "${ELOSD_LOG_FILE}" 2>&1
+            break;
+        fi
+    done
+    rm -f "${ELOSD_PID_FILE}"
 }
 
 status() {
-    if [ -e /run/elosd.pid ] && [ -d /proc/$(cat /run/elosd.pid) ]
+    if [ -e "${ELOSD_PID_FILE}" ] && [ -d /proc/$(cat "${ELOSD_PID_FILE}") ]
     then
        echo "Status : Running"
     else
