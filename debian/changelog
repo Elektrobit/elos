@@ -1,3 +1,9 @@
+elos (0.57.3-8) unstable; urgency=medium
+
+  * Do not compress .rst or .md files.
+
+ -- Isaac True <isaac.true@emlix.com>  Wed, 08 May 2024 15:13:47 +0200
+
 elos (0.57.3-7) unstable; urgency=medium
 
   * Move systemd unit file into a new elosd-systemd package.

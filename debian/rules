@@ -54,3 +54,7 @@ override_dh_auto_install:
 
 override_dh_installsystemd:
 	dh_installsystemd --name elosd
+
+override_dh_compress:
+	# Do not compress .md or .rst files
+	dh_compress --exclude=.md --exclude=.rst
