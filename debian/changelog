@@ -7,6 +7,7 @@ elos (0.57.3-8) unstable; urgency=medium
   * Create new libmock-libelos0 package.
   * Create new libelosdlt0 package.
   * Create new libelosplugin0 package.
+  * Declare elos as a metapackage.
 
  -- Isaac True <isaac.true@emlix.com>  Wed, 08 May 2024 15:13:47 +0200
 
