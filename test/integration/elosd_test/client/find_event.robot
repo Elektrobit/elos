@@ -8,10 +8,12 @@ Documentation       A test suite to check if all published events are
 
 Library             String
 Library             SSHLibrary
+Library             ../../libraries/ElosKeywords.py
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 

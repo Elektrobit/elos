@@ -6,11 +6,15 @@
             "Interface": "0.0.0.0",
             "ConnectionLimit": 200,
             "EventBlacklist": ".event.messageCode 2000 EQ",
-	    "authorizedProcesses": [
-		    ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-		    ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-		    ".process.pid 1 EQ"
-	    ],
+            "authorizedProcesses": [
+                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                ".process.pid 1 EQ"
+            ],
+            "ClientInputs": {
+                "Plugins": {
+                }
+            },
             "EventLogging": {
                 "PluginSearchPath": "/usr/local/lib/elos/backend",
                 "Plugins": {

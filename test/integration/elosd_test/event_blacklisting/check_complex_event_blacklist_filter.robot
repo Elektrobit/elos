@@ -8,8 +8,10 @@ Documentation       A test suite to check complex blacklist filter
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -41,13 +43,11 @@ ${BLACKLIST_FILTER}     .event.severity 3 EQ .event.classification 260 EQ AND .e
 A Complex Blacklist Filter Is Set
     [Documentation]    Set a complex blacklist filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
@@ -85,12 +85,3 @@ Event Is Published
     ...    ${RETURN_RC}
     Should Contain    ${stdout}    150
     Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

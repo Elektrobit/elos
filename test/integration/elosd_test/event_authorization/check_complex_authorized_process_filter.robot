@@ -8,8 +8,10 @@ Documentation       A test suite to check complex authorized process filter
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -70,13 +72,11 @@ A Filter To Authorize Elosc As Non Root Is Set
     [Documentation]    Set authorized process filter to allow elosc as non root
 
     Set Test Variable    ${AUTHORIZE_ROOT}    ${false}
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${ALLOW_ELOSC_AS_NON_ROOT}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Root Elosc Tries To Publish A Blacklisted Event
     [Documentation]    An authorized elos client tries to publish a blacklisted event
@@ -139,12 +139,3 @@ A Security Event Is Published
     ...    ${RETURN_RC}
     Should Contain    ${stdout}    2010
     Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

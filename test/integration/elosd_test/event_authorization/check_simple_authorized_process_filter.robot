@@ -8,8 +8,10 @@ Documentation       A test suite to check simple authorized process filter
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -63,25 +65,21 @@ ${BLACKLIST_FILTER}                         .event.messageCode 2010 EQ
 A Filter To Authorize Root Processes Is Set
     [Documentation]    Set a simple authorized process filter to authorize all root processes
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${FILTER_TO_ALLOW_ROOT_PROCESSES}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 A Filter To Authorize Non Root Processes Is Set
     [Documentation]    Set a simple authorized process filter to authorize all    non root processes
 
     Set Test Variable    ${AUTHORIZE_ROOT}    ${false}
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${FILTER_TO_ALLOW_NON_ROOT_PROCESSES}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Root Process Tries To Publish A Blacklisted Event
     [Documentation]    A root process tries to publish a blacklisted event
@@ -144,12 +142,3 @@ A Security Event Is Published
     ...    ${RETURN_RC}
     Should Contain    ${stdout}    2010
     Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started
