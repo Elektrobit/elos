@@ -3,6 +3,8 @@
 /debhelper-build-stamp
 /elos/
 /libelos0/
+/libelosplugin0/
+/libelosdlt0/
 /libmock-libelos0/
 /libelos-dev/
 /elos-doc/

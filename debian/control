@@ -226,6 +226,7 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends},
 Recommends:
+ libelosplugin0 (= ${binary:Version}),
  elos-plugin-backend-dlt (= ${binary:Version}),
  elos-plugin-backend-dummy (= ${binary:Version}),
  elos-plugin-backend-influxdb (= ${binary:Version}),
@@ -236,12 +237,38 @@ Recommends:
  elos-plugin-scanner-kmsg (= ${binary:Version}),
  elos-plugin-scanner-shmem (= ${binary:Version}),
  elos-plugin-scanner-syslog (= ${binary:Version}),
+Suggests:
+ libelosdlt0 (= ${binary:Version}),
 Description: Event logging and management with normalized output-format library
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
  while providing easy access to the collected data.
  .
  Shared library package.
+
+Package: libelosdlt0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format DLT library
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ DLT shared library package.
+
+Package: libelosplugin0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format plugin library
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Plugin shared library package.
 
 Package: libelos-dev
 Architecture: any

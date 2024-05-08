@@ -21,7 +21,8 @@ override_dh_auto_configure:
 		-DELOS_PLUGINS=on \
 		-DELOSD_EVENTLOGGING_BACKEND_SQL=on \
 		-DELOSD_EVENTLOGGING_BACKEND_NOSQL=on \
-		-DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=on
+		-DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=on \
+		-DELOSD_LIBDLT=on
 
 override_dh_auto_install:
 	dh_auto_install
