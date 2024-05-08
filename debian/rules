@@ -14,7 +14,8 @@ endef
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DELOS_BUILD_DEFAULTS=off \
-		-DINSTALL_UNIT_TESTS=off \
+		-DELOS_MOCK_LIBRARY=on \
+		-DINSTALL_UNIT_TESTS=on \
 		-DELOS_DAEMON=on \
 		-DELOS_TOOLS=on \
 		-DELOS_PLUGINS=on \

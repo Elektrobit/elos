@@ -208,6 +208,18 @@ Description: Event logging and management with normalized output-format coredump
  .
  Coredump utility package.
 
+Package: libmock-libelos0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format library (mocks)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Mock library package.
+
 Package: libelos0
 Architecture: any
 Depends:
