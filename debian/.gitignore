@@ -8,6 +8,7 @@
 /.debhelper/
 /tmp/
 /elosd/
+/elosd-systemd/
 /elosc/
 /elos-coredump/
 /*.debhelper*

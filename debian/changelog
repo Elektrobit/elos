@@ -1,3 +1,9 @@
+elos (0.57.3-7) unstable; urgency=medium
+
+  * Move systemd unit file into a new elosd-systemd package.
+
+ -- Isaac True <isaac.true@emlix.com>  Wed, 08 May 2024 14:25:54 +0200
+
 elos (0.57.3-6) unstable; urgency=medium
 
   * Edit default daemon configuration.

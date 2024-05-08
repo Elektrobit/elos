@@ -51,3 +51,6 @@ override_dh_auto_install:
 	# elos currently can't forward syslog messages on the syslog socket, thus
 	# don't acquire /dev/log to not conflict with other syslog daemons
 	$(call edit_config,'.root.elos.Scanner.SyslogScanner.SyslogPath = "/run/elos/dev-log"')
+
+override_dh_installsystemd:
+	dh_installsystemd --name elosd
