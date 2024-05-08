@@ -2,6 +2,8 @@ elos (0.57.3-8) unstable; urgency=medium
 
   * Do not compress .rst or .md files.
   * Do not ship plantuml files.
+  * Enable sql, nosql, and influxdb logging backend libraries.
+  * Ship all plugin libraries in separate packages.
 
  -- Isaac True <isaac.true@emlix.com>  Wed, 08 May 2024 15:13:47 +0200
 

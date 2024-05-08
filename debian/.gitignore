@@ -12,3 +12,13 @@
 /elosc/
 /elos-coredump/
 /*.debhelper*
+/elos-plugin-backend-dlt/
+/elos-plugin-backend-dummy/
+/elos-plugin-backend-influxdb/
+/elos-plugin-backend-json/
+/elos-plugin-backend-nosql/
+/elos-plugin-backend-sql/
+/elos-plugin-client-dummy/
+/elos-plugin-scanner-kmsg/
+/elos-plugin-scanner-shmem/
+/elos-plugin-scanner-syslog/
