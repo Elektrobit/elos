@@ -11,9 +11,8 @@ for plugins.
 Static structure
 ----------------
 
-The Scanner Manager is a typical elos component (:doc:`/src/components/index`). It provides as subcomponents the
-
-* PluginManager
+The Scanner Manager is a typical elos component (:doc:`/src/components/index`).
+It uses the PluginManager to run scanner plugins.
 
 
 PluginManager
