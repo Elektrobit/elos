@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/log.h>
 #include <safu/result.h>
 #include <safu/vector.h>
@@ -14,7 +15,6 @@
 static safuResultE_t _loadPluginList(elosPluginManager_t *pluginManager, samconfConfig_t const *pluginConfig,
                                      elosPluginControlParam_t pluginParam,
                                      elosPluginControlPtrVector_t *controlPtrVector);
-static void _warnMissingPluginsList(elosPluginTypeE_t type);
 
 safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
                                     samconfConfig_t const *moduleConfig, char const *pluginSearchPath,
@@ -32,7 +32,7 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPlug
 
         status = samconfConfigGet(moduleConfig, "Plugins", &pluginConfig);
         if (status != SAMCONF_CONFIG_OK) {
-            _warnMissingPluginsList(type);
+            safuLogWarnF("%s configuration is missing a 'Plugins' list", elosPluginTypeToStr(type));
         } else {
             elosPluginControlParam_t pluginParam = {
                 .pluginType = type,
@@ -118,22 +118,4 @@ static safuResultE_t _loadPluginList(elosPluginManager_t *pluginManager, samconf
         }
     }
     return result;
-}
-
-static void _warnMissingPluginsList(elosPluginTypeE_t type) {
-    const char *typeStr;
-    switch (type) {
-        case PLUGIN_TYPE_SCANNER:
-            typeStr = "Scanner";
-            break;
-        case PLUGIN_TYPE_STORAGEBACKEND:
-            typeStr = "StorageBackends";
-            break;
-        case PLUGIN_TYPE_CLIENTCONNECTION:
-            typeStr = "ClientConnections";
-            break;
-        default:
-            typeStr = "[Undefinded]";
-    }
-    safuLogWarnF("%s configuration is missing a 'Plugins' list", typeStr);
 }
