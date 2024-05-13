@@ -28,7 +28,7 @@ build-dependencies:
   script:
     - ci/docker-run.sh ci/install_deps.py -c ci/dependencies_emlix.json
   artifacts:
-    expire_in: 1 day 
+    expire_in: 1 day
     paths:
       - build/deps/
     exclude:
@@ -45,7 +45,7 @@ build-release:
     paths:
       - build/Release/dist/
       - build/Release/cmake/
-      - build/Release/result/build_log.txt 
+      - build/Release/result/build_log.txt
 
 build-debug:
   stage: build
@@ -57,7 +57,7 @@ build-debug:
     paths:
       - build/Debug/dist/
       - build/Debug/cmake/
-      - build/Debug/result/build_log.txt 
+      - build/Debug/result/build_log.txt
 
 integration-tests:
   stage: test
@@ -194,3 +194,14 @@ documentation:
   artifacts:
     paths:
       - build/Debug/doc/
+
+debs:
+  stage: build
+  image: ubuntu:jammy
+  # Override default before_script
+  before_script: ""
+  script:
+    - ci/build_debs.sh
+  artifacts:
+    paths:
+      - ./*.deb
