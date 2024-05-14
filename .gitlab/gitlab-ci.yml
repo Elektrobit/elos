@@ -195,7 +195,7 @@ documentation:
     paths:
       - build/Debug/doc/
 
-debs:
+build-deb-packages:
   parallel:
     matrix:
       - OS: ubuntu
