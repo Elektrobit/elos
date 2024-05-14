@@ -54,7 +54,7 @@ class TemplateConfig(object):
 
     def default_config_core(self):
         """Get the core of the default configuration from the target.
-        Config without { "root": { "elsod": { } } } around it."""
+        Config without { "root": { "elosd": { } } } around it."""
         return self.default_config()["root"]["elos"]
 
     def make_config_full(self, config_core):
