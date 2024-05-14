@@ -3,6 +3,8 @@
 export DEBIAN_FRONTEND="noninteractive"
 export DEBEMAIL="noreply@test.com"
 
+CODENAME="${1:-jammy}"
+
 # Install dependencies
 apt-get update
 apt-get install -y git debhelper devscripts equivs software-properties-common fakeroot
@@ -16,7 +18,7 @@ git checkout origin/debian/main -- debian
 echo "3.0 (native)" > debian/source/format
 
 # Add a new changelog entry
-dch --local="+gitlab-ci" --distribution jammy "Gitlab CI/CD test build for branch ${CI_COMMIT_BRANCH}"
+dch --local="+gitlab-ci" --distribution "${CODENAME}" "Gitlab CI/CD test build for branch ${CI_COMMIT_BRANCH}"
 
 # Install dependencies
 yes | mk-build-deps -ir || true

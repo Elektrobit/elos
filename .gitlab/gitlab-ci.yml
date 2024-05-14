@@ -196,12 +196,18 @@ documentation:
       - build/Debug/doc/
 
 debs:
-  stage: build
-  image: ubuntu:jammy
+  parallel:
+    matrix:
+      - OS: ubuntu
+        CODENAME: jammy
+      - OS: ubuntu
+        CODENAME: noble
   # Override default before_script
   before_script: ""
+  stage: build
+  image: ${OS}:${CODENAME}
   script:
-    - ci/build_debs.sh
+    - ci/build_debs.sh ${CODENAME}
   artifacts:
     paths:
       - ./*.deb
