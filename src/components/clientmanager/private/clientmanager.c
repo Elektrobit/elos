@@ -30,15 +30,14 @@ safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientManager, el
         } else {
             clientManager->searchPath = elosConfigGetElosdClientPath(param->config);
             status = samconfConfigGet(param->config, ELOS_CONFIG_CLIENTINPUTS, &clientManager->config);
-            switch (status) {
-                case SAMCONF_CONFIG_NOT_FOUND:
-                    clientManager->config = NULL;
-                    __attribute__((fallthrough));
-                case SAMCONF_CONFIG_OK:
-                    break;
-                default:
-                    safuLogErr("Error in ClientInputs config");
-                    result = SAFU_RESULT_FAILED;
+            if (status == SAMCONF_CONFIG_NOT_FOUND) {
+                clientManager->config = NULL;
+                result = SAFU_RESULT_OK;
+            } else if (status == SAMCONF_CONFIG_OK && clientManager->config->type == SAMCONF_CONFIG_VALUE_OBJECT) {
+                result = SAFU_RESULT_OK;
+            } else {
+                safuLogErr("Error in ClientInputs config");
+                result = SAFU_RESULT_FAILED;
             }
         }
     }
@@ -63,7 +62,8 @@ safuResultE_t elosClientManagerStart(elosClientManager_t *clientManager) {
             safuLogWarn("elosPluginManagerLoad executed with errors");
 
         } else {
-            safuLogInfoF("ClientManager loaded %d client plugins", safuVecElements(&clientManager->pluginControlPtrVector));
+            safuLogInfoF("ClientManager loaded %d client plugins",
+                         safuVecElements(&clientManager->pluginControlPtrVector));
         }
     }
     return result;
