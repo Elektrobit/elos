@@ -177,18 +177,22 @@ int main(int argc, char **argv) {
     elosPluginManagerParam_t const pmParam = {.config = context.config};
     result = elosPluginManagerInitialize(&context.pluginManager, &pmParam);
     if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosPluginManagerInitialize had errors during execution");
+        safuLogErr("elosPluginManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
     }
 
     safuLogDebug("Initialize StorageManager");
     elosStorageManagerParam_t const smParam = {.config = context.config, .pluginManager = &context.pluginManager};
     result = elosStorageManagerInitialize(&context.storageManager, &smParam);
     if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosStorageManagerInitialize had errors during execution");
+        safuLogErr("elosStorageManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
     } else {
         result = elosStorageManagerStart(&context.storageManager);
         if (result != SAFU_RESULT_OK) {
-            safuLogWarn("elosStorageManagerStart had errors during execution");
+            safuLogErr("elosStorageManagerStart had errors during execution");
             elosServerShutdown(&context);
             return EXIT_FAILURE;
         }
@@ -207,11 +211,13 @@ int main(int argc, char **argv) {
     elosClientManagerParam_t const clmParam = {.config = context.config, .pluginManager = &context.pluginManager};
     result = elosClientManagerInitialize(&context.clientManagerContext, &clmParam);
     if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosClientManagerInitialize had errors during execution");
+        safuLogErr("elosClientManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
     } else {
         result = elosClientManagerStart(&context.clientManagerContext);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosClientManagerLoad");
+            safuLogErr("elosClientManagerStart had errors during execution");
             elosServerShutdown(&context);
             return EXIT_FAILURE;
         }
