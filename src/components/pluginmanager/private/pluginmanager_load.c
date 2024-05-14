@@ -31,14 +31,23 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPlug
         result = SAFU_RESULT_OK;
 
         status = samconfConfigGet(moduleConfig, "Plugins", &pluginConfig);
-        if (status != SAMCONF_CONFIG_OK) {
-            safuLogWarnF("%s configuration is missing a 'Plugins' list", elosPluginTypeToStr(type));
+        if (status == SAMCONF_CONFIG_NOT_FOUND) {
+            safuLogDebugF("%s configuration is missing a 'Plugins' list", elosPluginTypeToStr(type));
+        } else if (status != SAMCONF_CONFIG_OK) {
+            safuLogErrF("%s configuration failed", elosPluginTypeToStr(type));
+            result = SAFU_RESULT_FAILED;
+        } else if (pluginConfig->type != SAMCONF_CONFIG_VALUE_OBJECT) {
+            safuLogErrF("%s configuration is not in a valid format", elosPluginTypeToStr(type));
+            result = SAFU_RESULT_FAILED;
         } else {
             elosPluginControlParam_t pluginParam = {
                 .pluginType = type,
                 .path = pluginSearchPath,
             };
             result = _loadPluginList(pluginManager, pluginConfig, pluginParam, controlPtrVector);
+            if (result != SAFU_RESULT_OK) {
+                safuLogDebug("error in loading plugin list");
+            }
         }
     }
     return result;
