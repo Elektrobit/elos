@@ -185,6 +185,7 @@ elos isan  integrated part of EB corbos Linux – built on Ubuntu is an open-sou
 * Daniel Glöckner
 * Fabian Godehardt
 * Friedrich Schwedler
+* Isaac True
 * Joerg Vehlow
 * Maryniuk Bogdan
 * Rainer Müller
