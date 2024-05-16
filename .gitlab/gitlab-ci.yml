@@ -242,6 +242,7 @@ build-deb-packages:
         CODENAME: noble
   # Override default before_script
   before_script: ""
+  needs: []
   stage: build
   image: ${OS}:${CODENAME}
   script:
