@@ -1,3 +1,9 @@
+elos (0.57.3-9) unstable; urgency=medium
+
+  * Add *.cmake files to libelos-dev package.
+
+ -- Isaac True <isaac.true@emlix.com>  Thu, 16 May 2024 11:43:44 +0200
+
 elos (0.57.3-8) unstable; urgency=medium
 
   * Do not compress .rst or .md files.
