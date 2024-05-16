@@ -23,6 +23,7 @@ Test Elosd Configuration with missing Plugins Lists
 
     ${Config}=    Default Config Core
     ${Config}=    Delete Object From Json    ${Config}    $..Plugins
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    INFO
 
     Ensure Elosd Is Running With New Config    &{Config}
 
@@ -38,6 +39,7 @@ Test Elosd Configuration With Empty Plugins Lists
 
     ${Config}=    Default Config Core
     ${Config}=    Delete Object From Json    ${Config}    $..Plugins.*
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    INFO
 
     Ensure Elosd Is Running With New Config    &{Config}
 
@@ -53,6 +55,7 @@ Test Elosd With Missing ClientInputs Configuration
 
     ${Config}=    Default Config Core
     ${Config}=    Delete Object From Json    ${Config}    $..ClientInputs
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    DEBUG
 
     Ensure Elosd Is Running With New Config    &{Config}
 
@@ -66,6 +69,7 @@ Test Elosd With Missing StorageManager Configuration
 
     ${Config}=    Default Config Core
     ${Config}=    Delete Object From Json    ${Config}    $..EventLogging
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    DEBUG
 
     Ensure Elosd Is Running With New Config    &{Config}
 
@@ -79,6 +83,7 @@ Test Elosd Configuration With Empty EventLogging Configuration
 
     ${Config}=    Default Config Core
     ${Config}=    Delete Object From Json    ${Config}    $..EventLogging.*
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    INFO
 
     Ensure Elosd Is Running With New Config    &{Config}
 
@@ -94,6 +99,7 @@ Test Elosd Configuration With Empty ClientInputs Configuration
 
     ${Config}=    Default Config Core
     ${Config}=    Delete Object From Json    ${Config}    $..ClientInputs.*
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    INFO
 
     Ensure Elosd Is Running With New Config    &{Config}
 
@@ -108,6 +114,7 @@ Test Elosd With Wrong StorageManager Configuration
 
     ${Config}=    Default Config Core
     ${Config}=    Update Value To Json      ${Config}    $..EventLogging    4
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    ERROR
 
     Fails to Start Elosd With New Config     &{Config}
 
@@ -120,6 +127,7 @@ Test Elosd With Wrong ClientManager Configuration
 
     ${Config}=    Default Config Core
     ${Config}=    Update Value To Json      ${Config}    $..ClientInputs    4
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    ERROR
 
     Fails To Start Elosd With New Config     &{Config}
 
@@ -134,6 +142,7 @@ Test Elosd Configuration With Wrong Plugins Lists Type
 
     ${Config}=    Default Config Core
     ${Config}=    Update Value To Json      ${Config}    $..Plugins        4
+    ${Config}=    Update Value To Json      ${Config}    $..LogLevel    ERROR
 
     Fails to Start Elosd With New Config     &{Config}
 
