@@ -8,7 +8,6 @@ create_interface_library(
   FROM
     libelosplugin
   LIBRARIES
-    elos_event_interface
     samconf::samconf_interface
     safu::safu_interface
   INSTALL
@@ -25,14 +24,14 @@ target_include_directories(
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/public
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+    $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(
   libelosplugin
   PUBLIC
     libelosplugin_interface
-    elos_event_static
     samconf::samconf
     safu::safu
 )
@@ -47,7 +46,41 @@ set_target_properties(
 
 install(TARGETS libelosplugin DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install_component_headers(COMPONENTS elos_event_static)
+
+install(
+  EXPORT libelospluginTargets
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libelosplugin
+  NAMESPACE elos::
+  FILE libelospluginTargets.cmake # Not sure if this is still needed
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  "Config.cmake.in"
+  "libelospluginConfig.cmake"
+  INSTALL_DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/libelosplugin
+  PATH_VARS
+    CMAKE_INSTALL_LIBDIR
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/libelospluginConfigVersion.cmake
+  VERSION ${PKG_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/libelospluginConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/libelospluginConfigVersion.cmake"
+  DESTINATION
+    "${CMAKE_INSTALL_LIBDIR}/cmake/libelosplugin"
+)
+
+install(TARGETS libelosplugin EXPORT libelospluginTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS libelosplugin_interface EXPORT libelospluginTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
 
 include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
 create_pkgconfig(
@@ -69,7 +102,5 @@ create_weak_library(
     libelosplugin
   TO
     libelosplugin_static_weak
-  WEAKEN_DEPENDENCIES
-    elos_event_static
   NO_PREFIX
 )
