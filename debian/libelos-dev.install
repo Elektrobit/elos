@@ -2,3 +2,4 @@ usr/include/elos
 usr/lib/*/pkgconfig
 usr/lib/*/libelos*.so
 usr/lib/*/libmock_libelos.so
+usr/lib/*/cmake
