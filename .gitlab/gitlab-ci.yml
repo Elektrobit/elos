@@ -175,8 +175,10 @@ code-lint:
     - build-release
   image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
+    - . ./ci/ignored_sources.sh
     - ci/code_lint.py --ci
     - ci/checklicense.sh
+    - ./ci/run_integration_tests_linter.sh Release
   artifacts:
     when: always
     paths:
