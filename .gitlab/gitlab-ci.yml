@@ -5,6 +5,10 @@ variables:
   ASMCOV_URI: "not available"
   DOCKER_HOST: "tcp://docker:2375"
 
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+
 stages:
   - docker-image
   - build
@@ -19,6 +23,7 @@ default:
         DOCKER_TLS_CERTDIR: ""
   tags:
       - "docker"
+  interruptible: true
 
 before_script:
   - apt-get update
