@@ -2,11 +2,12 @@
 #ifndef __ELOS_NOSQLBACKEND_H__
 #define __ELOS_NOSQLBACKEND_H__
 
+#include <mongoc/mongoc.h>
+
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/storagemanager/StorageBackend.h"
 #include "safu/common.h"
 #include "safu/vector.h"
-#include <mongoc/mongoc.h>
 
 #ifndef CONNECTION_STRING
 #define CONNECTION_STRING "mongodb://localhost:27017/?appname=elosd"
@@ -23,6 +24,5 @@ safuResultE_t elosNoSqlBackendNew(elosStorageBackend_t **backend);
 safuResultE_t elosNoSqlBackendStart(elosStorageBackend_t *backend);
 
 safuResultE_t elosNoSqlBackendShutdown(elosStorageBackend_t *backend);
-
 
 #endif /* __ELOS_NOSQLBACKEND_H__ */
