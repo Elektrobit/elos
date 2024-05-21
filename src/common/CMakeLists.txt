@@ -18,7 +18,12 @@ target_compile_definitions(
   ELOSD_LOG_LEVEL="${ELOSD_LOG_LEVEL}"
 )
 
-target_include_directories(elos_common_interface INTERFACE interface/)
+target_include_directories(
+  elos_common_interface
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interface>
+    #$<INSTALL_INTERFACE:include>
+)
 
 target_link_libraries(
   elos_common_interface

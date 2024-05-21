@@ -18,7 +18,7 @@ target_include_directories(
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/public
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
 )
 
 target_link_libraries(
@@ -38,6 +38,43 @@ set_target_properties(
     SOVERSION ${ELOS_VERSION_MAJOR}
     VERSION ${ELOS_VERSION_MAJOR}.${ELOS_VERSION_MINOR}.${ELOS_VERSION_MICRO}
 )
+
+install(
+  EXPORT libelosTargets
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libelos
+  NAMESPACE elos::
+  FILE libelosTargets.cmake # Not sure if this is still needed
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  "Config.cmake.in"
+  "libelosConfig.cmake"
+  INSTALL_DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/libelos
+  PATH_VARS
+    CMAKE_INSTALL_LIBDIR
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/libelosConfigVersion.cmake
+  VERSION ${PKG_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/libelosConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/libelosConfigVersion.cmake"
+  DESTINATION
+    "${CMAKE_INSTALL_LIBDIR}/cmake/libelos"
+)
+
+install(TARGETS libelos EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS elos_common_interface EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS elos_event_static EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS elos_event_interface EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS eloslog_static EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(TARGETS libelos DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
