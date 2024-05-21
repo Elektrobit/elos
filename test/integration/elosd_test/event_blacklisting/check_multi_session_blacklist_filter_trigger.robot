@@ -60,7 +60,7 @@ New Session Is Started
 Multiple Unauthorized Processes Try To Publish A Blacklisted Event
     [Documentation]    run multiple client to publish blacklisted filters
 
-    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
+    ${PUBLISH_TIME}=    Get Elos Event Publish Time Threshold
 
     Set Test Variable    ${PUBLISH_TIME}
 
@@ -71,9 +71,12 @@ Multiple Unauthorized Processes Try To Publish A Blacklisted Event
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
 
-    ${SESSION_TOKEN}=    Set Variable    01_Test_Trigger_Blacklist_Filter_Multiple_Sessions${SESSION_ID}
+    ${SESSION_TOKEN}=    Set Variable
+    ...                  01_Test_Trigger_Blacklist_Filter_Multiple_Sessions${SESSION_ID}
     Set Test Variable    ${SESSION_TOKEN}
-    ${rc}    Execute And Log    elosc -p '{"messageCode": 2010, "payload":"${SESSION_TOKEN}"}'    ${RETURN_RC}
+    ${rc}=    Execute And Log
+    ...       elosc -p '{"messageCode": 2010, "payload":"${SESSION_TOKEN}"}'
+    ...       ${RETURN_RC}
     Executable Returns An Error    ${rc}
 
 A Security Event Is Published

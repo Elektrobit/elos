@@ -8,7 +8,7 @@ Documentation       A test suite to check if the elos demo applications handle e
 
 Resource            ../elosd-keywords.resource
 Resource            ../keywords.resource
-Library             ../libraries/ElosKeywords.py 
+Library             ../libraries/ElosKeywords.py
 
 Suite Setup         Run Keywords    Connect To Target And Log In
 ...                 AND             Ensure Elosd Is Started
@@ -65,4 +65,7 @@ App Handles Error
     [Documentation]    App returns error on connection error
 
     Should Be Equal As Integers    ${ERROR_CODE}    1
-    Should Contain Any    ${ERROR}    ERROR: connect to    ERROR: Connection to elosd   ERR: connect to port
+    Should Contain Any    ${ERROR}
+    ...                   ERROR: connect to
+    ...                   ERROR: Connection to elosd
+    ...                   ERR: connect to port

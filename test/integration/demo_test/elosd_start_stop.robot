@@ -8,7 +8,7 @@ Documentation       A test suite elosd service is stoppable and startable
 Resource            ../elosd-keywords.resource
 Resource            ../keywords.resource
 
-Library             ../libraries/ElosKeywords.py 
+Library             ../libraries/ElosKeywords.py
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections
@@ -31,7 +31,6 @@ Test Elosd Service Starts Elosd Instance
 
 
 *** Keywords ***
-
 Elosd Service Stops Instance
     [Documentation]    elosd service stops an elosd instance
     Stop Elosd

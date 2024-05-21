@@ -49,7 +49,6 @@ Test Elosd Configuration With Empty Plugins Lists
     [Teardown]    Run Keywords    Cleanup Template Config
     ...    AND    Start Elosd
 
-
 Test Elosd With Missing ClientInputs Configuration
     [Documentation]    Set new config has no ClientInputs
 
@@ -93,7 +92,6 @@ Test Elosd Configuration With Empty EventLogging Configuration
     ...    AND    Check Elosd Log For    StorageManager loaded 0 storage plugins
     ...    AND    Start Elosd
 
-
 Test Elosd Configuration With Empty ClientInputs Configuration
     [Documentation]    Set new config with empty ClientInputs part
 
@@ -108,7 +106,6 @@ Test Elosd Configuration With Empty ClientInputs Configuration
     [Teardown]    Run Keywords    Cleanup Template Config
     ...    AND    Start Elosd
 
-
 Test Elosd With Wrong StorageManager Configuration
     [Documentation]    Set new config with wrong type for EventLogging
 
@@ -116,7 +113,7 @@ Test Elosd With Wrong StorageManager Configuration
     ${Config}=    Update Value To Json      ${Config}    $..EventLogging    4
     ${Config}=    Update Value To Json      ${Config}    $..LogLevel    ERROR
 
-    Fails to Start Elosd With New Config     &{Config}
+    Fails To Start Elosd With New Config     &{Config}
 
     Check Elosd Log For    ERROR: elosStorageManagerInitialize had errors during execution
     [Teardown]    Run Keywords    Cleanup Template Config
@@ -135,7 +132,6 @@ Test Elosd With Wrong ClientManager Configuration
     [Teardown]    Run Keywords    Cleanup Template Config
     ...    AND    Start Elosd
 
-  
 Test Elosd Configuration With Wrong Plugins Lists Type
     [Documentation]    Set new config has wrong "Plugins" list type
     ...                for "ClientInputs" or "EventLogging"
@@ -144,7 +140,7 @@ Test Elosd Configuration With Wrong Plugins Lists Type
     ${Config}=    Update Value To Json      ${Config}    $..Plugins        4
     ${Config}=    Update Value To Json      ${Config}    $..LogLevel    ERROR
 
-    Fails to Start Elosd With New Config     &{Config}
+    Fails To Start Elosd With New Config     &{Config}
 
     Check Elosd Log For    configuration is not in a valid format
     [Teardown]    Run Keywords    Cleanup Template Config
@@ -160,7 +156,6 @@ Fails To Start Elosd With New Config
     Set New Config Core    &{Config}
     Start Elosd
     Wait For Elosd To Stop
-
 
 Ensure Elosd Is Running With New Config
     [Documentation]    Set a new Config and restart Elosd
