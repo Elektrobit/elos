@@ -15,7 +15,7 @@ stages:
   - test
 
 default:
-  image: ubuntu:jammy
+  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   services:
     - name: docker:24-dind
       alias: docker
@@ -26,12 +26,14 @@ default:
   interruptible: true
 
 before_script:
-  - apt-get update
-  - apt-get install -y curl bash jq docker.io
   - env
 
 build-docker-image:
   stage: docker-image
+  image: ubuntu:jammy
+  before_script:
+    - apt-get update
+    - apt-get install -y docker.io
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker build -t $DOCKER_IMAGE -f ci/Dockerfile
@@ -45,7 +47,6 @@ build-dependencies:
   stage: build
   needs:
     - build-docker-image
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/install_deps.py -c ci/dependencies_emlix.json
   artifacts:
@@ -61,7 +62,6 @@ build-release:
   needs:
     - build-docker-image
     - build-dependencies
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/build.sh --ci Release
   artifacts:
@@ -75,7 +75,6 @@ build-debug:
   needs:
     - build-docker-image
     - build-dependencies
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/build.sh --ci Debug
   artifacts:
@@ -87,11 +86,15 @@ build-debug:
 integration-tests:
   stage: test
   needs: []
+  image: ubuntu:jammy
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
     DOCKER_BUILDKIT: 0
     BUILD_ID: $CI_JOB_ID
     GIT_COMMIT: $CI_COMMIT_SHORT_SHA
+  before_script:
+    - apt-get update
+    - apt-get install -y docker.io
   script:
     - ci/run_integration_tests.sh Release
   artifacts:
@@ -113,7 +116,6 @@ unit-test-release:
     - build-docker-image
     - build-dependencies
     - build-release
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/run_utest.sh Release
   artifacts:
@@ -129,7 +131,6 @@ unit-test-debug:
     - build-docker-image
     - build-dependencies
     - build-debug
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/run_utest.sh Debug
   artifacts:
@@ -145,7 +146,6 @@ smoke-test-release:
     - build-docker-image
     - build-dependencies
     - build-release
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/run_smoketests.sh Release
   artifacts:
@@ -159,7 +159,6 @@ smoke-test-debug:
     - build-docker-image
     - build-dependencies
     - build-debug
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/run_smoketests.sh Debug
   artifacts:
@@ -173,7 +172,6 @@ code-lint:
     - build-docker-image
     - build-dependencies
     - build-release
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - . ./ci/ignored_sources.sh
     - ci/code_lint.py --ci
@@ -190,7 +188,6 @@ benchmark:
     - build-docker-image
     - build-dependencies
     - build-release
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/run_benchmarks.sh Release
   artifacts:
@@ -207,7 +204,6 @@ code-coverage:
     - build-docker-image
     - build-dependencies
     - build-release
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/create_coverage.sh
   artifacts:
@@ -223,7 +219,6 @@ publish-kpis:
     - build-docker-image
     - benchmark
     - code-coverage
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/publish_pkis.sh
 
@@ -233,7 +228,6 @@ documentation:
     - build-docker-image
     - build-dependencies
     - build-debug
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   script:
     - ci/build_doc.sh
   artifacts:
