@@ -9,6 +9,10 @@
 #include <samconf/samconf_types.h>
 
 #include "elos/common/types.h"
+#include "elos/eventbuffer/types.h"
+#include "elos/eventdispatcher/types.h"
+#include "elos/eventlogging/LogAggregatorTypes.h"
+#include "elos/eventprocessor/types.h"
 
 __BEGIN_DECLS
 
@@ -33,7 +37,20 @@ typedef struct elosPluginControlParam {
     char const *path;
     char const *file;
     void *data;
+    elosEventProcessor_t *eventProcessor;
+    elosEventDispatcher_t *eventDispatcher;
+    struct elosLogAggregator *logAggregator;
 } elosPluginControlParam_t;
+
+typedef struct elosPublisher {
+    elosEventBuffer_t eventBuffer;
+    struct elosLogAggregator *logAggregator;
+} elosPublisher_t;
+
+typedef struct elosSubscriber {
+    safuVec_t subscriptions;
+    elosEventProcessor_t *eventProcessor;
+} elosSubscriber_t;
 
 typedef struct elosPluginControl {
     safuFlags_t flags;
@@ -45,6 +62,9 @@ typedef struct elosPluginControl {
     char const *path;
     char *file;
     void *dlHandle;
+    elosEventProcessor_t *eventProcessor;
+    elosEventDispatcher_t *eventDispatcher;
+    struct elosLogAggregator *logAggregator;
 } elosPluginControl_t;
 
 typedef safuVec_t elosPluginControlVector_t;

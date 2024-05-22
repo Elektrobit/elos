@@ -24,12 +24,19 @@ target_include_directories(
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
     $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/public>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/eventfilter/public>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/eventfilter/interface>
 )
 
 target_link_libraries(
   libelosplugin
+  PRIVATE
+    elos_event_static
+    eventfilter_static
   PUBLIC
     libelosplugin_interface
     samconf::samconf
@@ -46,6 +53,7 @@ set_target_properties(
 
 install(TARGETS libelosplugin DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install_component_headers(COMPONENTS elos_event_static eventfilter_static)
 
 install(
   EXPORT libelospluginTargets

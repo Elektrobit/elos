@@ -18,8 +18,6 @@ target_link_libraries(
     eventfilter_static
     libelosplugin
     libelosdlt
-    plugincontrol_interface
-    storagemanager_static
     samconf::samconf
     safu::safu
 )

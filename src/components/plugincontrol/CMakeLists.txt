@@ -8,6 +8,7 @@ create_interface_library(
   LIBRARIES
     libelosplugin_interface
     elos_common_interface
+    eventlogging_interface
     samconf::samconf_interface
     safu::safu_interface
 )
@@ -33,6 +34,10 @@ target_link_libraries(
   plugincontrol_static
   PUBLIC
     plugincontrol_interface
+    eventprocessor_static
+    eventdispatcher_static
+    eventbuffer_static
+    eventlogging_static
     samconf::samconf
     safu::safu
 )

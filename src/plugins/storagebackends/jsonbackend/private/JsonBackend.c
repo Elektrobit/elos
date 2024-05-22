@@ -11,7 +11,6 @@
 #include <unistd.h>
 
 #include "elos/eventfilter/eventfilter.h"
-#include "elos/storagemanager/StorageBackend.h"
 
 #define BACKEND_NAME "JSON"
 
