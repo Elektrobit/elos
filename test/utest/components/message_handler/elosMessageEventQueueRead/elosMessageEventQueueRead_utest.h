@@ -5,7 +5,7 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 
 #include "elos/common/message.h"
-#include "elos/connectionmanager/connectionmanager.h"
+#include "connectionmanager/connectionmanager.h"
 #include "mock_message_handler.h"
 
 #define MOCK_MESSAGE_MEMORY_SIZE 4096

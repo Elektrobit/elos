@@ -10,7 +10,7 @@
 #include <cmocka_extensions/mock_func_weak.h>
 #endif
 
-#include "elos/connectionmanager/clientauthorization.h"
+#include "connectionmanager/clientauthorization.h"
 
 MOCK_FUNC_PROTOTYPE(elosClientAuthorizationInitialize, safuResultE_t, elosClientAuthorization_t *clientAuth)
 MOCK_FUNC_PROTOTYPE(elosClientAuthorizationDelete, safuResultE_t, elosClientAuthorization_t *clientAuth)

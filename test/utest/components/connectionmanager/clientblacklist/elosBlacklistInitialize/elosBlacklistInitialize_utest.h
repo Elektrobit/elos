@@ -7,8 +7,8 @@
 #include <cmocka_mocks/mock_libc.h>
 #include <samconf/mock_samconf.h>
 
-#include "elos/config/config.h"
-#include "elos/connectionmanager/clientblacklist.h"
+#include "connectionmanager/clientblacklist.h"
+#define ELOS_CONFIG_ROOT "is deprecated for plugins and fix me"
 
 samconfConfig_t elosGetMockConfig();
 

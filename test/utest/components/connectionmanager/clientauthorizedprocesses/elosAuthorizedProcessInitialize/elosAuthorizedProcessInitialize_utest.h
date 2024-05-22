@@ -7,7 +7,8 @@
 #include <samconf/mock_samconf.h>
 #include <samconf/samconf.h>
 
-#include "elos/connectionmanager/clientauthorizedprocesses.h"
+#include "connectionmanager/clientauthorizedprocesses.h"
+#define ELOS_CONFIG_ROOT "is deprecated for plugins and fix me"
 
 #ifndef LIBMNL_OK
 #define LIBMNL_OK 0

@@ -6,8 +6,6 @@
 #include <safu/mock_safu.h>
 #include <samconf/mock_samconf.h>
 
-#include "elos/config/config.h"
-
 samconfConfig_t elosGetMockConfig();
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdInterfaceSuccessFromEnv)

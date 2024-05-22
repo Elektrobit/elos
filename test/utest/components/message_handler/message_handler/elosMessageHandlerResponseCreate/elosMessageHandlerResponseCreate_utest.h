@@ -5,7 +5,7 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 
 #include "cmocka_mocks/mock_jsonc.h"
-#include "elos/messages/message_handler.h"
+#include "messagehandler/message_handler.h"
 #include "safu/mock_safu.h"
 
 void elosTestElosMessageHandlerResponseCreateSuccessNullString(void **state);

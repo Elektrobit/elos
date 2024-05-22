@@ -21,13 +21,6 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPlug
                                     elosPluginControlPtrVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     samconfConfig_t const *pluginConfig = NULL;
-    elosPluginControlParam_t pluginParam = {
-        .pluginType = type,
-        .eventProcessor = pluginManager->eventProcessor,
-        .eventDispatcher = pluginManager->eventDispatcher,
-        .logAggregator = pluginManager->logAggregator,
-        .useEnv = pluginManager->useEnv,
-    };
 
     if ((pluginManager == NULL) || (pluginSearchPath == NULL) || (moduleConfig == NULL) || (controlPtrVector == NULL)) {
         safuLogErr("NULL-Pointer has been passed as parameter");
@@ -53,6 +46,7 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPlug
                 .eventProcessor = pluginManager->eventProcessor,
                 .eventDispatcher = pluginManager->eventDispatcher,
                 .logAggregator = pluginManager->logAggregator,
+                .useEnv = pluginManager->useEnv,
             };
             result = _loadPluginList(pluginManager, pluginConfig, pluginParam, controlPtrVector);
             if (result != SAFU_RESULT_OK) {

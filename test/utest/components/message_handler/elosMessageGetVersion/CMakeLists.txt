@@ -14,5 +14,6 @@ create_unit_test(
     connectionmanager_static
     mock_message_handler_static
     elos_event_static_weak
+    version
     safu::mock_safu
 )

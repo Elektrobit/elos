@@ -6,7 +6,7 @@
 #include <cmocka_extensions/mock_extensions.h>
 #include <cmocka_mocks/mock_libc.h>
 
-#include "elos/connectionmanager/clientblacklist.h"
+#include "connectionmanager/clientblacklist.h"
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosBlacklistDeleteSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosBlacklistDeleteErrBlacklistParameterNull)

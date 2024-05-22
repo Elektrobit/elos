@@ -3,8 +3,9 @@
 #define __ELOS_MESSAGEHANDLERHANDLEMESSAGE_H__
 
 #include <cmocka_extensions/cmocka_extensions.h>
+#include <elos/common/message.h>
 
-#include "elos/messages/message_handler.h"
+#include "messagehandler/message_handler.h"
 #include "safu/mock_safu.h"
 
 typedef struct {

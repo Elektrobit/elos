@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <cmocka_mocks/mock_libmnl.h>
-#include <elos/connectionmanager/clientauthorization.h>
+#include <connectionmanager/clientauthorization.h>
 
 #include "elosClientAuthorizationInitialize_utest.h"
 

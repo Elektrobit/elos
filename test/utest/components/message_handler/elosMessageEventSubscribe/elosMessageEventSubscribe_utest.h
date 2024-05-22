@@ -7,7 +7,7 @@
 #include <safu/common.h>
 
 #include "elos/common/message.h"
-#include "elos/connectionmanager/connectionmanager.h"
+#include "connectionmanager/connectionmanager.h"
 
 typedef struct elosArrayStringTestData {
     const char **strings;

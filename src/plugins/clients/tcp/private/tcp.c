@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-#include <elos/connectionmanager/connectionmanager.h>
 #include <elos/libelosplugin/libelosplugin.h>
 #include <safu/common.h>
 #include <safu/log.h>
 #include <stdlib.h>
+
+#include "connectionmanager/connectionmanager.h"
 
 static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;

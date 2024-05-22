@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #include "elosAuthorizedProcessInitialize_utest.h"
 
+#include <safu/common.h>
+
 TEST_SUITE_FUNC_PROTOTYPES(elosAuthorizedProcessInitializeUtest)
 
 int main() {

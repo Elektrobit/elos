@@ -5,8 +5,6 @@
 #include <cmocka_extensions/mock_extensions.h>
 #include <cmocka_mocks/mock_libc.h>
 
-#include "elos/connectionmanager/clientauthorization.h"
-
 #ifndef LIBMNL_OK
 #define LIBMNL_OK 0
 #endif

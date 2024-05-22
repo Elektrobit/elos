@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #include "elosAuthorizedProcessDelete_utest.h"
 
+#include <safu/common.h>
+
 TEST_SUITE_FUNC_PROTOTYPES(elosAuthorizedProcessDeleteUtest)
 
 int main() {
