@@ -267,7 +267,7 @@ static safuResultE_t _setupSocket(elosPlugin_t *plugin) {
 
 static void _publishMessage(elosPlugin_t *plugin) {
     struct syslog_context *context = plugin->data;
-    char *buffer = calloc(sizeof(char), MAX_LOG_ENTRY_SIZE);
+    char *buffer = calloc(MAX_LOG_ENTRY_SIZE, sizeof(char));
     bool publish = true;
 
     int bytesRead = read(context->socket, buffer, MAX_LOG_ENTRY_SIZE);
