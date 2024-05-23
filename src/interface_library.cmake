@@ -26,7 +26,7 @@ function(create_interface_library)
 
   if (PARAM_INSTALL)
     install(
-      DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interface>
+      DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interface/>
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
   endif()
