@@ -105,6 +105,10 @@ integration-tests:
 baseos-lab-tests:
   stage: test
   needs: []
+  image: ubuntu:jammy
+  before_script:
+    - apt-get update
+    - apt-get install -y curl jq
   variables:
     BRANCH_NAME: $CI_COMMIT_REF_NAME
   script:
