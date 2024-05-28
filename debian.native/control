@@ -1,0 +1,335 @@
+Source: elos
+Section: admin
+Priority: optional
+Maintainer: Isaac True <isaac.true@emlix.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake,
+ git,
+ jq,
+ moreutils,
+ liblog4c-dev,
+ libesmtp-dev,
+ libsqlite3-dev,
+ libcurl-dev,
+ libmongoc-dev,
+ pkg-config,
+ libcmocka-dev,
+ libsafu-dev,
+ libsamconf-dev,
+ libcmocka-mocks-dev,
+ cmocka-extensions-dev,
+Rules-Requires-Root: no
+Standards-Version: 4.6.0.1
+Homepage: https://github.com/Elektrobit/elos
+Vcs-Browser: https://github.com/Elektrobit/elos
+Vcs-Git: https://github.com/Elektrobit/elos
+
+Package: elos
+Architecture: any
+Depends:
+ ${misc:Depends},
+ elosd (= ${binary:Version}),
+ elosc (= ${binary:Version}),
+Description: Event logging and management with normalized output-format metapackage
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+
+Package: elos-plugin-backend-dlt
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (DLT plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ DLT backend plugin.
+
+Package: elos-plugin-backend-dummy
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (Dummy plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Dummy backend plugin.
+
+Package: elos-plugin-backend-influxdb
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (InfluxDB plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ InfluxDB backend plugin.
+
+Package: elos-plugin-backend-json
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (JSON plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ JSON backend plugin.
+
+Package: elos-plugin-backend-nosql
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (NoSQL plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ NoSQL backend plugin.
+
+Package: elos-plugin-backend-sql
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (SQL plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ DLT backend plugin.
+
+Package: elos-plugin-client-dummy
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (Dummy client plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Dummy client plugin.
+
+Package: elos-plugin-scanner-kmsg
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (kmsg scanner plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Kmsg scanner plugin.
+
+Package: elos-plugin-scanner-shmem
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (shmem plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Shmem scanner plugin.
+
+Package: elos-plugin-scanner-syslog
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (syslog plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Syslog scanner plugin.
+
+Package: elosd
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Suggests:
+ elosd-systemd (= ${binary:Version}),
+Description: Event logging and management with normalized output-format daemon
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Daemon package.
+
+Package: elosd-systemd
+Architecture: any
+Depends:
+ ${misc:Depends},
+ elosd (= ${binary:Version}),
+Recommends:
+ systemd,
+Description: Event logging and management with normalized output-format systemd service
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Systemd package.
+
+Package: elosc
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format client
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Client package.
+
+Package: elos-coredump
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format coredump
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Coredump utility package.
+
+Package: libmock-libelos0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format library (mocks)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Mock library package.
+
+Package: libelos0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Recommends:
+ libelosplugin0 (= ${binary:Version}),
+ elos-plugin-backend-dlt (= ${binary:Version}),
+ elos-plugin-backend-dummy (= ${binary:Version}),
+ elos-plugin-backend-influxdb (= ${binary:Version}),
+ elos-plugin-backend-json (= ${binary:Version}),
+ elos-plugin-backend-nosql (= ${binary:Version}),
+ elos-plugin-backend-sql (= ${binary:Version}),
+ elos-plugin-client-dummy (= ${binary:Version}),
+ elos-plugin-scanner-kmsg (= ${binary:Version}),
+ elos-plugin-scanner-shmem (= ${binary:Version}),
+ elos-plugin-scanner-syslog (= ${binary:Version}),
+Suggests:
+ libelosdlt0 (= ${binary:Version}),
+Description: Event logging and management with normalized output-format library
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Shared library package.
+
+Package: libelosdlt0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format DLT library
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ DLT shared library package.
+
+Package: libelosplugin0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format plugin library
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Plugin shared library package.
+
+Package: libelos-dev
+Architecture: any
+Depends:
+ ${misc:Depends},
+ libelos0 (= ${binary:Version}),
+ libelosplugin-dev (= ${binary:Version}),
+ libelosdlt-dev (= ${binary:Version}),
+ libelos-common-dev (= ${binary:Version}),
+ libsamconf-dev,
+Description: Development package for libelos
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Development package.
+
+Package: libelosplugin-dev
+Architecture: any
+Depends:
+ ${misc:Depends},
+ libelosplugin0 (= ${binary:Version}),
+ libelos-common-dev (= ${binary:Version}),
+Description: Development package for libelosplugin
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Development package for libelosplugin.
+
+Package: libelosdlt-dev
+Architecture: any
+Depends:
+ ${misc:Depends},
+ libelosdlt0 (= ${binary:Version}),
+ libelos-common-dev (= ${binary:Version}),
+Description: Development package for libelosdlt
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Development package for libelosdlt.
+
+Package: libelos-common-dev
+Architecture: any
+Depends:
+ ${misc:Depends},
+Description: Development package for libelos - common headers
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Development package with common headers.
+
+Package: elos-doc
+Architecture: all
+Depends:
+ ${misc:Depends},
+Description: Document package for elos
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Documentation package.

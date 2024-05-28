@@ -1,0 +1,6 @@
+usr/include/elos/libelos
+usr/lib/*/pkgconfig/elos.pc
+usr/lib/*/libelos.so
+usr/lib/*/libmock_libelos.so
+# Not yet implemented
+# usr/lib/*/cmake/libelos
