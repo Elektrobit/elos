@@ -5,6 +5,7 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <safu/mock_safu.h>
 #include <samconf/mock_samconf.h>
+#include <tcpConfig.h>
 
 samconfConfig_t elosGetMockConfig();
 

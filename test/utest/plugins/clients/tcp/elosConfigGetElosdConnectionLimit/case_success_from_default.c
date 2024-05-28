@@ -15,7 +15,7 @@ void elosTestElosConfigGetElosdConnectionLimitSuccessFromDefault(UNUSED void **s
     int32_t expectedValue = 200;
     samconfConfig_t mockConfig = elosGetMockConfig();
 
-    TEST("elosConfigGetElosdConnectionLimit");
+    TEST("elosTcpConfigGetConnectionLimit");
     SHOULD("%s", "get the elos connection limit default option");
 
     MOCK_FUNC_AFTER_CALL(samconfConfigGetBool, 0);
@@ -32,7 +32,7 @@ void elosTestElosConfigGetElosdConnectionLimitSuccessFromDefault(UNUSED void **s
     will_set_parameter(__wrap_samconfConfigGetInt32, result, expectedValue);
     will_return(__wrap_samconfConfigGetInt32, SAMCONF_CONFIG_OK);
 
-    limit = elosConfigGetElosdConnectionLimit(&mockConfig);
+    limit = elosTcpConfigGetConnectionLimit(&mockConfig);
 
     assert_int_equal(expectedValue, limit);
 }

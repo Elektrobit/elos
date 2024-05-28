@@ -4,6 +4,9 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <safu/mock_safu.h>
 #include <samconf/mock_samconf.h>
+#include <tcpConfig.h>
+
+#define ELOS_CONFIG_ROOT "is deprecated for plugins and fix me"
 
 samconfConfig_t elosGetMockConfig();
 

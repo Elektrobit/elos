@@ -13,4 +13,5 @@ create_unit_test(
     client_tcp
     safu::mock_safu
     samconf::mock_samconf
+    samconf::samconf_test_utils
 )

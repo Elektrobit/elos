@@ -14,7 +14,7 @@ void elosTestElosConfigGetElosdInterfaceSuccessFromDefault(UNUSED void **state) 
     const char *expectedValue = "127.0.0.0";
     samconfConfig_t mockConfig = elosGetMockConfig();
 
-    TEST("elosConfigGetElosdInterface");
+    TEST("elosTcpConfigGetInterface");
     SHOULD("%s", "get the elos interface default option");
 
     MOCK_FUNC_AFTER_CALL(samconfConfigGetBool, 0);
@@ -31,6 +31,6 @@ void elosTestElosConfigGetElosdInterfaceSuccessFromDefault(UNUSED void **state) 
     will_set_parameter(__wrap_samconfConfigGetString, result, expectedValue);
     will_return(__wrap_samconfConfigGetString, SAMCONF_CONFIG_OK);
 
-    const char *returnValue = elosConfigGetElosdInterface(&mockConfig);
+    const char *returnValue = elosTcpConfigGetInterface(&mockConfig);
     assert_string_equal(returnValue, expectedValue);
 }

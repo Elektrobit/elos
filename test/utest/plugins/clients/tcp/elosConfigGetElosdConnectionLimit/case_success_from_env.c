@@ -17,7 +17,7 @@ void elosTestElosConfigGetElosdConnectionLimitSuccessFromEnv(UNUSED void **state
     const char *mockKey = "ELOSD_CONNECTION_LIMIT";
     samconfConfig_t mockConfig = elosGetMockConfig();
 
-    TEST("elosConfigGetElosdConnectionLimit");
+    TEST("elosTcpConfigGetConnectionLimit");
     SHOULD("%s", "get the elos connection limit environment option");
 
     MOCK_FUNC_AFTER_CALL(samconfConfigGetBool, 0);
@@ -32,7 +32,7 @@ void elosTestElosConfigGetElosdConnectionLimitSuccessFromEnv(UNUSED void **state
     expect_value(__wrap_safuGetEnvOr, defaultValue, NULL);
     will_return(__wrap_safuGetEnvOr, limitAsString);
 
-    limit = elosConfigGetElosdConnectionLimit(&mockConfig);
+    limit = elosTcpConfigGetConnectionLimit(&mockConfig);
 
     assert_int_equal(expectedValue, limit);
 }

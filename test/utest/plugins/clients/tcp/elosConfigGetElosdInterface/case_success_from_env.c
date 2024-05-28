@@ -15,7 +15,7 @@ void elosTestElosConfigGetElosdInterfaceSuccessFromEnv(UNUSED void **state) {
     const char *expectedValue = "127.0.0.0";
     samconfConfig_t mockConfig = elosGetMockConfig();
 
-    TEST("elosConfigGetElosdInterface");
+    TEST("elosTcpConfigGetInterface");
     SHOULD("%s", "get the elos interface environment option");
 
     MOCK_FUNC_AFTER_CALL(samconfConfigGetBool, 0);
@@ -37,6 +37,6 @@ void elosTestElosConfigGetElosdInterfaceSuccessFromEnv(UNUSED void **state) {
     expect_value(__wrap_safuGetEnvOr, defaultValue, expectedValue);
     will_return(__wrap_safuGetEnvOr, expectedValue);
 
-    const char *returnValue = elosConfigGetElosdInterface(&mockConfig);
+    const char *returnValue = elosTcpConfigGetInterface(&mockConfig);
     assert_string_equal(returnValue, expectedValue);
 }

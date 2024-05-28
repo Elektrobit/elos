@@ -1,38 +1,46 @@
 // SPDX-License-Identifier: MIT
 
+#include <samconf/samconf.h>
+#include <samconf/test_utils.h>
+
 #include "elosConfigGetElosdPort_utest.h"
 
+static char *elosCurrentEnvValue = NULL;
+
 int elosTestElosConfigGetElosdPortSuccessFromEnvSetup(UNUSED void **state) {
+    char *envValue = getenv("ELOSD_PORT");
+    if (envValue != NULL) {
+        elosCurrentEnvValue = strdup(envValue);
+    }
     return 0;
 }
 
 int elosTestElosConfigGetElosdPortSuccessFromEnvTeardown(UNUSED void **state) {
+    if (elosCurrentEnvValue != NULL) {
+        setenv("ELOSD_PORT", elosCurrentEnvValue, 1);
+        free(elosCurrentEnvValue);
+    }
     return 0;
 }
 
 void elosTestElosConfigGetElosdPortSuccessFromEnv(UNUSED void **state) {
-    int32_t port = 0;
-    int32_t expectedValue = 54321;
-    char portAsString[] = "54321";
-    const char *mockKey = "ELOSD_PORT";
-    samconfConfig_t mockConfig = elosGetMockConfig();
-
-    TEST("elosConfigGetElosdPort");
+    TEST("elosTcpConfigGetPort");
     SHOULD("%s", "get the elos port environment option");
 
-    MOCK_FUNC_AFTER_CALL(samconfConfigGetBool, 0);
-    expect_value(__wrap_samconfConfigGetBool, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetBool, path, ELOS_CONFIG_ROOT "UseEnv");
-    expect_any(__wrap_samconfConfigGetBool, result);
-    will_set_parameter(__wrap_samconfConfigGetBool, result, true);
-    will_return(__wrap_samconfConfigGetBool, SAMCONF_CONFIG_OK);
+    samconfConfig_t mockConfig = {0};
+    samconfConfigStatusE_t status = samconfUtilCreateMockConfigFromStr(
+        "{"
+        "  \"Config\": {"
+        "    \"port\": 54321"
+        "  }"
+        "}",
+        true, &mockConfig);
+    assert_int_equal(status, SAMCONF_CONFIG_OK);
+    setenv("ELOSD_PORT", "42", 1);  // environment is restored by setup/teardown
+    elosPlugin_t plugin = {.useEnv = true, .config = &mockConfig};
 
-    MOCK_FUNC_AFTER_CALL(safuGetEnvOr, 0);
-    expect_string(__wrap_safuGetEnvOr, key, mockKey);
-    expect_value(__wrap_safuGetEnvOr, defaultValue, NULL);
-    will_return(__wrap_safuGetEnvOr, portAsString);
+    int port = elosTcpConfigGetPort(&plugin);
+    assert_int_equal(42, port);
 
-    port = elosConfigGetElosdPort(&mockConfig);
-
-    assert_int_equal(expectedValue, port);
+    samconfConfigDeleteMembers(&mockConfig);
 }

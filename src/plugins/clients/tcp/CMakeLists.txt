@@ -42,7 +42,7 @@ target_link_libraries(
     elos_common_interface
     eventbuffer_interface
     rpnfilter_interface
-
+    ${LIBMNL_LIBRARIES}
 )
 create_weak_library(
   FROM
@@ -76,11 +76,11 @@ target_link_libraries(
     PRIVATE
       version
       eventbuffer_static
+      eventfilter_static
     PUBLIC
       libelosplugin
       safu::safu_interface
       elos_common_interface
-      eventbuffer_interface
       eventbuffer_interface
       rpnfilter_interface
 )
@@ -89,7 +89,6 @@ create_weak_library(
     messagehandler_static
   WEAKEN_DEPENDENCIES
     eventbuffer_static
-    version
 )
 
 add_library(
@@ -111,10 +110,9 @@ set_target_properties(client_tcp PROPERTIES PREFIX "")
 
 target_link_libraries(
   client_tcp
-  PRIVATE
+  PUBLIC
     messagehandler_static
     connectionmanager_static
-  PUBLIC
     client_tcp_interface
     libelosplugin
     samconf::samconf

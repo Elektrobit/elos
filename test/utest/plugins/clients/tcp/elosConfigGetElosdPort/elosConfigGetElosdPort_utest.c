@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "elosConfigGetElosdPort_utest.h"
+#include <samconf/samconf_types.h>
 
 TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortUtest)
 
@@ -15,9 +16,8 @@ int main() {
 samconfConfig_t elosGetMockConfig() {
     samconfConfig_t configData = {
         .parent = NULL,
-        .key = "mockConfig",
-        .type = SAMCONF_CONFIG_VALUE_INT,
-        .value.integer = 42,
+        .key = "tcp",
+        .type = SAMCONF_CONFIG_VALUE_OBJECT,
         .children = NULL,
         .childCount = 0,
     };
