@@ -126,6 +126,14 @@ Contains :
 * documentation on the documentation itself
 * other documents
 
+### debian.native
+
+Contains Debian packaging scripts for building the current source tree as .deb
+packages. This is primarily for CI pipelines to automatically verify if the
+packages are buildable or if anything needs to be changed.
+
+See `debian.native/README.md` for more information.
+
 ### src
 
 Contains the actual productive sources.

@@ -5,26 +5,26 @@ export DEBEMAIL="noreply@test.com"
 
 CODENAME="${1:-jammy}"
 
+echo "Building .deb packages for series ${CODENAME}"
+echo "---"
+echo "NOTICE: make sure to clean up before running this! Debhelper will complain otherwise"
+
 # Install dependencies
 apt-get update
 apt-get install -y git debhelper devscripts equivs software-properties-common fakeroot
 add-apt-repository -y ppa:elos-team/ppa
 
-# Get the packaging scripts from the debian branch
-git fetch origin
-git checkout origin/debian/main -- debian
-
-# Use native packaging so we don't need to muck about with tarballs
-echo "3.0 (native)" > debian/source/format
+# Use the native packaging folder for building the .debs
+rm -rf debian
+cp -rv debian.native debian
 
 # Add a new changelog entry
-dch --local="+gitlab-ci" --distribution "${CODENAME}" "Gitlab CI/CD test build for branch ${CI_COMMIT_BRANCH}"
+git config --global --add safe.directory "$(pwd)"
+dch --newversion="$(git describe --tags | cut -f2- -d- | tr '-' '.')~test" \
+        --distribution "${CODENAME}" "Test build"
 
 # Install dependencies
 yes | mk-build-deps -ir || true
-
-# Make sure to remove any temporary files that may have been created
-git clean -fxd
 
 # Ignore Lintian errors from the native packaging
 mkdir -p debian/source
