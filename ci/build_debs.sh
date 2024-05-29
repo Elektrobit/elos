@@ -15,6 +15,7 @@ rm -rf debian
 cp -rv debian.native debian
 
 # Add a new changelog entry
+git config --global --add safe.directory "$(pwd)"
 dch --newversion="$(git describe --tags | cut -f2- -d- | tr '-' '.')~test" \
         --distribution "${CODENAME}" "Test build"
 
