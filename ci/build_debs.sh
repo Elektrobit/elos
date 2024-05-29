@@ -5,6 +5,10 @@ export DEBEMAIL="noreply@test.com"
 
 CODENAME="${1:-jammy}"
 
+echo "Building .deb packages for series ${CODENAME}"
+echo "---"
+echo "NOTICE: make sure to clean up before running this! Debhelper will complain otherwise"
+
 # Install dependencies
 apt-get update
 apt-get install -y git debhelper devscripts equivs software-properties-common fakeroot
