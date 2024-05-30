@@ -18,9 +18,12 @@ add-apt-repository -y ppa:elos-team/ppa
 rm -rf debian
 cp -rv debian.native debian
 
+# parse the version from the project.cmake file
+VERSION="$(sed -n "s/^.*VERSION\s\+\([0-9]\+\.[0-9]\+\.[0-9]\+\).*$/\1/p" cmake/project.cmake)~test"
+
 # Add a new changelog entry
 git config --global --add safe.directory "$(pwd)"
-dch --newversion="$(git describe --tags | cut -f2- -d- | tr '-' '.')~test" \
+dch --newversion="${VERSION}" \
         --distribution "${CODENAME}" "Test build"
 
 # Install dependencies
