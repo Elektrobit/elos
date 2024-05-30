@@ -80,7 +80,7 @@ if (ELOS_DEMOS)
   target_link_libraries(
     tinyElosc
     PRIVATE
-      elos_common_interface
+      libelos_common
       libelos
       version
   )
@@ -97,7 +97,8 @@ if (ELOS_DEMOS)
   target_link_libraries(
     elosMon
     PRIVATE
-      elos_common_interface
+    #elos_common_interface
+      libelos_common
       esmtp
       libelos
       version
@@ -115,7 +116,7 @@ if (ELOS_DEMOS)
   target_link_libraries(
     demo_eloslog
     PRIVATE
-      elos_common_interface
+      libelos_common
       eventprocessor_static
       eloslog_static
       libelos
