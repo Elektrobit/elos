@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-include(../../cmake/shared_library.cmake)
 
 find_package(samconf 0.50.1 REQUIRED)
 find_package(safu 0.50.1 REQUIRED)
@@ -26,10 +25,6 @@ target_include_directories(
   PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/public>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/eventfilter/public>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/eventfilter/interface>
 )
 
 target_link_libraries(
@@ -38,6 +33,7 @@ target_link_libraries(
     elos_event_static
     eventfilter_static
   PUBLIC
+    libelos_common
     libelosplugin_interface
     samconf::samconf
     safu::safu
@@ -53,7 +49,6 @@ set_target_properties(
 
 install(TARGETS libelosplugin DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install_component_headers(COMPONENTS elos_event_static eventfilter_static)
 
 install(
   EXPORT libelospluginTargets
