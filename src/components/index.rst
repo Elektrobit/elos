@@ -6,6 +6,7 @@ Components
    :caption: Contents:
 
    clientmanager/index
+   scannermanager/index
    eloslog/index
    event/index
    eventlogging/index
@@ -14,8 +15,8 @@ Components
    plugincontrol/index
    pluginmanager/index
    rpnfilter/index
-   scanner/index
-   scanner_manager/index
+   scanner_legacy/index
+   scanner_manager_legacy/index
    storagemanager/index
 
 

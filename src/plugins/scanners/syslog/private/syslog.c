@@ -15,7 +15,7 @@
 #include "elos/config/config.h"
 #include "elos/event/event.h"
 #include "elos/event/event_source.h"
-#include "elos/scanner/scanner.h"
+#include "elos/scanner_legacy/scanner.h"
 #include "logline_mapper.h"
 #include "safu/log.h"
 
@@ -43,10 +43,11 @@ struct syslog_context {
     const samconfConfig_t *config;
 };
 
-static elosScannerResultE_t _setupSocket(struct syslog_context *context);
-static void _publishMessage(elosScannerSession_t *session);
+static elosScannerLegacyResultE_t _setupSocket(struct syslog_context *context);
+static void _publishMessage(elosScannerLegacySession_t *session);
 
-elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const elosScannerParam_t *param) {
+elosScannerLegacyResultE_t elosScannerInitialize(elosScannerLegacySession_t *session,
+                                                 const elosScannerLegacyParam_t *param) {
     const char *filterString = NULL;
     const char *configPath = "/root/elos/Scanner/SyslogScanner";
     struct syslog_context *context = (struct syslog_context *)malloc(sizeof(struct syslog_context));
@@ -97,7 +98,7 @@ elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const 
     return _setupSocket(context);
 }
 
-elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
+elosScannerLegacyResultE_t elosScannerRun(elosScannerLegacySession_t *session) {
     struct syslog_context *context = session->context;
     struct pollfd fds[] = {
         {.fd = context->socket, .events = POLLIN},
@@ -135,7 +136,7 @@ elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
     return SCANNER_OK;
 }
 
-elosScannerResultE_t elosScannerStop(elosScannerSession_t *session) {
+elosScannerLegacyResultE_t elosScannerStop(elosScannerLegacySession_t *session) {
     struct syslog_context *context = session->context;
     ssize_t result = 0;
     result = write(context->cmd, &elosScannerCmdStop, sizeof(elosScannerCommand_t));
@@ -146,7 +147,7 @@ elosScannerResultE_t elosScannerStop(elosScannerSession_t *session) {
     return SCANNER_OK;
 }
 
-elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
+elosScannerLegacyResultE_t elosScannerFree(elosScannerLegacySession_t *session) {
     struct syslog_context *context = session->context;
     if (context->status & REGEX_FILTER_NEEDS_CLEANUP) {
         regfree(&context->regExFilter);
@@ -169,7 +170,7 @@ elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
     return SCANNER_OK;
 }
 
-static elosScannerResultE_t _setupSocket(struct syslog_context *context) {
+static elosScannerLegacyResultE_t _setupSocket(struct syslog_context *context) {
     struct sockaddr_un name = {.sun_family = AF_UNIX};
     const char *syslogSocketPath = elosConfigGetElosdSyslogSocketPath(context->config);
     strncpy(name.sun_path, syslogSocketPath, sizeof(name.sun_path) - 1);
@@ -191,7 +192,7 @@ static elosScannerResultE_t _setupSocket(struct syslog_context *context) {
     return SCANNER_OK;
 }
 
-static void _publishMessage(elosScannerSession_t *session) {
+static void _publishMessage(elosScannerLegacySession_t *session) {
     const char *filterString = NULL;
     struct syslog_context *context = session->context;
     char *buffer = calloc(sizeof(char), MAX_LOG_ENTRY_SIZE);
@@ -223,7 +224,7 @@ static void _publishMessage(elosScannerSession_t *session) {
     }
 
     if (publish == true) {
-        elosScannerCallbackData_t *cbData = &session->callback.scannerCallbackData;
+        elosScannerLegacyCallbackData_t *cbData = &session->callback.scannerCallbackData;
         safuResultE_t result;
         elosEvent_t event = {0};
         elosLoglineMapperDoMapping(&context->mapper, &event, buffer);

@@ -618,7 +618,7 @@ smoketest_plugins() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    PLUGINS="Dummy DLT"
+    PLUGINS="Dummy ScannerDummy DLT"
     for plugin in ${PLUGINS}; do
         TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
         TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)

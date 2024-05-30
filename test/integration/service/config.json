@@ -58,6 +58,8 @@
                 }
             },
             "Scanner": {
+                "PluginSearchPath": "/usr/local/lib/elos/scanner",
+                "Plugins": { },
                 "SyslogScanner": {
                     "Syslog": "/dev/log",
                     "MappingRules": {
