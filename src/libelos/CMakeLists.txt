@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-include(../../cmake/shared_library.cmake)
 
 find_package(json-c REQUIRED)
 find_package(safu 0.50.1 REQUIRED)
@@ -16,17 +15,17 @@ add_library(
 target_include_directories(
   libelos
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/private
+    ${CMAKE_CURRENT_SOURCE_DIR}/private/
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public/>
 )
 
 target_link_libraries(
   libelos
-  PUBLIC
-    elos_common_interface
-    elos_event_static
+  PRIVATE
     eloslog_static
+  PUBLIC
+    libelos_common
     json-c::json-c
     safu::safu
 )
@@ -70,15 +69,10 @@ install(
     "${CMAKE_INSTALL_LIBDIR}/cmake/libelos"
 )
 
-install(TARGETS libelos EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS elos_common_interface EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS elos_event_static EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS elos_event_interface EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS eloslog_static EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS libelos EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/)
 
 install(TARGETS libelos DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install_component_headers(COMPONENTS elos_common_interface elos_event_static)
 
 include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
 create_pkgconfig(
