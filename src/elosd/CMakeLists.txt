@@ -21,11 +21,9 @@ target_link_libraries(
   elosd
   PUBLIC
     version
-    elos_event_static
-    rpnfilter_static
+    libelos_common
     eventbuffer_static
     eventdispatcher_static
-    eventfilter_static
     eventprocessor_static
     eventlogging_static
     logger_static
