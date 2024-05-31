@@ -4,3 +4,4 @@
 add_subdirectory(elosConfigGetElosdPort)
 add_subdirectory(pluginLoad)
 add_subdirectory(pluginUnload)
+add_subdirectory(connectionmanager)

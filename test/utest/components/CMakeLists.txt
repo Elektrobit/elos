@@ -3,7 +3,6 @@
 add_subdirectory(clientmanager)
 add_subdirectory(scannermanager)
 add_subdirectory(config)
-add_subdirectory(connectionmanager)
 add_subdirectory(eloslog)
 add_subdirectory(event)
 add_subdirectory(eventbuffer)
