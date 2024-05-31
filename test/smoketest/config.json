@@ -15,10 +15,6 @@
             "ClientInputs": {
                 "PluginSearchPath": "/usr/local/lib/elos/client",
                 "Plugins": {
-                    "OomKiller": {
-                        "File": "client_oomkiller.so",
-                        "Run": "always"
-                    },
                     "LocalTcpClient": {
                         "File": "client_dummy.so",
                         "Run": "always",
@@ -101,6 +97,10 @@
                 "Plugins": {
                     "ScannerDummy": {
                         "File": "scanner_dummy.so",
+                        "Run": "always"
+                    },
+                    "OomKiller": {
+                        "File": "scanner_oomkiller.so",
                         "Run": "always"
                     }
                 },

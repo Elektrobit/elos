@@ -59,7 +59,12 @@
             },
             "Scanner": {
                 "PluginSearchPath": "/usr/local/lib/elos/scanner",
-                "Plugins": { },
+                "Plugins": {
+                    "OomKiller": {
+                        "File": "scanner_oomkiller.so",
+                        "Run": "always"
+                    }
+                },
                 "SyslogScanner": {
                     "Syslog": "/dev/log",
                     "MappingRules": {

@@ -4,7 +4,8 @@ Plugins
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
+   clients/oomkiller/index
    scanners/index
    scanners/kmsg/index
    scanners/syslog/index

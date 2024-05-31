@@ -132,6 +132,8 @@ c_autodoc_roots = [
     './src/libelosplugin/interface',
     './src/libelosplugin/private',
     './src/libelosplugin/public',
+    './src/plugins/clients/oomkiller/interface/',
+    './src/plugins/clients/oomkiller/private/',
     './src/plugins/scanners/kmsg/interface/',
     './src/plugins/scanners/kmsg/private/',
     './src/plugins/scanners/syslog/interface/',

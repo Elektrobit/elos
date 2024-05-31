@@ -138,5 +138,5 @@ scanner that subscribes to `Kmsg Scanner` events for oom-killer invocation will 
 
 When parsing a Kernel log event for oom killer invocation, it is possible to retrieve the process name and its pid,
 but it is not possible to retrieve the path. This is because the `proc` interface with the pid is not available after
-the process is killed by the oom killer. To predetermine which process will be killed by oom killer is to much of an
+the process is killed by the oom killer. To predetermine which process will be killed by oom killer is too much of an
 overhead. The oom killer process path will therefore be set to empty "". 

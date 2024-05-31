@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: MIT
+
+#include "OomKillerScanner.h"
+
+#include <errno.h>
 #include <fcntl.h>
-#include <safu/vector.h>
+#include <safu/log.h>
 #include <safu/time.h>
+#include <safu/vector.h>
 #include <stdatomic.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +16,10 @@
 #include <unistd.h>
 
 #include "elos/event/event.h"
-#include "OomKillerScanner.h"
+#include "elos/event/event_types.h"
+#include "elos/event/event_vector.h"
+
+#define PID_OFFSET 14
 
 typedef struct _matchedEventData {
     elosPlugin_t *plugin;
@@ -18,7 +27,7 @@ typedef struct _matchedEventData {
     safuResultE_t result;
 } _matchedEventData_t;
 
-atomic_bool isRunning = ATOMIC_VAR_INIT(false);
+atomic_bool elosPluginIsRunning = ATOMIC_VAR_INIT(false);
 
 static safuResultE_t _create_oom_subscriber(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -50,10 +59,11 @@ static safuResultE_t _create_oom_subscription(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosOomKillerScanner_t *scanner = (elosOomKillerScanner_t *)plugin->data;
     const char *subscriptionFilters[] = {
-        ".event.messageCode 1111 EQ .event.payload r'.*Out of memory: Killed process*' REGEX AND"};
+        ".event.source.fileName '/dev/kmsg' STRCMP .event.messageCode 1111 EQ AND .event.payload r'.*Out of memory: "
+        "Killed process*' REGEX AND"};
 
-    result = elosPluginSubscribe(plugin, scanner->oomEventSubscriber, subscriptionFilters, ARRAY_SIZE(subscriptionFilters),
-                                 &scanner->oomEventSubscription);
+    result = elosPluginSubscribe(plugin, scanner->oomEventSubscriber, subscriptionFilters,
+                                 ARRAY_SIZE(subscriptionFilters), &scanner->oomEventSubscription);
 
     if (result == SAFU_RESULT_FAILED) {
         safuLogErr("elosPluginSubscribe failed");
@@ -63,39 +73,47 @@ static safuResultE_t _create_oom_subscription(elosPlugin_t *plugin) {
 }
 
 static void _parse_matched_event_payload(const char *payload, char **process, pid_t *pid) {
-    char *killed_prcess_str = NULL;
-    char *process_name = NULL;
-    char *process_string_end = NULL;
+    char *killedProcessStr = NULL;
+    char *processName = NULL;
+    char *processStringEnd = NULL;
 
-    killed_prcess_str = strstr(payload, "Killed process ");
+    killedProcessStr = strstr(payload, "Killed process ");
 
-    if (killed_prcess_str == NULL) {
+    if (killedProcessStr == NULL) {
         safuLogErr("payload does not contain string \"Killed process\"");
         *pid = 0;
-        process_name = "";
+        processName = "";
     } else {
-        *pid = (pid_t)atoi(killed_prcess_str + 14);
-        if (*pid == 0) {
+        char *endPtr = NULL;
+        errno = 0;
+        *pid = strtol(killedProcessStr + PID_OFFSET, &endPtr, 10);
+        if (errno != 0) {
             safuLogWarn("pid conversion error, pid set to 0");
+            *pid = 0;
         }
 
-        process_name = strstr(killed_prcess_str, " (");
-        if (process_name == NULL) {
+        if (endPtr == killedProcessStr + PID_OFFSET) {
+            safuLogWarn("pid not found, pid set to 0");
+            *pid = 0;
+        }
+
+        processName = strstr(killedProcessStr, " (");
+        if (processName == NULL) {
             safuLogWarn("Terminated process name not found, no process name set");
-            process_name = "";
+            processName = "";
         } else {
-            process_name += 2;
-            process_string_end = strstr(process_name, ")");
-            if (process_string_end == NULL) {
+            processName += 2;
+            processStringEnd = strstr(processName, ")");
+            if (processStringEnd == NULL) {
                 safuLogWarn("Kernel log format unknown, no process name set");
-                process_name = "";
+                processName = "";
             } else {
-                *process_string_end = '\0';
+                *processStringEnd = '\0';
             }
         }
     }
 
-    *process = strdup(process_name);
+    *process = strdup(processName);
 }
 
 static inline void _create_oom_killer_invoked_event(elosEvent_t *matchedEvent, elosEvent_t *oomkillerEvent) {
@@ -104,11 +122,11 @@ static inline void _create_oom_killer_invoked_event(elosEvent_t *matchedEvent, e
 
     oomkillerEvent->date.tv_sec = matchedEvent->date.tv_sec;
     oomkillerEvent->date.tv_nsec = matchedEvent->date.tv_nsec;
-   
+
     _parse_matched_event_payload(matchedEvent->payload, &processName, &processPID);
 
     oomkillerEvent->source.appName = processName;
-    oomkillerEvent->source.fileName = "";
+    oomkillerEvent->source.fileName = NULL;
     oomkillerEvent->source.pid = processPID;
 
     oomkillerEvent->severity = ELOS_SEVERITY_FATAL;
@@ -131,12 +149,11 @@ static int _foreachEvent(void const *element, void const *data) {
         safuLogErr("elosPluginPublish failed");
     }
 
-    safuResultE_t result = elosEventDeleteMembers(matchedEvent);
+    safuResultE_t result = elosEventDeleteMembers(&oomkillerEvent);
     if (result != SAFU_RESULT_OK) {
         safuLogErr("elosEventDeleteMembers failed");
         helperData->result = result;
     }
-
     return 0;
 }
 
@@ -164,12 +181,12 @@ safuResultE_t elosOomKillerScannerNew(elosOomKillerScanner_t **oomKillerScanner,
 
 safuResultE_t elosOomKillerScannerStart(elosOomKillerScanner_t *oomKillerScanner, elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    safuVec_t *eventVector = NULL;
-    atomic_store(&isRunning, true);
+    elosEventVector_t *eventVector = NULL;
+    atomic_store(&elosPluginIsRunning, true);
     _matchedEventData_t helperData = {
         .plugin = plugin, .publisher = oomKillerScanner->oomEventPublisher, .result = result};
 
-    while (atomic_load(&isRunning)) {
+    while (atomic_load(&elosPluginIsRunning)) {
         result = elosPluginReadQueue(plugin, oomKillerScanner->oomEventSubscriber,
                                      oomKillerScanner->oomEventSubscription, &eventVector);
         if (result == SAFU_RESULT_OK && eventVector != NULL) {
@@ -179,47 +196,62 @@ safuResultE_t elosOomKillerScannerStart(elosOomKillerScanner_t *oomKillerScanner
                 usleep(10000);
             } else {
                 result = helperData.result;
-                atomic_store(&isRunning, false);
+                atomic_store(&elosPluginIsRunning, false);
             }
-            int ret = safuVecFree(eventVector);
-            if (ret != 0) {
-                safuLogWarn("safuVecFree failed, potential memory leak");
-            }
-            eventVector = NULL;
         } else if (result == SAFU_RESULT_OK && eventVector == NULL) {
             continue;
         } else {
             safuLogErr("elosPluginReadQueue failed, attempting again");
         }
+
+        elosEventVectorDelete(eventVector);
+        eventVector = NULL;
     }
+
     return result;
 }
 
-safuResultE_t elosOomKillerScannerStop(elosOomKillerScanner_t *oomKillerScanner, elosPlugin_t *plugin) {
+safuResultE_t elosOomKillerScannerDelete(elosOomKillerScanner_t *oomKillerScanner, elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     bool failed = false;
-    if (oomKillerScanner == NULL || plugin == NULL) {
-        safuLogErr("Invalid parameters to OomKillerScannerShutdown");
+
+    if (oomKillerScanner == NULL) {
+        safuLogErr("Invalid parameters to OomKillerScannerDelete");
     } else {
-        atomic_store(&isRunning, false);
         result = elosPluginDeletePublisher(plugin, oomKillerScanner->oomEventPublisher);
         if (result == SAFU_RESULT_FAILED) {
             failed = true;
+            safuLogErr("elosPluginDeletePublisher failed");
         }
         result = elosPluginUnsubscribeAll(plugin, oomKillerScanner->oomEventSubscriber);
         if (result == SAFU_RESULT_FAILED) {
             failed = true;
+            safuLogErr("Invalid parameters to OomKillerScannerShutdown");
         }
+
         free((elosSubscription_t *)oomKillerScanner->oomEventSubscription);
+
         result = elosPluginDeleteSubscriber(plugin, oomKillerScanner->oomEventSubscriber);
         if (result == SAFU_RESULT_FAILED) {
             failed = true;
+            safuLogErr("Invalid parameters to OomKillerScannerShutdown");
         }
-        if (!failed) {
-            result = SAFU_RESULT_OK;
-        }
+
+        free(oomKillerScanner);
     }
 
-    free(oomKillerScanner);
+    return failed ? SAFU_RESULT_FAILED : SAFU_RESULT_OK;
+}
+
+safuResultE_t elosOomKillerScannerStop(elosOomKillerScanner_t *oomKillerScanner) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (oomKillerScanner == NULL) {
+        safuLogErr("Invalid parameters to OomKillerScannerStop");
+    } else {
+        atomic_store(&elosPluginIsRunning, false);
+        result = SAFU_RESULT_OK;
+    }
+
     return result;
 }

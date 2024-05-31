@@ -62,10 +62,9 @@ static safuResultE_t _pluginStop(elosPlugin_t *plugin) {
     } else {
         safuLogDebugF("Stopping Plugin '%s'", plugin->config->key);
 
-        result = elosOomKillerScannerStop(plugin->data, plugin);
-        plugin->data = NULL;
+        result = elosOomKillerScannerStop(plugin->data);
         if (result != SAFU_RESULT_OK) {
-            safuLogWarn("elosOomKillerScannerShutdown failed (likely resulting in a memory leak)");
+            safuLogWarn("elosOomKillerScannerStop failed (likely resulting in a memory leak)");
         }
 
         result = elosPluginStopTriggerWrite(plugin);
@@ -84,14 +83,14 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
         safuLogErr("Null parameter given");
     } else {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);
-        result = SAFU_RESULT_OK;
+        result = elosOomKillerScannerDelete((elosOomKillerScanner_t *)plugin->data, plugin);
     }
 
     return result;
 }
 
 elosPluginConfig_t elosPluginConfig = {
-    .type = PLUGIN_TYPE_CLIENTCONNECTION,
+    .type = PLUGIN_TYPE_SCANNER,
     .load = _pluginLoad,
     .unload = _pluginUnload,
     .start = _pluginStart,

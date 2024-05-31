@@ -3,25 +3,25 @@ find_package(safu 0.50.1 REQUIRED)
 find_package(samconf 0.50.1 REQUIRED)
 
 add_library(
-  client_oomkiller SHARED
-  private/OomKilerScanner.c
+  scanner_oomkiller SHARED
+  private/OomKillerScanner.c
   private/OomKillerScannerPlugin.c
 )
 
 create_interface_library(
   FROM
-    client_oomkiller
+    scanner_oomkiller
   LIBRARIES
     safu::safu_interface
     samconf::samconf_interface
 )
 
-set_target_properties(client_oomkiller PROPERTIES PREFIX "")
+set_target_properties(scanner_oomkiller PROPERTIES PREFIX "")
 
 target_link_libraries(
-  client_oomkiller
+  scanner_oomkiller
   PUBLIC
-    client_oomkiller_interface
+    scanner_oomkiller_interface
     elos_common_interface
     eventlogging_interface
     libelosplugin
@@ -31,11 +31,11 @@ target_link_libraries(
 )
 
 target_include_directories(
-  client_oomkiller
+  scanner_oomkiller
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 if (INSTALL_ELOS_PLUGINS)
-  install(TARGETS client_oomkiller DESTINATION ${ELOSD_CLIENT_PATH})
+  install(TARGETS scanner_oomkiller DESTINATION ${ELOSD_SCANNER_PATH})
 endif()
