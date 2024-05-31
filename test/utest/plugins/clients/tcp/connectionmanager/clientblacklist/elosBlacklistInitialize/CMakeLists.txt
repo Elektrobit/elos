@@ -21,4 +21,5 @@ create_unit_test(
     mock_eventfilter_static
     safu::mock_safu
     samconf::mock_samconf
+    samconf::samconf_test_utils
 )

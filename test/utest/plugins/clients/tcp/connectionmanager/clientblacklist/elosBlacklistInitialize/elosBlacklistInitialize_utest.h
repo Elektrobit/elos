@@ -5,12 +5,13 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_extensions/mock_extensions.h>
 #include <cmocka_mocks/mock_libc.h>
+#include <elos/eventfilter/eventfilter_types.h>
 #include <samconf/mock_samconf.h>
 
-#include "connectionmanager/clientblacklist.h"
-#define ELOS_CONFIG_ROOT "is deprecated for plugins and fix me"
-
-samconfConfig_t elosGetMockConfig();
+typedef struct elosTestState {
+    elosEventFilter_t testFilter;
+    samconfConfig_t mockConfig;
+} elosTestState_t;
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosBlacklistInitializeSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosBlacklistInitializeExtErrFilterString)

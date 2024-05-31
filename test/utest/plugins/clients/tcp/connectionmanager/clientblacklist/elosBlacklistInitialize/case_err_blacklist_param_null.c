@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
 
+#include <connectionmanager/clientblacklist.h>
+#include <safu/result.h>
+
 #include "elosBlacklistInitialize_utest.h"
 
 int elosTestElosBlacklistInitializeErrBlacklistParameterNullSetup(UNUSED void **state) {
@@ -12,7 +15,7 @@ int elosTestElosBlacklistInitializeErrBlacklistParameterNullTeardown(UNUSED void
 
 void elosTestElosBlacklistInitializeErrBlacklistParameterNull(UNUSED void **state) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    samconfConfig_t mockConfig = elosGetMockConfig();
+    samconfConfig_t mockConfig = {0};
 
     TEST("elosBlacklistInitialize");
     SHOULD("%s", "not create blacklist filter since null blacklist parameter");

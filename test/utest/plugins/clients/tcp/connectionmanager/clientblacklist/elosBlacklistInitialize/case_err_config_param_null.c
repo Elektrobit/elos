@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
 
+#include <connectionmanager/clientblacklist.h>
+#include <safu/result.h>
+
 #include "elosBlacklistInitialize_utest.h"
 
 int elosTestElosBlacklistInitializeErrConfigParameterNullSetup(UNUSED void **state) {

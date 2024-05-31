@@ -1,41 +1,51 @@
 // SPDX-License-Identifier: MIT
 
 #include <cmocka_extensions/cmocka_extensions.h>
+#include <cmocka_extensions/mock_extensions.h>
+#include <connectionmanager/clientblacklist.h>
+#include <elos/rpnfilter/rpnfilter_types.h>
+#include <safu/result.h>
+#include <samconf/test_utils.h>
 
 #include "elosBlacklistInitialize_utest.h"
 #include "mock_eventfilter.h"
 
-int elosTestElosBlacklistInitializeErrFilterCreateSetup(UNUSED void **state) {
+int elosTestElosBlacklistInitializeErrFilterCreateSetup(void **state) {
+    elosTestState_t *testState = *state;
+
+    memset(testState, 0, sizeof(elosTestState_t));
+    samconfConfigStatusE_t status = samconfUtilCreateMockConfigFromStr(
+        "{"
+        "  \"Config\":{"
+        "    \"EventBlacklist\":\".e.messageCode 1 EQ\""
+        "  }"
+        "}",
+        true, &testState->mockConfig);
+    assert_int_equal(status, SAMCONF_CONFIG_OK);
+
     return 0;
 }
 
-int elosTestElosBlacklistInitializeErrFilterCreateTeardown(UNUSED void **state) {
+int elosTestElosBlacklistInitializeErrFilterCreateTeardown(void **state) {
+    elosTestState_t *testState = *state;
+    elosBlacklistDelete(&testState->testFilter);
+    samconfConfigDeleteMembers(&testState->mockConfig);
     return 0;
 }
 
-void elosTestElosBlacklistInitializeErrFilterCreate(UNUSED void **state) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
-    elosEventFilter_t testFilter;
-    samconfConfig_t mockConfig = elosGetMockConfig();
-    const char *expectedValue = ".event.messageCode 2000 EQ";
+void elosTestElosBlacklistInitializeErrFilterCreate(void **state) {
+    elosTestState_t *testState = *state;
 
     TEST("elosBlacklistInitialize");
     SHOULD("%s", "not initialize blacklist since filter creation fails");
 
-    MOCK_FUNC_AFTER_CALL(samconfConfigGetString, 0);
-    expect_value(__wrap_samconfConfigGetString, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetString, path, ELOS_CONFIG_ROOT "EventBlacklist");
-    expect_any(__wrap_samconfConfigGetString, result);
-    will_set_parameter(__wrap_samconfConfigGetString, result, expectedValue);
-    will_return(__wrap_samconfConfigGetString, SAMCONF_CONFIG_OK);
-
     MOCK_FUNC_AFTER_CALL(elosEventFilterCreate, 0);
-    expect_any(elosEventFilterCreate, filter);
+    expect_value(elosEventFilterCreate, filter, &testState->testFilter);
     expect_any(elosEventFilterCreate, param);
-    will_set_parameter(elosEventFilterCreate, filter, &testFilter);
+    will_set_parameter(elosEventFilterCreate, filter, &testState->testFilter);
     will_return(elosEventFilterCreate, RPNFILTER_RESULT_ERROR);
 
-    result = elosBlacklistInitialize(&testFilter, &mockConfig);
+    safuResultE_t result = elosBlacklistInitialize(&testState->testFilter, &testState->mockConfig);
 
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }
