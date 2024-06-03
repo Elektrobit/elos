@@ -259,6 +259,18 @@ Description: Event logging and management with normalized output-format library
  .
  Shared library package.
 
+Package: libelos-common0
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format DLT library
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Common parts used in multiple packages shared library package.
+
 Package: libelosdlt0
 Architecture: any
 Depends:
