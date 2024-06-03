@@ -3,27 +3,13 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_extensions/mock_extensions.h>
-#include <cmocka_mocks/mock_libc.h>
-#include <samconf/mock_samconf.h>
+#include <safu/vector_types.h>
 #include <samconf/samconf.h>
 
-#include "connectionmanager/clientauthorizedprocesses.h"
-#define ELOS_CONFIG_ROOT "is deprecated for plugins and fix me"
-
-#ifndef LIBMNL_OK
-#define LIBMNL_OK 0
-#endif
-
-#ifndef LIBMNL_ERROR
-#define LIBMNL_ERROR 1
-#endif
-
-typedef struct {
-    samconfConfig_t *childrenData;
-} elosUteststateT_t;
-
-int elosAuthorizedProcessDeleteUtestCleanUp(void **state);
-int elosAuthorizedProcessDeleteUtestInit(void **state);
+typedef struct elosTestState {
+    safuVec_t testFilter;
+    samconfConfig_t mockConfig;
+} elosTestState_t;
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosAuthorizedProcessDeleteSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosAuthorizedProcessDeleteAuthorizedprocessParamNull)

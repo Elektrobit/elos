@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include <sys/types.h>
+#include <connectionmanager/clientauthorizedprocesses.h>
 
 #include "elosAuthorizedProcessInitialize_utest.h"
 
@@ -14,19 +14,11 @@ int elosTestElosAuthorizedProcessInitializeAuthorizedprocessParamNullTeardown(UN
 
 void elosTestElosAuthorizedProcessInitializeAuthorizedprocessParamNull(UNUSED void **state) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-
-    samconfConfig_t mockRoot = {
-        .parent = NULL,
-        .key = "root",
-        .type = SAMCONF_CONFIG_VALUE_OBJECT,
-        .children = NULL,
-        .childCount = 0,
-    };
+    samconfConfig_t mockConfig = {0};
 
     TEST("elosAuthorizedProcessInitialize");
     SHOULD("%s", "authorized process filter not initialized since filter parameter is null");
 
-    result = elosAuthorizedProcessInitialize(NULL, &mockRoot);
-
+    result = elosAuthorizedProcessInitialize(NULL, &mockConfig);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }

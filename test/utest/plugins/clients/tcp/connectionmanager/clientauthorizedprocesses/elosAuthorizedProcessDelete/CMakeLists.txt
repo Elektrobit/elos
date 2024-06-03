@@ -14,4 +14,5 @@ create_unit_test(
     connectionmanager_static_weak
     safu::mock_safu
     samconf::mock_samconf
+    samconf::samconf_test_utils
 )

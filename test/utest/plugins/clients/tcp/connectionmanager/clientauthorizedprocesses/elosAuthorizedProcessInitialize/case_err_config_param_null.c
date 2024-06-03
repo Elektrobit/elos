@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
-
-#include <sys/types.h>
+#include <connectionmanager/clientauthorizedprocesses.h>
+#include <safu/result.h>
+#include <samconf/test_utils.h>
+#include <string.h>
 
 #include "elosAuthorizedProcessInitialize_utest.h"
 
@@ -8,18 +10,21 @@ int elosTestElosAuthorizedProcessInitializeConfigParamNullSetup(UNUSED void **st
     return 0;
 }
 
-int elosTestElosAuthorizedProcessInitializeConfigParamNullTeardown(UNUSED void **state) {
+int elosTestElosAuthorizedProcessInitializeConfigParamNullTeardown(void **state) {
+    elosTestState_t *testState = *state;
+
+    elosAuthorizedProcessDelete(&testState->testFilter);
+
     return 0;
 }
 
-void elosTestElosAuthorizedProcessInitializeConfigParamNull(UNUSED void **state) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
-    safuVec_t testFilter = {0};
+void elosTestElosAuthorizedProcessInitializeConfigParamNull(void **state) {
+    elosTestState_t *testState = *state;
 
     TEST("elosAuthorizedProcessInitialize");
     SHOULD("%s", "authorized process filter not initialized since config parameter is null");
 
-    result = elosAuthorizedProcessInitialize(&testFilter, NULL);
+    safuResultE_t result = elosAuthorizedProcessInitialize(&testState->testFilter, NULL);
 
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }

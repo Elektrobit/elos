@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+#include <connectionmanager/clientauthorizedprocesses.h>
+#include <safu/result.h>
 #include <sys/types.h>
 
 #include "elosAuthorizedProcessDelete_utest.h"
