@@ -7,10 +7,6 @@
 #include <samconf/mock_samconf.h>
 #include <tcpConfig.h>
 
-#define ELOS_CONFIG_ROOT "is deprecated for plugins and fix me"
-
-samconfConfig_t elosGetMockConfig();
-
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdInterfaceSuccessFromEnv)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdInterfaceSuccessFromDefault)
 

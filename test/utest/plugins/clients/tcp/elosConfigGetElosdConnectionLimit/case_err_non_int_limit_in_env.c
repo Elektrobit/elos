@@ -1,45 +1,45 @@
 // SPDX-License-Identifier: MIT
 
+#include <samconf/test_utils.h>
+
 #include "elosConfigGetElosdConnectionLimit_utest.h"
 
+static char *elosCurrentEnvValue = NULL;
 int elosTestElosConfigGetElosdConnectionLimitErrorLimitNotIntInEnvSetup(UNUSED void **state) {
+    char *envValue = getenv("ELOSD_CONNECTION_LIMIT");
+    if (envValue != NULL) {
+        elosCurrentEnvValue = strdup(envValue);
+    }
     return 0;
 }
 
 int elosTestElosConfigGetElosdConnectionLimitErrorLimitNotIntInEnvTeardown(UNUSED void **state) {
+    if (elosCurrentEnvValue != NULL) {
+        setenv("ELOSD_CONNECTION_LIMIT", elosCurrentEnvValue, 1);
+        free(elosCurrentEnvValue);
+    }
     return 0;
 }
 
 void elosTestElosConfigGetElosdConnectionLimitErrorLimitNotIntInEnv(UNUSED void **state) {
-    int32_t limit = 0;
-    int32_t expectedValue = 200;
-    char limitAsString[] = "limit is not integer";
-    const char *mockKey = "ELOSD_CONNECTION_LIMIT";
-    samconfConfig_t mockConfig = elosGetMockConfig();
-
     TEST("elosTcpConfigGetConnectionLimit");
     SHOULD("%s", "should be 200 since limit environment option is not integer");
 
-    MOCK_FUNC_AFTER_CALL(samconfConfigGetBool, 0);
-    expect_value(__wrap_samconfConfigGetBool, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetBool, path, ELOS_CONFIG_ROOT "UseEnv");
-    expect_any(__wrap_samconfConfigGetBool, result);
-    will_set_parameter(__wrap_samconfConfigGetBool, result, true);
-    will_return(__wrap_samconfConfigGetBool, SAMCONF_CONFIG_OK);
+    samconfConfig_t mockConfig = {0};
+    samconfConfigStatusE_t status = samconfUtilCreateMockConfigFromStr(
+        "{"
+        "  \"Config\": {"
+        "    \"ConnectionLimit\": 200"
+        "  }"
+        "}",
+        true, &mockConfig);
+    assert_int_equal(status, SAMCONF_CONFIG_OK);
+    setenv("ELOSD_CONNECTION_LIMIT", "limit is not an integer", 1);  // environment is restored by setup/teardown
+    elosPlugin_t plugin = {.useEnv = true, .config = &mockConfig};
 
-    MOCK_FUNC_AFTER_CALL(safuGetEnvOr, 0);
-    expect_string(__wrap_safuGetEnvOr, key, mockKey);
-    expect_value(__wrap_safuGetEnvOr, defaultValue, NULL);
-    will_return(__wrap_safuGetEnvOr, limitAsString);
-
-    MOCK_FUNC_AFTER_CALL(samconfConfigGetInt32, 0);
-    expect_value(__wrap_samconfConfigGetInt32, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetInt32, path, ELOS_CONFIG_ROOT "ConnectionLimit");
-    expect_any(__wrap_samconfConfigGetInt32, result);
-    will_set_parameter(__wrap_samconfConfigGetInt32, result, expectedValue);
-    will_return(__wrap_samconfConfigGetInt32, SAMCONF_CONFIG_OK);
-
-    limit = elosTcpConfigGetConnectionLimit(&mockConfig);
-
+    const int32_t expectedValue = 200;
+    int32_t limit = elosTcpConfigGetConnectionLimit(&plugin);
     assert_int_equal(expectedValue, limit);
+
+    samconfConfigDeleteMembers(&mockConfig);
 }

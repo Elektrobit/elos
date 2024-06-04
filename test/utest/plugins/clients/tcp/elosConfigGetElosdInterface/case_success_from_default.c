@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+#include <samconf/test_utils.h>
 #include "elosConfigGetElosdInterface_utest.h"
 
 int elosTestElosConfigGetElosdInterfaceSuccessFromDefaultSetup(UNUSED void **state) {
@@ -11,26 +12,15 @@ int elosTestElosConfigGetElosdInterfaceSuccessFromDefaultTeardown(UNUSED void **
 }
 
 void elosTestElosConfigGetElosdInterfaceSuccessFromDefault(UNUSED void **state) {
-    const char *expectedValue = "127.0.0.0";
-    samconfConfig_t mockConfig = elosGetMockConfig();
-
     TEST("elosTcpConfigGetInterface");
     SHOULD("%s", "get the elos interface default option");
 
-    MOCK_FUNC_AFTER_CALL(samconfConfigGetBool, 0);
-    expect_value(__wrap_samconfConfigGetBool, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetBool, path, ELOS_CONFIG_ROOT "UseEnv");
-    expect_any(__wrap_samconfConfigGetBool, result);
-    will_set_parameter(__wrap_samconfConfigGetBool, result, false);
-    will_return(__wrap_samconfConfigGetBool, SAMCONF_CONFIG_OK);
+    samconfConfig_t mockConfig = {0};
+    samconfUtilCreateMockConfigFromStr("{\"Config\":{}}", false, &mockConfig);
+    elosPlugin_t plugin = {.useEnv = false, .config = &mockConfig};
 
-    MOCK_FUNC_AFTER_CALL(samconfConfigGetString, 0);
-    expect_value(__wrap_samconfConfigGetString, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetString, path, ELOS_CONFIG_ROOT "Interface");
-    expect_any(__wrap_samconfConfigGetString, result);
-    will_set_parameter(__wrap_samconfConfigGetString, result, expectedValue);
-    will_return(__wrap_samconfConfigGetString, SAMCONF_CONFIG_OK);
+    const char *returnValue = elosTcpConfigGetInterface(&plugin);
+    assert_string_equal(returnValue, ELOSD_INTERFACE);
 
-    const char *returnValue = elosTcpConfigGetInterface(&mockConfig);
-    assert_string_equal(returnValue, expectedValue);
+    samconfConfigDeleteMembers(&mockConfig);
 }

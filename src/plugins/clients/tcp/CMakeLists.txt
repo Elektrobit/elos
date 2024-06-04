@@ -127,5 +127,6 @@ target_include_directories(
 )
 
 target_compile_definitions(client_tcp PUBLIC ELOSD_PORT=${ELOSD_PORT})
+target_compile_definitions(client_tcp PUBLIC ELOSD_INTERFACE="${ELOSD_INTERFACE}")
 
 install(TARGETS client_tcp DESTINATION ${ELOSD_CLIENT_PATH})
