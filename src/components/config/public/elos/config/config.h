@@ -24,7 +24,7 @@ const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config);
  * Determine if configuration options from environment shall be evaluated or ignored.
  *
  * Parameters:
- *   config: root config containing the `root.elos.useEnv` option 
+ *   config: root config containing the `root.elos.useEnv` option
  *
  * Return:
  *   true: if environment options shall be evaluated

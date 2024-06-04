@@ -13,8 +13,8 @@
 #include <cmocka_extensions/mock_func_weak.h>
 #endif
 
-#include "messagehandler/message_handler.h"
 #include "json-c/json.h"
+#include "messagehandler/message_handler.h"
 
 MOCK_FUNC_PROTOTYPE(elosMessageHandlerSend, safuResultE_t, elosClientConnection_t const *const conn, uint8_t messageId,
                     const char *jsonStr)

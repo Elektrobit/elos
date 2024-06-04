@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <samconf/test_utils.h>
+
 #include "elosConfigGetElosdInterface_utest.h"
 
 int elosTestElosConfigGetElosdInterfaceSuccessFromDefaultSetup(UNUSED void **state) {

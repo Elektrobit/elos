@@ -10,8 +10,7 @@ int elosTcpConfigGetPort(elosPlugin_t const *plugin) {
 }
 
 int elosTcpConfigGetConnectionLimit(elosPlugin_t const *plugin) {
-    return elosPluginConfigGetInt(plugin, "/Config/ConnectionLimit", "ELOSD_CONNECTION_LIMIT",
-                                       ELOSD_CONNECTION_LIMIT);
+    return elosPluginConfigGetInt(plugin, "/Config/ConnectionLimit", "ELOSD_CONNECTION_LIMIT", ELOSD_CONNECTION_LIMIT);
 }
 
 const char *elosTcpConfigGetInterface(elosPlugin_t const *plugin) {

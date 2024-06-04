@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <samconf/test_utils.h>
+
 #include "elosConfigGetElosdConnectionLimit_utest.h"
 
 static char *elosCurrentEnvValue = NULL;

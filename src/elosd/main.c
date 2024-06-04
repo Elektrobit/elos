@@ -168,10 +168,9 @@ int main(int argc, char **argv) {
         safuLogWarn("setting log filter failed!");
     }
 
-    safuLogInfoF("Setup:\n\tlisten on: %s:%d\n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s",
-                 elosConfigGetElosdInterface(context.config), elosConfigGetElosdPort(context.config),
-                 safuGetHardwareId(), safuLogLevelToString(safuLogGetStreamLevel()),
-                 elosConfigGetElosdLogFilter(context.config), elosConfigGetElosdScannerPath(context.config));
+    safuLogInfoF("Setup:\n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s", safuGetHardwareId(),
+                 safuLogLevelToString(safuLogGetStreamLevel()), elosConfigGetElosdLogFilter(context.config),
+                 elosConfigGetElosdScannerPath(context.config));
 
     safuLogDebug("Initialize EventProcessor");
     elosEventProcessorParam_t const epParam = {.config = context.config};
