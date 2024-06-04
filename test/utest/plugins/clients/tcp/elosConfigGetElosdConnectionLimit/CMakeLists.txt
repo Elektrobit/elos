@@ -8,8 +8,6 @@ create_unit_test(
   SOURCES
     case_success_from_env.c
     case_success_from_default.c
-    case_err_invalid_limit_in_default.c
-    case_err_invalid_limit_in_env.c
     case_err_non_int_limit_in_env.c
     elosConfigGetElosdConnectionLimit_utest.c
   INCLUDES

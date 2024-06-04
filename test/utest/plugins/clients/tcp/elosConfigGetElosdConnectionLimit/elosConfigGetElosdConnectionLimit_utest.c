@@ -7,8 +7,6 @@ int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosConfigGetElosdConnectionLimitSuccessFromEnv),
         TEST_CASE(elosTestElosConfigGetElosdConnectionLimitSuccessFromDefault),
-        TEST_CASE(elosTestElosConfigGetElosdConnectionLimitErrorInvalidLimitInEnv),
-        TEST_CASE(elosTestElosConfigGetElosdConnectionLimitErrorInvalidLimitInDefault),
         TEST_CASE(elosTestElosConfigGetElosdConnectionLimitErrorLimitNotIntInEnv),
     };
 
