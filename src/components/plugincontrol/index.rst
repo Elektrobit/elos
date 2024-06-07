@@ -24,7 +24,7 @@ The available Plugin types are SCANNER, STORAGEBACKEND and CLIENTCONNECTION.
 The plugin types are currently still in its infant stages and will be extended
 in the near future, which will also result in additional documentation here.
 
-Each Plugin can be in three states: Unintialized, Loaded and Started.
+Each Plugin can be in three states: Uninitialized, Loaded and Started.
 The Plugin is "Uninitialized" until elosPluginControlLoad is called, which will
 open the shared object, verify its contents and creates a worker thread for
 the Plugin that will be sleeping until elosPluginControlStart is called.
@@ -32,7 +32,7 @@ After elosPluginControlLoad was called the Plugin is in the "Loaded" state.
 Once the Plugin is started, it will be running and in the "Started" state until
 elosPluginControlStop is called (after it will be in the "Loaded" state again).
 A stopped Plugin can be then unloaded with elosPluginControlUnload, putting it
-back into the "Unintialized" state. Note that Starting and Stopping a Plugin
+back into the "Uninitialized" state. Note that Starting and Stopping a Plugin
 multiple times is currently not supported, but will be added at a later stage,
 so a Plugin should make sure it is capable to do so.
 

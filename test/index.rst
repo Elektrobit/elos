@@ -509,7 +509,7 @@ the user requirements. The default guidelines are as follows:
 
 -  The length of a robot keyword is set to 50
 -  A keyword can call a maximum of 20 other keywords inside it.
--  Since template test cases dont have keywords, check for too few calls
+-  Since template test cases don't have keywords, check for too few calls
    to keywords shall be avoided.
 -  Line width for robot tests are set to 100
 -  static checks shall only report log levels of above warning.

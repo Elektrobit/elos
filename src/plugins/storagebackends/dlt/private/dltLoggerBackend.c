@@ -41,7 +41,7 @@ safuResultE_t elosDltLoggerBackendInit(elosDltLoggerBackend_t *dlt, elosDltLogge
 
         SAFU_PTHREAD_MUTEX_INIT_WITH_RESULT(&dlt->mutex, NULL, result)
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("Failed to intialize mutex");
+            safuLogErr("Failed to initialize mutex");
         } else {
             dlt->dlt.pipePath = strdup(param->connectionString == NULL ? "/tmp/dlt" : param->connectionString);
             if (dlt->dlt.pipePath == NULL) {

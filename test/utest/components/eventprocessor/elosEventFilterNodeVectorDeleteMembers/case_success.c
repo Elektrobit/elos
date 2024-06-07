@@ -26,7 +26,7 @@ int elosTestEloEventFilterNodeVectorDeleteMembersSuccessSetup(void **state) {
 int elosTestEloEventFilterNodeVectorDeleteMembersSuccessTeardown(void **state) {
     elosTestState_t *test = *state;
 
-    // dont free the created objects. If they are not freed already, the function failed the test
+    // don't free the created objects. If they are not freed already, the function failed the test
 
     free(test);
 

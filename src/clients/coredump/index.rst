@@ -1,7 +1,7 @@
 Coredump Client
 ===============
 
-The coredump client converts a coredump that has occured into an elos event. The coredump properties are set through the coredump client configuration file `coredump.json` file.
+The coredump client converts a coredump that has occurred into an elos event. The coredump properties are set through the coredump client configuration file `coredump.json` file.
 
 
 .. literalinclude:: /src/clients/coredump/coredump.json
