@@ -261,6 +261,7 @@ Description: Event logging and management with normalized output-format DLT libr
  DLT shared library package.
 
 Package: libelosplugin0
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
