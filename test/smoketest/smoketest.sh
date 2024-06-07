@@ -198,7 +198,7 @@ smoketest_client() {
     output_diff=$(diff $RESULT_DIR/client_output.txt $SMOKETEST_DIR/client_output.txt || echo "diff returned: $?")
     if [ -n "$output_diff" ]
     then
-        log_err "Problems occured while comparing the client output:"
+        log_err "Problems occurred while comparing the client output:"
         log_err "$output_diff"
         return 1
     fi
