@@ -25,7 +25,7 @@ static_code_check()
 
   RC_CHECK=$(echo $?)
 
-  echo "Found "$RC_CHECK" format errors in code" 
+  echo "Found "$RC_CHECK" format errors in code"
 }
 
 check_code()
@@ -35,7 +35,7 @@ check_code()
   RC_CHECK=$(robotidy --check $INTEGRATION_TEST_DIR ; echo $?)
 
   if [ $RC_CHECK -ne 0 ]; then
-      echo "Atleast one test/tests has formating error" 
+      echo "Atleast one test/tests has formatting error"
   fi
 }
 
@@ -58,9 +58,9 @@ print_help()
 {
     echo 
     echo "Usage: $0 --static_check <test> : Performs static code checks of given or all robot files"
-    echo "Usage: $0 --check <test> : Checks all or given test for formating errors"
+    echo "Usage: $0 --check <test> : Checks all or given test for formatting errors"
     echo "Usage: $0 --show <test>  : Shows suggested format changes for all or given tests with out writing them to files"
-    echo "Usage: $0 --check-show <test> : Checks for formating error and shows suggested changes for correcting them with out writing them to files"
+    echo "Usage: $0 --check-show <test> : Checks for formatting error and shows suggested changes for correcting them with out writing them to files"
     echo "Usage: $0 --show-fix <test>   : Shows format changes for correcting format errors and writes them to all or given files"
     echo "Usage: $0 --check-fix <test>  : Checks for format error and if any fix format errors with out showing what changes are done"
     echo "Usage: $0 --help"

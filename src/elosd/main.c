@@ -76,7 +76,7 @@ int elosServerShutdown(struct serverContext *ctx) {
         result = EXIT_FAILURE;
     }
     if (elosClientManagerDeleteMembers(&ctx->clientManagerContext) != SAFU_RESULT_OK) {
-        safuLogErr("Stoping client manager failed!");
+        safuLogErr("Stopping client manager failed!");
         result = EXIT_FAILURE;
     }
     if (elosStorageManagerStop(&ctx->storageManager) != SAFU_RESULT_OK) {
@@ -87,7 +87,7 @@ int elosServerShutdown(struct serverContext *ctx) {
         result = EXIT_FAILURE;
     }
     if (elosConnectionManagerStop(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
-        safuLogErr("Stoping connection manager failed!");
+        safuLogErr("Stopping connection manager failed!");
         result = EXIT_FAILURE;
     } else if (elosConnectionManagerDeleteMembers(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
         safuLogErr("Deleting connection manager failed!");

@@ -9,7 +9,7 @@
 __BEGIN_DECLS
 
 /*******************************************************************
- * Allocates space for and intialize an new EventDispatcher
+ * Allocates space for and initialize a new EventDispatcher
  *
  * Parameters:
  *   eventDispatcher:
