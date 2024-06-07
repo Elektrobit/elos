@@ -299,6 +299,7 @@ Description: Event logging and management with normalized output-format plugin l
  Plugin shared library package.
 
 Package: libelos-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
