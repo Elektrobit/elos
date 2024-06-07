@@ -288,6 +288,7 @@ Description: Development package for elos
  Development package.
 
 Package: elos-doc
+Section: doc
 Architecture: all
 Depends:
  ${misc:Depends},
