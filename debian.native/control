@@ -273,6 +273,7 @@ Description: Event logging and management with normalized output-format DLT libr
  Common parts used in multiple packages shared library package.
 
 Package: libelosdlt0
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
