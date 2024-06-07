@@ -353,6 +353,7 @@ Description: Development package for libelos - common headers
  Development package with common headers.
 
 Package: elos-doc
+Section: doc
 Architecture: all
 Depends:
  ${misc:Depends},
