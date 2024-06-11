@@ -32,7 +32,9 @@ check_code()
 {
   echo "Checking robot test code"
   
-  RC_CHECK=$(robotidy --check $INTEGRATION_TEST_DIR ; echo $?)
+  robotidy --check $INTEGRATION_TEST_DIR
+
+  RC_CHECK=$(echo $?)
 
   if [ $RC_CHECK -ne 0 ]; then
       echo "Atleast one test/tests has formatting error"
