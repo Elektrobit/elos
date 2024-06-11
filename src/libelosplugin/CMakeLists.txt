@@ -88,7 +88,7 @@ install(TARGETS libelosplugin_interface EXPORT libelospluginTargets DESTINATION 
 include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
 create_pkgconfig(
   NAME "elosplugin"
-  REQUIRES "safu >= ${safu_VERSION}, samconf >= ${samconf_VERSION}"
+  REQUIRES "safu >= ${safu_VERSION}, samconf >= ${samconf_VERSION}, libelos_common >= ${ELOS_VERSION}"
   LIBS "-lelosplugin"
 )
 
