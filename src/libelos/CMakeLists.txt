@@ -78,7 +78,7 @@ install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
 create_pkgconfig(
   NAME "elos"
-  REQUIRES "safu >= ${safu_VERSION}, json-c >= 0.15, libelos_common >= ${ELOS_VERSION}"
+  REQUIRES "safu >= ${safu_VERSION}, json-c >= 0.15, elos_common >= ${ELOS_VERSION}"
   LIBS "-lelos"
 )
 

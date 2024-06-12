@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: MIT
 
+find_package(samconf 0.50.1 REQUIRED)
+find_package(safu 0.50.1 REQUIRED)
+
 add_library(
   libelos_common
   SHARED
@@ -30,8 +33,7 @@ set_target_properties(
 
 install(
   TARGETS libelos_common
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 install(
   DIRECTORY
@@ -61,13 +63,13 @@ configure_package_config_file(
   PATH_VARS
     CMAKE_INSTALL_LIBDIR
 )
-install(TARGETS libelos_common EXPORT libelos_commonTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/libelos_commonConfigVersion.cmake
   VERSION ${PKG_VERSION}
   COMPATIBILITY SameMajorVersion
 )
+
 install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/libelos_commonConfig.cmake"
@@ -75,6 +77,8 @@ install(
   DESTINATION
     "${CMAKE_INSTALL_LIBDIR}/cmake/libelos_common"
 )
+
+install(TARGETS libelos_common EXPORT libelos_commonTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
 create_pkgconfig(

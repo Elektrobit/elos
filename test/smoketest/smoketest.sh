@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2317
 
 CMDPATH=$(realpath "$(dirname "$0")")
 BASE_DIR=$(realpath "${CMDPATH}/../..")
@@ -777,11 +778,11 @@ smoketest_compile_program_using_pkgconfig() {
     if [ $TEST_RESULT -ne 0 ]; then
         log_err "failed to query pkg-config data for libelos"
         log_err "output for 'pkg-config elos --modversion'"
-        log_err "${elos_pkgconfig_version}"
+        log_err "${pkgconfig_version}"
         log_err "output for 'pkg-config elos --cflags'"
-        log_err "${elos_pkgconfig_cflags}"
+        log_err "${pkgconfig_cflags}"
         log_err "output for 'pkg-config elos --libs'"
-        log_err "${elos_pkgconfig_libs}"
+        log_err "${pkgconfig_libs}"
         TEST_RESULT=1
     fi
 
