@@ -207,7 +207,7 @@ static safuResultE_t _getFilterRule(const samconfConfig_t *config, size_t *ruleI
                         ++(*ruleIdx);
                     }
                 } else {
-                    safuLogErrF("invalid config: MessageCode \"%s\" has wrong formating!",
+                    safuLogErrF("invalid config: MessageCode \"%s\" has wrong formatting!",
                                 config->children[childItr]->key);
                 }
             } else {

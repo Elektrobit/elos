@@ -142,7 +142,7 @@ def arguments():
                         dest='global_install',
                         help="install the dependencies globaly")
     parser.add_argument('--no-tests', action='store_true',
-                        help="dont install cmocka_extensions & cmocka_mocks")
+                        help="don't install cmocka_extensions & cmocka_mocks")
     parser.add_argument('--no-mocks', action='store_true',
                         help="don't build & install mock libraries (no cmocka depenedencies)")
     parser.add_argument('--ci', action='store_true',

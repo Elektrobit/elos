@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.58.8)
+set(ELOS_VERSION 0.58.9)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -101,7 +101,7 @@ function(project_set_version_variables)
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
   if(NOT exit_code EQUAL 0)
-    message(WARNING "failed to retrive git short commit hash")
+    message(WARNING "failed to retrieve git short commit hash")
     set(git_output "none")
   endif()
   set(${ver_git_name} ${git_output} PARENT_SCOPE)
