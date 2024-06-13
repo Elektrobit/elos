@@ -1,2 +1,6 @@
 usr/include/elos/common
 usr/include/elos/event
+usr/include/elos/rpnfilter
+usr/lib/*/libelos_common.so
+usr/lib/*/cmake/libelos_common
+usr/lib/*/pkgconfig/elos_common.pc

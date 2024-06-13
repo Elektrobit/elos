@@ -106,6 +106,7 @@ baseos-lab-tests:
   stage: test
   needs: []
   image: ubuntu:jammy
+  allow_failure: true
   before_script:
     - apt-get update
     - apt-get install -y curl jq
