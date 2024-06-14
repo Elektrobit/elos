@@ -26,6 +26,7 @@ Vcs-Browser: https://github.com/Elektrobit/elos
 Vcs-Git: https://github.com/Elektrobit/elos
 
 Package: elos
+Section: virtual
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -37,6 +38,7 @@ Description: Event logging and management with normalized output-format metapack
  while providing easy access to the collected data.
 
 Package: elos-plugin-backend-dlt
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -49,6 +51,7 @@ Description: Event logging and management with normalized output-format (DLT plu
  DLT backend plugin.
 
 Package: elos-plugin-backend-dummy
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -61,6 +64,7 @@ Description: Event logging and management with normalized output-format (Dummy p
  Dummy backend plugin.
 
 Package: elos-plugin-backend-influxdb
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -73,6 +77,7 @@ Description: Event logging and management with normalized output-format (InfluxD
  InfluxDB backend plugin.
 
 Package: elos-plugin-backend-json
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -85,6 +90,7 @@ Description: Event logging and management with normalized output-format (JSON pl
  JSON backend plugin.
 
 Package: elos-plugin-backend-nosql
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -97,6 +103,7 @@ Description: Event logging and management with normalized output-format (NoSQL p
  NoSQL backend plugin.
 
 Package: elos-plugin-backend-sql
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -109,6 +116,7 @@ Description: Event logging and management with normalized output-format (SQL plu
  DLT backend plugin.
 
 Package: elos-plugin-client-dummy
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -121,6 +129,7 @@ Description: Event logging and management with normalized output-format (Dummy c
  Dummy client plugin.
 
 Package: elos-plugin-scanner-dummy
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -133,6 +142,7 @@ Description: Event logging and management with normalized output-format (Dummy p
  Dummy scanner plugin.
 
 Package: elos-plugin-scanner-kmsg
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -145,6 +155,7 @@ Description: Event logging and management with normalized output-format (kmsg sc
  Kmsg scanner plugin.
 
 Package: elos-plugin-scanner-shmem
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -157,6 +168,7 @@ Description: Event logging and management with normalized output-format (shmem p
  Shmem scanner plugin.
 
 Package: elos-plugin-scanner-syslog
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -169,6 +181,7 @@ Description: Event logging and management with normalized output-format (syslog 
  Syslog scanner plugin.
 
 Package: elosd
+Section: utils
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -183,6 +196,7 @@ Description: Event logging and management with normalized output-format daemon
  Daemon package.
 
 Package: elosd-systemd
+Section: utils
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -197,6 +211,7 @@ Description: Event logging and management with normalized output-format systemd 
  Systemd package.
 
 Package: elosc
+Section: utils
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -209,6 +224,7 @@ Description: Event logging and management with normalized output-format client
  Client package.
 
 Package: elos-coredump
+Section: utils
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -221,6 +237,7 @@ Description: Event logging and management with normalized output-format coredump
  Coredump utility package.
 
 Package: libmock-libelos0
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -233,6 +250,7 @@ Description: Event logging and management with normalized output-format library 
  Mock library package.
 
 Package: libelos0
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -260,6 +278,7 @@ Description: Event logging and management with normalized output-format library
  Shared library package.
 
 Package: libelos-common0
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -272,6 +291,7 @@ Description: Event logging and management with normalized output-format DLT libr
  Common parts used in multiple packages shared library package.
 
 Package: libelosdlt0
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -284,6 +304,7 @@ Description: Event logging and management with normalized output-format DLT libr
  DLT shared library package.
 
 Package: libelosplugin0
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -296,6 +317,7 @@ Description: Event logging and management with normalized output-format plugin l
  Plugin shared library package.
 
 Package: libelos-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -312,6 +334,7 @@ Description: Development package for libelos
  Development package.
 
 Package: libelosplugin-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -325,6 +348,7 @@ Description: Development package for libelosplugin
  Development package for libelosplugin.
 
 Package: libelosdlt-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -338,6 +362,7 @@ Description: Development package for libelosdlt
  Development package for libelosdlt.
 
 Package: libelos-common-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -349,6 +374,7 @@ Description: Development package for libelos - common headers
  Development package with common headers.
 
 Package: elos-doc
+Section: doc
 Architecture: all
 Depends:
  ${misc:Depends},
