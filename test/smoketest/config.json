@@ -98,6 +98,10 @@
                     "ScannerDummy": {
                         "File": "scanner_dummy.so",
                         "Run": "always"
+                    },
+                    "OomKiller": {
+                        "File": "scanner_oomkiller.so",
+                        "Run": "always"
                     }
                 },
                 "SyslogScanner": {
