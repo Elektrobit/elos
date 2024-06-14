@@ -145,6 +145,7 @@ Description: Event logging and management with normalized output-format (kmsg sc
  Kmsg scanner plugin.
 
 Package: elos-plugin-scanner-shmem
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -317,6 +318,7 @@ Description: Development package for libelos
  Development package.
 
 Package: libelosplugin-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -330,6 +332,7 @@ Description: Development package for libelosplugin
  Development package for libelosplugin.
 
 Package: libelosdlt-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -343,6 +346,7 @@ Description: Development package for libelosdlt
  Development package for libelosdlt.
 
 Package: libelos-common-dev
+Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
