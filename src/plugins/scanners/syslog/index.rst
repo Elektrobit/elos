@@ -46,17 +46,20 @@ notation. So the syslog scanner expect the following config structure:
 .. code:: bash
 
    SyslogScanner
-   ├── SyslogPath
-   ├── MappingRules
-   │   ├── MessageCode
-   │   │   ├── 4000
-   │   │   ├── 4001
-   │   │   └── 2001
-   │   └── ... (other like Severity, classification)
-   └── FilterRules (Not implemented)
-       ├── empty payload
-       ├── all from appName X
-       └── containing secrets
+   ├── File
+   ├── Run
+   └── Config
+       ├── SyslogPath
+       ├── MappingRules
+       │   ├── MessageCode
+       │   │   ├── 4000
+       │   │   ├── 4001
+       │   │   └── 2001
+       │   └── ... (other like Severity, classification)
+       └── FilterRules (Not implemented)
+           ├── empty payload
+           ├── all from appName X
+           └── containing secrets
 
 The implementation for configuration files is still in progress so the
 format for configuration files is not defined now.

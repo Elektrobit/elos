@@ -665,18 +665,24 @@ look like this:
                },
                "Scanner": {
                    "Path": "/usr/local/lib/elos/scanner",
-                   "KmsgScanner": {
-                       "KmsgFile": "/dev/kmsg"
-                   },
-                   "SyslogScanner": {
-                       "SyslogPath": "/dev/log",
-                       "MappingRules": {
-                           "MessageCodes": {
-                             "4000": ".event.source.appName 'ssh' STRCMP",
-                             "2000": ".event.source.appName 'crinit' STRCMP",
-                             "1000": ".event.source.appName 'login' STRCMP"
+                   "Plugins": {
+                       "SyslogScanner": {
+                           "File": "scanner_syslog.so",
+                           "Run": "always",
+                           "Config": {
+                               "SyslogPath": "/dev/log",
+                               "MappingRules": {
+                                   "MessageCodes": {
+                                       "4000": ".event.source.appName 'ssh' STRCMP",
+                                       "2000": ".event.source.appName 'crinit' STRCMP",
+                                       "1000": ".event.source.appName 'login' STRCMP"
+                                   }
+                               }
                            }
                        }
+                   },
+                   "KmsgScanner": {
+                       "KmsgFile": "/dev/kmsg"
                    }
                }
            }
@@ -721,10 +727,10 @@ use another default value, decided by us.
 -  **Scanner/KmsgScanner/KmsgFile**: Character device or FIFO file node
    to receive logs in kmsg format from (``ELOS_KMSG_FILE`` default
    value: ``"/dev/kmsg"``)
--  **Scanner/SyslogScanner/SyslogPath**: Unix UDP socket to receive logs
+-  **Scanner/Plugins/<SyslogScanner>/Config/SyslogPath**: Unix UDP socket to receive logs
    in syslog format from (``ELOS_SYSLOG_PATH`` default value:
    ``"/dev/log"``)
--  **Scanner/SyslogScanner/MappingRules/MessageCodes**: contain
+-  **Scanner/Plugins/<SyslogScanner>/Config/MappingRules/MessageCodes**: contain
    ``message code, filter`` pairs to set a specific ``message code`` for
    an event if the given filter matches the event.
 
@@ -910,14 +916,17 @@ The syslog scanner expects the following config structure:
 .. code:: bash
 
    SyslogScanner
-   ├── SyslogPath
-   └── MappingRules
-       ├── MessageCode
-       │   ├── 4000
-       │   ├── 4001
-       │   ├── 2001
-       │   └── ... (more MessageCodes)
-       └── ... (other event attributes like Severity, Classification, ...)
+   ├── File
+   ├── Run
+   └── Config
+       ├── SyslogPath
+       └── MappingRules
+           ├── MessageCode
+           │   ├── 4000
+           │   ├── 4001
+           │   ├── 2001
+           │   └── ... (more MessageCodes)
+           └── ... (other event attributes like Severity, Classification, ...)
 
 The MappingRules are provided through the configuration. The
 configuration (samconf) allows to lookup single options by a path like
