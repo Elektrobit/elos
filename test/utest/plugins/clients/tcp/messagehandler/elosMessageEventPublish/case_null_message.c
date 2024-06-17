@@ -1,19 +1,11 @@
 // SPDX-License-Identifier: MIT
 
+#include <safu/mock_log.h>
 #include <samconf/mock_samconf.h>
 
-#include "elos/event/event.h"
-#include "elos/eventfilter/eventfilter.h"
 #include "elosMessageEventPublish_utest.h"
-#include "json-c/json.h"
-#include "mock_LogAggregator.h"
-#include "mock_event.h"
-#include "mock_eventprocessor.h"
-#include "mock_message_handler.h"
 #include "safu/common.h"
 #include "safu/log.h"
-#include "safu/mock_log.h"
-#include "safu/mock_safu.h"
 
 extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 

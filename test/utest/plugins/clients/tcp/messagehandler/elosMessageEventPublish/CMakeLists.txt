@@ -13,7 +13,6 @@ create_unit_test(
     case_blacklist_filter_create_error.c
     case_null_connection.c
     case_null_message.c
-    case_logging_failed.c
     case_publish_failed.c
     elosMessageEventPublish_utest.c
   LIBRARIES
@@ -23,9 +22,11 @@ create_unit_test(
     elos_event_static_weak
     json-c
     mock_elos_event_static
+    eventbuffer_static_weak
     mock_eventbuffer_static
     mock_eventfilter_static
     mock_eventprocessor_static
+    logger_static_weak
     mock_logger_static
     mock_message_handler_static
     mock_log_aggregator_static

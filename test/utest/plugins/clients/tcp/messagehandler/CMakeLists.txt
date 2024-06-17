@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-#add_subdirectory(elosMessageEventPublish)
+add_subdirectory(elosMessageEventPublish)
 #add_subdirectory(elosMessageEventQueueRead)
 add_subdirectory(elosMessageGetVersion)
 #add_subdirectory(elosMessageEventSubscribe)

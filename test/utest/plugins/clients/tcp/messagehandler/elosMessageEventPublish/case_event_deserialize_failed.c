@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 
+#include <safu/common.h>
+#include <safu/mock_log.h>
+
 #include "elosMessageEventPublish_utest.h"
-#include "json-c/json.h"
+#include "messagehandler/message_handler.h"
 #include "mock_event.h"
 #include "mock_message_handler.h"
-#include "safu/mock_log.h"
 
 extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 
@@ -20,7 +22,7 @@ int elosTestElosMessageEventPublishEventEmptySetup(UNUSED void **state) {
     data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(data->conn->sharedData);
 
-    data->response = elosMessageHandlerResponseCreate(NULL);
+    data->response = elosMessageHandlerResponseCreate("elosEventDeserialize failed");
     assert_non_null(data->response);
 
     const char *msg =
@@ -76,16 +78,11 @@ void elosTestElosMessageEventPublishEventEmpty(UNUSED void **state) {
     expect_string(__wrap_safuLogFunc, message, errstr);
     will_return(__wrap_safuLogFunc, SAFU_LOG_STATUS_SUCCESS);
 
-    MOCK_FUNC_AFTER_CALL(elosMessageHandlerResponseCreate, 0)
-    expect_string(elosMessageHandlerResponseCreate, errstr, errstr);
-    will_return(elosMessageHandlerResponseCreate, NULL);
-
-    expect_value(__wrap_safuLogFunc, level, SAFU_LOG_LEVEL_ERR);
-    expect_any(__wrap_safuLogFunc, file);
-    expect_any(__wrap_safuLogFunc, func);
-    expect_any(__wrap_safuLogFunc, line);
-    expect_string(__wrap_safuLogFunc, message, "elosMessageEventPublish failed");
-    will_return(__wrap_safuLogFunc, SAFU_LOG_STATUS_SUCCESS);
+    MOCK_FUNC_AFTER_CALL(elosMessageHandlerSendJson, 0)
+    expect_any(elosMessageHandlerSendJson, conn);
+    expect_value(elosMessageHandlerSendJson, messageId, ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH);
+    expect_check(elosMessageHandlerSendJson, jobj, elosMessageEventPublishCheckJsonObject, data->response);
+    will_return(elosMessageHandlerSendJson, SAFU_RESULT_OK);
 
     ret = elosMessageEventPublish(data->conn, data->msg);
 

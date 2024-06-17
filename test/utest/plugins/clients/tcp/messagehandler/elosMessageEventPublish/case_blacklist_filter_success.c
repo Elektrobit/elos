@@ -2,24 +2,23 @@
 
 #include <bits/time.h>
 #include <cmocka_extensions/mock_extensions.h>
+#include <cmocka_mocks/mock_libc.h>
+#include <json-c/json.h>
+#include <safu/common.h>
+#include <safu/mock_log.h>
+#include <safu/mock_safu.h>
 #include <time.h>
 
-#include "cmocka_mocks/mock_libc.h"
 #include "elos/event/event.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elosMessageEventPublish_utest.h"
-#include "json-c/json.h"
-#include "mock_LogAggregator.h"
-#include "mock_event.h"
+#include "messagehandler/message_handler.h"
 #include "mock_eventbuffer.h"
-#include "mock_eventfilter.h"
-#include "mock_eventprocessor.h"
 #include "mock_logger.h"
 #include "mock_message_handler.h"
-#include "safu/common.h"
-#include "safu/mock_safu.h"
 
 extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
+static elosEvent_t elosPublishedEvent = {0};
 
 int elosTestelosMessageEventPublishBlacklistFilterSuccessSetup(void **state) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));
@@ -38,6 +37,9 @@ int elosTestelosMessageEventPublishBlacklistFilterSuccessSetup(void **state) {
 
     data->conn->sharedData = safuAllocMem(NULL, sizeof(elosClientConnectionSharedData_t));
     assert_non_null(data->conn->sharedData);
+
+    data->conn->sharedData->plugin = safuAllocMem(NULL, sizeof(elosPlugin_t));
+    assert_non_null(data->conn->sharedData->plugin);
 
     const char mockErrString[] = "unauthorized publishing attempt";
     data->response = elosMessageHandlerResponseCreate(mockErrString);
@@ -65,6 +67,7 @@ int elosTestelosMessageEventPublishBlacklistFilterSuccessTeardown(void **state) 
     elosUtestState_t *data = *state;
     json_object_put(data->response);
     free(data->msg);
+    free(data->conn->sharedData->plugin);
     free(data->conn->sharedData);
     elosEventFilterDeleteMembers(&data->conn->blacklist);
     free(data->conn);
@@ -73,36 +76,10 @@ int elosTestelosMessageEventPublishBlacklistFilterSuccessTeardown(void **state) 
     return 0;
 }
 
-static int _check_json_object(const long unsigned int parameter, const long unsigned int compare) {
-    json_object *jobjParam = (json_object *)parameter;
-    json_object *jobjCmp = (json_object *)compare;
-    if (json_object_equal(jobjParam, jobjCmp)) {
-        return 1;
-    }
-    print_error("%s != %s\n", json_object_to_json_string(jobjParam), json_object_to_json_string(jobjCmp));
-    return 0;
-}
-
-static int _check_event(const long unsigned int parameter, const long unsigned int compare) {
-    int result = 1;
-    json_object *eventParam = json_object_new_object();
-    json_object *eventCmp = json_object_new_object();
-    safuResultE_t res = elosEventToJsonObject(eventParam, (elosEvent_t *)parameter);
-    if (res != SAFU_RESULT_OK) {
-        result = 0;
-    }
-    res = elosEventToJsonObject(eventCmp, (elosEvent_t *)compare);
-    if (res != SAFU_RESULT_OK) {
-        result = 0;
-    }
-    if (result == 1) {
-        result = _check_json_object((const long unsigned int)eventParam, (const long unsigned int)eventCmp);
-    }
-
-    json_object_put(eventParam);
-    json_object_put(eventCmp);
-
-    return result;
+static safuResultE_t _mockElosPluginPublish(UNUSED struct elosPublisher *const publisher,
+                                            UNUSED const elosEvent_t *const event) {
+    elosEventDeepCopy(&elosPublishedEvent, event);
+    return SAFU_RESULT_OK;
 }
 
 void elosTestelosMessageEventPublishBlacklistFilterSuccess(void **state) {
@@ -134,22 +111,12 @@ void elosTestelosMessageEventPublishBlacklistFilterSuccess(void **state) {
     MOCK_FUNC_ENABLE(safuGetHardwareId);
     will_return(__wrap_safuGetHardwareId, "localhost");
 
-    MOCK_FUNC_AFTER_CALL(elosLog, 0);
-    expect_value(elosLog, messageCode, ELOS_MSG_CODE_UNAUTHORIZED_PUBLISHING);
-    expect_value(elosLog, severity, ELOS_SEVERITY_WARN);
-    expect_value(elosLog, classification,
-                 ELOS_CLASSIFICATION_SECURITY | ELOS_CLASSIFICATION_ELOS | ELOS_CLASSIFICATION_IPC);
-    expect_string(elosLog, logMessage, "unauthorized publishing attempt");
-
-    MOCK_FUNC_AFTER_CALL(elosEventBufferWrite, 0);
-    expect_value(elosEventBufferWrite, eventBuffer, &data->conn->eventBuffer);
-    expect_check(elosEventBufferWrite, event, _check_event, &securityEvent);
-    will_return(elosEventBufferWrite, SAFU_RESULT_OK);
+    data->conn->sharedData->plugin->publish = _mockElosPluginPublish;
 
     MOCK_FUNC_ENABLE(elosMessageHandlerSendJson)
     expect_any(elosMessageHandlerSendJson, conn);
     expect_value(elosMessageHandlerSendJson, messageId, ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH);
-    expect_check(elosMessageHandlerSendJson, jobj, _check_json_object, data->response);
+    expect_check(elosMessageHandlerSendJson, jobj, elosMessageEventPublishCheckJsonObject, data->response);
     will_return(elosMessageHandlerSendJson, SAFU_RESULT_OK);
 
     ret = elosMessageEventPublish(data->conn, data->msg);
