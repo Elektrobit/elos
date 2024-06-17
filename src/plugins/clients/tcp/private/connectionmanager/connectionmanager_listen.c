@@ -6,10 +6,10 @@
 #include <sys/eventfd.h>
 #include <sys/time.h>
 
-#include "connectionmanager_private.h"
 #include "connectionmanager/clientauthorization.h"
 #include "connectionmanager/clientconnection.h"
 #include "connectionmanager/connectionmanager.h"
+#include "connectionmanager_private.h"
 
 #define CONNECTION_SEMAPHORE_TIMEOUT_SEC  0
 #define CONNECTION_SEMAPHORE_TIMEOUT_NSEC (100 * 1000 * 1000)

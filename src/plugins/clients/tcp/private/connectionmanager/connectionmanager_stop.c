@@ -5,12 +5,12 @@
 #include <safu/mutex.h>
 #include <unistd.h>
 
-#include "connectionmanager_private.h"
 #include "connectionmanager/clientauthorization.h"
 #include "connectionmanager/clientauthorizedprocesses.h"
 #include "connectionmanager/clientblacklist.h"
 #include "connectionmanager/clientconnection.h"
 #include "connectionmanager/connectionmanager.h"
+#include "connectionmanager_private.h"
 
 safuResultE_t elosConnectionManagerStop(elosConnectionManager_t *connectionManager) {
     safuResultE_t result = SAFU_RESULT_FAILED;

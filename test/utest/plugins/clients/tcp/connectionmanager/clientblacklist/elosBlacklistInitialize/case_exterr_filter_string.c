@@ -3,6 +3,7 @@
 #include <connectionmanager/clientblacklist.h>
 #include <safu/result.h>
 #include <samconf/test_utils.h>
+
 #include "elosBlacklistInitialize_utest.h"
 #include "safu/log.h"
 #include "safu/mock_log.h"

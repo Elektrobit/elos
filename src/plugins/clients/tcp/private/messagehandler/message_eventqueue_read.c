@@ -6,8 +6,8 @@
 
 #include "elos/common/message.h"
 #include "elos/common/types.h"
-#include "messagehandler/message_handler.h"
 #include "elos/event/event_vector.h"
+#include "messagehandler/message_handler.h"
 
 safuResultE_t elosMessageEventQueueRead(elosClientConnection_t *conn, elosMessage_t const *const msg) {
     struct json_object *jRequest = NULL;
@@ -36,7 +36,7 @@ safuResultE_t elosMessageEventQueueRead(elosClientConnection_t *conn, elosMessag
     }
 
     if (errStr == NULL) {
-        elosSubscription_t subscription = {.eventQueueId=eventQueueId, .eventFilterNodeId=ELOS_ID_INVALID};
+        elosSubscription_t subscription = {.eventQueueId = eventQueueId, .eventFilterNodeId = ELOS_ID_INVALID};
         result = elosPluginReadQueue(conn->sharedData->plugin, conn->data.subscriber, &subscription, &eventVector);
         if (result != SAFU_RESULT_OK) {
             safuLogErrF("elosEventProcessorQueueRead failed with eventQueueId '%d'", eventQueueId);

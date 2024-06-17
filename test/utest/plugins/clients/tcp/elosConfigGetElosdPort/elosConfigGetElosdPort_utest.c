@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "elosConfigGetElosdPort_utest.h"
+
 #include <samconf/samconf_types.h>
 
 TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortUtest)

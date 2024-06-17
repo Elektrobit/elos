@@ -5,8 +5,8 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_mocks/mock_jsonc.h>
 
-#include "elos/common/message.h"
 #include "connectionmanager/connectionmanager.h"
+#include "elos/common/message.h"
 #include "safu/common.h"
 
 typedef struct {

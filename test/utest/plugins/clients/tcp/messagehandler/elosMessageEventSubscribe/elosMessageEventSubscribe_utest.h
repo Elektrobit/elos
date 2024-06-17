@@ -6,8 +6,8 @@
 #include <json-c/json.h>
 #include <safu/common.h>
 
-#include "elos/common/message.h"
 #include "connectionmanager/connectionmanager.h"
+#include "elos/common/message.h"
 
 typedef struct elosArrayStringTestData {
     const char **strings;

@@ -4,8 +4,8 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
-#include "elos/common/message.h"
 #include "connectionmanager/connectionmanager.h"
+#include "elos/common/message.h"
 #include "mock_message_handler.h"
 
 #define MOCK_MESSAGE_MEMORY_SIZE 4096
@@ -15,9 +15,9 @@
 typedef struct elosUnitTestState {
     elosClientConnection_t connection;
     elosClientConnectionSharedData_t sharedData;
-    elosEventQueueId_t eventQueueId;
+    elosEventBufferId_t eventQueueId;
     elosEventVector_t *eventVector;
-    elosEventProcessor_t eventProcessor;
+    elosEventPtrVector_t eventProcessor;
     samconfConfig_t config;
     elosMessage_t *message;
 } elosUnitTestState_t;

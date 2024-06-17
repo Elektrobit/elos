@@ -4,8 +4,8 @@
 
 #include <json-c/json.h>
 #include <safu/result.h>
-#include "connectionmanager/clientconnection_types.h"
 
+#include "connectionmanager/clientconnection_types.h"
 
 __BEGIN_DECLS
 

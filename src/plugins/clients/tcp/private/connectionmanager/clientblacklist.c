@@ -5,7 +5,6 @@
 #include <safu/log.h>
 #include <samconf/samconf.h>
 
-
 safuResultE_t elosBlacklistInitialize(elosEventFilter_t *blacklist, samconfConfig_t const *const config) {
     safuResultE_t retval = SAFU_RESULT_FAILED;
     elosRpnFilterResultE_t result = RPNFILTER_RESULT_ERROR;
@@ -16,7 +15,7 @@ safuResultE_t elosBlacklistInitialize(elosEventFilter_t *blacklist, samconfConfi
         safuLogErr("Invalid argument");
     } else {
         *blacklist = (elosEventFilter_t)ELOS_EVENTFILTER_INIT;
-        status = samconfConfigGetString(config,  "/Config/EventBlacklist", &paramstring);
+        status = samconfConfigGetString(config, "/Config/EventBlacklist", &paramstring);
         if (status == SAMCONF_CONFIG_OK) {
             if (paramstring != NULL && paramstring[0] != '\0') {
                 elosEventFilterParam_t param = {.filterString = paramstring};

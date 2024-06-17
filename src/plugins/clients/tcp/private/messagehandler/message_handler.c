@@ -6,8 +6,8 @@
 #include <safu/log.h>
 #include <stdlib.h>
 
-#include "elos/common/message.h"
 #include "connectionmanager/clientconnection_types.h"
+#include "elos/common/message.h"
 
 typedef safuResultE_t elosMessageHandler_t(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 

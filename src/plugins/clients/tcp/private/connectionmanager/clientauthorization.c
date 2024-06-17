@@ -6,6 +6,7 @@
 #include <bits/stdint-uintn.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <elos/common/process.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <libmnl/libmnl.h>
@@ -29,7 +30,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <elos/common/process.h>
 #include "connectionmanager/clientauthorizedprocesses.h"
 #include "connectionmanager/types.h"
 

@@ -4,8 +4,8 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
-#include "elos/common/message.h"
 #include "connectionmanager/connectionmanager.h"
+#include "elos/common/message.h"
 #include "mock_eventfiltermanager.h"
 #include "mock_message_handler.h"
 

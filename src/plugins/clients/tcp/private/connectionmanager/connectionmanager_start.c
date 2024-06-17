@@ -8,8 +8,8 @@
 #include <safu/log.h>
 #include <sys/eventfd.h>
 
-#include "connectionmanager_private.h"
 #include "connectionmanager/connectionmanager.h"
+#include "connectionmanager_private.h"
 
 safuResultE_t elosConnectionManagerStart(elosConnectionManager_t *connectionManager) {
     safuResultE_t result = SAFU_RESULT_FAILED;

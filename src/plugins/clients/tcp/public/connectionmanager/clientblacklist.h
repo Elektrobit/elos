@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <elos/eventfilter/eventfilter.h>
 #include <safu/result.h>
 #include <samconf/samconf_types.h>
-
-#include <elos/eventfilter/eventfilter.h>
 
 __BEGIN_DECLS
 
