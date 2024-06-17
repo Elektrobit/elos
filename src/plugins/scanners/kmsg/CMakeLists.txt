@@ -19,12 +19,14 @@ set_target_properties(scanner_kmsg PROPERTIES PREFIX "")
 target_link_libraries(
   scanner_kmsg
   PRIVATE
-    elos_scanner_legacy_interface
-    elos_event_static
     config_static
+    elos_event_static
+    elos_scanner_legacy_interface
   PUBLIC
-    scanner_kmsg_interface
+  #libelos_common
+    libelosplugin
     samconf::samconf
+    scanner_kmsg_interface
 )
 
 target_include_directories(
