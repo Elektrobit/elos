@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <elos/libelosplugin/libelosplugin.h>
+#include <safu/result.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -87,32 +88,36 @@ safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_
                     safuLogErr(errstr);
                 }
             }
-        }
 
-        if (conn->isTrusted == false) {
-            if (conn->blacklist.state == RPNFILTER_FINALIZED) {
-                elosRpnFilterResultE_t result = elosEventFilterExecute(&conn->blacklist, NULL, &event);
-                if (result == RPNFILTER_RESULT_MATCH) {
-                    _create_security_event(&event, msg);
-                    errstr = "unauthorized publishing attempt";
+            if (conn->isTrusted == false) {
+                if (conn->blacklist.state == RPNFILTER_FINALIZED) {
+                    elosRpnFilterResultE_t result = elosEventFilterExecute(&conn->blacklist, NULL, &event);
+                    if (result == RPNFILTER_RESULT_MATCH) {
+                        _create_security_event(&event, msg);
+                        errstr = "unauthorized publishing attempt";
+                        safuLogErr(errstr);
+                    }
+                } else {
+                    _create_blacklist_error_event(&event, msg);
+                    errstr = "event authorization failed";
                     safuLogErr(errstr);
                 }
-            } else {
-                _create_blacklist_error_event(&event, msg);
-                errstr = "event authorization failed";
-                safuLogErr(errstr);
             }
-        }
 
-        if (retval == SAFU_RESULT_OK) {
-            elosPluginPublish(conn->sharedData->plugin, conn->data.publisher, &event);
-        }
+            if (retval == SAFU_RESULT_OK) {
+                retval = elosPluginPublish(conn->sharedData->plugin, conn->data.publisher, &event);
+                if (retval != SAFU_RESULT_OK) {
+                    errstr = "Failed to publish event";
+                    safuLogErr(errstr);
+                }
+            }
 
-        elosEventDeleteMembers(&event);
+            elosEventDeleteMembers(&event);
+        }
 
         jresponse = elosMessageHandlerResponseCreate(errstr);
         if (jresponse == NULL) {
-            safuLogErr("elosMessageEventPublish failed");
+            safuLogErr("elosMessageHandlerResponseCreate failed");
             retval = SAFU_RESULT_FAILED;
         } else {
             if (SAFU_RESULT_OK != elosMessageHandlerSendJson(conn, messageId, jresponse)) {
