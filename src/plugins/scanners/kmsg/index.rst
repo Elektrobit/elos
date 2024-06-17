@@ -47,3 +47,31 @@ Environment:
 
 -  ``ELOS_KMSG_FILE`` –> the path where to open expect a character
    device or FIFO file node, default is ``ELOSD_SYSLOG_PATH``
+
+Json
+~~~~
+
+Under `root/elos/Scanner/Plugins` add:
+
+.. code:: json
+
+   "<KmsgScanner Inastance name>": {
+      "File": "scanner_kmsg.so",
+      "Run": "always",
+      "Config": {
+         "KmsgFile": "/dev/kmsg"
+      }
+   }
+
+
+Configuration structure
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: bash
+
+   KmsgScanner
+   ├── File
+   ├── Run
+   └── Config
+       └── KmsgFile
+
