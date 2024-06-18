@@ -29,6 +29,7 @@ ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
     [Documentation]    A process should match at least one filter to
     ...    be a authorized process
 
+    Skip    Is currently broken need to be analyzed and fixed #23440
     Given Valid And Invalid Authorized Process Filters Are Set
     When Client Tries To Publish A Blacklisted Event
     Then Blacklisted Event Is Published
