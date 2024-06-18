@@ -104,10 +104,14 @@ Test New Elosd Configuration With Different Interface
     Set Test Variable    ${PORT}    ${6666}
     Set Test Variable    ${LOGLEVEL}    DEBUG
 
+    ${Config}=    Default Config Core
+    ${Config}=    Update Value To Json
+    ...           ${Config}    $..LocalTcpClient.Config.Interface    ${INTERFACE}
+    ${Config}=    Update Value To Json    ${Config}    $..LocalTcpClient.Config.Port    ${PORT}
+    ${Config}=    Update Value To Json    ${Config}    $..LogLevel    ${LOGLEVEL}
+
     Restart Elosd With Config From Template
-    ...    Interface=${INTERFACE}
-    ...    Port=${PORT}
-    ...    LogLevel=${LOGLEVEL}
+    ...    &{Config}
     Stop Elosd And Check Log For    listen on: ${INTERFACE}:${PORT}
     [Teardown]    Run Keywords    Cleanup Template Config
     ...    AND    Start Elosd
