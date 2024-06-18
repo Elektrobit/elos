@@ -63,15 +63,19 @@
                     "OomKiller": {
                         "File": "scanner_oomkiller.so",
                         "Run": "always"
-                    }
-                },
-                "SyslogScanner": {
-                    "Syslog": "/dev/log",
-                    "MappingRules": {
-                        "MessageCodes": {
-                            "4000": ".event.source.appName 'ssh' STRCMP",
-                            "2000": ".event.source.appName 'crinit' STRCMP",
-                            "1000": ".event.source.appName 'login' STRCMP"
+                    },
+                    "SyslogScanner": {
+                        "File": "scanner_syslog.so",
+                        "Run": "always",
+                        "Config": {
+                            "Syslog": "/dev/log",
+                            "MappingRules": {
+                                "MessageCodes": {
+                                    "4000": ".event.source.appName 'ssh' STRCMP",
+                                    "2000": ".event.source.appName 'crinit' STRCMP",
+                                    "1000": ".event.source.appName 'login' STRCMP"
+                                }
+                            }
                         }
                     }
                 },

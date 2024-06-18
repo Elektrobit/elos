@@ -14,8 +14,7 @@
                 ".process.pid 1 EQ"
             ],
             "ClientInputs": {
-                "Plugins": {
-                }
+                "Plugins": {}
             },
             "EventLogging": {
                 "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
@@ -48,15 +47,19 @@
                     "ScannerDummy": {
                         "File": "scanner_dummy.so",
                         "Run": "always"
-                    }
-                },
-                "SyslogScanner": {
-                    "SyslogPath": "/dev/log",
-                    "MappingRules": {
-                        "MessageCodes": {
-                            "4000": ".event.source.appName 'ssh' STRCMP",
-                            "2000": ".event.source.appName 'crinit' STRCMP",
-                            "1000": ".event.source.appName 'login' STRCMP"
+                    },
+                    "SyslogScanner": {
+                        "File": "scanner_syslog.so",
+                        "Run": "always",
+                        "Config": {
+                            "SyslogPath": "/dev/log",
+                            "MappingRules": {
+                                "MessageCodes": {
+                                    "4000": ".event.source.appName 'ssh' STRCMP",
+                                    "2000": ".event.source.appName 'crinit' STRCMP",
+                                    "1000": ".event.source.appName 'login' STRCMP"
+                                }
+                            }
                         }
                     }
                 },

@@ -14,5 +14,6 @@ create_unit_test(
   LIBRARIES
     scanner_syslog
     cmocka_mocks::mock_libc
+    samconf::samconf_test_utils
     samconf::samconf
 )
