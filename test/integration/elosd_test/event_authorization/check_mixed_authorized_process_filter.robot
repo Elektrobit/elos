@@ -9,6 +9,7 @@ Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
 Library             ../../libraries/ElosKeywords.py
+Library             JSONLibrary
 
 Suite Setup         Run Keywords    Connect To Target And Log In
 ...                 AND             Ensure Elosd Is Started
@@ -39,10 +40,13 @@ Valid And Invalid Authorized Process Filters Are Set
     [Documentation]    Set valid and invalid authorized process filter in config
 
     Ensure Elosd Is Stopped
-    Set Config From Template
-    ...    EventBlacklist=${BLACKLIST_FILTER}
-    ...    authorizedProcesses=${AUTHORIZED_PROCESS_FILTERS}
-    Ensure Elosd Is Started
+    ${Config}    Default Config Core
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.EventBlacklist    ${BLACKLIST_FILTER}
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.authorizedProcesses
+    ...          ${AUTHORIZED_PROCESS_FILTERS}
+    Set Config From Template    &{Config}
 
 Client Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails

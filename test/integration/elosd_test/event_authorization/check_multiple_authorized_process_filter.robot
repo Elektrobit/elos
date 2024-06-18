@@ -9,6 +9,7 @@ Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
 Library             ../../libraries/ElosKeywords.py
+Library             JSONLibrary
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections
@@ -49,9 +50,14 @@ A Process Filter Is Set
 
     Stop Elosd
     Wait For Elosd To Stop
-    Set Config From Template
-    ...    EventBlacklist=${BLACKLIST_FILTER}
-    ...    authorizedProcesses=${process_filter}
+
+    ${Config}    Default Config Core
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.EventBlacklist    ${BLACKLIST_FILTER}
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.authorizedProcesses    ${process_filter}
+    Set Config From Template    &{Config}
+
     Start Elosd
     Wait Till Elosd Is Started
 
