@@ -12,6 +12,7 @@ export BENCHMARK_RESULT_DIR=${BENCHMARK_RESULT_DIR-"$BUILD_DIR/result/benchmark_
 
 export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"/tmp/elosd.syslog.socket"}
 export ELOS_KMSG_FILE=${ELOS_KMSG_FILE-"/tmp/elosd.kmsg"}
+export ELOS_CLIENT_PATH=${ELOS_SCANNER_PATH-"$DIST_DIR/usr/local/lib/elos/client"}
 export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"$DIST_DIR/usr/local/lib/elos/scanner"}
 export ELOS_BACKEND_PATH=${ELOS_BACKEND_PATH-"$DIST_DIR/usr/local/lib/elos/backend"}
 export ELOS_STORAGE_BACKEND_JSONBACKEND_FILE=${ELOS_STORAGE_BACKEND_JSONBACKEND_FILE-"/tmp/elosd_event.log"}
