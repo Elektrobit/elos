@@ -116,6 +116,13 @@
                                 }
                             }
                         }
+                    },
+                    "ScannerKmsg": {
+                        "File": "scanner_kmsg.so",
+                        "Run": "always",
+                        "Config": {
+                            "KmsgFile": "/dev/kmsg"
+                        }
                     }
                 },
                 "Shmem": {

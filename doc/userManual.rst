@@ -679,6 +679,13 @@ look like this:
                                    }
                                }
                            }
+                       },
+                       "KmsgScanner": {
+                           "File": "scanner_kmsg.so",
+                           "Run": "always",
+                           "Config": {
+                               "KmsgFile": "/dev/kmsg"
+                           }
                        }
                    },
                    "KmsgScanner": {
@@ -724,7 +731,7 @@ use another default value, decided by us.
    logged events (``ELOS_STORAGE_BACKEND_JSON_FILE``)
 -  **Scanner/Path**: Path to the scanner plugins (``ELOS_SCANNER_PATH``
    default value: ``"/usr/lib/elos/scanner"``)
--  **Scanner/KmsgScanner/KmsgFile**: Character device or FIFO file node
+-  **Scanner/Plugins/<KmsgScanner>/Config/KmsgFile**: Character device or FIFO file node
    to receive logs in kmsg format from (``ELOS_KMSG_FILE`` default
    value: ``"/dev/kmsg"``)
 -  **Scanner/Plugins/<SyslogScanner>/Config/SyslogPath**: Unix UDP socket to receive logs

@@ -93,7 +93,7 @@ static elosScannerManagerLegacyErrorCodeE_t _parsePath(elosScannerManagerLegacyC
                 continue;
             }
 
-            if ((strcmp(dirEnt->d_name, "scanner_kmsg.so") != 0) && (strcmp(dirEnt->d_name, "scanner_shmem.so") != 0)) {
+            if ((strcmp(dirEnt->d_name, "scanner_shmem.so") != 0)) {
                 dirEnt = readdir(dirHandle);
                 continue;
             }
