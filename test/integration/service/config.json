@@ -10,7 +10,7 @@
                         "Run": "always",
                         "Config": {
                             "Port": 54321,
-                            "Interface": "127.0.0.1",
+                            "Interface": "0.0.0.0",
                             "ConnectionLimit": 200,
                             "EventBlacklist": ".event.messageCode 2000 EQ",
                             "authorizedProcesses": [
