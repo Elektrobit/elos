@@ -89,6 +89,16 @@ class ElosKeywords(object):
         self.start_elosd()
         self.wait_till_elosd_is_started()
 
+    def publish_event(self, event, port=54321):
+        """
+        publish an event on target
+        """
+
+        stdout, stderr, rc = self._exec_on_target(f"elosc -P '{port}' -p '{event}'")
+        logger.info("elosc publish output was:")
+        logger.info(f"stdout:\n{stdout}\nstderr:\n{stderr}\nrc:\n{rc}\n")
+
+
     def wait_for_elosd_to_stop(self, timeout=30):
         """
         Wait for a running elosd instance to stop. Fail if timeout is reached.
@@ -216,3 +226,17 @@ class ElosKeywords(object):
                 retry_count += 1
                 logger.info(f"{retry_count}. Retry as not enough events found")
                 time.sleep(0.2)
+
+    def find_events_matching(self, filter, port=54321):
+        """
+        find an event published to target
+        """
+
+        stdout, stderr, rc = self._exec_on_target(f"elosc -P '{port}' -f '{filter}'")
+        if rc != 0:
+                robot.utils.asserts.fail()
+
+        events = self._parse_elosc_result(stdout)
+        logger.info(f"found {len(events)} events")
+
+        return events

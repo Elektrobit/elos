@@ -3,8 +3,8 @@
 
 
 *** Settings ***
-Documentation       A test suite to check if an event is published
-...                 when ever an oom killer is invoked.
+Documentation       A test suite to check if an event is not published
+...                 when a client publishes an oom killer invoked event.
 
 Library             String
 Library             SSHLibrary
@@ -17,6 +17,20 @@ Suite Setup         Run Keywords    Connect To Target And Log In
 Suite Teardown      Close All Connections
 
 
+*** Variables ***
+${KERNEL_OOM_MESSAGE}
+...                         {
+...                         "date": [PTIME,0],
+...                         "source": {
+...                         "fileName": "\/dev\/kmsg"
+...                         },
+...                         "severity": 3,
+...                         "classification": 1,
+...                         "messageCode": 1111,
+...                         "payload": "3,270,497530363,-;Out of memory: Killed process 115 (tail)"
+...                         }
+
+
 *** Test Cases ***
 01_Test_OOM_Killer_Kernel_Event
     [Documentation]    When oom killer is invoked an event is
@@ -24,24 +38,28 @@ Suite Teardown      Close All Connections
 
     Given Elosd Is Running
     When An OOM Killer Is Invoked
-    Then An Event Is Published
+    Then An OOM Event Is Published
 
 
 *** Keywords ***
 An OOM Killer Is Invoked
-    [Documentation]    OOM killer is invoked.
+    [Documentation]    Instead of OOM killer invocation a similar event is
+    ...    is published through a client.
 
-    ${output}    ${rc}=    Execute Command    tail /dev/zero    return_rc=True
+    ${PUBLISH_TIME}=    Get Elos Event Publish Time Threshold
 
-    Log    ${output}
-    Log    ${rc}
+    Set Test Variable    ${PUBLISH_TIME}
 
-An Event Is Published
+    ${KERNEL_OOM_MESSAGE}=    Replace String    ${KERNEL_OOM_MESSAGE}    PTIME    ${PUBLISH_TIME}
+
+    Publish Event    ${KERNEL_OOM_MESSAGE}
+
+An OOM Event Is Published
     [Documentation]    OOM killer invoked event is published.
 
-    ${search_output}    ${rc}=    Execute Command
-    ...    elosc -f ".event.messageCode 5020 EQ"
-    ...    return_rc=True
+    @{matched_events}=    Find Events Matching
+    ...    .event.messageCode 5020 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND
 
-    Log    ${search_output}
-    Should Not Be Empty    ${search_output}
+    ${event_count}=    Get Length    ${matched_events}
+
+    Should Not Be Equal As Integers    ${event_count}    0
