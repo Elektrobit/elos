@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
+#include <elos/event/event_message_codes.h>
 #include <elos/libelosplugin/libelosplugin.h>
+#include <elos/libelosplugin/types.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -18,11 +20,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "elos/config/config.h"
-#include "elos/event/event.h"
-#include "elos/event/event_message_codes.h"
-#include "elos/libelosplugin/types.h"
-#include "elos/scanner_legacy/scanner.h"
 #include "kmsg_mapper.h"
 #include "safu/log.h"
 
@@ -123,7 +120,6 @@ static safuResultE_t _publishMessage(elosPlugin_t *plugin) {
             .source = eventSource,
         };
 
-        safuLogDebug("====> KMSG Mapping log");
         resVal = elosKmsgMapperDoMapping(&context->mapper, &event, readBuffer);
         if (resVal != SAFU_RESULT_OK) {
             event.date.tv_sec = time(NULL);

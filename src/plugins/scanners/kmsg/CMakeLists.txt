@@ -9,7 +9,7 @@ create_interface_library(
   FROM
     scanner_kmsg
   LIBRARIES
-    elos_event_interface
+    libelos_common
     safu::safu_interface
     samconf::samconf_interface
 )
@@ -18,12 +18,8 @@ set_target_properties(scanner_kmsg PROPERTIES PREFIX "")
 
 target_link_libraries(
   scanner_kmsg
-  PRIVATE
-    config_static
-    elos_event_static
-    elos_scanner_legacy_interface
   PUBLIC
-  #libelos_common
+    libelos_common
     libelosplugin
     samconf::samconf
     scanner_kmsg_interface
