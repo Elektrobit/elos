@@ -22,7 +22,7 @@
 #include "elos/event/event.h"
 #include "elos/event/event_source.h"
 #include "elos/rpnfilter/builder.h"
-#include "elos/scanner/scanner.h"
+#include "elos/scanner_legacy/scanner.h"
 #include "logline_mapper.h"
 #include "safu/log.h"
 #include "safu/time.h"
@@ -292,7 +292,7 @@ safuResultE_t elosLoglineMapperInit(elosLoglineMapper_t *mapper, const samconfCo
     }
 
     if (result == SAFU_RESULT_OK) {
-        status = samconfConfigGet(config, "/MappingRules/MessageCodes", &messageCodeConfig);
+        status = samconfConfigGet(config, "Config/MappingRules/MessageCodes", &messageCodeConfig);
         if (status != SAMCONF_CONFIG_OK) {
             safuLogErr("Given configuration does not have applications config nodes");
             result = SAFU_RESULT_FAILED;

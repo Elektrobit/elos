@@ -5,8 +5,8 @@
 *** Settings ***
 Documentation       Collection of high level keywords shared by the test cases
 
-Library             String
 Library             Collections
+Library             String
 Library             SSHLibrary
 
 

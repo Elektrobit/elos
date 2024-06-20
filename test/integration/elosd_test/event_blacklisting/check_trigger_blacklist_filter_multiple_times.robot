@@ -8,8 +8,10 @@ Documentation       A test suite to check blacklist filter triggered multiple ti
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -33,13 +35,11 @@ ${CLIENTS}              2
 A Simple Blacklist Filter Is Set
     [Documentation]    Set a simple blacklist filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Multiple Unauthorized Processes Try To Publish A Blacklisted Event
     [Documentation]    run multiple client to publish blacklisted filters
@@ -68,12 +68,3 @@ A Security Event Is Published Every Time
     ...    ${RETURN_RC}
     Should Contain X Times    ${stdout}    2010    ${CLIENTS}
     Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

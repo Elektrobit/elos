@@ -11,6 +11,7 @@
 #include <safu/defines.h>
 #include <safu/log.h>
 #include <safu/mutex.h>
+#include <safu/result.h>
 #include <samconf/samconf.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,8 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
+#include "elos/eventbuffer/eventbuffer.h"
+#include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/plugincontrol/thread.h"
 #include "plugincontrol_private.h"
 
@@ -87,6 +90,7 @@ safuResultE_t elosPluginControlLoadHelperGetConfig(elosPluginControl_t *control)
             errStr = dlerror();
             if ((control->dlHandle == NULL) || (errStr != NULL)) {
                 safuLogErrF("dlopen failed with: '%s'", errStr);
+                result = SAFU_RESULT_FAILED;
             } else {
                 void const **ptr = (void const **)&(control->pluginConfig);
 
@@ -144,32 +148,33 @@ safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
             result = elosPluginControlLoadHelperGetConfig(control);
             if (result != SAFU_RESULT_OK) {
                 safuLogErr("elosPluginControlLoadHelperGetConfig failed");
-            }
-
-            if ((result == SAFU_RESULT_OK) && (ELOS_PLUGINCONTROL_FLAG_PUSH_WORKER_BIT(&control->flags) == true)) {
-                retVal = pthread_create(&control->workerThread, 0, elosPluginControlWorkerThread, (void *)control);
-                if (retVal < 0) {
-                    safuLogErrErrno("pthread_create failed");
-                    atomic_fetch_or(&control->flags, SAFU_FLAG_ERROR_BIT);
-                    atomic_fetch_and(&control->flags, ~ELOS_PLUGINCONTROL_FLAG_WORKER_BIT);
-                    result = SAFU_RESULT_FAILED;
-                } else {
-                    char threadName[20] = {0};
-                    strncpy(threadName, control->context.config->key, ARRAY_SIZE(threadName) - 1);
-                    retVal = pthread_setname_np(control->workerThread, threadName);
-                    if (retVal != 0) {
-                        safuLogErr("Failed to set thread name for plugin control");
+            } else {
+                control->context.instanceRef = control;
+                if ((result == SAFU_RESULT_OK) && (ELOS_PLUGINCONTROL_FLAG_PUSH_WORKER_BIT(&control->flags) == true)) {
+                    retVal = pthread_create(&control->workerThread, 0, elosPluginControlWorkerThread, (void *)control);
+                    if (retVal < 0) {
+                        safuLogErrErrno("pthread_create failed");
+                        atomic_fetch_or(&control->flags, SAFU_FLAG_ERROR_BIT);
+                        atomic_fetch_and(&control->flags, ~ELOS_PLUGINCONTROL_FLAG_WORKER_BIT);
+                        result = SAFU_RESULT_FAILED;
+                    } else {
+                        char threadName[20] = {0};
+                        strncpy(threadName, control->context.config->key, ARRAY_SIZE(threadName) - 1);
+                        retVal = pthread_setname_np(control->workerThread, threadName);
+                        if (retVal != 0) {
+                            safuLogErr("Failed to set thread name for plugin control");
+                        }
                     }
-                }
-            }
 
-            if (result == SAFU_RESULT_OK) {
-                eventfd_t efdVal = 0;
+                    if (result == SAFU_RESULT_OK) {
+                        eventfd_t efdVal = 0;
 
-                retVal = eventfd_read(control->context.sync, &efdVal);
-                if (retVal < 0) {
-                    safuLogErrErrno("eventfd_read failed");
-                    result = SAFU_RESULT_FAILED;
+                        retVal = eventfd_read(control->context.sync, &efdVal);
+                        if (retVal < 0) {
+                            safuLogErrErrno("eventfd_read failed");
+                            result = SAFU_RESULT_FAILED;
+                        }
+                    }
                 }
             }
         }

@@ -64,3 +64,16 @@ safuResultE_t elosPluginStopTriggerWrite(elosPlugin_t *plugin) {
 
     return result;
 }
+
+static const char *elosPluginTypeLookup[] = {
+    [PLUGIN_TYPE_INVALID] = "Invalid",
+    [PLUGIN_TYPE_SCANNER] = "Scanner",
+    [PLUGIN_TYPE_STORAGEBACKEND] = "StorageBackends",
+    [PLUGIN_TYPE_CLIENTCONNECTION] = "ClientConnections",
+};
+const char *elosPluginTypeToStr(elosPluginTypeE_t type) {
+    if (type >= sizeof(elosPluginTypeLookup)) {
+        type = PLUGIN_TYPE_INVALID;
+    }
+    return elosPluginTypeLookup[type];
+}

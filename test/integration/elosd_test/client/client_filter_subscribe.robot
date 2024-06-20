@@ -6,11 +6,13 @@
 Documentation       A test suite to check if subscribed client
 ...                 with invalid filer string does not change eolsd behaviour.
 
+Resource            ../../keywords.resource
 Library             String
 Library             SSHLibrary
-Resource            ../../keywords.resource
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 

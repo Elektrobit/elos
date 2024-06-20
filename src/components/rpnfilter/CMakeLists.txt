@@ -23,7 +23,7 @@ add_library(
 target_include_directories(
   rpnfilter_static
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/public
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private
 )

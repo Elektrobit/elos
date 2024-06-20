@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
+#include <elos/event/event_message_codes.h>
+#include <elos/libelosplugin/libelosplugin.h>
+#include <elos/libelosplugin/types.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <safu/common.h>
+#include <safu/log.h>
+#include <safu/result.h>
 #include <samconf/samconf.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -15,10 +20,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "elos/config/config.h"
-#include "elos/event/event.h"
-#include "elos/event/event_message_codes.h"
-#include "elos/scanner/scanner.h"
 #include "kmsg_mapper.h"
 #include "safu/log.h"
 
@@ -41,14 +42,17 @@ struct kmsg_context {
     bool running;
     int flags;
     elosKmsgMapper_t mapper;
-    const samconfConfig_t *config;
+    struct elosPublisher *publisher;
 };
 
-static elosScannerResultE_t _openKmsgFile(struct kmsg_context *context) {
-    elosScannerResultE_t result = SCANNER_OK;
+static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_OK;
+    struct kmsg_context *context = plugin->data;
     struct stat stbuf = {0};
     int retval;
-    const char *kmsgFile = elosConfigGetElosdScannerKmsgFile(context->config);
+
+    const char *defaultKmsgFile = samconfConfigGetStringOr(plugin->config, "Config/KmsgFile", ELOS_KMSG_FILE);
+    const char *kmsgFile = kmsgFile = safuGetEnvOr("ELOS_KMSG_FILE", defaultKmsgFile);
 
     context->kmsgFile = strdup(kmsgFile);
 
@@ -59,24 +63,24 @@ static elosScannerResultE_t _openKmsgFile(struct kmsg_context *context) {
             retval = mkfifo(kmsgFile, mode);
             if (retval < 0) {
                 safuLogErrF("mkfifo '%s' failed - %s", kmsgFile, strerror(errno));
-                result = SCANNER_ERROR;
+                result = SAFU_RESULT_FAILED;
             } else {
                 context->flags |= SCANNER_KMSG_FILE_CREATED;
             }
         } else {
             safuLogErrF("stat '%s' failed - %s", kmsgFile, strerror(errno));
-            result = SCANNER_ERROR;
+            result = SAFU_RESULT_FAILED;
         }
     } else if ((S_ISCHR(stbuf.st_mode) == 0) && (S_ISFIFO(stbuf.st_mode) == 0)) {
         safuLogErrF("file '%s' is neither S_IFCHR or S_IFIFO", kmsgFile);
-        result = SCANNER_ERROR;
+        result = SAFU_RESULT_FAILED;
     }
 
-    if (result == SCANNER_OK) {
+    if (result == SAFU_RESULT_OK) {
         context->kmsgPollFd = open(kmsgFile, O_RDONLY | O_NONBLOCK);
         if (context->kmsgPollFd < 0) {
             safuLogErrF("open '%s' failed (%s)", kmsgFile, strerror(errno));
-            result = SCANNER_ERROR;
+            result = SAFU_RESULT_FAILED;
         } else if ((context->flags & SCANNER_KMSG_FILE_CREATED) == 0) {
             lseek(context->kmsgPollFd, 0, SEEK_END);
         }
@@ -85,22 +89,22 @@ static elosScannerResultE_t _openKmsgFile(struct kmsg_context *context) {
     return result;
 }
 
-static elosScannerResultE_t _publishMessage(elosScannerSession_t *session) {
-    struct kmsg_context *context = session->context;
-    elosScannerResultE_t result = SCANNER_OK;
+static safuResultE_t _publishMessage(elosPlugin_t *plugin) {
+    struct kmsg_context *context = plugin->data;
+    safuResultE_t result = SAFU_RESULT_OK;
     char *readBuffer;
     int readBytes;
 
     readBuffer = calloc(sizeof(char), MAX_LOG_ENTRY_SIZE);
     if (readBuffer == NULL) {
-        result = SCANNER_ERROR;
+        result = SAFU_RESULT_FAILED;
     }
 
-    if (result == SCANNER_OK) {
+    if (result == SAFU_RESULT_OK) {
         readBytes = read(context->kmsgPollFd, readBuffer, MAX_LOG_ENTRY_SIZE);
         if (readBytes < 0) {
             safuLogErrErrno("read message");
-            result = SCANNER_ERROR;
+            result = SAFU_RESULT_FAILED;
         } else if ((readBytes > 0) && (readBuffer[readBytes - 1] == '\n')) {
             readBuffer[readBytes - 1] = '\0';
         } else {
@@ -108,14 +112,14 @@ static elosScannerResultE_t _publishMessage(elosScannerSession_t *session) {
         }
     }
 
-    if (result == SCANNER_OK) {
-        elosScannerCallbackData_t *cbData = &session->callback.scannerCallbackData;
+    if (result == SAFU_RESULT_OK) {
         safuResultE_t resVal;
 
         elosEventSource_t eventSource = {.fileName = context->kmsgFile};
         elosEvent_t event = {
             .source = eventSource,
         };
+
         resVal = elosKmsgMapperDoMapping(&context->mapper, &event, readBuffer);
         if (resVal != SAFU_RESULT_OK) {
             event.date.tv_sec = time(NULL);
@@ -124,26 +128,26 @@ static elosScannerResultE_t _publishMessage(elosScannerSession_t *session) {
             event.payload = readBuffer;
         }
 
-        resVal = session->callback.eventPublish(cbData, &event);
+        resVal = elosPluginPublish(plugin, context->publisher, &event);
         if (resVal != SAFU_RESULT_OK) {
             safuLogErr("eventPublish failed");
-            result = SCANNER_ERROR;
+            result = SAFU_RESULT_FAILED;
         }
 
-        resVal = session->callback.eventLog(cbData, &event);
+        resVal = elosPluginStore(plugin, &event);
         if (resVal != SAFU_RESULT_OK) {
             safuLogErr("eventLog failed");
-            result = SCANNER_ERROR;
+            result = SAFU_RESULT_FAILED;
         }
     }
 
     free(readBuffer);
-
     return result;
 }
 
-elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
-    struct kmsg_context *context = session->context;
+static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
+    struct kmsg_context *context = plugin->data;
+    safuResultE_t result = SAFU_RESULT_OK;
     if (context != NULL) {
         close(context->kmsgPollFd);
         close(context->cmdPollFd);
@@ -155,58 +159,91 @@ elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
             free(context->kmsgFile);
         }
 
-        free(session->context);
-        session->context = NULL;
+        if (elosPluginDeletePublisher(plugin, context->publisher) != SAFU_RESULT_OK) {
+            result = SAFU_RESULT_FAILED;
+        }
+
+        free(plugin->data);
+        plugin->data = NULL;
     }
-    return SCANNER_OK;
+    return result;
 }
 
-elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const elosScannerParam_t *param) {
-    struct kmsg_context *context = NULL;
-    elosScannerResultE_t result = SCANNER_OK;
+static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
 
-    context = (struct kmsg_context *)calloc(1, sizeof(struct kmsg_context));
-    if (context == NULL) {
-        result = SCANNER_ERROR;
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
     } else {
-        context->kmsgPollFd = -1;
-        context->cmdPollFd = -1;
-        context->config = param->config;
-        elosKmsgMapper_t mapper;
-        if (elosKmsgMapperInit(&mapper) == SAFU_RESULT_OK) {
-            context->mapper = mapper;
-        } else {
-            result = SCANNER_ERROR;
-        }
-    }
-
-    if (result == SCANNER_OK) {
-        context->cmdPollFd = eventfd(0, 0);
-        if (context->cmdPollFd < 0) {
-            safuLogErrErrno("failed to establish eventfd for command channel");
-            result = SCANNER_ERROR;
-        }
-    }
-
-    if (result == SCANNER_OK) {
-        result = _openKmsgFile(context);
-    }
-
-    if (result != SCANNER_OK) {
-        free(context);
-    }
-
-    if (result == SCANNER_OK) {
-        session->name = SCANNER_NAME;
-        session->context = context;
+        safuLogDebugF("Unloading %s Scanner Plugin '%s'", SCANNER_NAME, plugin->config->key);
+        result = _freePluginResources(plugin);
     }
 
     return result;
 }
 
-elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
-    elosScannerResultE_t result = SCANNER_OK;
-    struct kmsg_context *context = session->context;
+static safuResultE_t _pluginInit(elosPlugin_t *plugin) {
+    struct kmsg_context *context = NULL;
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    context = (struct kmsg_context *)calloc(1, sizeof(struct kmsg_context));
+    if (context == NULL) {
+        result = SAFU_RESULT_FAILED;
+    } else {
+        context->kmsgPollFd = -1;
+        context->cmdPollFd = -1;
+        elosKmsgMapper_t mapper;
+        if (elosKmsgMapperInit(&mapper) == SAFU_RESULT_OK) {
+            context->mapper = mapper;
+        } else {
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        context->cmdPollFd = eventfd(0, 0);
+        if (context->cmdPollFd < 0) {
+            safuLogErrErrno("failed to establish eventfd for command channel");
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+    if (result == SAFU_RESULT_OK) {
+        plugin->data = context;
+    }
+    if (result == SAFU_RESULT_OK) {
+        result = _openKmsgFile(plugin);
+    }
+    if (result != SAFU_RESULT_OK) {
+        free(context);
+        plugin->data = NULL;
+    }
+
+    elosPluginCreatePublisher(plugin, &context->publisher);
+
+    return result;
+}
+
+static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
+    } else {
+        if ((plugin->config == NULL) || (plugin->config->key == NULL)) {
+            safuLogErr("Given configuration is NULL or has .key set to NULL");
+        } else {
+            plugin->data = NULL;
+            result = _pluginInit(plugin);
+            safuLogDebugF("%s Scanner Plugin '%s' has been loaded", SCANNER_NAME, plugin->config->key);
+        }
+    }
+
+    return result;
+}
+
+static safuResultE_t _pluginRunLoop(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_OK;
+    struct kmsg_context *context = plugin->data;
     struct pollfd fds[] = {
         {.fd = context->cmdPollFd, .events = POLLIN},
         {.fd = context->kmsgPollFd, .events = POLLIN},
@@ -223,7 +260,7 @@ elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
                 if (retval != sizeof(command)) {
                     safuLogErrF("read failed on command event (%s)", strerror(errno));
                     context->running = false;
-                    result = SCANNER_ERROR;
+                    result = SAFU_RESULT_FAILED;
                     break;
                 }
                 if (command == SCANNER_CMD_STOP) {
@@ -234,11 +271,11 @@ elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
                 }
             }
             if (fds[1].revents & POLLIN) {
-                retval = _publishMessage(session);
+                retval = _publishMessage(plugin);
                 if (retval < 0) {
                     safuLogErr("failed to publish message");
                     context->running = false;
-                    result = SCANNER_ERROR;
+                    result = SAFU_RESULT_FAILED;
                 }
             }
         } else if (errno == EINTR) {
@@ -246,7 +283,7 @@ elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
         } else {
             safuLogErrF("polling failed - %s", strerror(errno));
             context->running = false;
-            result = SCANNER_ERROR;
+            result = SAFU_RESULT_FAILED;
             break;
         }
     }
@@ -254,17 +291,72 @@ elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
     return result;
 }
 
-elosScannerResultE_t elosScannerStop(elosScannerSession_t *session) {
-    struct kmsg_context *context = session->context;
+static safuResultE_t _pluginStart(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
+    } else {
+        safuLogDebugF("%s Scanner Plugin '%s' has been started", SCANNER_NAME, plugin->config->key);
+
+        result = elosPluginReportAsStarted(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginReportAsStarted failed");
+        } else {
+            result = _pluginRunLoop(plugin);
+            if (result == SAFU_RESULT_FAILED) {
+                safuLogErrF("scanner loop failed for %s", plugin->config->key);
+            }
+            result = elosPluginStopTriggerWait(plugin);
+            if (result == SAFU_RESULT_FAILED) {
+                safuLogErr("elosPluginStopTriggerWait failed");
+            }
+        }
+    }
+
+    return result;
+}
+
+static safuResultE_t _pluginStopLoop(elosPlugin_t *plugin) {
+    struct kmsg_context *context = plugin->data;
     const scanner_command_t command = SCANNER_CMD_STOP;
-    elosScannerResultE_t result = SCANNER_OK;
+    safuResultE_t result = SAFU_RESULT_OK;
     ssize_t retval = 0;
 
     retval = write(context->cmdPollFd, &command, sizeof(scanner_command_t));
     if (retval == -1) {
         safuLogErrErrno("failed to send command event");
-        result = SCANNER_ERROR;
+        result = SAFU_RESULT_FAILED;
     }
 
     return result;
 }
+
+static safuResultE_t _pluginStop(elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    if (plugin == NULL) {
+        safuLogErr("Null parameter given");
+    } else {
+        safuLogDebugF("Stopping %s Scanner Plugin '%s'", SCANNER_NAME, plugin->config->key);
+        result = _pluginStopLoop(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErrF("Stoping %s Scanner Plugin instance '%s' failed", SCANNER_NAME, plugin->config->key);
+        }
+
+        result = elosPluginStopTriggerWrite(plugin);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("elosPluginStopTriggerWrite failed");
+        }
+    }
+
+    return result;
+}
+
+elosPluginConfig_t elosPluginConfig = {
+    .type = PLUGIN_TYPE_SCANNER,
+    .load = _pluginLoad,
+    .unload = _pluginUnload,
+    .start = _pluginStart,
+    .stop = _pluginStop,
+};

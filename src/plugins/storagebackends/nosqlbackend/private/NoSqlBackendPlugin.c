@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
 #define _GNU_SOURCE
+#include <elos/libelosplugin/libelosplugin.h>
 #include <safu/log.h>
 #include <samconf/samconf.h>
 #include <sys/eventfd.h>
-#include <elos/libelosplugin/libelosplugin.h>
 
 #include "NoSqlBackend.h"
 
@@ -52,14 +52,13 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     elosNoSqlBackend_t *noSqlBackend = (elosNoSqlBackend_t *)backend->backendData;
 
     noSqlBackend->connectionString = (char *)_getConnectionString(plugin->config->key);
-    if (strcmp(noSqlBackend->connectionString, "") == 0) {                     
+    if (strcmp(noSqlBackend->connectionString, "") == 0) {
         samconfConfigStatusE_t retVal = samconfConfigGetString(plugin->config, "Config/ConnectionString",
                                                                (const char **)&noSqlBackend->connectionString);
         if ((retVal != SAMCONF_CONFIG_OK) || (strcmp(noSqlBackend->connectionString, "") == 0)) {
-            noSqlBackend->connectionString = CONNECTION_STRING;                 
-        }                                                                       
-    }                                                                           
-
+            noSqlBackend->connectionString = CONNECTION_STRING;
+        }
+    }
 
     return result;
 }
@@ -137,4 +136,3 @@ elosPluginConfig_t elosPluginConfig = {
     .start = _pluginStart,
     .stop = _pluginStop,
 };
-

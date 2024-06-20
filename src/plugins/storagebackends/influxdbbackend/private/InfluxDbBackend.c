@@ -15,7 +15,6 @@
 #include "elos/event/event_vector.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/rpnfilter/rpnfilter_types.h"
-#include "elos/storagemanager/StorageBackend.h"
 #include "samconf/json_backend.h"
 
 #define BACKEND_NAME "InfluxDB"

@@ -8,6 +8,7 @@ Documentation       A test suite to check invalid config file
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections
@@ -64,7 +65,7 @@ ${CONFIG}       Raw Config
     [Documentation]    Elosd Does Not Start With Invalid Config File
 
     Given A Config File Is Invalid
-    When Elosd Instance Is Started
+    When Start Elosd
     Then Elosd Is Not Started
     [Teardown]    Reset Elosd Config
 
@@ -73,26 +74,11 @@ ${CONFIG}       Raw Config
 A Config File Is Invalid
     [Documentation]    config does not have authorized process filter set
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From String    ${CONFIG}
-
-Elosd Instance Is Started
-    [Documentation]    Try to Start Elosd Instance
-
-    Run Keyword    Start Elosd
 
 Elosd Is Not Started
     [Documentation]    Elosd Is Not Started, timeout error is expected
 
     ${error}=    Run Keyword And Expect Error    *    Wait Till Elosd Is Started
     Log    ${error}
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

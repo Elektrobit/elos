@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/StorageBackend_types.h>
 #include <elos/libelosplugin/libelosplugin.h>
 #include <safu/common.h>
 #include <safu/log.h>
@@ -13,7 +14,6 @@
 
 #include "dltLoggerBackend.h"
 #include "elos/eventfilter/eventfilter.h"
-#include "elos/storagemanager/StorageBackend_types.h"
 
 static safuResultE_t _backendStart(elosStorageBackend_t *backend) {
     safuResultE_t result = SAFU_RESULT_FAILED;

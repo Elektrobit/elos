@@ -106,9 +106,9 @@ static inline safuResultE_t _checkRingBuffer(elosEbLogRingBuffer_t *ringBuffer) 
     return result;
 }
 
-static safuResultE_t _readFromRingBuffer(elosScannerSession_t *session) {
+static safuResultE_t _readFromRingBuffer(elosScannerLegacySession_t *session) {
     safuResultE_t result = SAFU_RESULT_OK;
-    elosScannerCallbackData_t *cbData = &session->callback.scannerCallbackData;
+    elosScannerLegacyCallbackData_t *cbData = &session->callback.scannerCallbackData;
     elosScannerContextShmem_t *context = session->context;
     elosEbLogRingBuffer_t *ringBuffer = context->shmemData;
     uint16_t const entryCount = ringBuffer->entryCount - 1;
@@ -146,7 +146,7 @@ static safuResultE_t _readFromRingBuffer(elosScannerSession_t *session) {
     return result;
 }
 
-safuResultE_t elosScannerRingBufferInitialize(elosScannerSession_t *session) {
+safuResultE_t elosScannerRingBufferInitialize(elosScannerLegacySession_t *session) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosScannerContextShmem_t *context = session->context;
     elosEbLogRingBuffer_t *ringBuffer = context->shmemData;
@@ -160,7 +160,7 @@ safuResultE_t elosScannerRingBufferInitialize(elosScannerSession_t *session) {
     return result;
 }
 
-safuResultE_t elosScannerRingBufferPublish(elosScannerSession_t *session) {
+safuResultE_t elosScannerRingBufferPublish(elosScannerLegacySession_t *session) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosScannerContextShmem_t *context = session->context;
     elosEbLogRingBuffer_t *ringBuffer = context->shmemData;

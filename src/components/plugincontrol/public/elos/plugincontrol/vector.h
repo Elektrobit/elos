@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "elos/plugincontrol/plugincontrol.h"
+#include "elos/plugincontrol/types.h"
 #include "safu/vector.h"
 
 __BEGIN_DECLS

@@ -1,0 +1,5 @@
+usr/include/elos/libelosdlt
+usr/lib/*/pkgconfig/elosdlt.pc
+usr/lib/*/libelosdlt.so
+# Not yet implemented
+# usr/lib/*/cmake/libelosdlt

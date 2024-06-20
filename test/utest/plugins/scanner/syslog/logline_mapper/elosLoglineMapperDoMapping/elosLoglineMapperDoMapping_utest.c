@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #include "elosLoglineMapperDoMapping_utest.h"
 
+#include <samconf/test_utils.h>
+
 TEST_SUITE_FUNC_PROTOTYPES(elosLoglineMapperDoMappingUtest)
 
 int main() {
@@ -11,67 +13,32 @@ int main() {
     return RUN_TEST_SUITE(tests, elosLoglineMapperDoMappingUtest);
 }
 
-int elosLoglineMapperDoMappingUtestInit(void **state) {
-    elosTestState_t *testState = safuAllocMem(NULL, sizeof(*testState));
+int elosLoglineMapperDoMappingUtestInit(void **state, const char *configStr) {
+    elosTestState_t *testState = calloc(1, sizeof(elosTestState_t));
 
-    samconfConfig_t configData[] = {
-        {
-            .parent = NULL,
-            .key = "MappingRules",
-            .type = SAMCONF_CONFIG_VALUE_OBJECT,
-            .children = NULL,
-            .childCount = 0,
-        },
-        {
-            .parent = NULL,
-            .key = "MessageCodes",
-            .type = SAMCONF_CONFIG_VALUE_OBJECT,
-            .children = NULL,
-            .childCount = 0,
-        },
-        {
-            .parent = NULL,
-            .key = "4000",
-            .type = SAMCONF_CONFIG_VALUE_STRING,
-            .value.string = "': Server listening on 0.0.0.0 port 22.' .event.payload STRCMP ': Server listening on :: "
-                            "port 22.' .event.payload STRCMP OR",
-            .children = NULL,
-            .childCount = 0,
-        },
-        {
-            .parent = NULL,
-            .key = "2000",
-            .type = SAMCONF_CONFIG_VALUE_STRING,
-            .value.string = "\": ROOT LOGIN  on '/dev/console'\" .event.payload STRCMP",
-            .children = NULL,
-            .childCount = 0,
-        },
-        {
-            .parent = NULL,
-            .key = "1000",
-            .type = SAMCONF_CONFIG_VALUE_STRING,
-            .value.string = "\" hehyoi\" .event.payload STRCMP",
-            .children = NULL,
-            .childCount = 0,
-        },
-    };
-
-    testState->childrenData = safuAllocMem(NULL, ARRAY_SIZE(configData) * sizeof(*testState->childrenData));
-
-    memcpy(testState->childrenData, configData, ARRAY_SIZE(configData) * sizeof(*testState->childrenData));
+    samconfConfigStatusE_t confRes = samconfUtilCreateMockConfigFromStr(configStr, false, &testState->config);
+    if (confRes != SAMCONF_CONFIG_OK) {
+        return -1;
+    }
+    safuResultE_t result = elosLoglineMapperInit(&testState->mapper, &testState->config);
+    if (result != SAFU_RESULT_OK) {
+        return -1;
+    }
+    testState->timezone = getenv("TZ");
+    print_message("Got init done\n");
+    setenv("TZ", "UTC", 1);
+    tzset();
 
     *state = testState;
-
     return 0;
 }
 
 int elosLoglineMapperDoMappingUtestCleanUp(void **state) {
     elosTestState_t *testState = *state;
-
+    samconfConfigDeleteMembers(&testState->config);
     elosLoglineMapperDeleteMembers(&testState->mapper);
-    free(testState->childrenData);
     free(testState);
-
+    state = NULL;
     return 0;
 }
 

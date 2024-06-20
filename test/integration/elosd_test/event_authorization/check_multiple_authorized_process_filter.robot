@@ -8,6 +8,7 @@ Documentation       A test suite to check authorized process filter set multiple
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections
@@ -97,12 +98,3 @@ Event Is Published
     Should Contain    ${stdout}    150
     Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
     [Teardown]    Reset Elosd Config
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

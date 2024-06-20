@@ -65,4 +65,3 @@ For a documentation on how to add/modify follow the [GitLab CI documentation](ht
 
 ## known issues
 
-- right now it is constrained to shell runner because docker in docker doesn't work for the moment

@@ -24,7 +24,7 @@ set_target_properties(scanner_shmem PROPERTIES PREFIX "")
 target_link_libraries(
   scanner_shmem
   PRIVATE
-    elos_scanner_interface
+    elos_scanner_legacy_interface
     elos_event_static
     eventbuffer_static
     config_static

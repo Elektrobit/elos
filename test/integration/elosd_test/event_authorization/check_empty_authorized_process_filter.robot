@@ -8,8 +8,10 @@ Documentation       A test suite to check empty authorized process filter
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -40,13 +42,11 @@ ${BLACKLIST_FILTER}         .event.messageCode 2010 EQ
 An Empty Authorized Process Filter Is Set
     [Documentation]    Set an empty authorized process filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${EMPTY_PROCESS_FILTERS}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Client Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
@@ -92,12 +92,3 @@ Event Is Published
     ...    ${RETURN_RC}
     Should Contain    ${stdout}    150
     Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

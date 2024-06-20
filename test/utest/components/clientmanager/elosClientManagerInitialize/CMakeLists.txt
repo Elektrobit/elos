@@ -9,7 +9,7 @@ create_unit_test(
   SOURCES
     case_success.c
     case_success_default_search_path_null.c
-    case_exterr_client_config_null.c
+    case_success_client_config_null.c
     case_exterr_plugin_vector_create.c
     case_err_clientmanager_null.c
     case_err_param_config_null.c

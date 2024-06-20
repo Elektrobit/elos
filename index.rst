@@ -32,6 +32,7 @@ Welcome to elos's documentation!
    GitLab CI <.gitlab/README>
    Build Configurations <ci/index>
    Cmake options <cmake/index>
+   Debian Packaging Scripts <debian.native/README.md>
 
 
 Indices and tables

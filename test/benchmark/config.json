@@ -7,11 +7,14 @@
             "Interface": "127.0.0.1",
             "ConnectionLimit": 200,
             "EventBlacklist": ".event.messageCode 2000 EQ",
-	    "authorizedProcesses": [
-		    ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-		    ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-		    ".process.pid 1 EQ"
-	    ],
+            "authorizedProcesses": [
+                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                ".process.pid 1 EQ"
+            ],
+            "ClientInputs": {
+                "Plugins": {}
+            },
             "EventLogging": {
                 "PluginSearchPath": "/usr/local/lib/elos/backend",
                 "Plugins": {
@@ -32,7 +35,13 @@
                 }
             },
             "Scanner": {
-                "Path": "/usr/local/lib/elos/scanner",
+                "PluginSearchPath": "/usr/local/lib/elos/scanner",
+                "Plugins": {
+                    "ScannerDummy": {
+                        "File": "scanner_dummy.so",
+                        "Run": "always"
+                    }
+                },
                 "SyslogScanner": {
                     "MappingRules": {
                         "MessageCodes": {

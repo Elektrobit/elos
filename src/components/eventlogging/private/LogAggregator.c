@@ -20,14 +20,14 @@ safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLog
     if ((logAggregator == NULL) || (param == NULL)) {
         safuLogErr("Called elosLogAggregatorStart with NULL-parameter");
         result = SAFU_RESULT_FAILED;
-    } else if ((param->config == NULL) || (param->storageManager == NULL)) {
+    } else if ((param->config == NULL) || (param->backends == NULL)) {
         safuLogErr("Parameter struct passed to elosLogAggregatorStart contains NULL-pointers");
         result = SAFU_RESULT_FAILED;
     } else {
         SAFU_PTHREAD_MUTEX_LOCK(&elosLogAggregatorMutex, result = SAFU_RESULT_FAILED);
         if (result == SAFU_RESULT_OK) {
             logAggregator->lock = &elosLogAggregatorMutex;
-            logAggregator->backends = &param->storageManager->backends;
+            logAggregator->backends = param->backends;
             SAFU_PTHREAD_MUTEX_UNLOCK(&elosLogAggregatorMutex, result = SAFU_RESULT_FAILED);
         }
     }

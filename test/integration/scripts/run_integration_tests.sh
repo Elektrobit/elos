@@ -21,10 +21,18 @@ run_all()
       if [ "${dir#*"$TEST_DIR"}" != "$dir" ]; then
           TEST_NAME=$(echo $dir | rev | cut -d '/' -f 2 | rev)
           echo "\nStart test suite $dir"
-          robot --variablefile="$VARIABLE_FILE" --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-                --output="$TEST_NAME" --report="$TEST_NAME" "$dir" || true
+          robot \
+              --listener RetryFailed:1 \
+              --randomize all \
+              --variablefile="$VARIABLE_FILE" \
+              --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+              --output="$TEST_NAME" \
+              --report="$TEST_NAME" "$dir" || true
       fi
   done
+  rebot --output "${TEST_OUTPUT}/elos.xml" \
+      --outputdir "${TEST_OUTPUT}" \
+      "${TEST_OUTPUT}/*/*.xml"
 }
 
 run_suite()

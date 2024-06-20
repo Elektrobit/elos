@@ -54,7 +54,7 @@ class TemplateConfig(object):
 
     def default_config_core(self):
         """Get the core of the default configuration from the target.
-        Config without { "root": { "elsod": { } } } around it."""
+        Config without { "root": { "elosd": { } } } around it."""
         return self.default_config()["root"]["elos"]
 
     def make_config_full(self, config_core):
@@ -66,10 +66,15 @@ class TemplateConfig(object):
         and set that as new config."""
         par = {}
         for p in param:
-            if type(p) == dict:
+            if type(p) is dict:
                 par.update(p)
 
         values = self.default_config_core() | par | parameter
+        config = json.dumps(self.make_config_full(values), indent=4)
+        self.set_config_from_string(config)
+
+    def set_new_config_core(self, **values):
+        """Give a new configuration to use for elosd."""
         config = json.dumps(self.make_config_full(values), indent=4)
         self.set_config_from_string(config)
 

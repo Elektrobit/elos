@@ -4,9 +4,10 @@ Plugins
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
    scanners/index
    scanners/kmsg/index
+   scanners/oomkiller/index
    scanners/syslog/index
    scanners/shmem/index
    storagebackends/dlt/index

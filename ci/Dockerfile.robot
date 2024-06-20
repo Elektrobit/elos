@@ -4,8 +4,15 @@ ARG USER=ci
 ARG UID=1000
 ARG GID=1000
 ARG WORKDIR="/elos/build"
+ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get reinstall ca-certificates -y
+RUN sed -i "s,http://archive.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && sed -i "s,http://security.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && cat /etc/apt/sources.list
+
 RUN apt-get update \
  && apt-get install -y sudo locales build-essential binutils-dev pkg-config \
  git wget curl netcat net-tools libssl-dev openssl python3-pip iputils-ping \
@@ -30,5 +37,7 @@ RUN pip install robotframework-datadriver>=1.8.1
 RUN pip install robotframework-jsonlibrary>=0.5
 RUN pip install robotframework-robocop>=4.1.1
 RUN pip install robotframework-tidy>=4.5.0
+RUN pip install robotframework-retryfailed
+
 
 CMD /bin/bash

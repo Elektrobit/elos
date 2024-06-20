@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2317
 
 CMDPATH=$(realpath "$(dirname "$0")")
 BASE_DIR=$(realpath "${CMDPATH}/../..")
@@ -618,7 +619,7 @@ smoketest_plugins() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    PLUGINS="Dummy DLT"
+    PLUGINS="Dummy ScannerDummy DLT"
     for plugin in ${PLUGINS}; do
         TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
         TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
@@ -679,9 +680,9 @@ smoketest_compile_program_using_libelos() {
 
     log "Try to compile simple program using libelos"
     printf '#include <elos/libelos/libelos.h>\nint main(int argc, char* argv[]){return 0;}' \
-        | gcc -v -xc -lelos \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        | gcc -v -xc -lelos -lelos_common \
         -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
+        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
         -o "${SMOKETEST_TMP_DIR}/testlibelos" - \
         >> "$RESULT_DIR/libelos.log" 2>&1
     if [ $? -ne 0 ]; then
@@ -691,10 +692,10 @@ smoketest_compile_program_using_libelos() {
 
     log "Try to compile syslog demo using libelos"
     gcc -v  \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
         -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
+        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
         -o "${SMOKETEST_TMP_DIR}/testlibelos_syslog" "${TEST_SOURCE_DIR}/../../src/demos/syslog.c" \
-        -lelos -lsafu \
+        -lelos -lsafu -lelos_common \
         >> "$RESULT_DIR/libelos.log" 2>&1
     if [ $? -ne 0 ]; then
         log_err "failed to compile test program for libelos"
@@ -777,11 +778,11 @@ smoketest_compile_program_using_pkgconfig() {
     if [ $TEST_RESULT -ne 0 ]; then
         log_err "failed to query pkg-config data for libelos"
         log_err "output for 'pkg-config elos --modversion'"
-        log_err "${elos_pkgconfig_version}"
+        log_err "${pkgconfig_version}"
         log_err "output for 'pkg-config elos --cflags'"
-        log_err "${elos_pkgconfig_cflags}"
+        log_err "${pkgconfig_cflags}"
         log_err "output for 'pkg-config elos --libs'"
-        log_err "${elos_pkgconfig_libs}"
+        log_err "${pkgconfig_libs}"
         TEST_RESULT=1
     fi
 

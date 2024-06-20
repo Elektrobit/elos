@@ -11,7 +11,7 @@ create_unit_test(
     case_err_param_config_null.c
     case_err_param_pluginmanager_null.c
     case_err_storagemanager_null.c
-    case_exterr_backend_config_null.c
+    case_success_backend_config_null.c
     case_exterr_plugin_vector_create.c
     case_success.c
     case_success_default_search_path.c

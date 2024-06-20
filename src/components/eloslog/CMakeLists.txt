@@ -5,13 +5,13 @@ find_package(samconf 0.50.1 REQUIRED)
 add_library(
   eloslog_static
   STATIC
-    ./private/eloslog.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/private/eloslog.c
 )
 
 target_include_directories(
   eloslog_static
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/public
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private
 )

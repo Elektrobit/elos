@@ -1,33 +1,56 @@
 variables:
   SOURCES_URI: "https://github.com/Elektrobit/"
   ELOS_DEPENDENCY_CONFIG: "ci/dependencies_emlix.json"
+  DOCKER_IMAGE: elos-ci:$CI_COMMIT_REF_SLUG
+  ASMCOV_URI: "not available"
+  DOCKER_HOST: "tcp://docker:2375"
+
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
 
 stages:
+  - docker-image
   - build
   - test
 
 default:
-  image: docker:24-dind
+  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   services:
     - name: docker:24-dind
       alias: docker
+      variables:
+        DOCKER_TLS_CERTDIR: ""
   tags:
-      - "shell"
+      - "docker"
+  interruptible: true
 
 before_script:
-  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client jq -y )'
-  - docker info
-  - ip a
-  - ss -antup
   - env
+
+build-docker-image:
+  stage: docker-image
+  image: ubuntu:jammy
+  before_script:
+    - apt-get update
+    - apt-get install -y docker.io
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t $DOCKER_IMAGE -f ci/Dockerfile
+             --build-arg UID=$(id -u) --build-arg GID=$(id -g)
+             --build-arg ASMCOV_URI="$ASMCOV_URI"
+             ci/
+    - docker tag $DOCKER_IMAGE $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
+    - docker push $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
 
 build-dependencies:
   stage: build
-  needs: []
+  needs:
+    - build-docker-image
   script:
-    - ci/docker-run.sh ci/install_deps.py -c ci/dependencies_emlix.json
+    - ci/install_deps.py -c ci/dependencies_emlix.json
   artifacts:
-    expire_in: 1 day 
+    expire_in: 1 day
     paths:
       - build/deps/
     exclude:
@@ -37,35 +60,41 @@ build-dependencies:
 build-release:
   stage: build
   needs:
+    - build-docker-image
     - build-dependencies
   script:
-    - ci/docker-run.sh ci/build.sh --ci Release
+    - ci/build.sh --ci Release
   artifacts:
     paths:
       - build/Release/dist/
       - build/Release/cmake/
-      - build/Release/result/build_log.txt 
+      - build/Release/result/build_log.txt
 
 build-debug:
   stage: build
   needs:
+    - build-docker-image
     - build-dependencies
   script:
-    - ci/docker-run.sh ci/build.sh --ci Debug
+    - ci/build.sh --ci Debug
   artifacts:
     paths:
       - build/Debug/dist/
       - build/Debug/cmake/
-      - build/Debug/result/build_log.txt 
+      - build/Debug/result/build_log.txt
 
 integration-tests:
   stage: test
   needs: []
+  image: ubuntu:jammy
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
     DOCKER_BUILDKIT: 0
     BUILD_ID: $CI_JOB_ID
     GIT_COMMIT: $CI_COMMIT_SHORT_SHA
+  before_script:
+    - apt-get update
+    - apt-get install -y docker.io
   script:
     - ci/run_integration_tests.sh Release
   artifacts:
@@ -76,6 +105,11 @@ integration-tests:
 baseos-lab-tests:
   stage: test
   needs: []
+  image: ubuntu:jammy
+  allow_failure: true
+  before_script:
+    - apt-get update
+    - apt-get install -y curl jq
   variables:
     BRANCH_NAME: $CI_COMMIT_REF_NAME
   script:
@@ -84,10 +118,11 @@ baseos-lab-tests:
 unit-test-release:
   stage: test
   needs:
+    - build-docker-image
     - build-dependencies
     - build-release
   script:
-    - ci/docker-run.sh ci/run_utest.sh Release
+    - ci/run_utest.sh Release
   artifacts:
     when: always
     paths:
@@ -98,10 +133,11 @@ unit-test-release:
 unit-test-debug:
   stage: test
   needs:
+    - build-docker-image
     - build-dependencies
     - build-debug
   script:
-    - ci/docker-run.sh ci/run_utest.sh Debug
+    - ci/run_utest.sh Debug
   artifacts:
     when: always
     paths:
@@ -112,10 +148,11 @@ unit-test-debug:
 smoke-test-release:
   stage: test
   needs:
+    - build-docker-image
     - build-dependencies
     - build-release
   script:
-    - ci/docker-run.sh ci/run_smoketests.sh Release
+    - ci/run_smoketests.sh Release
   artifacts:
     when: always
     paths:
@@ -124,10 +161,11 @@ smoke-test-release:
 smoke-test-debug:
   stage: test
   needs:
+    - build-docker-image
     - build-dependencies
     - build-debug
   script:
-    - ci/docker-run.sh ci/run_smoketests.sh Debug
+    - ci/run_smoketests.sh Debug
   artifacts:
     when: always
     paths:
@@ -136,11 +174,14 @@ smoke-test-debug:
 code-lint:
   stage: test
   needs:
+    - build-docker-image
     - build-dependencies
     - build-release
   script:
-    - ci/docker-run.sh ci/code_lint.py --ci
-    - ci/docker-run.sh ci/checklicense.sh
+    - . ./ci/ignored_sources.sh
+    - ci/code_lint.py --ci
+    - ci/checklicense.sh
+    - ./ci/run_integration_tests_linter.sh Release
   artifacts:
     when: always
     paths:
@@ -149,10 +190,11 @@ code-lint:
 benchmark:
   stage: test
   needs:
+    - build-docker-image
     - build-dependencies
     - build-release
   script:
-    - ci/docker-run.sh ci/run_benchmarks.sh Release
+    - ci/run_benchmarks.sh Release
   artifacts:
     when: always
     paths:
@@ -164,10 +206,11 @@ code-coverage:
       allow_failure: true
   stage: test
   needs:
+    - build-docker-image
     - build-dependencies
     - build-release
   script:
-    - ci/docker-run.sh ci/create_coverage.sh
+    - ci/create_coverage.sh
   artifacts:
     when: always
     paths:
@@ -178,6 +221,7 @@ publish-kpis:
     - when: never
       allow_failure: true
   needs:
+    - build-docker-image
     - benchmark
     - code-coverage
   script:
@@ -186,10 +230,30 @@ publish-kpis:
 documentation:
   stage: build
   needs:
+    - build-docker-image
     - build-dependencies
     - build-debug
   script:
-    - ci/docker-run.sh ci/build_doc.sh
+    - ci/build_doc.sh
   artifacts:
     paths:
       - build/Debug/doc/
+
+build-deb-packages:
+  parallel:
+    matrix:
+      - OS: ubuntu
+        CODENAME: jammy
+      - OS: ubuntu
+        CODENAME: noble
+  # Override default before_script
+  before_script: ""
+  needs: []
+  stage: build
+  image: ${OS}:${CODENAME}
+  script:
+    - ci/build_debs.sh ${CODENAME}
+  artifacts:
+    paths:
+      - ./*.deb
+  allow_failure: true

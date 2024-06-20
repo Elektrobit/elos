@@ -40,6 +40,7 @@ List of ADRs
    ./event_throtteling
    ./fetch-features
    ./handle_kernel_module_dependencies
+   ./OOM_killer
    ./package_registry
    ./shmem_locking
    ./usage_of_FORTIFY_SOURCE

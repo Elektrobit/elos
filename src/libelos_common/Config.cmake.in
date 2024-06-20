@@ -1,0 +1,4 @@
+@PACKAGE_INIT@
+find_package(safu REQUIRED)
+find_package(samconf REQUIRED)
+include("${CMAKE_CURRENT_LIST_DIR}/libelos_commonTargets.cmake")

@@ -9,8 +9,10 @@ Documentation       A test suite to check if publish and poll of messages betwee
 Library             String
 Library             SSHLibrary
 Resource            ../../keywords.resource
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 

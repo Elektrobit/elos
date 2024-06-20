@@ -29,6 +29,7 @@ target_include_directories(
 target_link_libraries(
   pluginmanager_static
   PUBLIC
+    libelosplugin_static
     pluginmanager_interface
     elos_common_interface
     safu::safu

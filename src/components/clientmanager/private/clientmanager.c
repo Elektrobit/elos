@@ -3,6 +3,7 @@
 
 #include <safu/common.h>
 #include <safu/vector.h>
+#include <samconf/samconf_types.h>
 #include <stdlib.h>
 
 #include "elos/config/config.h"
@@ -29,8 +30,13 @@ safuResultE_t elosClientManagerInitialize(elosClientManager_t *clientManager, el
         } else {
             clientManager->searchPath = elosConfigGetElosdClientPath(param->config);
             status = samconfConfigGet(param->config, ELOS_CONFIG_CLIENTINPUTS, &clientManager->config);
-            if (status != SAMCONF_CONFIG_OK) {
-                safuLogErr("Loading clientManager config failed");
+            if (status == SAMCONF_CONFIG_NOT_FOUND) {
+                clientManager->config = NULL;
+                result = SAFU_RESULT_OK;
+            } else if (status == SAMCONF_CONFIG_OK && clientManager->config->type == SAMCONF_CONFIG_VALUE_OBJECT) {
+                result = SAFU_RESULT_OK;
+            } else {
+                safuLogErr("Error in ClientInputs config");
                 result = SAFU_RESULT_FAILED;
             }
         }
@@ -44,6 +50,9 @@ safuResultE_t elosClientManagerStart(elosClientManager_t *clientManager) {
     if (clientManager == NULL) {
         safuLogErr("Called elosClientManagerAdd with NULL-parameter");
         result = SAFU_RESULT_FAILED;
+    } else if (clientManager->config == NULL) {
+        safuLogDebug("No ClientInputs configured");
+        result = SAFU_RESULT_OK;
     } else {
         elosPluginTypeE_t type = PLUGIN_TYPE_CLIENTCONNECTION;
 
@@ -51,6 +60,10 @@ safuResultE_t elosClientManagerStart(elosClientManager_t *clientManager) {
                                        clientManager->searchPath, &clientManager->pluginControlPtrVector);
         if (result != SAFU_RESULT_OK) {
             safuLogWarn("elosPluginManagerLoad executed with errors");
+
+        } else {
+            safuLogInfoF("ClientManager loaded %d client plugins",
+                         safuVecElements(&clientManager->pluginControlPtrVector));
         }
     }
     return result;

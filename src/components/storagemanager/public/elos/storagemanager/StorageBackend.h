@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "elos/storagemanager/StorageBackend_types.h"
+#include "elos/libelosplugin/StorageBackend_types.h"
 
 __BEGIN_DECLS
 

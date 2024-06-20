@@ -81,7 +81,17 @@
                 }
             },
             "Scanner": {
-                "Path": "/usr/local/lib/elos/scanner",
+                "PluginSearchPath": "/usr/local/lib/elos/scanner",
+                "Plugins": {
+                    "ScannerDummy": {
+                        "File": "scanner_dummy.so",
+                        "Run": "always"
+                    },
+                    "OomKiller": {
+                        "File": "scanner_oomkiller.so",
+                        "Run": "always"
+                    }
+                },
                 "KmsgScanner": {
                     "KmsgFile": "/dev/kmsg"
                 },

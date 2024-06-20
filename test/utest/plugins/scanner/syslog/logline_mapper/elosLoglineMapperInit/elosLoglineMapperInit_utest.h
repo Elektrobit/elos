@@ -6,12 +6,8 @@
 
 #include "logline_mapper_utest.h"
 
-typedef struct {
-    samconfConfig_t *childrenData;
-} elosUteststateT_t;
-
 int elosLoglineMapperInitUtestCleanUp(void **state);
-int elosLoglineMapperInitUtestInit(void **state);
+int elosLoglineMapperInitUtestInit(void **state, const char *config);
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLoglineMapperInitSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLoglineMapperInitSectionedMessageCodes)

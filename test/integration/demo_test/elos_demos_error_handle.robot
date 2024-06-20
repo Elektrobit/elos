@@ -8,8 +8,10 @@ Documentation       A test suite to check if the elos demo applications handle e
 
 Resource            ../elosd-keywords.resource
 Resource            ../keywords.resource
+Library             ../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -24,14 +26,14 @@ ${ELOSD}            /usr/bin/elosd
 *** Test Cases ***
 Expected Error Handling By Demo Apps
     [Documentation]    Demo Applications handle errors as expected
-    [Setup]    Stop Elosd
+    [Setup]            Ensure Elosd Is Stopped
+    [Teardown]         Ensure Elosd Is Started
 
     FOR    ${app}    IN    @{ELOS_DEMOS}
         Given Elosd Is Stopped
         When Demo App Is Started    ${app}
         Then App Handles Error
     END
-    [Teardown]    Start Elosd
 
 
 *** Keywords ***
@@ -63,4 +65,7 @@ App Handles Error
     [Documentation]    App returns error on connection error
 
     Should Be Equal As Integers    ${ERROR_CODE}    1
-    Should Contain Any    ${ERROR}    ERROR: connect to    ERR: connect to port
+    Should Contain Any    ${ERROR}
+    ...                   ERROR: connect to
+    ...                   ERROR: Connection to elosd
+    ...                   ERR: connect to port

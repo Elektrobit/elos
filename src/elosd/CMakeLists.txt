@@ -21,11 +21,9 @@ target_link_libraries(
   elosd
   PUBLIC
     version
-    elos_event_static
-    rpnfilter_static
+    libelos_common
     eventbuffer_static
     eventdispatcher_static
-    eventfilter_static
     eventprocessor_static
     eventlogging_static
     logger_static
@@ -36,8 +34,9 @@ target_link_libraries(
     connectionmanager_static
     clientmanager_static
     messagehandler_static
-    scanner_manager_static
-    elos_scanner_interface
+    scanner_manager_legacy_static
+    scannermanager_static
+    elos_scanner_legacy_interface
     Threads::Threads
     safu::safu
     samconf::samconf

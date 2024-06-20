@@ -12,15 +12,15 @@ create_interface_library(
 add_library(
   elos_event_static
   STATIC
-  private/event.c
-  private/event_source.c
-  private/event_vector.c
+    private/event.c
+    private/event_source.c
+    private/event_vector.c
 )
 
 target_include_directories(
   elos_event_static
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/public
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private
 )

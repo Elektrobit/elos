@@ -3,6 +3,7 @@
 #include "elos/pluginmanager/pluginmanager.h"
 
 #include <safu/log.h>
+#include <safu/result.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -19,16 +20,18 @@ safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, el
         safuLogErr("The given pluginManager struct is not in state 'INVALID'");
     } else {
         result = elosPluginControlVectorInitialize(&pluginManager->pluginVector, PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE);
-        if (result < 0) {
+        if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginControlVectorInitialize failed");
         } else {
             pluginManager->config = param->config;
             pluginManager->state = PLUGINMANAGER_STATE_INITIALIZED;
             pluginManager->nextId = 1;
+            pluginManager->eventProcessor = param->eventProcessor;
+            pluginManager->eventDispatcher = param->eventDispatcher;
+            pluginManager->logAggregator = param->logAggregator;
             result = SAFU_RESULT_OK;
         }
     }
-
     return result;
 }
 
