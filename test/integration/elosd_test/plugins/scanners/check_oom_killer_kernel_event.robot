@@ -3,8 +3,8 @@
 
 
 *** Settings ***
-Documentation       A test suite to check if an event is not published
-...                 when a client publishes an oom killer invoked event.
+Documentation       A test suite to check if an event is published
+...                 when ever an oom killer is invoked.
 
 Library             String
 Library             SSHLibrary
@@ -18,16 +18,17 @@ Suite Teardown      Close All Connections
 
 
 *** Variables ***
+${OOM_EVENT_FILTER}         .event.messageCode 5020 EQ
 ${KERNEL_OOM_MESSAGE}
 ...                         {
-...                         "date": [PTIME,0],
-...                         "source": {
-...                         "fileName": "\/dev\/kmsg"
+...                         "date":[ptime,0],
+...                         "source":{
+...                         "fileName":"\/dev\/kmsg"
 ...                         },
-...                         "severity": 3,
-...                         "classification": 1,
-...                         "messageCode": 1111,
-...                         "payload": "3,270,497530363,-;Out of memory: Killed process 115 (tail)"
+...                         "severity":3,
+...                         "classification":1,
+...                         "messageCode":1111,
+...                         "payload":"3,270,497530363,-;Out of memory: Killed process 115 (tail)"
 ...                         }
 
 
@@ -43,23 +44,16 @@ ${KERNEL_OOM_MESSAGE}
 
 *** Keywords ***
 An OOM Killer Is Invoked
-    [Documentation]    Instead of OOM killer invocation a similar event is
-    ...    is published through a client.
+    [Documentation]    An oom killer    can be invoked by running
+    ...    tail /dev/zero, but this is unreliable &
+    ...    unsafe, so a similar kernel log event is
+    ...    simulated via an elosc client
 
-    ${PUBLISH_TIME}=    Get Elos Event Publish Time Threshold
-
-    Set Test Variable    ${PUBLISH_TIME}
-
-    ${KERNEL_OOM_MESSAGE}=    Replace String    ${KERNEL_OOM_MESSAGE}    PTIME    ${PUBLISH_TIME}
+    ${KERNEL_OOM_MESSAGE}=    Set Event Publish Time    ${KERNEL_OOM_MESSAGE}
 
     Publish Event    ${KERNEL_OOM_MESSAGE}
 
 An OOM Event Is Published
     [Documentation]    OOM killer invoked event is published.
 
-    @{matched_events}=    Find Events Matching
-    ...    .event.messageCode 5020 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND
-
-    ${event_count}=    Get Length    ${matched_events}
-
-    Should Not Be Equal As Integers    ${event_count}    0
+    Latest Events Matching ${OOM_EVENT_FILTER} Found
