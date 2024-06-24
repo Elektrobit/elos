@@ -4,7 +4,7 @@ import re
 import robot.utils.asserts
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
-from robot.api import deco
+from robot.api.deco import keyword
 
 class ElosKeywords(object):
 
@@ -243,11 +243,11 @@ class ElosKeywords(object):
 
     def find_events_matching(self, filter, port=54321):
         """
-        find an event published to target
+        find an event published on target
         """
 
         stdout, stderr, rc = self._exec_on_target(f"elosc -P '{port}' -f '{filter}'")
-        logger.info(f"filetr run : {stdout}")
+        logger.info(f"filter run : {stdout}")
         if rc != 0:
                 robot.utils.asserts.fail()
 
@@ -267,12 +267,12 @@ class ElosKeywords(object):
 
         return matched_event_count > 0
 
-    @deco.keyword("Latest Events Matching ${filter} Found")
+    @keyword("Latest Events Matching ${filter} Found")
     def latest_events_matching_are_found(self, filter):
         status = self._matching_events_are_current(filter)
         robot.utils.asserts.assert_true(status)
 
-    @deco.keyword("Latest Events Matching ${filter} Not Found")
+    @keyword("Latest Events Matching ${filter} Not Found")
     def latest_events_matching_are_not_found(self, filter):
         status = self._matching_events_are_current(filter)
         robot.utils.asserts.assert_false(status)

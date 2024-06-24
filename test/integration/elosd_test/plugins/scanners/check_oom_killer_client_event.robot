@@ -34,22 +34,20 @@ ${OOM_LOG_EVENT}
 
 
 *** Test Cases ***
-01_Test_Unauthorized_OOM_Killer_Event
-    [Documentation]    When an OOM killer kernel log
-    ...    event is published via an
-    ...    unauthorized source other than
-    ...    the kernel then an OOM killer
-    ...    invoked event is not published
+01_Test_OOM_Killer_Client_Event
+    [Documentation]    OOM killer invoked event is published only when
+    ...    a kernel log event with oom killer invoked payload
+    ...    is published, similar events not from kernel do not
+    ...    trigger oom killer invoked event.
 
     Given Elosd Is Running
-    When An Unauthorized Client Publishes OOM Log Event
+    When An Client Publishes OOM Log Event
     Then An OOM Killer Event Is Not Published
 
 
 *** Keywords ***
-An Unauthorized Client Publishes OOM Log Event
-    [Documentation]    An unauthorized client publishes
-    ...    an oom killer invoked log event
+An Client Publishes OOM Log Event
+    [Documentation]    An client publishes an oom killer invoked log event
 
     ${OOM_LOG_EVENT}=    Set Event Publish Time    ${OOM_LOG_EVENT}
 
