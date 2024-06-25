@@ -128,7 +128,11 @@ static int elosAppend(UNUSED log4c_appender_t *this, const log4c_logging_event_t
         }
         elosEventDelete(logEvent);
     } else {
-        fprintf(stderr, "%s", aEvent->evt_rendered_msg);
+        if (aEvent == NULL) {
+            fprintf(stderr, "no logging event found\n");
+        } else {
+            fprintf(stderr, "%s", aEvent->evt_rendered_msg);
+        }
     }
 
     return result;
