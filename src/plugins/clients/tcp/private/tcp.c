@@ -21,11 +21,7 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
                 safuLogErr("Failed to allocate memory");
             } else {
                 safuLogDebug("Start client manager");
-                elosConnectionManagerParam_t cmParams = {
-                    .config = (samconfConfig_t *)plugin->config,
-                    .plugin = plugin,
-                };
-                result = elosConnectionManagerInitialize(connectionManager, &cmParams);
+                result = elosConnectionManagerInitialize(connectionManager, plugin);
                 if (result != SAFU_RESULT_OK) {
                     safuLogErr("elosConnectionManagerInitialize");
                 } else {

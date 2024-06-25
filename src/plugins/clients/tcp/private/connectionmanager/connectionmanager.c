@@ -16,8 +16,7 @@
 #include "connectionmanager_private.h"
 #include "tcpConfig.h"
 
-static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionManager,
-                                           elosConnectionManagerParam_t *param) {
+static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosClientConnectionSharedData_t *sharedData = &connectionManager->sharedData;
     int retVal;
@@ -26,8 +25,7 @@ static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionMa
     if (retVal != 0) {
         safuLogErrErrnoValue("sem_init failed!", retVal);
     } else {
-        sharedData->config = param->config;
-        sharedData->plugin = param->plugin;
+        sharedData->plugin = plugin;
         result = SAFU_RESULT_OK;
     }
 
@@ -75,9 +73,8 @@ static safuResultE_t _initializeConnections(elosConnectionManager_t *connectionM
 
     for (int i = 0; i < ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT; i += 1) {
         elosClientConnection_t *connection = &connectionManager->connection[i];
-        elosClientConnectionParam_t param = {.sharedData = &connectionManager->sharedData};
 
-        result = elosClientConnectionInitialize(connection, &param);
+        result = elosClientConnectionInitialize(connection, &connectionManager->sharedData);
         if (result != SAFU_RESULT_OK) {
             safuLogErrF("Iniitialization of connection data structure [%d] failed", i);
             break;
@@ -106,22 +103,21 @@ static safuResultE_t _initializeAuthorization(elosConnectionManager_t *connectio
     return result;
 }
 
-safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager,
-                                              elosConnectionManagerParam_t *param) {
+safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((connectionManager == NULL) || (param == NULL)) {
+    if ((connectionManager == NULL) || (plugin == NULL)) {
         safuLogErr("Invalid parameter NULL");
-    } else if (param->config == NULL) {
+    } else if (plugin->config == NULL) {
         safuLogErr("Invalid value NULL in parameter struct");
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&connectionManager->flags) == true) {
         safuLogErr("The given ConnectionManager is already initialized");
     } else {
         memset(connectionManager, 0, sizeof(elosConnectionManager_t));
 
-        result = _initializeSharedData(connectionManager, param);
+        result = _initializeSharedData(connectionManager, plugin);
         if (result == SAFU_RESULT_OK) {
-            result = _initializeListener(connectionManager, param->plugin);
+            result = _initializeListener(connectionManager, plugin);
             if (result == SAFU_RESULT_OK) {
                 result = _initializeConnections(connectionManager);
                 if (result == SAFU_RESULT_OK) {
@@ -129,7 +125,7 @@ safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectio
                     if (connectionManager->syncFd == -1) {
                         safuLogErrErrnoValue("Creating eventfd failed", connectionManager->syncFd);
                     } else {
-                        _initializeAuthorization(connectionManager, param->config);
+                        _initializeAuthorization(connectionManager, plugin->config);
 
                         atomic_store(&connectionManager->flags, SAFU_FLAG_INITIALIZED_BIT);
                     }

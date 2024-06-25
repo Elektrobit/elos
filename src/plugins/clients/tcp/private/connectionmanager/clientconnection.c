@@ -19,23 +19,22 @@
 
 #include "connectionmanager/clientblacklist.h"
 #include "connectionmanager/clientconnection_defines.h"
+#include "connectionmanager/clientconnection_types.h"
 
 #define _TRIGGERFD_VALUE 1
 
 safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConnection,
-                                             elosClientConnectionParam_t *param) {
+                                             elosClientConnectionSharedData_t *sharedData) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((clientConnection == NULL) || (param == NULL)) {
+    if ((clientConnection == NULL) || (sharedData == NULL)) {
         safuLogErr("Invalid parameter NULL");
-    } else if (param->sharedData == NULL) {
-        safuLogErr("Invalid value NULL in parameter struct");
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientConnection->flags) == true) {
         safuLogErr("The given ClientConnection is already initialized");
     } else {
         memset(clientConnection, 0, sizeof(elosClientConnection_t));
 
-        clientConnection->sharedData = param->sharedData;
+        clientConnection->sharedData = sharedData;
         clientConnection->fd = -1;
 
         clientConnection->syncFd = eventfd(0, 0);
@@ -46,11 +45,9 @@ safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConne
             if (clientConnection->triggerFd == -1) {
                 safuLogErrErrnoValue("eventfd creation (trigger) failed", clientConnection->triggerFd);
             } else {
-                elosClientConnectionSharedData_t *sharedData = clientConnection->sharedData;
-                safuResultE_t subResult;
-
                 clientConnection->isTrusted = false;
-                subResult = elosBlacklistInitialize(&clientConnection->blacklist, sharedData->config);
+                safuResultE_t subResult =
+                    elosBlacklistInitialize(&clientConnection->blacklist, sharedData->plugin->config);
                 if (subResult == SAFU_RESULT_FAILED) {
                     safuLogWarn("blacklist initialization failed");
                 }

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "connectionmanager/types.h"
+#include "elos/libelosplugin/types.h"
 
 __BEGIN_DECLS
 
@@ -10,13 +11,12 @@ __BEGIN_DECLS
  *
  * Parameters:
  *      connectionManager: ConnectionManager structure that will be initialized
- *      param: Parameters for initialization. Also see connectionmanager_types.h
+ *      plugin: plugin reference to interact with elos.
  * Returns:
  *      - SAFU_RESULT_FAILED on error
  *      - SAFU_RESULT_OK on success
  ******************************************************************/
-safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager,
-                                              elosConnectionManagerParam_t *param);
+safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin);
 
 /*******************************************************************
  * Frees member resources used by the given ConnectionManager data structure.

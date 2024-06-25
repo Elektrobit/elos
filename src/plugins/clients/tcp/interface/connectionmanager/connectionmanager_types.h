@@ -47,15 +47,3 @@ typedef struct elosConnectionManager {
     elosClientConnectionSharedData_t sharedData;
     elosClientAuthorization_t clientAuth;
 } elosConnectionManager_t;
-
-/*******************************************************************
- * Initialization parameters for a new ConnectionManager
- *
- * Members:
- *   config: Static configuration variables
- *   plugin: The plugin context to interact with elos.
- ******************************************************************/
-typedef struct elosConnectionManagerParam {
-    samconfConfig_t *config;
-    elosPlugin_t *plugin;
-} elosConnectionManagerParam_t;

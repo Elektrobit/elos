@@ -11,13 +11,13 @@ __BEGIN_DECLS
  *
  * Parameters:
  *      clientConnection: ClientConnection structure that will be initialized
- *      param: Parameters for initialization. Also see clientconnection_types.h
+ *      sharedData: Reference to shared data of all connecitons.
  * Returns:
  *      - SAFU_RESULT_FAILED on error
  *      - SAFU_RESULT_OK on success
  ******************************************************************/
 safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConnection,
-                                             elosClientConnectionParam_t *param);
+                                             elosClientConnectionSharedData_t *sharedData);
 
 /*******************************************************************
  * Creates a worker thread using the given socketFd for communication.

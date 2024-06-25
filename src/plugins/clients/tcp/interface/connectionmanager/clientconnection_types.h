@@ -31,12 +31,10 @@ typedef struct elosClientConnectionData {
  *
  * Members:
  *   connectionSemaphore: Used for waiting until a connection is available
- *   config: Static configuration variables
  *   plugin: reference to the plugin instance
  ******************************************************************/
 typedef struct elosClientConnectionSharedData {
     sem_t connectionSemaphore;
-    samconfConfig_t *config;
     elosPlugin_t *plugin;
 } elosClientConnectionSharedData_t;
 
@@ -67,13 +65,3 @@ typedef struct elosClientConnection {
     bool isTrusted;
     elosEventFilter_t blacklist;
 } elosClientConnection_t;
-
-/*******************************************************************
- * Initialization parameters for a new ClientConnection
- *
- * Members:
- *   sharedData: See definition of elosClientConnectionSharedData_t
- ******************************************************************/
-typedef struct elosClientConnectionParam {
-    elosClientConnectionSharedData_t *sharedData;
-} elosClientConnectionParam_t;
