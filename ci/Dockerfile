@@ -21,9 +21,11 @@ RUN apt-get update \
     clang-tidy \
     cmake \
     curl \
+    debhelper \
     expat \
     gdb \
     git \
+    git-buildpackage \
     gnuplot \
     jq \
     libcmocka-dev \
@@ -39,6 +41,7 @@ RUN apt-get update \
     libssl-dev \
     linux-tools-generic \
     locales \
+    moreutils \
     net-tools \
     netcat \
     ninja-build \
