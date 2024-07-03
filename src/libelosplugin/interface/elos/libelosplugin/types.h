@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <elos/common/types.h>
+#include <elos/event/types.h>
 #include <safu/flags.h>
 #include <safu/result.h>
 #include <samconf/samconf.h>
@@ -20,19 +22,36 @@ typedef enum elosPluginStateE {
     PLUGIN_STATE_ERROR,
 } elosPluginStateE_t;
 
+/*
+ * Forward declaration of the plugin control interface implemented by elosd.
+ * */
+struct elosPluginControl;
+struct elosPublisher;
+struct elosSubscriber;
+
 typedef struct elosPluginContext {
     samconfConfig_t const *config;
     elosPluginId_t id;
     void *data;
     int sync;
     int stop;
+    void *instanceRef;
+    safuResultE_t (*publish)(struct elosPublisher *publisher, const elosEvent_t *event);
+    safuResultE_t (*store)(struct elosPluginControl *instanceRef, const elosEvent_t *event);
+    safuResultE_t (*findEvents)(struct elosPluginControl *instanceRef, const char *rule, safuVec_t *events);
+    safuResultE_t (*subscribe)(struct elosSubscriber *subscriber, char const *const *filterStrings, size_t filterCount,
+                               const elosSubscription_t **const subscription);
+    safuResultE_t (*readQueue)(struct elosSubscriber *subscriber, const elosSubscription_t *subscription,
+                               safuVec_t **events);
+    safuResultE_t (*unsubscribe)(struct elosSubscriber *subscriber, const elosSubscription_t *subscription);
+    safuResultE_t (*unsubscribeAll)(struct elosSubscriber *subscriber);
+    safuResultE_t (*createPublisher)(struct elosPluginControl *instanceRef, struct elosPublisher **publisher);
+    safuResultE_t (*deletePublisher)(struct elosPluginControl *instanceRef, struct elosPublisher *publisher);
+    safuResultE_t (*createSubscriber)(struct elosPluginControl *instanceRef, struct elosSubscriber **subscriber);
+    safuResultE_t (*deleteSubscriber)(struct elosPluginControl *instanceRef, struct elosSubscriber *subscriber);
 } elosPlugin_t;
 
-__BEGIN_DECLS
-
 typedef safuResultE_t(elosPluginFunc_t)(elosPlugin_t *);
-
-__END_DECLS
 
 /*******************************************************************
  * Selects the type of the plugin.
@@ -65,3 +84,5 @@ typedef struct elosPluginConfig {
     elosPluginFunc_t *start;
     elosPluginFunc_t *stop;
 } elosPluginConfig_t;
+
+__END_DECLS

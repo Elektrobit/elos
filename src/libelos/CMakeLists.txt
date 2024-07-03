@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-include(../../cmake/shared_library.cmake)
 
 find_package(json-c REQUIRED)
 find_package(safu 0.50.1 REQUIRED)
@@ -16,17 +15,18 @@ add_library(
 target_include_directories(
   libelos
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/private
+    ${CMAKE_CURRENT_SOURCE_DIR}/private/
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/public
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public/>
+    $<INSTALL_INTERFACE:include/>
 )
 
 target_link_libraries(
   libelos
-  PUBLIC
-    elos_common_interface
-    elos_event_static
+  PRIVATE
     eloslog_static
+  PUBLIC
+    libelos_common
     json-c::json-c
     safu::safu
 )
@@ -39,14 +39,46 @@ set_target_properties(
     VERSION ${ELOS_VERSION_MAJOR}.${ELOS_VERSION_MINOR}.${ELOS_VERSION_MICRO}
 )
 
+install(
+  EXPORT libelosTargets
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libelos
+  NAMESPACE elos::
+  FILE libelosTargets.cmake # Not sure if this is still needed
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  "Config.cmake.in"
+  "libelosConfig.cmake"
+  INSTALL_DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/libelos
+  PATH_VARS
+    CMAKE_INSTALL_LIBDIR
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/libelosConfigVersion.cmake
+  VERSION ${PKG_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/libelosConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/libelosConfigVersion.cmake"
+  DESTINATION
+    "${CMAKE_INSTALL_LIBDIR}/cmake/libelos"
+)
+
+install(TARGETS libelos EXPORT libelosTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/)
+
 install(TARGETS libelos DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install_component_headers(COMPONENTS elos_common_interface elos_event_static)
 
 include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)
 create_pkgconfig(
   NAME "elos"
-  REQUIRES "safu >= ${safu_VERSION}, json-c >= 0.15"
+  REQUIRES "safu >= ${safu_VERSION}, json-c >= 0.15, elos_common >= ${ELOS_VERSION}"
   LIBS "-lelos"
 )
 

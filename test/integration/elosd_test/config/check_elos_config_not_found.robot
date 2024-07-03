@@ -8,6 +8,7 @@ Documentation       A test suite to check elos behaviour when    config file is 
 
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
+Library             ../../libraries/ElosKeywords.py
 
 Suite Setup         Connect To Target And Log In
 Suite Teardown      Close All Connections
@@ -22,11 +23,13 @@ Test Elos Configuration not set
     [Documentation]    When config file not found in given path then
     ...    elosd terminates throwing error as expected
 
-    Stop Elosd
-    Remove Config File
-    Start Elosd
-    Elosd Does Not Start
-    [Teardown]    Run Keywords    Reset Config File
+    Given Ensure Elosd Is Stopped
+    When Remove Config File
+    And Start Elosd
+    Then Elosd Does Not Start
+    [Teardown]
+    ...    Run Keywords    Ensure Elosd Is Stopped
+    ...    AND    Reset Config File
     ...    AND    Start Elosd
 
 
@@ -51,6 +54,6 @@ Reset Config File
     [Documentation]    Reset Config file to default path and reset root file system
 
     ${rc}=    Execute And Log Based On User Permissions
-    ...    sh -c 'rm -rf ${INVALID_CONFIG_DIR} && umount /etc/elos/'
+    ...    sh -c 'umount /etc/elos/ && rm -rf ${INVALID_CONFIG_DIR}'
     ...    ${RETURN_RC}
     Executable Returns No Errors    ${rc}

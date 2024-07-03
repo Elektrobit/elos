@@ -16,7 +16,8 @@
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/logger/logger.h"
 #include "elos/pluginmanager/pluginmanager.h"
-#include "elos/scanner_manager/scanner_manager.h"
+#include "elos/scanner_manager_legacy/scanner_manager.h"
+#include "elos/scannermanager/scannermanager.h"
 #include "elos/storagemanager/storagemanager.h"
 #include "safu/common.h"
 #include "safu/log.h"
@@ -29,7 +30,8 @@ struct serverContext {
     samconfConfig_t *config;
     elosConnectionManager_t connectionManagerContext;
     elosClientManager_t clientManagerContext;
-    elosScannerManagerContext_t scannerManagerContext;
+    elosScannerManagerLegacyContext_t scannerManagerLegacyContext;
+    elosScannerManager_t scannerManager;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
     elosEventDispatcher_t eventDispatcher;
@@ -76,7 +78,7 @@ int elosServerShutdown(struct serverContext *ctx) {
         result = EXIT_FAILURE;
     }
     if (elosClientManagerDeleteMembers(&ctx->clientManagerContext) != SAFU_RESULT_OK) {
-        safuLogErr("Stoping client manager failed!");
+        safuLogErr("Stopping client manager failed!");
         result = EXIT_FAILURE;
     }
     if (elosStorageManagerStop(&ctx->storageManager) != SAFU_RESULT_OK) {
@@ -87,14 +89,21 @@ int elosServerShutdown(struct serverContext *ctx) {
         result = EXIT_FAILURE;
     }
     if (elosConnectionManagerStop(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
-        safuLogErr("Stoping connection manager failed!");
+        safuLogErr("Stopping connection manager failed!");
         result = EXIT_FAILURE;
     } else if (elosConnectionManagerDeleteMembers(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
         safuLogErr("Deleting connection manager failed!");
         result = EXIT_FAILURE;
     }
-    if (elosScannerManagerStop(&ctx->scannerManagerContext) != NO_ERROR) {
+    if (elosScannerManagerLegacyStop(&ctx->scannerManagerLegacyContext) != NO_ERROR) {
+        safuLogErr("Stopping scanner manager legacy failed!");
+        result = EXIT_FAILURE;
+    }
+    if (elosScannerManagerStop(&ctx->scannerManager) != SAFU_RESULT_OK) {
         safuLogErr("Stopping scanner manager failed!");
+        result = EXIT_FAILURE;
+    } else if (elosScannerManagerDeleteMembers(&ctx->scannerManager) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting scanner manager failed!");
         result = EXIT_FAILURE;
     }
     if (elosEventDispatcherDeleteMembers(&ctx->eventDispatcher) != SAFU_RESULT_OK) {
@@ -173,53 +182,7 @@ int main(int argc, char **argv) {
                  safuGetHardwareId(), safuLogLevelToString(safuLogGetStreamLevel()),
                  elosConfigGetElosdLogFilter(context.config), elosConfigGetElosdScannerPath(context.config));
 
-    safuLogDebug("Initialize PluginManager");
-    elosPluginManagerParam_t const pmParam = {.config = context.config};
-    result = elosPluginManagerInitialize(&context.pluginManager, &pmParam);
-    if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosPluginManagerInitialize had errors during execution");
-    }
-
-    safuLogDebug("Initialize StorageManager");
-    elosStorageManagerParam_t const smParam = {.config = context.config, .pluginManager = &context.pluginManager};
-    result = elosStorageManagerInitialize(&context.storageManager, &smParam);
-    if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosStorageManagerInitialize had errors during execution");
-        elosServerShutdown(&context);
-        return EXIT_FAILURE;
-    } else {
-        result = elosStorageManagerStart(&context.storageManager);
-        if (result != SAFU_RESULT_OK) {
-            safuLogWarn("elosStorageManagerStart had errors during execution");
-            elosServerShutdown(&context);
-            return EXIT_FAILURE;
-        }
-    }
-
-    safuLogDebug("Initialize LogAggregator");
-    elosLogAggregatorParam_t const laParam = {.config = context.config, .storageManager = &context.storageManager};
-    result = elosLogAggregatorStart(&context.logAggregator, &laParam);
-    if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosLogAggregatorStart had errors during execution");
-        elosServerShutdown(&context);
-        return EXIT_FAILURE;
-    }
-
-    safuLogDebug("Initialize client manager");
-    elosClientManagerParam_t const clmParam = {.config = context.config, .pluginManager = &context.pluginManager};
-    result = elosClientManagerInitialize(&context.clientManagerContext, &clmParam);
-    if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosClientManagerInitialize had errors during execution");
-    } else {
-        result = elosClientManagerStart(&context.clientManagerContext);
-        if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosClientManagerLoad");
-            elosServerShutdown(&context);
-            return EXIT_FAILURE;
-        }
-    }
-
-    safuLogDebug("Start EventProcessor");
+    safuLogDebug("Initialize EventProcessor");
     elosEventProcessorParam_t const epParam = {.config = context.config};
     retval = elosEventProcessorInitialize(&context.eventProcessor, &epParam);
     if (retval < 0) {
@@ -228,7 +191,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    safuLogDebug("Start EventDispatcher");
+    safuLogDebug("Initialize EventDispatcher");
     elosEventDispatcherParam_t const edParam = {
         .eventProcessor = &context.eventProcessor,
         .healthTimeInterval = NULL,
@@ -239,14 +202,61 @@ int main(int argc, char **argv) {
         safuLogErr("elosEventDispatcherInitialize");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
+    }
+
+    safuLogDebug("Initialize PluginManager");
+    elosPluginManagerParam_t const pmParam = {
+        .config = context.config,
+        .eventProcessor = &context.eventProcessor,
+        .eventDispatcher = &context.eventDispatcher,
+        .logAggregator = &context.logAggregator,
+    };
+    result = elosPluginManagerInitialize(&context.pluginManager, &pmParam);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosPluginManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
+    }
+
+    safuLogDebug("Initialize StorageManager");
+    elosStorageManagerParam_t const smParam = {.config = context.config, .pluginManager = &context.pluginManager};
+    result = elosStorageManagerInitialize(&context.storageManager, &smParam);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosStorageManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
     } else {
-        retval = elosEventDispatcherStart(&context.eventDispatcher);
-        if (retval < 0) {
-            safuLogErr("elosEventDispatcherStart");
+        result = elosStorageManagerStart(&context.storageManager);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("elosStorageManagerStart had errors during execution");
             elosServerShutdown(&context);
             return EXIT_FAILURE;
         }
-        elosEventDispatcherBufferAdd(&context.eventDispatcher, context.logger->logEventBuffer);
+    }
+
+    safuLogDebug("Initialize client manager");
+    elosClientManagerParam_t const clmParam = {.config = context.config, .pluginManager = &context.pluginManager};
+    result = elosClientManagerInitialize(&context.clientManagerContext, &clmParam);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosClientManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
+    } else {
+        result = elosClientManagerStart(&context.clientManagerContext);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("elosClientManagerStart had errors during execution");
+            elosServerShutdown(&context);
+            return EXIT_FAILURE;
+        }
+    }
+
+    safuLogDebug("Start LogAggregator");
+    elosLogAggregatorParam_t const laParam = {.config = context.config, .backends = &context.storageManager.backends};
+    result = elosLogAggregatorStart(&context.logAggregator, &laParam);
+    if (result != SAFU_RESULT_OK) {
+        safuLogWarn("elosLogAggregatorStart had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
     }
 
     safuLogDebug("Start connection manager");
@@ -270,13 +280,38 @@ int main(int argc, char **argv) {
         }
     }
 
-    safuLogDebug("Start scanner manager");
-    elosScannerManagerParam_t scannerManagerParam = {
+    safuLogDebug("Start EventDispatcher");
+    retval = elosEventDispatcherStart(&context.eventDispatcher);
+    if (retval < 0) {
+        safuLogErr("elosEventDispatcherStart");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
+    }
+    elosEventDispatcherBufferAdd(&context.eventDispatcher, context.logger->logEventBuffer);
+
+    safuLogDebug("Initialize scanner manager");
+    elosScannerManagerParam_t const scmParam = {.config = context.config, .pluginManager = &context.pluginManager};
+    result = elosScannerManagerInitialize(&context.scannerManager, &scmParam);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosScannerManagerInitialize had errors during execution");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
+    } else {
+        result = elosScannerManagerStart(&context.scannerManager);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("elosScannerManagerLoad");
+            elosServerShutdown(&context);
+            return EXIT_FAILURE;
+        }
+    }
+
+    safuLogDebug("Start legacy scanner manager");
+    elosScannerManagerLegacyParam_t scannerManagerLegacyParam = {
         .config = context.config,
         .logAggregator = &context.logAggregator,
         .eventDispatcher = &context.eventDispatcher,
     };
-    retval = elosScannerManagerStart(&context.scannerManagerContext, &scannerManagerParam);
+    retval = elosScannerManagerLegacyStart(&context.scannerManagerLegacyContext, &scannerManagerLegacyParam);
     if ((retval != NO_ERROR) && (retval != NO_FATAL_ERRORS)) {
         safuLogErr("elosServerScannerLoad");
         elosServerShutdown(&context);

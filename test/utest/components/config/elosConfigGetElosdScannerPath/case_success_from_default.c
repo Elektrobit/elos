@@ -26,7 +26,7 @@ void elosTestElosConfigGetElosdScannerPathSuccessFromDefault(UNUSED void **state
 
     MOCK_FUNC_AFTER_CALL(samconfConfigGetString, 0);
     expect_value(__wrap_samconfConfigGetString, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetString, path, ELOS_CONFIG_SCANNER "Path");
+    expect_string(__wrap_samconfConfigGetString, path, ELOS_CONFIG_SCANNER "PluginSearchPath");
     expect_any(__wrap_samconfConfigGetString, result);
     will_set_parameter(__wrap_samconfConfigGetString, result, expectedValue);
     will_return(__wrap_samconfConfigGetString, SAMCONF_CONFIG_OK);

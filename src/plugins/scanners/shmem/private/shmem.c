@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "elos/scanner/scanner.h"
+#include "elos/scanner_legacy/scanner.h"
 #include "shmem_config.h"
 #include "shmem_ringbuffer.h"
 
@@ -206,8 +206,8 @@ static safuResultE_t _waitForNextIteration(UNUSED elosScannerContextShmem_t *con
     return result;
 }
 
-elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
-    elosScannerResultE_t result = SCANNER_OK;
+elosScannerLegacyResultE_t elosScannerFree(elosScannerLegacySession_t *session) {
+    elosScannerLegacyResultE_t result = SCANNER_OK;
     elosScannerContextShmem_t *context = session->context;
 
     if (context != NULL) {
@@ -232,8 +232,9 @@ elosScannerResultE_t elosScannerFree(elosScannerSession_t *session) {
     return result;
 }
 
-elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const elosScannerParam_t *param) {
-    elosScannerResultE_t result = SCANNER_ERROR;
+elosScannerLegacyResultE_t elosScannerInitialize(elosScannerLegacySession_t *session,
+                                                 const elosScannerLegacyParam_t *param) {
+    elosScannerLegacyResultE_t result = SCANNER_ERROR;
     size_t const contextSize = sizeof(elosScannerContextShmem_t);
     elosScannerContextShmem_t *context = NULL;
 
@@ -277,8 +278,8 @@ elosScannerResultE_t elosScannerInitialize(elosScannerSession_t *session, const 
     return result;
 }
 
-elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
-    elosScannerResultE_t result = SCANNER_OK;
+elosScannerLegacyResultE_t elosScannerRun(elosScannerLegacySession_t *session) {
+    elosScannerLegacyResultE_t result = SCANNER_OK;
     elosScannerContextShmem_t *context = session->context;
 
     atomic_fetch_or(&context->flags, SCANNER_SHMEM_FLAG_RUNNING);
@@ -302,8 +303,8 @@ elosScannerResultE_t elosScannerRun(elosScannerSession_t *session) {
     return result;
 }
 
-elosScannerResultE_t elosScannerStop(elosScannerSession_t *session) {
-    elosScannerResultE_t result = SCANNER_OK;
+elosScannerLegacyResultE_t elosScannerStop(elosScannerLegacySession_t *session) {
+    elosScannerLegacyResultE_t result = SCANNER_OK;
     elosScannerContextShmem_t *context = session->context;
 
     atomic_fetch_and(&context->flags, ~SCANNER_SHMEM_FLAG_RUNNING);

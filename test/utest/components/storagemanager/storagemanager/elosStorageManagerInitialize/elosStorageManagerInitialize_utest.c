@@ -18,7 +18,7 @@ int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosStorageManagerInitializeSuccess),
         TEST_CASE(elosTestElosStorageManagerInitializeSuccessDefaultSearchPath),
-        TEST_CASE(elosTestElosStorageManagerInitializeExtErrBackendConfigNull),
+        TEST_CASE(elosTestElosStorageManagerInitializeSuccessBackendConfigNull),
         TEST_CASE(elosTestElosStorageManagerInitializeErrStorageManagerNull),
         TEST_CASE(elosTestElosStorageManagerInitializeErrInitParamNull),
         TEST_CASE(elosTestElosStorageManagerInitializeErrParamConfigNull),

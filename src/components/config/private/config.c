@@ -135,7 +135,8 @@ const char *elosConfigGetElosdStorageBackendJsonFile(const samconfConfig_t *conf
 }
 
 const char *elosConfigGetElosdScannerPath(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "Path", "ELOS_SCANNER_PATH", ELOSD_SCANNER_PATH);
+    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "PluginSearchPath", "ELOS_SCANNER_PATH",
+                                          ELOSD_SCANNER_PATH);
 }
 
 const char *elosConfigGetElosdClientPath(const samconfConfig_t *config) {

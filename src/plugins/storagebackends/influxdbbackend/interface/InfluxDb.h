@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "elos/storagemanager/StorageBackend.h"
+#include "elos/libelosplugin/StorageBackend_types.h"
 #include "safu/common.h"
 
 #define ACCEPT_APP_JSON         "Accept: application/json"

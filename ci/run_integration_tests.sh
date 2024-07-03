@@ -3,6 +3,33 @@
 CMD_PATH=$(cd $(dirname $0) && pwd)
 BASE_DIR=${CMD_PATH%/*}
 
+TEST_PARAM="--all"
+PARAM=""
+while [ $# -gt 0 ]; do
+    case ${1} in
+	--all|-a)
+	    TEST_PARAM="--all" ;;
+	--module|-m)
+	    TEST_PARAM="--module ${2}"
+	    shift
+	    ;;
+	--suite|-s)
+	    TEST_PARAM="--suite ${2}"
+	    shift
+	    ;;
+	--case|-c)
+	    TEST_PARAM="--case ${2} ${3}"
+	    shift
+	    shift
+	    ;;
+	-*)
+	    echo "error: unknown option: $1"; exit 1 ;;
+	*)
+	    PARAM="$PARAM ${1}" ;;
+    esac
+    shift
+done
+set -- $PARAM
 BUILD_TYPE="${1:-Debug}"
 BUILD_DIR="$BASE_DIR/build/$BUILD_TYPE"
 
@@ -101,7 +128,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh --all
+docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh ${TEST_PARAM}
 
 ret=$?
 

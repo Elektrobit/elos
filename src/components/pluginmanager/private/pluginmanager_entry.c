@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "elos/plugincontrol/plugincontrol.h"
 #include "elos/plugincontrol/vector.h"
 #include "elos/pluginmanager/pluginmanager.h"
 

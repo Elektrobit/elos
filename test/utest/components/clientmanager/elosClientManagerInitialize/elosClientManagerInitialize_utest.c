@@ -44,7 +44,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosClientManagerInitializeUtest)
 int main() {
     const struct CMUnitTest tests[] = {TEST_CASE(elosTestElosClientManagerInitializeSuccess),
                                        TEST_CASE(elosTestElosClientManagerInitializeSuccessDefaultSearchPath),
-                                       TEST_CASE(elosTestElosClientManagerInitializeExtErrClientConfigNull),
+                                       TEST_CASE(elosTestElosClientManagerInitializeSuccessClientConfigNull),
                                        TEST_CASE(elosTestElosClientManagerInitializeErrClientManagerNull),
                                        TEST_CASE(elosTestElosClientManagerInitializeErrInitParamNull),
                                        TEST_CASE(elosTestElosClientManagerInitializeErrParamConfigNull),

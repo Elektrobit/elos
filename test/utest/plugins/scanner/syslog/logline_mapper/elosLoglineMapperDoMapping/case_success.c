@@ -10,6 +10,19 @@
 #include "safu/common.h"
 #include "safu/mock_safu.h"
 
+#define _TEST_CONFIG \
+    "{ \
+        \"Config\": { \
+            \"MappingRules\": { \
+                \"MessageCodes\": { \
+                    \"4000\": \".event.source.appName 'sshd' STRCMP\", \
+                    \"2000\": \"\\\": ROOT LOGIN  on '/dev/console'\\\" .event.payload STRCMP\", \
+                    \"1000\": \"\\\" hehyoi\\\" .event.payload STRCMP\" \
+                } \
+            } \
+        } \
+    }"
+
 static const char *elosElosLogline[] = {
     "<38>Jan  1 00:00:04 sshd[98]: Server listening on 0.0.0.0 port 22.",
     "<38>Jan  1 00:00:04 sshd[98]: Server listening on :: port 22.",
@@ -72,56 +85,7 @@ static const elosEvent_t elosExpectedEvent[] = {
 };
 
 int elosTestElosLoglineMapperDoMappingSuccessSetup(void **state) {
-    elosLoglineMapperDoMappingUtestInit(state);
-
-    elosTestState_t *testState = *state;
-
-    samconfConfig_t *messageCodesChildren[] = {
-        &testState->childrenData[2],
-        &testState->childrenData[3],
-        &testState->childrenData[4],
-    };
-
-    testState->childrenData[1].children = messageCodesChildren;
-    testState->childrenData[1].childCount = ARRAY_SIZE(messageCodesChildren);
-
-    samconfConfig_t *mappingRulesChildren[] = {
-        &testState->childrenData[1],
-    };
-
-    testState->childrenData[0].children = mappingRulesChildren;
-    testState->childrenData[0].childCount = ARRAY_SIZE(mappingRulesChildren);
-
-    samconfConfig_t *syslogScannerChildren[] = {
-        &testState->childrenData[0],
-    };
-
-    //  "SyslogScanner": {
-    //      "MappingRules": {
-    //          "MessageCodes": {
-    //              "4000": ...,
-    //              "2000": "\": ROOT LOGIN  on '/dev/console'\" .event.payload STRCMP",
-    //              "1000": "\" hehyoi\" .event.payload STRCMP"
-    //          }
-    //      }
-    //  }
-    samconfConfig_t root = {
-        .parent = NULL,
-        .key = "SyslogScanner",
-        .type = SAMCONF_CONFIG_VALUE_OBJECT,
-        .children = syslogScannerChildren,
-        .childCount = 1,
-    };
-
-    testState->timezone = getenv("TZ");
-    setenv("TZ", "UTC", 1);
-    tzset();
-
-    safuResultE_t result = elosLoglineMapperInit(&testState->mapper, &root);
-    if (result != SAFU_RESULT_OK) {
-        return -1;
-    }
-
+    elosLoglineMapperDoMappingUtestInit(state, _TEST_CONFIG);
     return 0;
 }
 
@@ -174,12 +138,12 @@ static void _testElosLoglineMapperDoMappingSuccessParam(elosLoglineMapper_t *map
     assert_int_equal(event.severity, expectedEvent->severity);
 
     if (expectedEvent->source.appName == NULL) {
-        assert_ptr_equal(event.source.appName, expectedEvent->source.appName);
+        assert_null(event.source.appName);
     } else {
         assert_string_equal(event.source.appName, expectedEvent->source.appName);
     }
     if (expectedEvent->source.fileName == NULL) {
-        assert_ptr_equal(event.source.fileName, expectedEvent->source.fileName);
+        assert_null(event.source.fileName);
     } else {
         assert_string_equal(event.source.fileName, expectedEvent->source.fileName);
     }

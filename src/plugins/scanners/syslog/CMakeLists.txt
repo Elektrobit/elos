@@ -19,9 +19,10 @@ set_target_properties(scanner_syslog PROPERTIES PREFIX "")
 target_link_libraries(
   scanner_syslog
   PRIVATE
-    elos_scanner_interface
+    elos_scanner_legacy_interface
     eventfilter_static
   PUBLIC
+    libelosplugin
     rpnfilter_static
     scanner_syslog_interface
     elos_common_interface
