@@ -44,6 +44,13 @@ belong to.
 New packages must be added to the `control` file, and their respective files
 should be added to a new `.install` file matching the name of the new package.
 
+## Release
+
+To prepare a new release on `debian/main` run
+1. `git checkout -b <task/-new-release> origin/debian/main`
+2. `./ci/docker-run.sh ./ci/create_debian_release.sh <x.y.z>`
+3. push branch and create MR for **debian/main** , not *main* and not *integration*!
+
 ## Packaging Script Maintainer
 
 * Isaac True isaac.true@emlix.com [@IsaacJT](https://github.com/IsaacJT)
