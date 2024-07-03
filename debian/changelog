@@ -1,3 +1,9 @@
+elos (0.58.14-1) UNRELEASED; urgency=medium
+
+  * New upstream tag 0.58.14
+
+ -- Isaac True <isaac.true@emlix.com>  Wed, 03 Jul 2024 08:22:47 +0000
+
 elos (0.57.3-9) unstable; urgency=medium
 
   * Add *.cmake files to libelos-dev package.

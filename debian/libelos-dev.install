@@ -1,5 +1,5 @@
-usr/include/elos
-usr/lib/*/pkgconfig
-usr/lib/*/libelos*.so
+usr/include/elos/libelos
+usr/lib/*/pkgconfig/elos.pc
+usr/lib/*/libelos.so
 usr/lib/*/libmock_libelos.so
-usr/lib/*/cmake
+usr/lib/*/cmake/libelos
