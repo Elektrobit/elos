@@ -2,11 +2,14 @@
 #include "elos/storagemanager/storagemanager.h"
 
 #include <safu/common.h>
+#include <safu/result.h>
 #include <safu/vector.h>
+#include <samconf/samconf_types.h>
 #include <stdlib.h>
 
 #include "elos/config/config.h"
 #include "elos/eventfilter/vector.h"
+#include "elos/pluginmanager/pluginmanager.h"
 #include "elos/storagemanager/PluginFilterLoader.h"
 #include "elos/storagemanager/StorageBackend.h"
 #include "elos/storagemanager/vector.h"
@@ -31,10 +34,14 @@ safuResultE_t elosStorageManagerInitialize(elosStorageManager_t *storageManager,
         } else {
             storageManager->searchPath = elosConfigGetElosdBackendPath(param->config);
             status = samconfConfigGet(param->config, ELOS_CONFIG_EVENTLOGGING, &storageManager->config);
-            if (status != SAMCONF_CONFIG_OK) {
-                safuLogErr("Loading storageManager config failed");
-            } else {
+            if (status == SAMCONF_CONFIG_NOT_FOUND) {
+                storageManager->config = NULL;
                 result = SAFU_RESULT_OK;
+            } else if (status == SAMCONF_CONFIG_OK && storageManager->config->type == SAMCONF_CONFIG_VALUE_OBJECT) {
+                result = SAFU_RESULT_OK;
+            } else {
+                safuLogErr("Error in EventLogging config");
+                result = SAFU_RESULT_FAILED;
             }
         }
     }
@@ -65,13 +72,16 @@ safuResultE_t elosStorageManagerStart(elosStorageManager_t *storageManager) {
     if (storageManager == NULL) {
         safuLogErr("Called elosStorageManagerAdd with NULL-parameter");
         result = SAFU_RESULT_FAILED;
+    } else if (storageManager->config == NULL) {
+        safuLogDebug("No EventLogging configured");
+        result = SAFU_RESULT_OK;
     } else {
         elosPluginTypeE_t type = PLUGIN_TYPE_STORAGEBACKEND;
 
         result = elosPluginManagerLoad(storageManager->pluginManager, type, storageManager->config,
                                        storageManager->searchPath, &storageManager->pluginControlPtrVector);
         if (result != SAFU_RESULT_OK) {
-            safuLogWarn("elosPluginManagerStart executed with errors");
+            safuLogWarn("elosStorageManagerStart executed with errors");
         } else {
             size_t pluginCount = safuVecElements(&storageManager->pluginControlPtrVector);
             result = elosStorageBackendPtrVectorInitialize(&storageManager->backends, pluginCount);
@@ -79,6 +89,7 @@ safuResultE_t elosStorageManagerStart(elosStorageManager_t *storageManager) {
                 safuLogErr("elosStorageBackendPtrVectorInitialize failed");
             } else {
                 safuVecIterate(&storageManager->pluginControlPtrVector, _setupBackend, storageManager);
+                safuLogInfoF("StorageManager loaded %zu storage plugins", pluginCount);
             }
         }
     }

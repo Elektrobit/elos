@@ -15,7 +15,6 @@
 #include "elos/event/event_vector.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/rpnfilter/rpnfilter_types.h"
-#include "elos/storagemanager/StorageBackend.h"
 #include "samconf/json_backend.h"
 
 #define BACKEND_NAME "InfluxDB"
@@ -341,7 +340,7 @@ static inline bool _fillEventStruct(elosEvent_t *event, json_object *value, json
             safuLogErrF("Failed to parse data point at idx %i", idx);
         }
     } else {
-        safuLogErrF("could not retrive key at idx %i", idx);
+        safuLogErrF("could not retrieve key at idx %i", idx);
     }
 
     return filled;
@@ -491,12 +490,12 @@ safuResultE_t elosInfluxDbBackendFindEvents(elosStorageBackend_t *backend, elosE
                 if (filterResult == RPNFILTER_RESULT_MATCH) {
                     safuLogDebug("Append event: Match");
                 } else if (filterResult == RPNFILTER_RESULT_NO_MATCH) {
-                    safuLogDebug("Dont append event: No match");
+                    safuLogDebug("Don't append event: No match");
                     elosEventDeleteMembers(event);
                     safuVecRemove(events, i);
                 } else {
                     safuLogErr("elosEventFilterExecute failed");
-                    safuLogDebugF("Dont append Event: RPN filter result is: %d", filterResult);
+                    safuLogDebugF("Don't append Event: RPN filter result is: %d", filterResult);
                     elosEventDeleteMembers(event);
                     safuVecRemove(events, i);
                     res = SAFU_RESULT_FAILED;

@@ -8,8 +8,10 @@ Documentation       A test suite to check invalid blacklist filter
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -24,7 +26,7 @@ ${BLACKLIST_FILTER}     .event.messagecode 2010 EQ
 
     Given An Invalid Blacklist Filter Is Set
     When Unauthorized Process Tries To Publish A Blacklisted Event
-    Then A Security Event Is Published
+    Then A Blacklist Failed Event Is Published
     [Teardown]    Reset Elosd Config
 
 
@@ -32,13 +34,11 @@ ${BLACKLIST_FILTER}     .event.messagecode 2010 EQ
 An Invalid Blacklist Filter Is Set
     [Documentation]    Set an invalid blacklist filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
@@ -46,22 +46,14 @@ Unauthorized Process Tries To Publish A Blacklisted Event
     ${rc}    Execute And Log    elosc -p '{"messageCode": 2010}'    ${RETURN_RC}
     Executable Returns An Error    ${rc}
 
-A Security Event Is Published
-    [Documentation]    Attempt to publish a blacklisted event will lead to a security event
-    ...    to be published if client is unauthorized.
+A Blacklist Failed Event Is Published
+    [Documentation]    Attempt to publish a event and appling the black list
+    ...                fails will lead to a blacklist failed (501) event if
+    ...                client is unauthorized.
 
     ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 8007 EQ"
+    ...    elosc -f ".event.messageCode 501 EQ"
     ...    ${RETURN_STDOUT}
     ...    ${RETURN_RC}
     Should Contain    ${stdout}    2010
     Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

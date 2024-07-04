@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 
 add_subdirectory(clientmanager)
+add_subdirectory(scannermanager)
 add_subdirectory(config)
 add_subdirectory(connectionmanager)
 add_subdirectory(eloslog)

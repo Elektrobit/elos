@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 find_package(safu 0.50.1 REQUIRED)
 
+include(../../cmake/shared_library.cmake)
+
 add_library(elos_common_interface INTERFACE)
 
 set_property(TARGET elos_common_interface PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -18,7 +20,12 @@ target_compile_definitions(
   ELOSD_LOG_LEVEL="${ELOSD_LOG_LEVEL}"
 )
 
-target_include_directories(elos_common_interface INTERFACE interface/)
+target_include_directories(
+  elos_common_interface
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interface/>
+    $<INSTALL_INTERFACE:include/>
+)
 
 target_link_libraries(
   elos_common_interface

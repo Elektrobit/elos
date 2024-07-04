@@ -6,7 +6,7 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_extensions/mock_extensions.h>
 #include <elos/event/event.h>
-#include <elos/storagemanager/StorageBackend.h>
+#include <elos/libelosplugin/StorageBackend_types.h>
 #include <safu/common.h>
 #include <safu/mock_safu.h>
 #include <safu/time.h>

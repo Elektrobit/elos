@@ -2,7 +2,7 @@
 #ifndef __ELOS_EVENTLOGGING_PLUGIN_JSONBACKEND_H__
 #define __ELOS_EVENTLOGGING_PLUGIN_JSONBACKEND_H__
 
-#include "elos/storagemanager/StorageBackend.h"
+#include "elos/libelosplugin/StorageBackend_types.h"
 #include "safu/common.h"
 
 #ifndef STORAGE_LOCATION

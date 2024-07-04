@@ -13,6 +13,7 @@ Elos Source
    libelos/index
    libelosdlt/index
    libelosplugin/index
+   libelos_common/index
    plugins/index
    version/index
 

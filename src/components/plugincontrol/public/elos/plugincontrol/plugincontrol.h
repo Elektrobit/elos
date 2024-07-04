@@ -117,12 +117,182 @@ safuResultE_t elosPluginControlDelete(elosPluginControl_t **control);
  * data structure and must not be freed to avoid problems.
  *
  * Parameters:
- *      control : Pointer to of an PluginControl data structure
+ *      control : Pointer of a PluginControl data structure
  *      name    : Pointer to a pointer to the string containing the name
  * Returns:
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosPluginControlGetName(const elosPluginControl_t *control, const char **name);
+
+/******************************************************************************
+ * Implements `pluginCreatePublisher` interface. A new publisher will be
+ * allocated and stored in the provided pointer. On any failure the publisher
+ * pointer remains unchanged.
+ *
+ * Parameters:
+ *      control   : Pointer of a PluginControl data structure
+ *      publisher : Pointer to a pointer where to store the pointer of the new
+ *                  publisher in case of success, otherwise it remains unchanged
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ *****************************************************************************/
+safuResultE_t elosPluginControlCreatePublisher(struct elosPluginControl *pluginControl,
+                                               struct elosPublisher **publisher);
+
+/******************************************************************************
+ * Implements `pluginDeletePublisher` interface. Deletes a publisher and frees
+ * all related resources. On error it is unsafe to retry or use the publisher.
+ *
+ * Parameters:
+ *      control   : Pointer of a PluginControl data structure
+ *      publisher : Pointer to a publisher to be deleted.
+ *
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ *****************************************************************************/
+safuResultE_t elosPluginControlDeletePublisher(struct elosPluginControl *pluginControl,
+                                               struct elosPublisher *publisher);
+
+/******************************************************************************
+ *
+ * Implements `pluginCreateSubscriber` interface. A new publisher will be
+ * allocated and stored in the provided pointer. On any failure the publisher
+ * pointer remains unchanged.
+ *
+ * Parameters:
+ *      control    : Pointer of a PluginControl data structure
+ *      subscriber : Pointer to a pointer where to store the pointer of the new
+ *                   subscriber in case of success, otherwise it remains
+ *                   unchanged
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ *****************************************************************************/
+safuResultE_t elosPluginControlCreateSubscriber(struct elosPluginControl *pluginControl,
+                                                struct elosSubscriber **subscriber);
+
+/******************************************************************************
+ * Implements `pluginDeleteSubscriber` interface. Deletes a publisher and frees
+ * all related resources. On error it is unsafe to retry or use the publisher.
+ *
+ * Parameters:
+ *      control   : Pointer of a PluginControl data structure
+ *      subscriber : Pointer to a subscriber to be deleted.
+ *
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ *****************************************************************************/
+safuResultE_t elosPluginControlDeleteSubscriber(struct elosPluginControl *pluginControl,
+                                                struct elosSubscriber *subscriber);
+
+/*******************************************************************
+ * Implements the actual publishing procedure of an event.
+ *
+ * Parameters:
+ *      publisher : Pointer to elosPublisher data structure
+ *      event     : Pointer to the event to publish. The event is deep copied
+ *                  so it is save to call `elosEventDeleteMembers` on the event
+ *                  after publishing.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosPluginControlPublish(elosPublisher_t *publisher, const elosEvent_t *event);
+
+/*******************************************************************
+ * Implements the actual storage lookup procedure of events for a given filter.
+ *
+ * Parameters:
+ *      control : Pointer of a PluginControl data structure
+ *      rule    : A string containing the event filter rule to be use to lookup
+ *                historical events
+ *      events  : A pointer to an initialised event vector to store the
+ *                resulting events. The events in the vector must be freed by
+ *                the caller by `elosEventDeleteMembers`.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosPluginControlFindEvents(elosPluginControl_t *pluginControl, const char *rule, safuVec_t *events);
+
+/*******************************************************************
+ * Implements the actual retrieval of all events from an event queue,
+ * identified by given `elosSubscription_t`. The caller takes ownership of the
+ * returned event objects and is responsible for correct disposal by calling
+ * `elosEventDeleteMembers` on them and for the `eventVector`.
+ *
+ * Parameters:
+ *      subscriber   : Pointer of a subscriber data structure
+ *      eventQueueId : The event queue to be read.
+ *      eventVector  : A pointer to to `safuVec_t` pointer to store the created
+ *                     result vector in. The caller takes ownership of the
+ *                     result vector and its elements.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosPluginControlEventQueueRead(elosSubscriber_t *subscriber, const elosSubscription_t *subscription,
+                                              safuVec_t **const eventVector);
+
+/*******************************************************************
+ * Implements the actual storage procedure of a given event. The caller keeps
+ * ownership of the event.
+ *
+ * Parameters:
+ *      control : Pointer of a PluginControl data structure
+ *      event   : Pointer to the event to store.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosPluginControlStore(elosPluginControl_t *pluginControl, const elosEvent_t *event);
+
+/*******************************************************************
+ * Implements the actual subscription process for a given list of filters.
+ *
+ * Parameters:
+ *      subscriber    : Pointer of a Subscriber data structure
+ *      filterStrings : A list of event filter string a subscription and event
+ *                      queue shall be created for.
+ *      filterCount   : Number of event filter strings provided.
+ *      subscription  : A pointer to subscription pointer to store the new
+ *                      created subscription. The pointer keeps unchanged on
+ *                      failure. The ownership of the subscription remains by
+ *                      the `PluginControl` instance.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosPluginControlSubscribe(elosSubscriber_t *subscriber, char const *const *filterStrings,
+                                         size_t filterCount, const elosSubscription_t **const subscription);
+
+/*******************************************************************
+ * Implement the actual process to cancel an active subscription.
+ *
+ * Parameters:
+ *      subscriber   : Pointer of a Subscriber data structure
+ *      subscription : Pointer to a subscription object describing the
+ *                     subscription which shall be canceled.
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosPluginControlUnsubscribe(elosSubscriber_t *subscriber, elosSubscription_t const *const subscription);
+
+/*******************************************************************
+ * Implement a way to cancel a all subscriptions maintained by the given plugin
+ * instance.
+ *
+ * Parameters:
+ *      subscriber : Pointer of a Subscriber data structure
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosPluginControlUnsubscribeAll(elosSubscriber_t *subscriber);
 
 __END_DECLS
