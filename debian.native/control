@@ -249,7 +249,7 @@ Description: Event logging and management with normalized output-format coredump
  Coredump utility package.
 
 Package: libmock-libelos0
-Section: libdevel
+Section: libs
 Architecture: any
 Depends:
  ${misc:Depends},
