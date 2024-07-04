@@ -139,7 +139,7 @@ static safuResultE_t _pluginStart(elosPlugin_t *plugin) {
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
     } else {
-        safuLogDebugF("Scanner Dummy Plugin '%s' has been started", plugin->config->key);
+        safuLogDebugF("Scanner Plugin '%s' has been started", plugin->config->key);
         result = elosPluginReportAsStarted(plugin);
         if (result == SAFU_RESULT_FAILED) {
             safuLogErr("elosPluginReportAsStarted failed");
