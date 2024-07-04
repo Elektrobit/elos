@@ -404,7 +404,7 @@ static elosRpnFilterResultE_t _stepRegExOperation(elosRpnFilterExecute_t *ctx, U
     elosRpnFilterResultE_t result = RPNFILTER_RESULT_ERROR;
 
     if ((_STACK_SUB1.type != RPNFILTER_VALUE_REGEX) || (_STACK_SUB2.type != RPNFILTER_VALUE_STRING)) {
-        safuLogErr("Step RPNFILTER_STEP_REGEX expects a regex string as first and a string as second value!");
+        safuLogErr("RPN filter string should be as follows : 'hello123' r'[0-9]' REGEX");
     } else if (_STACK_SUB1.bytes < 1) {
         result = RPNFILTER_RESULT_MATCH;
         ctx->stackIdx -= 2;

@@ -1,0 +1,5 @@
+usr/include/elos/libelosplugin
+usr/include/elos/eventfilter
+usr/lib/*/pkgconfig/elosplugin.pc
+usr/lib/*/libelosplugin.so
+usr/lib/*/cmake/libelosplugin

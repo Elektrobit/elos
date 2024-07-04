@@ -5,9 +5,14 @@ ARG UID=1000
 ARG GID=1000
 ARG ASMCOV_URI="not available"
 ARG CAPSTONE_VERSION=4.0.2
-ARG TABVIEW_VERSION=1.9
-
+ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get reinstall ca-certificates -y
+RUN sed -i "s,http://archive.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && sed -i "s,http://security.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
+ && cat /etc/apt/sources.list
+
 RUN apt-get update \
  && apt-get install -y \
     binutils-dev \
@@ -16,9 +21,11 @@ RUN apt-get update \
     clang-tidy \
     cmake \
     curl \
+    debhelper \
     expat \
     gdb \
     git \
+    git-buildpackage \
     gnuplot \
     jq \
     libcmocka-dev \
@@ -34,6 +41,7 @@ RUN apt-get update \
     libssl-dev \
     linux-tools-generic \
     locales \
+    moreutils \
     net-tools \
     netcat \
     ninja-build \
@@ -73,11 +81,6 @@ RUN if [ "${ASMCOV_URI}" != "not available" ]; then git clone --depth 1 ${ASMCOV
  && make -C build \
  && make -C build install; \
  fi
-
-RUN git clone --depth 1 --branch $TABVIEW_VERSION https://gitlab.com/esr/tapview.git
-RUN cd tapview \
- && sed -i '/$(INSTALL) -m 644 $(MANPAGES)/d' Makefile\
- && make install DESTDIR=/ prefix=usr
 
 USER $USER
 ENV LC_ALL=en_US.UTF-8

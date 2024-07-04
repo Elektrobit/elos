@@ -6,11 +6,30 @@
             "Interface": "0.0.0.0",
             "ConnectionLimit": 200,
             "EventBlacklist": ".event.messageCode 2000 EQ",
-	    "authorizedProcesses": [
-		    ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-		    ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-		    ".process.pid 1 EQ"
-	    ],
+            "authorizedProcesses": [
+                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                ".process.pid 1 EQ"
+            ],
+            "ClientInputs": {
+                "PluginSearchPath": "/usr/local/lib/elos/client",
+                "Plugins": {
+                    "LocalTcpClient": {
+                        "File": "client_dummy.so",
+                        "Run": "always",
+                        "Config": {
+                            "Port": 54323,
+                            "Interface": "127.0.0.1",
+                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "authorizedProcesses": [
+                                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.pid 1 EQ"
+                            ]
+                        }
+                    }
+                }
+            },
             "EventLogging": {
                 "PluginSearchPath": "/usr/local/lib/elos/backend",
                 "Plugins": {
@@ -39,13 +58,24 @@
                 }
             },
             "Scanner": {
-                "SyslogScanner": {
-                    "Syslog": "/dev/log",
-                    "MappingRules": {
-                        "MessageCodes": {
-                            "4000": ".event.source.appName 'ssh' STRCMP",
-                            "2000": ".event.source.appName 'crinit' STRCMP",
-                            "1000": ".event.source.appName 'login' STRCMP"
+                "PluginSearchPath": "/usr/local/lib/elos/scanner",
+                "Plugins": {
+                    "OomKiller": {
+                        "File": "scanner_oomkiller.so",
+                        "Run": "always"
+                    },
+                    "SyslogScanner": {
+                        "File": "scanner_syslog.so",
+                        "Run": "always",
+                        "Config": {
+                            "Syslog": "/dev/log",
+                            "MappingRules": {
+                                "MessageCodes": {
+                                    "4000": ".event.source.appName 'ssh' STRCMP",
+                                    "2000": ".event.source.appName 'crinit' STRCMP",
+                                    "1000": ".event.source.appName 'login' STRCMP"
+                                }
+                            }
                         }
                     }
                 },

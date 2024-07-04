@@ -5,7 +5,6 @@
 #include <safu/vector.h>
 #include <samconf/samconf.h>
 
-#include "elos/pluginmanager/pluginmanager.h"
 #include "elos/storagemanager/storagemanager_types.h"
 
 __BEGIN_DECLS

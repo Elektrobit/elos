@@ -6,11 +6,11 @@
 
 typedef struct elosTestState {
     char *timezone;
-    samconfConfig_t *childrenData;
+    samconfConfig_t config;
     elosLoglineMapper_t mapper;
 } elosTestState_t;
 
-int elosLoglineMapperDoMappingUtestInit(void **state);
+int elosLoglineMapperDoMappingUtestInit(void **state, const char *config);
 int elosLoglineMapperDoMappingUtestCleanUp(void **state);
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosLoglineMapperDoMappingSuccess)

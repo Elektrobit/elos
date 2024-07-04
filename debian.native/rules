@@ -1,0 +1,71 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all optimize=-lto
+export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+%:
+	dh $@ --buildsystem=cmake --builddirectory=debian/build
+
+CFG_FILE=$(CURDIR)/debian/tmp/etc/elos/elosd.json
+
+define edit_config
+	jq $(1) $(CFG_FILE) | sponge $(CFG_FILE)
+endef
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DELOS_BUILD_DEFAULTS=off \
+		-DELOS_MOCK_LIBRARY=on \
+		-DINSTALL_UNIT_TESTS=on \
+		-DELOS_DAEMON=on \
+		-DELOS_TOOLS=on \
+		-DELOS_PLUGINS=on \
+		-DELOSD_EVENTLOGGING_BACKEND_SQL=on \
+		-DELOSD_EVENTLOGGING_BACKEND_NOSQL=on \
+		-DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=on \
+		-DELOSD_LIBDLT=on
+
+override_dh_auto_install:
+	dh_auto_install
+
+	install -Dm0644 "$(CURDIR)/src/components/config/elosd.json" \
+		"$(CURDIR)/debian/tmp/etc/elos/elosd.json"
+
+	# No need to override plugin search path, use compile default /usr/lib/elos/
+	$(call edit_config,'del(.root.elos.ClientInputs.PluginSearchPath)')
+	$(call edit_config,'del(.root.elos.EventLogging.PluginSearchPath)')
+	$(call edit_config,'del(.root.elos.Scanner.Path)')
+
+	# Don't need demo dummy storage backend
+	$(call edit_config,'del(.root.elos.EventLogging.Plugins.Dummy)')
+
+	# Don't need DLT storage backend
+	$(call edit_config,'del(.root.elos.EventLogging.Plugins.DLT)')
+
+	# log everything with json backend
+	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Filter = ["1 1 EQ"]')
+
+	# Set log storage path
+	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Config.StoragePath = "/var/log/elos/elos.json"')
+
+	# Default log level is Debug , reduce verbosity
+	$(call edit_config,'.root.elos.LogLevel = "ERROR"')
+
+	# set default syslog mapping rule
+	$(call edit_config,'.root.elos.Scanner.SyslogScanner.MappingRules.MessageCodes = {"1003":"1 1 EQ"}')
+
+	# elos currently can't forward syslog messages on the syslog socket, thus
+	# don't acquire /dev/log to not conflict with other syslog daemons
+	$(call edit_config,'.root.elos.Scanner.SyslogScanner.SyslogPath = "/run/elos/dev-log"')
+
+override_dh_install:
+	dh_install
+	# Do not ship plantuml source files
+	find debian/ -name \*.plantuml -delete
+
+override_dh_installsystemd:
+	dh_installsystemd --name elosd
+
+override_dh_compress:
+	# Do not compress .md or .rst files
+	dh_compress --exclude=.md --exclude=.rst

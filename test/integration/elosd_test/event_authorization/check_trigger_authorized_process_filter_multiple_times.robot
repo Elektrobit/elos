@@ -8,8 +8,10 @@ Documentation       A test suite to check trigger authorized process filter mult
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -33,13 +35,11 @@ ${CLIENTS}                      2
 A Simple Authorized Process Filter Is Set
     [Documentation]    Set a simple authorized process filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${AUTHORIZED_PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 Multiple Clients Try To Publish A Blacklisted Event
     [Documentation]    run multiple clients to publish blacklisted filters
@@ -72,12 +72,3 @@ Blacklisted Event Is Published
     ...    ${RETURN_RC}
     Should Contain X Times    ${stdout}    2010    ${CLIENTS}
     Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started

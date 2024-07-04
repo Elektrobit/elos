@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.57.3)
+set(ELOS_VERSION 0.59.2)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -57,6 +57,7 @@ macro(project_set_environment)
       -Og -g3 -DDEBUG -fno-omit-frame-pointer
       $<IF:$<BOOL:${ENABLE_ANALYZER}>,-fanalyzer,>
       $<IF:$<BOOL:${ENABLE_ANALYZER}>,-Wno-analyzer-malloc-leak,>
+      $<IF:$<BOOL:${ENABLE_ANALYZER}>,-Wno-analyzer-fd-leak,>
     )
   elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_options(-O3 -DNDEBUG -g $<IF:$<BOOL:${ENABLE_CI}>,-Werror,>)
@@ -68,6 +69,7 @@ macro(project_set_environment)
       -Og -g3 -DDEBUG -fsanitize=thread -fno-omit-frame-pointer
       $<IF:$<BOOL:${ENABLE_ANALYZER}>,-fanalyzer,>
       $<IF:$<BOOL:${ENABLE_ANALYZER}>,-Wno-analyzer-malloc-leak,>
+      $<IF:$<BOOL:${ENABLE_ANALYZER}>,-Wno-analyzer-fd-leak,>
     )
   endif()
 endmacro()

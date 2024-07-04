@@ -2,12 +2,9 @@
 #ifndef ELOS_KMSG_MAPPER_H
 #define ELOS_KMSG_MAPPER_H
 
+#include <elos/event/event_types.h>
+#include <safu/result.h>
 #include <samconf/samconf.h>
-
-#include "elos/event/event.h"
-#include "elos/event/event_message_codes.h"
-
-//#define ELOS_MSG_CODE_KMSG 1111
 
 typedef struct elosKmsgMapper {
     struct timespec bootTime;

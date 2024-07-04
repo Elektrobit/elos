@@ -9,8 +9,10 @@ Documentation       A test suite to check blacklist filter triggered mutiple tim
 Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
+Library             ../../libraries/ElosKeywords.py
 
-Suite Setup         Connect To Target And Log In
+Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
 
@@ -19,12 +21,14 @@ ${BLACKLIST_FILTER}     .event.messageCode 2010 EQ
 @{PROCESS_FILTER}       1 0 EQ    # all processes are unauthorized
 ${SESSIONS}             2
 ${CLIENTS}              2
+${SESSION_ID}           1
 
 
 *** Test Cases ***
 01_Test_Trigger_Blacklist_Filter_Multiple_Sessions    # robocop: disable=not-capitalized-test-case-title
-    [Documentation]    Blacklist filter is triggered more than once
-    ...    in separate sessions.
+    [Documentation]    Try to trigger multiple times from different
+    ...                clients the blacklist filter and check if
+    ...                expected amount of security events are created.
     [Setup]    A Simple Blacklist Filter Is Set
 
     FOR    ${session}    IN RANGE    0    ${SESSIONS}
@@ -39,23 +43,24 @@ ${CLIENTS}              2
 A Simple Blacklist Filter Is Set
     [Documentation]    Set a simple blacklist filter in config
 
-    Stop Elosd
-    Wait For Elosd To Stop
+    Ensure Elosd Is Stopped
     Set Config From Template
     ...    EventBlacklist=${BLACKLIST_FILTER}
     ...    authorizedProcesses=${PROCESS_FILTER}
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure Elosd Is Started
 
 New Session Is Started
     [Documentation]    Start a new elos session
 
     Run Keyword    Restart Elosd
+    Wait Till Elosd Is Listening On
+    ${SESSION_ID}=    Evaluate    ${SESSION_ID} + 1
+    Set Test Variable    ${SESSION_ID}
 
 Multiple Unauthorized Processes Try To Publish A Blacklisted Event
     [Documentation]    run multiple client to publish blacklisted filters
 
-    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
+    ${PUBLISH_TIME}=    Get Elos Event Publish Time Threshold
 
     Set Test Variable    ${PUBLISH_TIME}
 
@@ -66,25 +71,19 @@ Multiple Unauthorized Processes Try To Publish A Blacklisted Event
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
 
-    ${rc}    Execute And Log    elosc -p '{"messageCode": 2010}'    ${RETURN_RC}
+    ${SESSION_TOKEN}=    Set Variable
+    ...                  01_Test_Trigger_Blacklist_Filter_Multiple_Sessions${SESSION_ID}
+    Set Test Variable    ${SESSION_TOKEN}
+    ${rc}=    Execute And Log
+    ...       elosc -p '{"messageCode": 2010, "payload":"${SESSION_TOKEN}"}'
+    ...       ${RETURN_RC}
     Executable Returns An Error    ${rc}
 
 A Security Event Is Published
     [Documentation]    Attempt to publish a blacklisted event will lead to a security event
     ...    to be published if client is unauthorized.
 
-    ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 8007 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"
-    ...    ${RETURN_STDOUT}
-    ...    ${RETURN_RC}
-    Should Contain X Times    ${stdout}    2010    ${CLIENTS}
-    Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
-
-Reset Elosd Config
-    [Documentation]    reset elosd config to default during test teardown.
-
-    Stop Elosd
-    Wait For Elosd To Stop
-    Cleanup Template Config
-    Start Elosd
-    Wait Till Elosd Is Started
+    Ensure X Events Are Stored With Payload
+    ...    .event.messageCode 8007 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND
+    ...    ${CLIENTS}
+    ...    ${SESSION_TOKEN}
