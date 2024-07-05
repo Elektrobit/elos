@@ -26,7 +26,7 @@ Vcs-Browser: https://github.com/Elektrobit/elos
 Vcs-Git: https://github.com/Elektrobit/elos
 
 Package: elos
-Section: virtual
+Section: utils
 Architecture: any
 Depends:
  ${misc:Depends},
