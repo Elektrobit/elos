@@ -1,4 +1,10 @@
-elos (0.58.14-1) UNRELEASED; urgency=medium
+elos (0.58.14-2) unstable; urgency=medium
+
+  * elos: change Section to "utils"
+
+ -- Isaac True <isaac.true@emlix.com>  Fri, 05 Jul 2024 10:51:55 +0200
+
+elos (0.58.14-1) unstable; urgency=medium
 
   * New upstream tag 0.58.14
 
