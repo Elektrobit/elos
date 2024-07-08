@@ -219,15 +219,16 @@ code-coverage:
       - build/Release/result/coverage_results/
 
 publish-kpis:
-  rules:
-    - when: never
-      allow_failure: true
+  stage: test
   needs:
     - build-docker-image
+    - build-release
     - benchmark
     - code-coverage
+  variables:
+    BRANCH_NAME: $CI_COMMIT_REF_NAME
   script:
-    - ci/publish_pkis.sh
+    - ci/publish_kpis.sh
 
 documentation:
   stage: build
