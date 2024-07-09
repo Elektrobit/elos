@@ -1,6 +1,7 @@
 
 ![build](https://github.com/Elektrobit/elos/actions/workflows/build-and-test.yml/badge.svg)
 ![documentation](https://github.com/Elektrobit/elos/actions/workflows/build-documentation.yml/badge.svg)
+![AUR](https://img.shields.io/aur/version/elos)
 
 # Event Logging and Management System (elos)
 
@@ -34,6 +35,13 @@ ci@2153762153:/$ elosc -p '{"payload": "Hello elos"}'
 
 For detailed build instructions have a look into `./ci/docker-target-run.sh`
 and/or consult the documentation https://elektrobit.github.io/elos .
+
+### Install Elos
+
+See [Elosd Installation &
+Setup](https://elektrobit.github.io/elos/doc/userManual.html#elosd-installation-setup)
+for supported Linux distributions and how to build from source.
+
 
 ## Depenencies
 
