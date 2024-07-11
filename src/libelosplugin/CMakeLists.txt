@@ -9,6 +9,7 @@ create_interface_library(
   LIBRARIES
     samconf::samconf_interface
     safu::safu_interface
+    elos_common_interface
   INSTALL
 )
 
@@ -16,6 +17,7 @@ add_library(
   libelosplugin
   SHARED
     private/libelosplugin.c
+    private/libelosPluginConfig.c
 )
 
 target_include_directories(
@@ -83,6 +85,7 @@ install(
 
 install(TARGETS libelosplugin EXPORT libelospluginTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(TARGETS libelosplugin_interface EXPORT libelospluginTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS elos_common_interface EXPORT libelospluginTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 
 include(${PROJECT_SOURCE_DIR}/cmake/pkgconfig/pkgconfig.cmake)

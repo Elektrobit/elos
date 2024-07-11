@@ -31,6 +31,7 @@ struct elosSubscriber;
 
 typedef struct elosPluginContext {
     samconfConfig_t const *config;
+    bool useEnv;
     elosPluginId_t id;
     void *data;
     int sync;

@@ -257,6 +257,8 @@ elosRpnFilterResultE_t elosRpnFilterBuilderStepAppend(elosRpnFilterBuilderStepEn
     if (stackSize < 0) {
         safuLogErrF("Too few values on stack for step '%.*s' (consumes:%u, on stack:%ld)", (int)step->token->length,
                     step->token->string, step->consumes, data->stackSizeTracker);
+    } else if (step->type == RPNFILTER_STEP_UNDEFINED) {
+        safuLogErrF("Undefined command '%.*s'", (int)step->token->length, step->token->string);
     } else {
         retVal = safuVecPush(&data->step, step);
         if (retVal < 0) {

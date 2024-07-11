@@ -9,6 +9,7 @@ Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
 Library             ../../libraries/ElosKeywords.py
+Library             JSONLibrary
 
 Suite Setup         Run Keywords    Connect To Target And Log In
 ...                 AND             Ensure Elosd Is Started
@@ -43,9 +44,13 @@ An Empty Authorized Process Filter Is Set
     [Documentation]    Set an empty authorized process filter in config
 
     Ensure Elosd Is Stopped
-    Set Config From Template
-    ...    EventBlacklist=${BLACKLIST_FILTER}
-    ...    authorizedProcesses=${EMPTY_PROCESS_FILTERS}
+    ${Config}    Default Config Core
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.EventBlacklist    ${BLACKLIST_FILTER}
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.authorizedProcesses
+    ...          ${EMPTY_PROCESS_FILTERS}
+    Set Config From Template    &{Config}
     Ensure Elosd Is Started
 
 Client Tries To Publish A Blacklisted Event

@@ -33,6 +33,7 @@ typedef struct elosPluginControlParamFuncOverride {
 typedef struct elosPluginControlParam {
     elosPluginId_t id;
     samconfConfig_t const *config;
+    bool useEnv;
     elosPluginTypeE_t pluginType;
     char const *path;
     char const *file;

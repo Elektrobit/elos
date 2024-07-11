@@ -9,6 +9,7 @@ Resource            ../../elosd-keywords.resource
 Resource            ../../keywords.resource
 Library             ../../libraries/TemplateConfig.py
 Library             ../../libraries/ElosKeywords.py
+Library             JSONLibrary
 
 Suite Setup         Run Keywords    Connect To Target And Log In
 ...                 AND             Ensure Elosd Is Started
@@ -66,9 +67,13 @@ A Filter To Authorize Root Processes Is Set
     [Documentation]    Set a simple authorized process filter to authorize all root processes
 
     Ensure Elosd Is Stopped
-    Set Config From Template
-    ...    EventBlacklist=${BLACKLIST_FILTER}
-    ...    authorizedProcesses=${FILTER_TO_ALLOW_ROOT_PROCESSES}
+    ${Config}    Default Config Core
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.EventBlacklist    ${BLACKLIST_FILTER}
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.authorizedProcesses
+    ...          ${FILTER_TO_ALLOW_ROOT_PROCESSES}
+    Set Config From Template    &{Config}
     Ensure Elosd Is Started
 
 A Filter To Authorize Non Root Processes Is Set
@@ -76,9 +81,13 @@ A Filter To Authorize Non Root Processes Is Set
 
     Set Test Variable    ${AUTHORIZE_ROOT}    ${false}
     Ensure Elosd Is Stopped
-    Set Config From Template
-    ...    EventBlacklist=${BLACKLIST_FILTER}
-    ...    authorizedProcesses=${FILTER_TO_ALLOW_NON_ROOT_PROCESSES}
+    ${Config}    Default Config Core
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.EventBlacklist    ${BLACKLIST_FILTER}
+    ${Config}    Update Value To Json
+    ...          ${Config}    $..LocalTcpClient.Config.authorizedProcesses
+    ...          ${FILTER_TO_ALLOW_NON_ROOT_PROCESSES}
+    Set Config From Template    &{Config}
     Ensure Elosd Is Started
 
 Root Process Tries To Publish A Blacklisted Event
