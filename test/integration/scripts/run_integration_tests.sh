@@ -54,7 +54,7 @@ run_suite()
 run_module()
 {
   if [ -d "${1}" ]; then
-      TEST_NAME=$(echo "${1}" | rev | cut -d '/' -f 2 | rev)
+      TEST_NAME=$(basename "${1}")
       printf '\nStart tests module %-s\n' "${1}"
       robot \
           --variablefile="$VARIABLE_FILE" \
