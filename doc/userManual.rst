@@ -500,8 +500,20 @@ Get elos Project
 
 Elos sourcecode is located in a git repository.
 
-Build And Installation
-~~~~~~~~~~~~~~~~~~~~~~
+Install in Archlinux
+~~~~~~~~~~~~~~~~~~~~
+
+![AUR](https://img.shields.io/aur/version/elos)
+Elos and its dependencies is available in the [AUR](https://aur.archlinux.org/packages/elos).
+Installation using `yay`:
+
+::
+   yay -S elos
+
+Thats all.
+
+Build And Installation From Source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As soon as you have elos, you need to build it. elos has different
 dependencies. To install all the dependencies in a Debian based system,
