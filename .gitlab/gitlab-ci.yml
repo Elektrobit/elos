@@ -201,31 +201,34 @@ benchmark:
       - build/Release/result/benchmark_results/
 
 code-coverage:
-  rules:
-    - when: never
-      allow_failure: true
+  tags:
+    - "intelpt"
+    - "docker"
   stage: test
   needs:
     - build-docker-image
     - build-dependencies
     - build-release
   script:
+    - cat /proc/cpuinfo
+    - ls -lah /sys/devices/intel_pt
     - ci/create_coverage.sh
   artifacts:
     when: always
     paths:
-      - build/Release/cmake/coverage_results/
+      - build/Release/result/coverage_results/
 
 publish-kpis:
-  rules:
-    - when: never
-      allow_failure: true
+  stage: test
   needs:
     - build-docker-image
+    - build-release
     - benchmark
     - code-coverage
+  variables:
+    BRANCH_NAME: $CI_COMMIT_REF_NAME
   script:
-    - ci/publish_pkis.sh
+    - ci/publish_kpis.sh
 
 documentation:
   stage: build
