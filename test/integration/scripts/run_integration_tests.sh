@@ -17,28 +17,23 @@ TARGET_IP=$(grep "${TARGET_NAME}" /etc/hosts | cut -f 1)
 
 run_all()
 {
-  for dir in $(ls -d "$TEST_DIR"/*/); do
-      TEST_NAME=$(echo $dir | rev | cut -d '/' -f 2 | rev)
-      echo "\nStart test suite $dir"
-      robot \
-          --listener RetryFailed:1 \
-          --randomize all \
-          --variablefile="$VARIABLE_FILE" \
-          --pythonpath="$INTEGRATION_DIR" \
-          --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-          --output="$TEST_NAME" \
-          --report="$TEST_NAME" "$dir" || true
-  done
-  rebot --output "${TEST_OUTPUT}/elos.xml" \
-      --outputdir "${TEST_OUTPUT}" \
-      "${TEST_OUTPUT}/*/*.xml"
+  TEST_NAME="elos_integration_tests"
+  echo "\nStarting all elos integration tests"
+  robot \
+      --listener RetryFailed:1 \
+      --randomize all \
+      --variablefile="$VARIABLE_FILE" \
+      --pythonpath="$INTEGRATION_DIR" \
+      --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+      --output="$TEST_NAME" \
+      --report="$TEST_NAME" "${TEST_DIR}" || true
 }
 
 run_suite()
 {
   TEST_SUITE=$(find ${TEST_DIR} -type f -name ${1})
   if [ ! -d "$TEST_SUITE" ]; then
-      TEST_NAME=$(echo "${TEST_SUITE}" | rev | cut -d '/' -f 2 | rev)
+      TEST_NAME=$(basename "${TEST_SUITE}")
       printf '\nStart test suite %-s\n' "${TEST_SUITE}"
       robot \
           --variablefile="$VARIABLE_FILE" \
@@ -70,21 +65,24 @@ run_module()
 run_case()
 {
   TEST_SUITES=$(grep -rlI "$1" ${TEST_DIR})
-  for suite in ${TEST_SUITES}; do
-      if [ -e "${suite}" ]; then
-          TEST_NAME=$(echo "${suite}" | rev | cut -d '/' -f 2 | rev)
-          printf '\nStart test case %-s in suite %-s\n' "$1" "${suite}"
-          robot \
-              --variablefile="$VARIABLE_FILE" \
-              --pythonpath="$INTEGRATION_DIR" \
-              --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-              --output="$TEST_NAME" \
-              --report="$TEST_NAME" \
-              --test "$1" "${suite}"
-      else
-          echo "test case not found in test suite"
-      fi
-  done
+  if [ -z "${TEST_SUITES}" ]; then
+      echo "Test case not found in any test suite"
+  else
+      TEST_NAME="test"
+      for suite in ${TEST_SUITES}; do
+          suite=$(basename $(dirname ${suite}))
+          TEST_NAME="${TEST_NAME}_${suite}"
+      done
+      
+      printf '\nStart test case %-s in suite/s %-s\n' "$1" "${TEST_NAME}"
+      robot \
+          --variablefile="$VARIABLE_FILE" \
+          --pythonpath="$INTEGRATION_DIR" \
+          --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+          --output="$TEST_NAME" \
+          --report="$TEST_NAME" \
+          --test="*.${1}" "${TEST_DIR}" || true
+  fi
 }
 
 print_help()
@@ -93,7 +91,7 @@ print_help()
   echo "Usage: $0 --all : run all tests in the integration test directory"
   echo "Usage: $0 --suite <test suite name> : run all tests in the given test suite"
   echo "Usage: $0 --module <path to module > : run all tests in the given test module path"
-  echo "Usage: $0 --case <test-case name> : run given test case in the given test suite"
+  echo "Usage: $0 --case <test-case name> : run given test case"
   echo "Usage: $0 --help : show this help"
   echo
 }
