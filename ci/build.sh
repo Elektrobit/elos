@@ -11,15 +11,19 @@ OPTION_CI=0
 OPTION_CLEAN=0
 OPTION_VERBOSE=0
 OPTION_PACKAGE=0
-for element in "$@"; do
-    case $element in
+while [ $# -gt 0 ]; do
+    case ${1} in
         --ci)          OPTION_CI=1 ;;
         --clean|-c)    OPTION_CLEAN=1 ;;
         --verbose|-v)  OPTION_VERBOSE=1 ;;
         --package)     OPTION_PACKAGE=1 ;;
-        -*)          echo "error: unknown option: $1"; exit 1 ;;
-        *)           PARAM="$PARAM $element" ;;
+        -D)            CMAKE_PARAM="${CMAKE_PARAM} -D ${2}"
+                       shift ;;
+        -D*)           CMAKE_PARAM="${CMAKE_PARAM} ${1}" ;;
+        -*)          echo "error: unknown option: ${1}"; exit 1 ;;
+        *)           PARAM="${PARAM} ${1}" ;;
     esac
+    shift
 done
 
 set -- $PARAM
@@ -31,7 +35,7 @@ elif [ $OPTION_CI -eq 1 ]; then
         echo "error: build-type must be explicitely set in CI mode"
         exit 1
     fi
-    CMAKE_PARAM="-DENABLE_CI=1"
+    CMAKE_PARAM="${CMAKE_PARAM} -DENABLE_CI=1"
     OPTION_CLEAN=1
     OPTION_VERBOSE=1
 fi
