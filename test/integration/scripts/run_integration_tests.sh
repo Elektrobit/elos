@@ -32,8 +32,8 @@ run_all()
 run_suite()
 {
   TEST_SUITE=$(find ${TEST_DIR} -type f -name ${1})
-  if [ ! -d "$TEST_SUITE" ]; then
-      TEST_NAME=$(basename "${TEST_SUITE}")
+  if [ -f "${TEST_SUITE}" ]; then
+      TEST_NAME="elos_test_suite_$(basename "${TEST_SUITE}")"
       printf '\nStart test suite %-s\n' "${TEST_SUITE}"
       robot \
           --variablefile="$VARIABLE_FILE" \
@@ -64,25 +64,16 @@ run_module()
 
 run_case()
 {
-  TEST_SUITES=$(grep -rlI "$1" ${TEST_DIR})
-  if [ -z "${TEST_SUITES}" ]; then
-      echo "Test case not found in any test suite"
-  else
-      TEST_NAME="test"
-      for suite in ${TEST_SUITES}; do
-          suite=$(basename $(dirname ${suite}))
-          TEST_NAME="${TEST_NAME}_${suite}"
-      done
-      
-      printf '\nStart test case %-s in suite/s %-s\n' "$1" "${TEST_NAME}"
-      robot \
-          --variablefile="$VARIABLE_FILE" \
-          --pythonpath="$INTEGRATION_DIR" \
-          --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-          --output="$TEST_NAME" \
-          --report="$TEST_NAME" \
-          --test="*.${1}" "${TEST_DIR}" || true
-  fi
+  TEST_NAME="elos_test_case_$(echo ${1} | tr [:blank:] "_")"
+
+  printf '\nStart test case %-s\n' "${TEST_NAME}"
+  robot \
+      --variablefile="$VARIABLE_FILE" \
+      --pythonpath="$INTEGRATION_DIR" \
+      --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+      --output="$TEST_NAME" \
+      --report="$TEST_NAME" \
+      --test="*.${1}" "${TEST_DIR}" || true
 }
 
 print_help()
@@ -91,7 +82,7 @@ print_help()
   echo "Usage: $0 --all : run all tests in the integration test directory"
   echo "Usage: $0 --suite <test suite name> : run all tests in the given test suite"
   echo "Usage: $0 --module <path to module > : run all tests in the given test module path"
-  echo "Usage: $0 --case <test-case name> : run given test case"
+  echo "Usage: $0 --case \"<test-case name>\" : run given test case"
   echo "Usage: $0 --help : show this help"
   echo
 }
