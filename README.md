@@ -2,6 +2,7 @@
 ![build](https://github.com/Elektrobit/elos/actions/workflows/build-and-test.yml/badge.svg)
 ![documentation](https://github.com/Elektrobit/elos/actions/workflows/build-documentation.yml/badge.svg)
 ![AUR](https://img.shields.io/aur/version/elos)
+![Ubuntu PPA](https://img.shields.io/badge/Ubuntu--PPA?style=plastic&link=https%3A%2F%2Flaunchpad.net%2F~elos-team%2F%2Barchive%2Fubuntu%2Fppa)
 
 # Event Logging and Management System (elos)
 
