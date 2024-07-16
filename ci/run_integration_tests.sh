@@ -18,7 +18,7 @@ while [ $# -gt 0 ]; do
 	    shift
 	    ;;
 	--case|-c)
-	    TEST_PARAM="--case ${2} ${3}"
+	    TEST_PARAM="--case ${2}"
 	    shift
 	    shift
 	    ;;
