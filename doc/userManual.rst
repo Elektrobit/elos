@@ -503,11 +503,14 @@ Elos sourcecode is located in a git repository.
 Install in Archlinux
 ~~~~~~~~~~~~~~~~~~~~
 
-![AUR](https://img.shields.io/aur/version/elos)
-Elos and its dependencies is available in the [AUR](https://aur.archlinux.org/packages/elos).
+.. image:: https://img.shields.io/aur/version/elos
+   :alt: AUR elos
+
+Elos and its dependencies is available in the `AUR https://aur.archlinux.org/packages/elos`.
 Installation using `yay`:
 
 ::
+
    yay -S elos
 
 Thats all.
