@@ -4,44 +4,43 @@
 #
 
 CMD_PATH="$(realpath "$(dirname "$0")")"
+INTEGRATION_DIR=${INTEGRATION_DIR-${CMD_PATH%/*}}
 BASE_DIR="$(realpath "$CMD_PATH/../../..")"
+TEST_DIR=${INTEGRATION_DIR}/tests
+VARIABLE_FILE="${VARIABLE_FILE-${INTEGRATION_DIR}/resources/robot_variables.py}"
 
 . "$BASE_DIR/ci/common_names.sh"
 
-TEST_SOURCE=${TEST_SOURCE-${CMD_PATH%/*}}
-VARIABLE_FILE="${VARIABLE_FILE-${TEST_SOURCE}/robot_variables.py}"
 TEST_OUTPUT="${TEST_OUTPUT-${RESULT_DIR}/integration}"
-TEST_DIR="_test"
-TARGET_NAME="${TARGET_NAME-${PROJECT}-target}"
+TARGET_NAME="${TARGET_NAME-elos-target}"
 TARGET_IP=$(grep "${TARGET_NAME}" /etc/hosts | cut -f 1)
 
 run_all()
 {
-  for dir in $(ls -d "$TEST_SOURCE"/*/); do
-      if [ "${dir#*"$TEST_DIR"}" != "$dir" ]; then
-          TEST_NAME=$(echo $dir | rev | cut -d '/' -f 2 | rev)
-          echo "\nStart test suite $dir"
-          robot \
-              --listener RetryFailed:1 \
-              --randomize all \
-              --variablefile="$VARIABLE_FILE" \
-              --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-              --output="$TEST_NAME" \
-              --report="$TEST_NAME" "$dir" || true
-      fi
-  done
-  rebot --output "${TEST_OUTPUT}/elos.xml" \
-      --outputdir "${TEST_OUTPUT}" \
-      "${TEST_OUTPUT}/*/*.xml"
+  TEST_NAME="elos_integration_tests"
+  echo "\nStarting all elos integration tests"
+  robot \
+      --listener RetryFailed:1 \
+      --randomize all \
+      --variablefile="$VARIABLE_FILE" \
+      --pythonpath="$INTEGRATION_DIR" \
+      --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+      --output="$TEST_NAME" \
+      --report="$TEST_NAME" "${TEST_DIR}" || true
 }
 
 run_suite()
 {
-  if [ ! -d "$1" ]; then 
-      TEST_NAME=$(echo "$1" | rev | cut -d '/' -f 2 | rev)
-      printf '\nStart test suite %-s\n' "$1"
-      robot --variablefile="$VARIABLE_FILE" --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-            --output="$TEST_NAME" --report="$TEST_NAME" "$1" || true
+  TEST_SUITE=$(find ${TEST_DIR} -type f -name ${1})
+  if [ -f "${TEST_SUITE}" ]; then
+      TEST_NAME="elos_test_suite_$(basename "${TEST_SUITE}")"
+      printf '\nStart test suite %-s\n' "${TEST_SUITE}"
+      robot \
+          --variablefile="$VARIABLE_FILE" \
+          --pythonpath="$INTEGRATION_DIR" \
+          --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+          --output="$TEST_NAME" \
+          --report="$TEST_NAME" "${TEST_SUITE}" || true
   else
       echo "provided path is not a .robot suite"
   fi
@@ -49,11 +48,15 @@ run_suite()
 
 run_module()
 {
-  if [ -d "$1" ]; then 
-      TEST_NAME=$(echo "$1" | rev | cut -d '/' -f 2 | rev)
-      printf '\nStart test module %-s\n' "$1"
-      robot --variablefile="$VARIABLE_FILE" --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-            --output="$TEST_NAME" --report="$TEST_NAME" "$1" || true
+  if [ -d "${1}" ]; then
+      TEST_NAME=$(basename "${1}")
+      printf '\nStart tests module %-s\n' "${1}"
+      robot \
+          --variablefile="$VARIABLE_FILE" \
+          --pythonpath="$INTEGRATION_DIR" \
+          --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+          --output="$TEST_NAME" \
+          --report="$TEST_NAME" "${1}" || true
   else
       echo "provided path is not a directory"
   fi
@@ -61,27 +64,25 @@ run_module()
 
 run_case()
 {
-  if [ -e "$2" ]; then 
-      if grep -q "$1" "$2"; then 
-          TEST_NAME=$(echo "$2" | rev | cut -d '/' -f 2 | rev)
-          printf '\nStart test case %-s in suite %-s\n' "$1" "$2"
-          robot --variablefile="$VARIABLE_FILE" --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-                --output="$TEST_NAME" --report="$TEST_NAME" --test "$1" "$2"
-      else
-          echo "test case not in given test suite"
-      fi
-  else
-      echo "test suite does not exist"
-  fi
+  TEST_NAME="elos_test_case_$(echo ${1} | tr [:blank:] "_")"
+
+  printf '\nStart test case %-s\n' "${TEST_NAME}"
+  robot \
+      --variablefile="$VARIABLE_FILE" \
+      --pythonpath="$INTEGRATION_DIR" \
+      --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
+      --output="$TEST_NAME" \
+      --report="$TEST_NAME" \
+      --test="*.${1}" "${TEST_DIR}" || true
 }
 
 print_help()
 {
   echo
-  echo "Usage: $0 --all : run all tests in the integartion test directory"
-  echo "Usage: $0 --suite <path to test suite> : run all tests in the given test suite"
-  echo "Usage: $0 --module <path to test module dir> : run all tests in the given test module directory"
-  echo "Usage: $0 --case <test-case> <path to test suite> : run given test case in the given test suite"
+  echo "Usage: $0 --all : run all tests in the integration test directory"
+  echo "Usage: $0 --suite <test suite name> : run all tests in the given test suite"
+  echo "Usage: $0 --module <path to module > : run all tests in the given test module path"
+  echo "Usage: $0 --case \"<test-case name>\" : run given test case"
   echo "Usage: $0 --help : show this help"
   echo
 }
@@ -127,11 +128,11 @@ case $1 in
        ;;
 
     --case)
-       if [ -z "$2" ] || [ -z "$3" ]; then
+       if [ -z "$2" ]; then
            echo "Test case or test suite not provided"
            exit 1
        else
-           run_case "$2" "$3"
+           run_case "$2"
        fi
        ;;
 

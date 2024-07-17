@@ -18,8 +18,7 @@ while [ $# -gt 0 ]; do
 	    shift
 	    ;;
 	--case|-c)
-	    TEST_PARAM="--case ${2} ${3}"
-	    shift
+	    TEST_PARAM="--case \"${2}\""
 	    shift
 	    ;;
 	-*)
@@ -128,7 +127,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh ${TEST_PARAM}
+docker exec ${TEST_DOCKER_NAME} sh -c "/base/test/integration/scripts/run_integration_tests.sh ${TEST_PARAM}"
 
 ret=$?
 
