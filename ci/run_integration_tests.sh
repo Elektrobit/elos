@@ -10,11 +10,11 @@ while [ $# -gt 0 ]; do
 	--all|-a)
 	    TEST_PARAM="--all" ;;
 	--module|-m)
-	    TEST_PARAM="--module ${2}"
+	    TEST_PARAM="--module \"${2}\""
 	    shift
 	    ;;
 	--suite|-s)
-	    TEST_PARAM="--suite ${2}"
+	    TEST_PARAM="--suite \"${2}\""
 	    shift
 	    ;;
 	--case|-c)
@@ -127,7 +127,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker exec ${TEST_DOCKER_NAME} sh -c "/base/test/integration/scripts/run_integration_tests.sh ${TEST_PARAM}"
+docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh ${TEST_PARAM}
 
 ret=$?
 

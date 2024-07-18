@@ -26,7 +26,7 @@ run_all()
       --pythonpath="$INTEGRATION_DIR" \
       --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
       --output="$TEST_NAME" \
-      --report="$TEST_NAME" "${TEST_DIR}" || true
+      --report="$TEST_NAME" "${TEST_DIR}"
 }
 
 run_suite()
@@ -40,7 +40,7 @@ run_suite()
           --pythonpath="$INTEGRATION_DIR" \
           --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
           --output="$TEST_NAME" \
-          --report="$TEST_NAME" "${TEST_SUITE}" || true
+          --report="$TEST_NAME" "${TEST_SUITE}"
   else
       echo "provided path is not a .robot suite"
   fi
@@ -56,7 +56,7 @@ run_module()
           --pythonpath="$INTEGRATION_DIR" \
           --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
           --output="$TEST_NAME" \
-          --report="$TEST_NAME" "${1}" || true
+          --report="$TEST_NAME" "${1}"
   else
       echo "provided path is not a directory"
   fi
@@ -73,7 +73,7 @@ run_case()
       --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
       --output="$TEST_NAME" \
       --report="$TEST_NAME" \
-      --test="*.${1}" "${TEST_DIR}" || true
+      --test="*.${1}" "${TEST_DIR}"
 }
 
 print_help()
