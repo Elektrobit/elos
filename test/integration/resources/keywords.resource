@@ -8,6 +8,7 @@ Documentation       Collection of high level keywords shared by the test cases
 Library             Collections
 Library             String
 Library             SSHLibrary
+Library             JSONLibrary
 
 
 *** Variables ***
