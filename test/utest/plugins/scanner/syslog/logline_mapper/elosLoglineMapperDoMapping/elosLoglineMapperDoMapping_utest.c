@@ -15,6 +15,7 @@ int main() {
 
 int elosLoglineMapperDoMappingUtestInit(void **state, const char *configStr) {
     elosTestState_t *testState = calloc(1, sizeof(elosTestState_t));
+    assert_non_null(testState);
 
     samconfConfigStatusE_t confRes = samconfUtilCreateMockConfigFromStr(configStr, false, &testState->config);
     if (confRes != SAMCONF_CONFIG_OK) {
