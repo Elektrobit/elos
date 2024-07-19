@@ -251,36 +251,36 @@ safuResultE_t _demoRun(_demoState_t *state) {
     result = _workerStart(state, publisher, publisherCount, _publisherWorkerThread);
     if (result == SAFU_RESULT_OK) {
         result = _workerStart(state, consumer, consumerCount, _consumerWorkerThread);
+        if (result == SAFU_RESULT_OK) {
+            atomic_store(&state->unitsReady, true);
+
+            _workerStop(state, publisher, publisherCount, &publisherTimes);
+            _workerStop(state, consumer, consumerCount, &consumerTimes);
+
+            publisherTimes.avg = publisherTimes.sum / (double)publisherCount / (double)messageCount;
+            consumerTimes.avg = consumerTimes.sum / (double)consumerCount / (double)messageCount;
+
+            puts("");
+            printf("publisher: %lu\n", state->publisher.count);
+            printf("consumer: %lu\n", state->consumer.count);
+            printf("messageCount: %lu\n", state->messageCount);
+            puts("");
+            printf("messagesPublished: %lu\n", state->publisher.processed);
+            printf("messagesConsumed: %lu\n", state->consumer.processed);
+            printf("messagesLostByLimit: %lu\n", atomic_load(&state->messagesLost));
+            puts("");
+            printf("publishTimes.min: %.6lfmsec\n", publisherTimes.min);
+            printf("publishTimes.avg: %.6lfmsec\n", publisherTimes.avg);
+            printf("publishTimes.max: %.6lfmsec\n", publisherTimes.max);
+            printf("publishTimes.sum: %.6lfmsec\n", publisherTimes.sum);
+            puts("");
+            printf("consumerTimes.min: %.6lfmsec\n", consumerTimes.min);
+            printf("consumerTimes.avg: %.6lfmsec\n", consumerTimes.avg);
+            printf("consumerTimes.max: %.6lfmsec\n", consumerTimes.max);
+            printf("consumerTimes.sum: %.6lfmsec\n", consumerTimes.sum);
+            puts("");
+        }
     }
-
-    atomic_store(&state->unitsReady, true);
-
-    _workerStop(state, publisher, publisherCount, &publisherTimes);
-    _workerStop(state, consumer, consumerCount, &consumerTimes);
-
-    publisherTimes.avg = publisherTimes.sum / (double)publisherCount / (double)messageCount;
-    consumerTimes.avg = consumerTimes.sum / (double)consumerCount / (double)messageCount;
-
-    puts("");
-    printf("publisher: %lu\n", state->publisher.count);
-    printf("consumer: %lu\n", state->consumer.count);
-    printf("messageCount: %lu\n", state->messageCount);
-    puts("");
-    printf("messagesPublished: %lu\n", state->publisher.processed);
-    printf("messagesConsumed: %lu\n", state->consumer.processed);
-    printf("messagesLostByLimit: %lu\n", atomic_load(&state->messagesLost));
-    puts("");
-    printf("publishTimes.min: %.6lfmsec\n", publisherTimes.min);
-    printf("publishTimes.avg: %.6lfmsec\n", publisherTimes.avg);
-    printf("publishTimes.max: %.6lfmsec\n", publisherTimes.max);
-    printf("publishTimes.sum: %.6lfmsec\n", publisherTimes.sum);
-    puts("");
-    printf("consumerTimes.min: %.6lfmsec\n", consumerTimes.min);
-    printf("consumerTimes.avg: %.6lfmsec\n", consumerTimes.avg);
-    printf("consumerTimes.max: %.6lfmsec\n", consumerTimes.max);
-    printf("consumerTimes.sum: %.6lfmsec\n", consumerTimes.sum);
-    puts("");
-
     return result;
 }
 
