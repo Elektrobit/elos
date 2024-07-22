@@ -139,7 +139,7 @@ static safuResultE_t _pluginStart(elosPlugin_t *plugin) {
     if (plugin == NULL) {
         safuLogErr("Null parameter given");
     } else {
-        safuLogDebugF("Scanner Dummy Plugin '%s' has been started", plugin->config->key);
+        safuLogDebugF("Scanner Plugin '%s' has been started", plugin->config->key);
         result = elosPluginReportAsStarted(plugin);
         if (result == SAFU_RESULT_FAILED) {
             safuLogErr("elosPluginReportAsStarted failed");
@@ -267,7 +267,7 @@ static safuResultE_t _setupSocket(elosPlugin_t *plugin) {
 
 static void _publishMessage(elosPlugin_t *plugin) {
     struct syslog_context *context = plugin->data;
-    char *buffer = calloc(sizeof(char), MAX_LOG_ENTRY_SIZE);
+    char *buffer = calloc(MAX_LOG_ENTRY_SIZE, sizeof(char));
     bool publish = true;
 
     int bytesRead = read(context->socket, buffer, MAX_LOG_ENTRY_SIZE);

@@ -95,7 +95,7 @@ static safuResultE_t _publishMessage(elosPlugin_t *plugin) {
     char *readBuffer;
     int readBytes;
 
-    readBuffer = calloc(sizeof(char), MAX_LOG_ENTRY_SIZE);
+    readBuffer = calloc(MAX_LOG_ENTRY_SIZE, sizeof(char));
     if (readBuffer == NULL) {
         result = SAFU_RESULT_FAILED;
     }

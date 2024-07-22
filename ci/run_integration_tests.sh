@@ -10,16 +10,15 @@ while [ $# -gt 0 ]; do
 	--all|-a)
 	    TEST_PARAM="--all" ;;
 	--module|-m)
-	    TEST_PARAM="--module ${2}"
+	    TEST_PARAM="--module \"${2}\""
 	    shift
 	    ;;
 	--suite|-s)
-	    TEST_PARAM="--suite ${2}"
+	    TEST_PARAM="--suite \"${2}\""
 	    shift
 	    ;;
 	--case|-c)
-	    TEST_PARAM="--case ${2} ${3}"
-	    shift
+	    TEST_PARAM="--case \"${2}\""
 	    shift
 	    ;;
 	-*)

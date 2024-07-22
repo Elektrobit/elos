@@ -28,6 +28,10 @@ safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elos
         } else {
             result = elosPluginControlVectorPush(&pluginManager->pluginVector, &plugin);
             if (result != SAFU_RESULT_OK) {
+                result = elosPluginControlDeleteMembers(&plugin);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErr("elosPluginControlDeleteMembers failed, possible memory leak");
+                }
                 safuLogErr("elosPluginControlInitialize failed");
             } else {
                 if (id != NULL) {

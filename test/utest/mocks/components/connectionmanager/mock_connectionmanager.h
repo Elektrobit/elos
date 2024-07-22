@@ -12,8 +12,8 @@
 #include <cmocka_extensions/mock_func_weak.h>
 #endif
 
-#include "elos/connectionmanager/clientblacklist.h"
-#include "elos/connectionmanager/connectionmanager.h"
+#include "connectionmanager/clientblacklist.h"
+#include "connectionmanager/connectionmanager.h"
 
 MOCK_FUNC_PROTOTYPE(elosConnectionManagerGetStatus, safuResultE_t, elosConnectionManager_t *context, uint32_t *status)
 MOCK_FUNC_PROTOTYPE(elosConnectionManagerThreadGetFreeConnectionSlot, safuResultE_t, elosConnectionManager_t *ctx,

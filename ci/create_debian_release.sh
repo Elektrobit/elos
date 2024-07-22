@@ -32,7 +32,7 @@ function create_and_publish_debian_main() {
   rm debian/README.md
   echo "3.0 (quilt)" > debian/source/format
 
-  dch -M "--newversion=${NEW_VERSION}-1" "New upstream tag ${NEW_VERSION}"
+  dch -D unstable -M "--newversion=${NEW_VERSION}-1" "New upstream tag ${NEW_VERSION}"
   git add debian/ && git commit -m "New upstream tag ${NEW_VERSION}"
   git checkout HEAD -- debian.native && git clean -fxd -- debian.native
 }

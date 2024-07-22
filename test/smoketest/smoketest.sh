@@ -120,7 +120,7 @@ smoketest_elosd() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    STRINGS="listen on: ${ELOSD_INTERFACE-"0.0.0.0"}:${ELOSD_PORT-"54323"}
+    STRINGS="listen on: ${ELOSD_INTERFACE-"127.0.0.1"}:${ELOSD_PORT-"54323"}
 hardwareid: $(cat /etc/machine-id)
 log level: ${ELOS_LOG_LEVEL}
 log filter: ${ELOS_LOG_FILTER-""}
