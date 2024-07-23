@@ -1,0 +1,2 @@
+version=4
+https://github.com/Elektrobit/elos/tags .*/elos-(\d+).(\d+).(\d+).tar.gz
