@@ -20,6 +20,8 @@ function setup_env() {
 
   git config --local user.name "${GIT_AUTHOR_NAME}"
   git config --local user.email "${GIT_AUTHOR_EMAIL}"
+
+  export ELOS_DEPENDENCY_CONFIG=./ci/dependencies_emlix.json
 }
 
 function create_and_publish_debian_main() {
