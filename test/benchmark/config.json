@@ -2,64 +2,28 @@
     "root": {
         "elos": {
             "UseEnv": true,
-            "Port": 54321,
             "LogLevel": "DEBUG",
-            "Interface": "127.0.0.1",
-            "ConnectionLimit": 200,
-            "EventBlacklist": ".event.messageCode 2000 EQ",
-            "authorizedProcesses": [
-                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-                ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
-                ".process.pid 1 EQ"
-            ],
             "ClientInputs": {
-                "Plugins": {}
-            },
-            "EventLogging": {
-                "PluginSearchPath": "/usr/local/lib/elos/backend",
+                "PluginSearchPath": "/usr/local/lib/elos/client",
                 "Plugins": {
-                    "Dummy": {
-                        "File": "backend_dummy.so",
+                    "LocalTcpClient": {
+                        "File": "client_tcp.so",
                         "Run": "always",
-                        "Filter": [
-                            ".event.messageCode 1000 NE"
-                        ]
-                    },
-                    "JsonBackend": {
-                        "File": "backend_json.so",
-                        "Run": "always",
-                        "Filter": [
-                            "1 1 EQ"
-                        ]
-                    }
-                }
-            },
-            "Scanner": {
-                "PluginSearchPath": "/usr/local/lib/elos/scanner",
-                "Plugins": {
-                    "ScannerDummy": {
-                        "File": "scanner_dummy.so",
-                        "Run": "always"
-                    }
-                },
-                "SyslogScanner": {
-                    "MappingRules": {
-                        "MessageCodes": {
-                            "4000": ".event.source.appName 'ssh' STRCMP",
-                            "2000": ".event.source.appName 'crinit' STRCMP",
-                            "1000": ".event.source.appName 'login' STRCMP"
+                        "Config": {
+                            "ConnectionLimit": 200,
+                            "Port": 54321,
+                            "Interface": "127.0.0.1",
+                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "authorizedProcesses": [
+                                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.pid 1 EQ"
+                            ]
                         }
                     }
-                },
-                "Shmem": {
-                    "ShmemFile": "scanner_shmem",
-                    "ShmemCreate": true,
-                    "ShmemLogEntries": 16,
-                    "ShmemOffset": 0,
-                    "SemFile": "scanner_shmem_sem",
-                    "SemCreate": true
                 }
-            }
+            },
+            "Scanner": {}
         }
     }
 }

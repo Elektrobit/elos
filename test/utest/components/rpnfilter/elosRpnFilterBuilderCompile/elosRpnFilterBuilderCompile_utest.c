@@ -3,6 +3,7 @@
 
 int main() {
     const struct CMUnitTest tests[] = {
+        TEST_CASE(elos_testElosRpnFilterBuilderCompileErrInvalidFilter),
         TEST_CASE(elos_testElosRpnFilterBuilderCompileErrParam),
         TEST_CASE(elos_testElosRpnFilterBuilderCompileSuccessCommand),
         TEST_CASE(elos_testElosRpnFilterBuilderCompileSuccessLocation),

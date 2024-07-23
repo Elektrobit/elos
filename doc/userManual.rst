@@ -500,8 +500,61 @@ Get elos Project
 
 Elos sourcecode is located in a git repository.
 
-Build And Installation
-~~~~~~~~~~~~~~~~~~~~~~
+Install in Archlinux
+~~~~~~~~~~~~~~~~~~~~
+
+.. image:: https://img.shields.io/aur/version/elos
+   :alt: AUR elos
+
+Elos and its dependencies is available in the `AUR https://aur.archlinux.org/packages/elos`.
+Installation using `yay`:
+
+::
+
+   yay -S elos
+
+Thats all.
+
+Install in Ubuntu
+~~~~~~~~~~~~~~~~~
+
+.. image:: https://img.shields.io/badge/Ubuntu--PPA?style=plastic&link=https%3A%2F%2Flaunchpad.net%2F~elos-team%2F%2Barchive%2Fubuntu%2Fppa
+   :alt: Ubuntu-PPA
+
+1. Make sure to have `software-properties-common` installed.
+
+::
+
+   apt-get update
+   apt-get install software-properties-common
+
+2. Add elos PPA
+
+::
+
+   add-apt-repository -y ppa:elos-team/ppa
+
+3. Install elos
+
+::
+
+   apt-get install elos
+
+
+Install in Debian
+~~~~~~~~~~~~~~~~~
+
+Either follow the instructions here to use a `Ubuntu-PPA
+https://wiki.debian.org/CreatePackageFromPPA` or build from source.
+For the later option :
+
+1. Download `elos https://github.com/Elektrobit/elos/archive/refs/heads/debian/main.zip`
+2. Unzip and change into source directory
+3. Run ./ci/build_deps.sh
+4. Install resulting `.deb` :code:`files dpkg -i`
+
+Build And Installation From Source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As soon as you have elos, you need to build it. elos has different
 dependencies. To install all the dependencies in a Debian based system,

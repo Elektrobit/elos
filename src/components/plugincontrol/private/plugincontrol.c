@@ -98,6 +98,7 @@ safuResultE_t elosPluginControlInitialize(elosPluginControl_t *control, elosPlug
                     control->context.config = param->config;
                     control->context.data = param->data;
                     control->context.id = param->id;
+                    control->context.useEnv = param->useEnv;
                     control->pluginType = param->pluginType;
                     control->path = param->path;
                     _setupPluginSynchronization(control, eventFdSync, eventFdStop, eventFdWorker);

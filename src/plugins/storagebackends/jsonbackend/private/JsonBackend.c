@@ -246,6 +246,21 @@ safuResultE_t elosJsonBackendRotate(elosStorageBackend_t *backend) {
     return result;
 }
 
+/**
+ * Writes the event to the underlying storage pointed to by
+ * ``elosStorageBackend_t.backendData``. The function shall not call
+ * ``sync`` to flush kernel caches, as the file shall be opened with
+ * O_SYNC. The function shall block until the event is successful written
+ * to the storage backend.
+ *
+ * Parameters:
+ *     backend (elosStorageBackend_t*): The Storage Backend instance itself.
+ *     event : a pointer to a event instance to persist
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
 safuResultE_t elosJsonBackendPersist(elosStorageBackend_t *backend, const elosEvent_t *event) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosJsonBackend_t *jsonBackend = backend->backendData;
@@ -327,6 +342,20 @@ static safuResultE_t elosJsonBackendFilterEvent(elosEventFilter_t *filter, safuV
     return result;
 }
 
+/**
+ * Applies a filter to a given storage backend. Events which weren’t sorted
+ * out by the filter, will be appended on the event vector.
+ * Shutdown the logging system and free all related resources.
+ *
+ * Parameters:
+ *     backend (elosStorageBackend_t*): The Storage Backend instance itself.
+ *     filter : a filter that will be applied to the backend
+ *     events : an event vector, where elements will be appended
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
 safuResultE_t elosJsonBackendFindEvents(elosStorageBackend_t *backend, elosEventFilter_t *filter, safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosJsonBackend_t *jsonBackend = NULL;

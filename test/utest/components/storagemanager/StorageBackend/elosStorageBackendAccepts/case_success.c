@@ -32,11 +32,6 @@ static const struct _TestRow {
         .event = {.messageCode = 42, .severity = ELOS_SEVERITY_FATAL},
         .filterStrings = {".event.messageCode 42 EQ", ".event.severity 0 EQ", NULL},
     },
-    {
-        .expectedResult = SAFU_RESULT_FAILED,
-        .event = {.messageCode = 42, .severity = ELOS_SEVERITY_FATAL},
-        .filterStrings = {"I will fail on filter execute", "I will fail on filter execute as well", NULL},
-    },
 };
 
 int elosTestElosStorageBackendAcceptsSuccessSetup(UNUSED void **state) {

@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: MIT
 add_subdirectory(elosConfigGetElosdBackendPath)
-add_subdirectory(elosConfigGetElosdPort)
-add_subdirectory(elosConfigGetElosdConnectionLimit)
-add_subdirectory(elosConfigGetElosdInterface)
 add_subdirectory(elosConfigGetElosdLogFilter)
 add_subdirectory(elosConfigGetElosdLogLevel)
 add_subdirectory(elosConfigGetElosdStorageBackendJsonFile)

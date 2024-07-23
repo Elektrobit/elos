@@ -9,7 +9,6 @@
 
 #include "elos/clientmanager/clientmanager.h"
 #include "elos/config/config.h"
-#include "elos/connectionmanager/connectionmanager.h"
 #include "elos/eloslog/eloslog.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventlogging/LogAggregator.h"
@@ -28,7 +27,6 @@
 
 struct serverContext {
     samconfConfig_t *config;
-    elosConnectionManager_t connectionManagerContext;
     elosClientManager_t clientManagerContext;
     elosScannerManagerLegacyContext_t scannerManagerLegacyContext;
     elosScannerManager_t scannerManager;
@@ -86,13 +84,6 @@ int elosServerShutdown(struct serverContext *ctx) {
         result = EXIT_FAILURE;
     } else if (elosStorageManagerDeleteMembers(&ctx->storageManager) != SAFU_RESULT_OK) {
         safuLogErr("Deleting storage manager failed!");
-        result = EXIT_FAILURE;
-    }
-    if (elosConnectionManagerStop(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
-        safuLogErr("Stopping connection manager failed!");
-        result = EXIT_FAILURE;
-    } else if (elosConnectionManagerDeleteMembers(&ctx->connectionManagerContext) != SAFU_RESULT_OK) {
-        safuLogErr("Deleting connection manager failed!");
         result = EXIT_FAILURE;
     }
     if (elosScannerManagerLegacyStop(&ctx->scannerManagerLegacyContext) != NO_ERROR) {
@@ -177,10 +168,9 @@ int main(int argc, char **argv) {
         safuLogWarn("setting log filter failed!");
     }
 
-    safuLogInfoF("Setup:\n\tlisten on: %s:%d\n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s",
-                 elosConfigGetElosdInterface(context.config), elosConfigGetElosdPort(context.config),
-                 safuGetHardwareId(), safuLogLevelToString(safuLogGetStreamLevel()),
-                 elosConfigGetElosdLogFilter(context.config), elosConfigGetElosdScannerPath(context.config));
+    safuLogInfoF("Setup:\n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s", safuGetHardwareId(),
+                 safuLogLevelToString(safuLogGetStreamLevel()), elosConfigGetElosdLogFilter(context.config),
+                 elosConfigGetElosdScannerPath(context.config));
 
     safuLogDebug("Initialize EventProcessor");
     elosEventProcessorParam_t const epParam = {.config = context.config};
@@ -257,27 +247,6 @@ int main(int argc, char **argv) {
         safuLogWarn("elosLogAggregatorStart had errors during execution");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
-    }
-
-    safuLogDebug("Start connection manager");
-    elosConnectionManagerParam_t cmParams = {
-        .config = context.config,
-        .logAggregator = &context.logAggregator,
-        .eventProcessor = &context.eventProcessor,
-        .eventDispatcher = &context.eventDispatcher,
-    };
-    result = elosConnectionManagerInitialize(&context.connectionManagerContext, &cmParams);
-    if (result != SAFU_RESULT_OK) {
-        safuLogErr("elosConnectionManagerInitialize");
-        elosServerShutdown(&context);
-        return EXIT_FAILURE;
-    } else {
-        retval = elosConnectionManagerStart(&context.connectionManagerContext);
-        if (retval < 0) {
-            safuLogErr("elosConnectionManagerStart");
-            elosServerShutdown(&context);
-            return EXIT_FAILURE;
-        }
     }
 
     safuLogDebug("Start EventDispatcher");

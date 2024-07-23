@@ -21,7 +21,7 @@ function add_kpi {
 }
 
 function push_all_kpis {
-    curl -v -i "${KPI_API_URL}" \
+    curl -v --http1.1 -i "${KPI_API_URL}" \
         --header "Authorization: Token ${KPI_API_TOKEN}" \
         --header "Content-Type: text/plain; charset=utf-8" \
         --data-binary "@/tmp/kpis_to_send"

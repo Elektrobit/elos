@@ -33,8 +33,37 @@ typedef struct elosJsonBackend {
 
 safuResultE_t elosJsonBackendNew(elosStorageBackend_t **backend);
 
+/**
+ * Initialize the file backed storage of JSON serialized event objects. The
+ * ``elosStorageBackend_t.backendData`` shall be initialized with a pointer
+ * to a ``elosJsonBackend_t`` instance.
+ * ``elosJsonBackend_t.storageFileWrite`` and
+ * ``elosJsonBackend_t.storageFileRead`` shall contain valid file
+ * descriptors to the target file for writing/reading purposes. In write
+ * mode, the file shall be opened for appending and synchronous writing, to
+ * ensure a write is carried out through the kernel caches.
+ *
+ * Parameters:
+ *     backend (elosStorageBackend_t*): The Storage Backend instance itself.
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
 safuResultE_t elosJsonBackendStart(elosStorageBackend_t *backend);
 
+/**
+ * Shutdown the logging system and free all related resources.
+ *
+ * Parameters:
+ *     backend (elosStorageBackend_t*): The Storage Backend instance itself.
+ *
+ * Returns:
+ *     safuResultE_t:
+ *         SAFU_RESULT_OK – on success.
+ *         SAFU_RESULT_FAILURE – on failure.
+ */
 safuResultE_t elosJsonBackendShutdown(elosStorageBackend_t *backend);
 
 char *elosCompleteStoragePath(const char *const path, size_t sizelimit, const char *countStr, const char *const date,

@@ -10,7 +10,7 @@
 #include <cmocka_extensions/mock_func_weak.h>
 #endif
 
-#include "elos/connectionmanager/clientauthorizedprocesses.h"
+#include "connectionmanager/clientauthorizedprocesses.h"
 
 MOCK_FUNC_PROTOTYPE(elosAuthorizedProcessInitialize, safuResultE_t, safuVec_t *authorizedprocesses,
                     const samconfConfig_t *config)

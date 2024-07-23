@@ -2,23 +2,16 @@
     "root": {
         "elos": {
             "UseEnv": false,
-            "ConnectionLimit": 200,
             "LogFilter": "",
             "LogLevel": "DEBUG",
-            "Port": 54321,
-            "EventBlacklist": ".event.messageCode 2000 EQ",
-            "authorizedProcesses": [
-                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
-                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
-                ".process.pid 1 EQ"
-            ],
             "ClientInputs": {
                 "PluginSearchPath": "/usr/local/lib/elos/client",
                 "Plugins": {
                     "LocalTcpClient": {
-                        "File": "client_dummy.so",
+                        "File": "client_tcp.so",
                         "Run": "always",
                         "Config": {
+                            "ConnectionLimit": 200,
                             "Port": 54321,
                             "Interface": "127.0.0.1",
                             "EventBlacklist": ".event.messageCode 2000 EQ",
@@ -30,7 +23,7 @@
                         }
                     },
                     "PublicTcpClient": {
-                        "File": "client_dummy.so",
+                        "File": "client_tcp.so",
                         "Run": "always",
                         "Config": {
                             "Port": 5422,

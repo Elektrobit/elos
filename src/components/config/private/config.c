@@ -3,6 +3,7 @@
 #include "elos/config/config.h"
 
 #include <samconf/samconf.h>
+#include <samconf/samconf_types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,19 +84,6 @@ static inline const char *elosConfigGetElosdOptionString(const samconfConfig_t *
     return result;
 }
 
-int elosConfigGetElosdPort(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionInt(config, ELOS_CONFIG_ROOT "Port", "ELOSD_PORT", ELOSD_PORT);
-}
-
-int elosConfigGetElosdConnectionLimit(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionInt(config, ELOS_CONFIG_ROOT "ConnectionLimit", "ELOSD_CONNECTION_LIMIT",
-                                       ELOSD_CONNECTION_LIMIT);
-}
-
-const char *elosConfigGetElosdInterface(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_ROOT "Interface", "ELOSD_INTERFACE", ELOSD_INTERFACE);
-}
-
 const char *elosConfigGetElosdLogFilter(const samconfConfig_t *config) {
     return elosConfigGetElosdOptionString(config, ELOS_CONFIG_ROOT "LogFilter", "ELOS_LOG_FILTER", ELOSD_LOG_FILTER);
 }
@@ -157,4 +145,17 @@ const char *elosConfigGetElosdScannerKmsgFile(const samconfConfig_t *config) {
 const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config) {
     return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "SyslogScanner/SyslogPath", "ELOS_SYSLOG_PATH",
                                           ELOS_SYSLOG_PATH);
+}
+
+bool elosConfigGetElosdUseEnv(const samconfConfig_t *config) {
+    samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
+    bool useEnv = false;
+
+    status = samconfConfigGetBool(config, ELOS_CONFIG_ROOT "UseEnv", &useEnv);
+
+    if (status != SAMCONF_CONFIG_OK) {
+        useEnv = false;
+    }
+
+    return useEnv;
 }
