@@ -66,7 +66,7 @@ static safuResultE_t _pluginStop(elosPlugin_t *plugin) {
 static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if (plugin == NULL) {
+    if (plugin == NULL || plugin->config == NULL) {
         safuLogErr("Null parameter given");
     } else {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);

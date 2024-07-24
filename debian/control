@@ -128,6 +128,19 @@ Description: Event logging and management with normalized output-format (Dummy c
  .
  Dummy client plugin.
 
+Package: elos-plugin-client-tcp
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (TCP client plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ A plugin to communicate with elos via TCP connections. It supports client authorization
+ for local connections.
+
 Package: elos-plugin-scanner-dummy
 Section: libs
 Architecture: any

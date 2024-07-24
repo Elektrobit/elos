@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "elos/config/config.h"
 #include "elos/plugincontrol/vector.h"
 
 safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, elosPluginManagerParam_t const *param) {
@@ -24,6 +25,7 @@ safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, el
             safuLogErr("elosPluginControlVectorInitialize failed");
         } else {
             pluginManager->config = param->config;
+            pluginManager->useEnv = elosConfigGetElosdUseEnv(param->config);
             pluginManager->state = PLUGINMANAGER_STATE_INITIALIZED;
             pluginManager->nextId = 1;
             pluginManager->eventProcessor = param->eventProcessor;

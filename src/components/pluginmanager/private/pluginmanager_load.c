@@ -46,6 +46,7 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPlug
                 .eventProcessor = pluginManager->eventProcessor,
                 .eventDispatcher = pluginManager->eventDispatcher,
                 .logAggregator = pluginManager->logAggregator,
+                .useEnv = pluginManager->useEnv,
             };
             result = _loadPluginList(pluginManager, pluginConfig, pluginParam, controlPtrVector);
             if (result != SAFU_RESULT_OK) {
