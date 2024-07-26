@@ -733,9 +733,6 @@ look like this:
                                "KmsgFile": "/dev/kmsg"
                            }
                        }
-                   },
-                   "KmsgScanner": {
-                       "KmsgFile": "/dev/kmsg"
                    }
                }
            }
