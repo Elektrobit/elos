@@ -693,7 +693,6 @@ look like this:
                  ".process.pid 1 EQ"
                ],
                "EventLogging": {
-                   "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
                    "Plugins": {
                        "Dummy": {
                            "File": "backend_dummy.so",
@@ -717,7 +716,6 @@ look like this:
                    }
                },
                "Scanner": {
-                   "Path": "/usr/local/lib/elos/scanner",
                    "Plugins": {
                        "SyslogScanner": {
                            "File": "scanner_syslog.so",
@@ -782,8 +780,6 @@ use another default value, decided by us.
    a client is authorized to publish critical events.
 -  **StorageBackend/Json/File**: The file where elosd will store all the
    logged events (``ELOS_STORAGE_BACKEND_JSON_FILE``)
--  **Scanner/Path**: Path to the scanner plugins (``ELOS_SCANNER_PATH``
-   default value: ``"/usr/lib/elos/scanner"``)
 -  **Scanner/Plugins/<KmsgScanner>/Config/KmsgFile**: Character device or FIFO file node
    to receive logs in kmsg format from (``ELOS_KMSG_FILE`` default
    value: ``"/dev/kmsg"``)

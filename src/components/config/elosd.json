@@ -5,7 +5,6 @@
             "LogFilter": "",
             "LogLevel": "DEBUG",
             "ClientInputs": {
-                "PluginSearchPath": "/usr/local/lib/elos/client",
                 "Plugins": {
                     "LocalTcpClient": {
                         "File": "client_tcp.so",
@@ -35,7 +34,6 @@
                 }
             },
             "EventLogging": {
-                "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
                 "Plugins": {
                     "Dummy": {
                         "File": "backend_dummy.so",
@@ -74,7 +72,6 @@
                 }
             },
             "Scanner": {
-                "PluginSearchPath": "/usr/local/lib/elos/scanner",
                 "Plugins": {
                     "ScannerDummy": {
                         "File": "scanner_dummy.so",
