@@ -66,11 +66,6 @@
                     }
                 }
             },
-            "StorageBackend": {
-                "Json": {
-                    "File": "/var/log/elos/elosd_event.log"
-                }
-            },
             "Scanner": {
                 "Plugins": {
                     "ScannerDummy": {

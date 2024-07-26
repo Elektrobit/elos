@@ -710,11 +710,6 @@ look like this:
                        }
                    }
                },
-               "StorageBackend": {
-                   "Json": {
-                       "File": "/var/log/elos/elosd_event.log"
-                   }
-               },
                "Scanner": {
                    "Plugins": {
                        "SyslogScanner": {
@@ -778,8 +773,6 @@ use another default value, decided by us.
    by unauthorized clients.
 -  **authorizedProcesses**: A list of process filters that determines if
    a client is authorized to publish critical events.
--  **StorageBackend/Json/File**: The file where elosd will store all the
-   logged events (``ELOS_STORAGE_BACKEND_JSON_FILE``)
 -  **Scanner/Plugins/<KmsgScanner>/Config/KmsgFile**: Character device or FIFO file node
    to receive logs in kmsg format from (``ELOS_KMSG_FILE`` default
    value: ``"/dev/kmsg"``)
