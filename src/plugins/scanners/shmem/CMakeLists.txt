@@ -6,8 +6,7 @@ create_interface_library(
   FROM
     scanner_shmem
   LIBRARIES
-    elos_event_interface
-    config_interface
+    libelos_common
     safu::safu_interface
     samconf::samconf_interface
 )
@@ -23,15 +22,12 @@ set_target_properties(scanner_shmem PROPERTIES PREFIX "")
 
 target_link_libraries(
   scanner_shmem
-  PRIVATE
-    elos_scanner_legacy_interface
-    elos_event_static
-    eventbuffer_static
-    config_static
   PUBLIC
-    scanner_shmem_interface
+    libelos_common
+    libelosplugin
     samconf::samconf
     safu::safu
+    scanner_shmem_interface
 )
 
 target_include_directories(

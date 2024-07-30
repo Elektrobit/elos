@@ -4,14 +4,14 @@
 
 #include "shmem_ringbuffer.h"
 
+#include <elos/event/event.h>
+#include <elos/libelosplugin/libelosplugin.h>
+#include <elos/libelosplugin/types.h>
 #include <safu/log.h>
+#include <safu/result.h>
 #include <samconf/samconf.h>
 #include <stdio.h>
 
-#include "elos/config/defines.h"
-#include "elos/event/event.h"
-#include "elos/eventbuffer/eventbuffer.h"
-#include "shmem.h"
 #include "shmem_helpers.h"
 
 static safuResultE_t _convertLogLevelToSeverity(int dltLogLevel, elosSeverityE_t *severity) {
@@ -106,10 +106,9 @@ static inline safuResultE_t _checkRingBuffer(elosEbLogRingBuffer_t *ringBuffer) 
     return result;
 }
 
-static safuResultE_t _readFromRingBuffer(elosScannerLegacySession_t *session) {
+static safuResultE_t _readFromRingBuffer(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
-    elosScannerLegacyCallbackData_t *cbData = &session->callback.scannerCallbackData;
-    elosScannerContextShmem_t *context = session->context;
+    elosScannerContextShmem_t *context = plugin->data;
     elosEbLogRingBuffer_t *ringBuffer = context->shmemData;
     uint16_t const entryCount = ringBuffer->entryCount - 1;
     uint16_t const idxWrite = ringBuffer->idxWrite;
@@ -129,12 +128,15 @@ static safuResultE_t _readFromRingBuffer(elosScannerLegacySession_t *session) {
         if (result != SAFU_RESULT_OK) {
             break;
         }
-
-        result = session->callback.eventPublish(cbData, &event);
+        result = elosPluginPublish(plugin, context->publisher, &event);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("Publishing Event failed");
         }
-
+        safuResultE_t retVal = elosPluginStore(plugin, &event);
+        if (retVal != SAFU_RESULT_OK) {
+            safuLogErr("eventlog failed");
+            result = SAFU_RESULT_FAILED;
+        }
         elosEventDeleteMembers(&event);
 
         idx += 1;
@@ -146,9 +148,9 @@ static safuResultE_t _readFromRingBuffer(elosScannerLegacySession_t *session) {
     return result;
 }
 
-safuResultE_t elosScannerRingBufferInitialize(elosScannerLegacySession_t *session) {
+safuResultE_t elosScannerRingBufferInitialize(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
-    elosScannerContextShmem_t *context = session->context;
+    elosScannerContextShmem_t *context = plugin->data;
     elosEbLogRingBuffer_t *ringBuffer = context->shmemData;
 
     if (context->shmemCreate == true) {
@@ -156,13 +158,12 @@ safuResultE_t elosScannerRingBufferInitialize(elosScannerLegacySession_t *sessio
         ringBuffer->idxWrite = 0;
         ringBuffer->idxRead = SCANNER_SHMEM_IDX_INVALID;
     }
-
     return result;
 }
 
-safuResultE_t elosScannerRingBufferPublish(elosScannerLegacySession_t *session) {
+safuResultE_t elosScannerRingBufferPublish(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
-    elosScannerContextShmem_t *context = session->context;
+    elosScannerContextShmem_t *context = plugin->data;
     elosEbLogRingBuffer_t *ringBuffer = context->shmemData;
 
     SAFU_SEM_LOCK_WITH_RESULT(context->semData, result);
@@ -177,7 +178,7 @@ safuResultE_t elosScannerRingBufferPublish(elosScannerLegacySession_t *session) 
                 safuLogErrF(errStr, idxRd, idxWr, ringBuffer->entryCount);
             }
         } else {
-            result = _readFromRingBuffer(session);
+            result = _readFromRingBuffer(plugin);
 
             ringBuffer->idxRead = SCANNER_SHMEM_IDX_INVALID;
             ringBuffer->idxWrite = 0;

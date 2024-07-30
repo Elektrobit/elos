@@ -2,12 +2,10 @@
 
 #include "shmem_config.h"
 
+#include <elos/libelosplugin/types.h>
 #include <safu/common.h>
 #include <safu/log.h>
 #include <samconf/samconf.h>
-
-#include "elos/config/defines.h"
-#include "shmem.h"
 
 static safuResultE_t _getString(samconfConfig_t const *config, char const *from, char **to) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -78,31 +76,27 @@ static safuResultE_t _getUint32(samconfConfig_t const *config, char const *from,
     return result;
 }
 
-safuResultE_t elosScannerConfigLoad(elosScannerContextShmem_t *context) {
+safuResultE_t elosScannerConfigLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
+    elosScannerContextShmem_t *context = plugin->data;
     char const *configPath;
 
-    configPath = SCANNER_SHMEM_CONFIG_PATH "/ShmemFile";
-    result = _getString(context->config, configPath, &context->shmemFile);
+    result = _getString(plugin->config, "Config/ShmemFile", &context->shmemFile);
     if (result == SAFU_RESULT_OK) {
-        configPath = SCANNER_SHMEM_CONFIG_PATH "/ShmemCreate";
-        result = _getBool(context->config, configPath, &context->shmemCreate);
+        result = _getBool(plugin->config, "Config/ShmemCreate", &context->shmemCreate);
         if (result == SAFU_RESULT_OK) {
-            configPath = SCANNER_SHMEM_CONFIG_PATH "/ShmemLogEntries";
-            result = _getUint32(context->config, configPath, &context->shmemLogEntries);
+            configPath = "Config/ShmemLogEntries";
+            result = _getUint32(plugin->config, configPath, &context->shmemLogEntries);
             if (result == SAFU_RESULT_OK) {
                 if (context->shmemLogEntries < 1) {
                     safuLogErrF("Field has invalid value (< 1) in the configuration: '%s'", configPath);
                     result = SAFU_RESULT_FAILED;
                 } else {
-                    configPath = SCANNER_SHMEM_CONFIG_PATH "/ShmemOffset";
-                    result = _getUint32(context->config, configPath, &context->shmemOffset);
+                    result = _getUint32(plugin->config, "Config/ShmemOffset", &context->shmemOffset);
                     if (result == SAFU_RESULT_OK) {
-                        configPath = SCANNER_SHMEM_CONFIG_PATH "/SemFile";
-                        result = _getString(context->config, configPath, &context->semFile);
+                        result = _getString(plugin->config, "Config/SemFile", &context->semFile);
                         if (result == SAFU_RESULT_OK) {
-                            configPath = SCANNER_SHMEM_CONFIG_PATH "/SemCreate";
-                            result = _getBool(context->config, configPath, &context->semCreate);
+                            result = _getBool(plugin->config, "Config/SemCreate", &context->semCreate);
                         }
                     }
                 }
