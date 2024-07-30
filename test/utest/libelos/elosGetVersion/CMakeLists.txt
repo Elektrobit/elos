@@ -11,7 +11,6 @@ create_unit_test(
     case_success.c
     elosGetVersion_utest.c
   LIBRARIES
-    scanner_manager_legacy_static_weak
     mock_libelos_static
     libelos_static_weak
     safu::mock_safu

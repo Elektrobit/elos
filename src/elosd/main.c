@@ -15,7 +15,6 @@
 #include "elos/eventprocessor/eventprocessor.h"
 #include "elos/logger/logger.h"
 #include "elos/pluginmanager/pluginmanager.h"
-#include "elos/scanner_manager_legacy/scanner_manager.h"
 #include "elos/scannermanager/scannermanager.h"
 #include "elos/storagemanager/storagemanager.h"
 #include "safu/common.h"
@@ -28,7 +27,6 @@
 struct serverContext {
     samconfConfig_t *config;
     elosClientManager_t clientManagerContext;
-    elosScannerManagerLegacyContext_t scannerManagerLegacyContext;
     elosScannerManager_t scannerManager;
     elosPluginManager_t pluginManager;
     elosLogAggregator_t logAggregator;
@@ -84,10 +82,6 @@ int elosServerShutdown(struct serverContext *ctx) {
         result = EXIT_FAILURE;
     } else if (elosStorageManagerDeleteMembers(&ctx->storageManager) != SAFU_RESULT_OK) {
         safuLogErr("Deleting storage manager failed!");
-        result = EXIT_FAILURE;
-    }
-    if (elosScannerManagerLegacyStop(&ctx->scannerManagerLegacyContext) != NO_ERROR) {
-        safuLogErr("Stopping scanner manager legacy failed!");
         result = EXIT_FAILURE;
     }
     if (elosScannerManagerStop(&ctx->scannerManager) != SAFU_RESULT_OK) {
@@ -272,19 +266,6 @@ int main(int argc, char **argv) {
             elosServerShutdown(&context);
             return EXIT_FAILURE;
         }
-    }
-
-    safuLogDebug("Start legacy scanner manager");
-    elosScannerManagerLegacyParam_t scannerManagerLegacyParam = {
-        .config = context.config,
-        .logAggregator = &context.logAggregator,
-        .eventDispatcher = &context.eventDispatcher,
-    };
-    retval = elosScannerManagerLegacyStart(&context.scannerManagerLegacyContext, &scannerManagerLegacyParam);
-    if ((retval != NO_ERROR) && (retval != NO_FATAL_ERRORS)) {
-        safuLogErr("elosServerScannerLoad");
-        elosServerShutdown(&context);
-        return EXIT_FAILURE;
     }
 
     safuLogInfo("Running...");
