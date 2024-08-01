@@ -13,7 +13,6 @@ expected behavior.
    :maxdepth: 1
    :caption: Contents:
 
-   Mock Generator <tools/mock/index>
    Elos Mock Servers <tools/elos_mock_servers/index>
 
 Coding Guideline
