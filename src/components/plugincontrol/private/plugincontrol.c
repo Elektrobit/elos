@@ -7,6 +7,8 @@
 #include <safu/log.h>
 #include <safu/mutex.h>
 #include <safu/result.h>
+#include <safu/vector.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/eventfd.h>
@@ -409,7 +411,7 @@ safuResultE_t elosPluginControlCreateSubscriber(struct elosPluginControl *plugin
         safuLogErr("safuAllocMem failed");
     } else {
         newSubscriber->eventProcessor = pluginControl->eventProcessor;
-        result = safuVecCreate(&newSubscriber->subscriptions, 1, sizeof(elosSubscription_t));
+        result = safuVecCreate(&newSubscriber->subscriptions, 1, sizeof(elosSubscription_t *));
         if (result != SAFU_RESULT_OK) {
             safuLogErr("Creating subscription vector failed");
         }
@@ -503,7 +505,7 @@ safuResultE_t elosPluginControlSubscribe(elosSubscriber_t *subscriber, char cons
             safuLogErrF("%s", "elosEventProcessorFilterNodeCreateWithQueue failed");
             safuLogDebugF("%s", "failed to create eventQueue and/or eventFilterNode");
         } else {
-            int retval = safuVecPush(&subscriber->subscriptions, newSubscription);
+            int retval = safuVecPush(&subscriber->subscriptions, &newSubscription);
             if (retval < 0) {
                 safuLogErrF("safuVecPush with subscription '%u/%u' failed", newSubscription->eventFilterNodeId,
                             newSubscription->eventQueueId);
@@ -529,6 +531,12 @@ safuResultE_t elosPluginControlSubscribe(elosSubscriber_t *subscriber, char cons
     return result;
 }
 
+static int _findSubscriptionPtr(const void *sub, const void *search) {
+    elosSubscription_t *subscription = *(elosSubscription_t **)sub;
+    elosSubscription_t *searchTarget = (elosSubscription_t *)search;
+    return subscription == searchTarget;
+}
+
 safuResultE_t elosPluginControlUnsubscribe(elosSubscriber_t *subscriber, elosSubscription_t const *const subscription) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
@@ -544,29 +552,41 @@ safuResultE_t elosPluginControlUnsubscribe(elosSubscriber_t *subscriber, elosSub
         if (result != SAFU_RESULT_OK) {
             safuLogErrF("elosEventProcessorQueueRemove with 'id:%u' failed", subscription->eventQueueId);
         }
+        int res = safuVecFindRemove(&subscriber->subscriptions, &_findSubscriptionPtr, subscription);
+        if (res != 1) {
+            safuLogWarnF("subscription %p not found in subscriber for removal ", (void *)subscription);
+            result = SAFU_RESULT_FAILED;
+        }
+        free((void *)subscription);
+    }
+    return result;
+}
+
+static safuResultE_t _pluginControlUnsubscribeIdx(elosSubscriber_t *subscriber, size_t idx) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    elosSubscription_t **subscription = safuVecGet(&subscriber->subscriptions, idx);
+    if (subscription == NULL) {
+        safuLogErrF("safuVecGet with 'idx:%lu' failed", idx);
+    } else {
+        result = elosPluginControlUnsubscribe(subscriber, *subscription);
     }
     return result;
 }
 
 safuResultE_t elosPluginControlUnsubscribeAll(elosSubscriber_t *subscriber) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    size_t unsubscribed = 0;
 
     size_t count = safuVecElements(&subscriber->subscriptions);
-    for (size_t idx = 0; idx < count; idx += 1) {
-        elosSubscription_t *subscription = safuVecGet(&subscriber->subscriptions, idx);
-        if (subscription == NULL) {
-            safuLogErrF("safuVecGet with 'idx:%lu' failed", idx);
-        } else {
-            result = elosPluginControlUnsubscribe(subscriber, subscription);
-            if (result == SAFU_RESULT_OK) {
-                unsubscribed++;
-            }
+    for (size_t idx = 0; idx < safuVecElements(&subscriber->subscriptions);) {
+        result = _pluginControlUnsubscribeIdx(subscriber, idx);
+        if (result != SAFU_RESULT_OK) {
+            idx += 1;
         }
     }
-
-    if (count != unsubscribed) {
-        safuLogErrF("Not all subscriptions could successfully revoked %lu<%lu", unsubscribed, count);
+    size_t failed = safuVecElements(&subscriber->subscriptions);
+    if (failed != 0) {
+        safuLogErrF("Not all subscriptions could successfully be revoked (%lu/%lu failed)", failed, count);
         result = SAFU_RESULT_FAILED;
     } else {
         result = SAFU_RESULT_OK;

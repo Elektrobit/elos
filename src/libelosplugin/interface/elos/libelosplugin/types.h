@@ -9,6 +9,8 @@
 
 #define ELOS_PLUGIN_ID_INVALID 0
 
+__BEGIN_DECLS
+
 typedef uint32_t elosPluginId_t;
 typedef uint32_t elosPluginState_t;
 
@@ -36,7 +38,7 @@ typedef struct elosPluginContext {
     void *data;
     int sync;
     int stop;
-    void *instanceRef;
+    struct elosPluginControl *instanceRef;
     safuResultE_t (*publish)(struct elosPublisher *publisher, const elosEvent_t *event);
     safuResultE_t (*store)(struct elosPluginControl *instanceRef, const elosEvent_t *event);
     safuResultE_t (*findEvents)(struct elosPluginControl *instanceRef, const char *rule, safuVec_t *events);

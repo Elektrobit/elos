@@ -48,8 +48,10 @@ should be added to a new `.install` file matching the name of the new package.
 
 To prepare a new release on `debian/main` run
 1. `git checkout -b <task/-new-release> origin/debian/main`
-2. `./ci/docker-run.sh ./ci/create_debian_release.sh <x.y.z>`
-3. push branch and create MR for **debian/main** , not *main* and not *integration*!
+2. ensure to set `SOURCE_URI` to a repo containing the latest debian releases
+   of the dependency projects
+3. `./ci/docker-run.sh ./ci/create_debian_release.sh <x.y.z>`
+4. push branch and create MR for **debian/main** , not *main* and not *integration*!
 
 ## Packaging Script Maintainer
 
