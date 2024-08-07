@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(cmocka_mocks)
+find_package(cmocka_mocks REQUIRED)
 find_package(samconf 0.50.1 REQUIRED)
 
 create_unit_test(
