@@ -47,5 +47,6 @@ void elosTestExecuteSet(elosStateTestExecute_t *test, elosTestExecuteSet_t const
 TEST_CASE_FUNC_PROTOTYPES(elosTestEloEventFilterExecuteErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestEloEventFilterExecuteSuccessElement)
 TEST_CASE_FUNC_PROTOTYPES(elosTestEloEventFilterExecuteErrElement)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventFilterExecuteSuccessHardwareid)
 
 #endif /* ELOS_RPNFILTEREXECUTE_UTEST_H */
