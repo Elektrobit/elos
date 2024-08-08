@@ -57,8 +57,10 @@ elosRpnFilterResultE_t _executeEvent(elosRpnFilterExecute_t *ctx) {
             break;
         case EVENTFILTER_VALUE_EVENT_HARDWAREID:
             eventEntry.type = RPNFILTER_VALUE_STRING;
-            eventEntry.bytes = strlen(event->hardwareid);
-            eventEntry.data.str = event->hardwareid;
+            if (event->hardwareid != NULL) {
+                eventEntry.bytes = strlen(event->hardwareid);
+                eventEntry.data.str = event->hardwareid;
+            }
             break;
         case EVENTFILTER_VALUE_EVENT_CLASSIFICATION:
             eventEntry.type = RPNFILTER_VALUE_U64;
