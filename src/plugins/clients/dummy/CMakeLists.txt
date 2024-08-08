@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(samconf 0.50.1 REQUIRED)
+find_package(samconf 0.56.3 REQUIRED)
 
 add_library(
   client_dummy SHARED
