@@ -40,7 +40,7 @@
                         "File": "backend_fetchapi.so",
                         "Run": "never",
                         "Filter": [
-                            ".event.messageCode 1000 LE"
+                            "1 1 EQ"
                         ],
                         "Config": {
                             "BufferSize": 100
