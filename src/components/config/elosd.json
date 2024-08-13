@@ -86,6 +86,16 @@
             },
             "Scanner": {
                 "Plugins": {
+                    "fetchapi": {
+                        "File": "backend_fetchapi.so",
+                        "Run": "never",
+                        "Filter": [
+                            "1 1 EQ"
+                        ],
+                        "Config": {
+                            "BufferSize": 100
+                        }
+                    },
                     "ScannerDummy": {
                         "File": "scanner_dummy.so",
                         "Run": "always"
