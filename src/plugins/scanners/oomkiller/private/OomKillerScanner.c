@@ -193,19 +193,17 @@ safuResultE_t elosOomKillerScannerStart(elosOomKillerScanner_t *oomKillerScanner
             safuVecIterate(eventVector, _foreachEvent, &helperData);
             if (helperData.result == SAFU_RESULT_OK) {
                 result = helperData.result;
-                usleep(10000);
             } else {
                 result = helperData.result;
                 atomic_store(&elosPluginIsRunning, false);
             }
-        } else if (result == SAFU_RESULT_OK && eventVector == NULL) {
-            continue;
-        } else {
-            safuLogErr("elosPluginReadQueue failed, attempting again");
+        } else if (result != SAFU_RESULT_OK) {
+            safuLogErr("elosPluginReadQueue failed");
         }
 
         elosEventVectorDelete(eventVector);
         eventVector = NULL;
+        usleep(10000);
     }
 
     return result;
