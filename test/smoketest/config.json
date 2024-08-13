@@ -117,15 +117,19 @@
                         "Config": {
                             "KmsgFile": "/dev/kmsg"
                         }
+                    },
+                    "Shmem": {
+                        "File": "scanner_shmem.so",
+                        "Run": "always",
+                        "Config": {
+                            "ShmemFile": "scanner_shmem",
+                            "ShmemCreate": true,
+                            "ShmemLogEntries": 16,
+                            "ShmemOffset": 0,
+                            "SemFile": "scanner_shmem_sem",
+                            "SemCreate": true
+                        }
                     }
-                },
-                "Shmem": {
-                    "ShmemFile": "scanner_shmem",
-                    "ShmemCreate": true,
-                    "ShmemLogEntries": 16,
-                    "ShmemOffset": 0,
-                    "SemFile": "scanner_shmem_sem",
-                    "SemCreate": true
                 }
             }
         }

@@ -32,9 +32,7 @@ target_link_libraries(
     pluginmanager_static
     eventlogging_static
     clientmanager_static
-    scanner_manager_legacy_static
     scannermanager_static
-    elos_scanner_legacy_interface
     Threads::Threads
     safu::safu
     samconf::samconf
