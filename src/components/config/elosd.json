@@ -57,6 +57,16 @@
                             "Flags": []
                         }
                     },
+                    "SQLBackend": {
+                        "File": "backend_sql.so",
+                        "Run": "always",
+                        "Filter": [
+                            "1 1 EQ"
+                        ],
+                        "Config": {
+                            "ConnectionPath": "/tmp/elos.sqlite"
+                        }
+                    },
                     "DLT": {
                         "File": "backend_dlt_logger.so",
                         "Run": "always",
