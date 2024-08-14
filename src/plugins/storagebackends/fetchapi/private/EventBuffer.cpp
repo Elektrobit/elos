@@ -9,6 +9,7 @@
 #include <safu/log.h>
 #include <safu/result.h>
 #include <safu/vector.h>
+#include <cstdlib>
 
 EventBuffer::EventBuffer(size_t len)
     : size(len), start(0), end(SIZE_MAX), buffer(new elosEvent_t[len]) {
@@ -75,13 +76,14 @@ safuResultE_t EventBuffer::findEvents(const elosEventFilter_t &filter,
             } else {
                 result = elosEventDeepCopy(event, &this->buffer[idx]);
                 if (result != SAFU_RESULT_OK) {
-                    elosEventDelete(event);
+                    elosEventDeleteMembers(event);
                     safuLogErr("failed to copy event for fetch api call");
                 } else if (safuVecPush(&eventList, event) != 0) {
                     result = SAFU_RESULT_FAILED;
-                    elosEventDelete(event);
+                    elosEventDeleteMembers(event);
                     safuLogErr("failed to add requested event to retun buffer");
                 }
+                free(event);
             }
         } else if (filterResult == RPNFILTER_RESULT_ERROR) {
             safuLogErr("Error fetching event from in memory backend!");

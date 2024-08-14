@@ -14,6 +14,7 @@ create_interface_library(
   LIBRARIES
     safu::safu_interface
     samconf::samconf_interface
+    libelosplugin
 )
 
 set_target_properties(backend_fetchapi PROPERTIES PREFIX "")
