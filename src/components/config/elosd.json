@@ -42,6 +42,10 @@
                             "1 1 EQ"
                         ]
                     },
+                    "SkippedDummy": {
+                        "File": "backend_dummy.so",
+                        "Run": "never"
+                    },
                     "JsonBackend": {
                         "File": "backend_json.so",
                         "Run": "always",
