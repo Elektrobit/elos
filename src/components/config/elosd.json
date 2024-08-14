@@ -13,7 +13,7 @@
                             "ConnectionLimit": 200,
                             "Port": 54321,
                             "Interface": "127.0.0.1",
-                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "EventBlacklist": ".event.messageCode 1000 LE",
                             "authorizedProcesses": [
                                 ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
                                 ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
