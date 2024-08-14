@@ -90,28 +90,40 @@
                     "OomKiller": {
                         "File": "scanner_oomkiller.so",
                         "Run": "always"
-                    }
-                },
-                "KmsgScanner": {
-                    "KmsgFile": "/dev/kmsg"
-                },
-                "SyslogScanner": {
-                    "SyslogPath": "/dev/log",
-                    "MappingRules": {
-                        "MessageCodes": {
-                            "4000": ".event.source.appName 'ssh' STRCMP",
-                            "2000": ".event.source.appName 'crinit' STRCMP",
-                            "1000": ".event.source.appName 'login' STRCMP"
+                    },
+                    "SyslogScanner": {
+                        "File": "scanner_syslog.so",
+                        "Run": "always",
+                        "Config": {
+                            "SyslogPath": "/dev/log",
+                            "MappingRules": {
+                                "MessageCodes": {
+                                    "4000": ".event.source.appName 'ssh' STRCMP",
+                                    "2000": ".event.source.appName 'crinit' STRCMP",
+                                    "1000": ".event.source.appName 'login' STRCMP"
+                                }
+                            }
+                        }
+                    },
+                    "KmsgScanner": {
+                        "File": "scanner_kmsg.so",
+                        "Run": "always",
+                        "Config": {
+                            "KmsgFile": "/dev/kmsg"
+                        }
+                    },
+                    "Shmem": {
+                        "File": "scanner_shmem.so",
+                        "Run": "always",
+                        "Config": {
+                            "ShmemFile": "scanner_shmem",
+                            "ShmemCreate": true,
+                            "ShmemLogEntries": 256,
+                            "ShmemOffset": 0,
+                            "SemFile": "scanner_shmem_sem",
+                            "SemCreate": true
                         }
                     }
-                },
-                "Shmem": {
-                    "ShmemFile": "scanner_shmem",
-                    "ShmemCreate": true,
-                    "ShmemLogEntries": 256,
-                    "ShmemOffset": 0,
-                    "SemFile": "scanner_shmem_sem",
-                    "SemCreate": true
                 }
             }
         }
