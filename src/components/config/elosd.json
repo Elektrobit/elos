@@ -25,7 +25,7 @@
                         "File": "client_tcp.so",
                         "Run": "always",
                         "Config": {
-                            "Port": 5422,
+                            "Port": 54322,
                             "Interface": "0.0.0.0",
                             "EventBlacklist": "1 1 EQ",
                             "authorizedProcesses": []
