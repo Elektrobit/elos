@@ -3,6 +3,7 @@
 #define ELOS_EVENTFILTER_STEP_H
 
 #include <sys/cdefs.h>
+
 #include "elos/rpnfilter/step_types.h"
 
 __BEGIN_DECLS

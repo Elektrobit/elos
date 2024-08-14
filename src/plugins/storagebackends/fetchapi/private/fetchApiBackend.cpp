@@ -2,8 +2,9 @@
 
 #include <elos/event/event.h>
 #include <elos/event/event_types.h>
+#include <elos/eventfilter/eventfilter.h>
+#include <elos/libelosplugin/StorageBackend_types.h>
 #include <elos/libelosplugin/libelosplugin.h>
-#include <new>
 #include <safu/common.h>
 #include <safu/log.h>
 #include <safu/mutex.h>
@@ -13,8 +14,7 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
-#include <elos/eventfilter/eventfilter.h>
-#include <elos/libelosplugin/StorageBackend_types.h>
+#include <new>
 
 #include "public/EventBuffer.h"
 
@@ -29,15 +29,14 @@ static safuResultE_t _backendStart(elosStorageBackend_t *backend) {
     return result;
 }
 
-static safuResultE_t _backendPersist(elosStorageBackend_t *backend,
-        const elosEvent_t *event) {
+static safuResultE_t _backendPersist(elosStorageBackend_t *backend, const elosEvent_t *event) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((backend == nullptr) || (event == nullptr)) {
         safuLogErr("Null parameter given");
     } else {
-        auto *eventBuffer = (EventBuffer *)backend->backendData;
-        result = eventBuffer->pushEvent(*event);
+        auto *eventBuffer = (elosEventBuffer *)backend->backendData;
+        result = eventBuffer->elosPushEvent(*event);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("Event serialization failed");
         }
@@ -45,16 +44,14 @@ static safuResultE_t _backendPersist(elosStorageBackend_t *backend,
     return result;
 }
 
-static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend,
-        elosRpnFilter_t *filter,
-        safuVec_t *events) {
+static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend, elosRpnFilter_t *filter, safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((backend == nullptr) || (filter == nullptr) || (events == nullptr)) {
         safuLogErr("Null parameter given");
     } else {
-        auto *eventBuffer = (EventBuffer *)backend->backendData;
-        result = eventBuffer->findEvents(*filter, *events);
+        auto *eventBuffer = (elosEventBuffer *)backend->backendData;
+        result = eventBuffer->elosFindEvents(*filter, *events);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("Finding events failed!");
         }
@@ -82,8 +79,7 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
         elosStorageBackend_t *newBackend = new (std::nothrow) elosStorageBackend_t;
         if (newBackend == nullptr) {
             safuLogErr("Memory allocation failed");
-        } else if ((plugin->config == nullptr) ||
-                (plugin->config->key == nullptr)) {
+        } else if ((plugin->config == nullptr) || (plugin->config->key == nullptr)) {
             safuLogErr("Given configuration is nullptr or has .key set to nullptr");
         } else {
             newBackend->name = plugin->config->key;
@@ -93,11 +89,10 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
             newBackend->findEvent = &_backendFindEvent;
             newBackend->shutdown = &_backendShutdown;
 
-            size_t elements =
-                samconfConfigGetInt32Or(plugin->config, "Config/BufferSize", 1000);
+            size_t elements = samconfConfigGetInt32Or(plugin->config, "Config/BufferSize", 1000);
 
             try {
-                newBackend->backendData = new EventBuffer(elements);
+                newBackend->backendData = new elosEventBuffer(elements);
             } catch (safuResultE_t err) {
                 result = err;
                 safuLogErr("event buffer initialization failed!");
@@ -165,7 +160,7 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);
         auto *backendValues = (elosStorageBackend_t *)plugin->data;
         if (backendValues != nullptr) {
-            auto *eventBuffer = (EventBuffer *)backendValues->backendData;
+            auto *eventBuffer = (elosEventBuffer *)backendValues->backendData;
             try {
                 delete eventBuffer;
             } catch (safuResultE_t error) {
@@ -181,11 +176,11 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
 __BEGIN_DECLS
 
 elosPluginConfig_t elosPluginConfig({
-        PLUGIN_TYPE_STORAGEBACKEND,
-        _pluginLoad,
-        _pluginUnload,
-        _pluginStart,
-        _pluginStop,
-        });
+    PLUGIN_TYPE_STORAGEBACKEND,
+    _pluginLoad,
+    _pluginUnload,
+    _pluginStart,
+    _pluginStop,
+});
 
 __END_DECLS

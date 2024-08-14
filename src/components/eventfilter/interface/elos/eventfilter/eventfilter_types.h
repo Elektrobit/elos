@@ -2,6 +2,7 @@
 #pragma once
 
 #include <sys/cdefs.h>
+
 #include "elos/event/event_types.h"
 #include "elos/rpnfilter/rpnfilter_types.h"
 

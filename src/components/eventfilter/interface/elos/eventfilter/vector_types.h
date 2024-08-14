@@ -2,6 +2,7 @@
 #pragma once
 
 #include <sys/cdefs.h>
+
 #include "elos/rpnfilter/vector_types.h"
 
 __BEGIN_DECLS
