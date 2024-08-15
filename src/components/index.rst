@@ -5,6 +5,7 @@ Components
    :maxdepth: 2
    :caption: Contents:
 
+   config/index
    clientmanager/index
    scannermanager/index
    eloslog/index

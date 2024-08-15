@@ -100,7 +100,7 @@ filters. The event communication is realized in a publish-poll pattern:
 Clients interested in certain events will create an event filter on the
 server, which collects incoming matching events in an event queue. A
 filter can relate to one or more members of an event. For example only
-events from a specific aplication or with a specific severity could be
+events from a specific application or with a specific severity could be
 collected. Listening clients must keep up the connection to the server,
 so their filter and queues will exist further. When an event gets
 published by a client and doesn’t match any existing filters, it will be
@@ -195,7 +195,7 @@ Only match events of severity ``warning`` and above. (note: severity is
 
    .event.severity 3 LE
 
-Only match events releated to security incidents with severity
+Only matching events related to security incidents with severity
 ``warning`` or higher. (note: severity is 1 == FATAL to 6 == VERBOSE )
 
 ::
@@ -675,79 +675,10 @@ elosd Configuration - Options Explained
 By default the elosd config options, stored in ‘/etc/elos/elosd.json’ do
 look like this:
 
-.. code:: json
-
-   {
-       "root": {
-           "elos": {
-               "UseEnv": false,
-               "Port": 54321,
-               "Interface": "127.0.0.1",
-               "ConnectionLimit": 200,
-               "LogFilter": "connectionmanager.c;dispatcher.c;message_handler.c;message_event_create.c;message_event_push.c",
-               "LogLevel": "DEBUG",
-               "EventBlacklist": ".event.messageCode 2000 EQ",
-               "authorizedProcesses": [
-                 ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
-                 ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
-                 ".process.pid 1 EQ"
-               ],
-               "EventLogging": {
-                   "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
-                   "Plugins": {
-                       "Dummy": {
-                           "File": "backend_dummy.so",
-                           "Run": "always",
-                           "Filters": [
-                               "1 1 EQ"
-                           ]
-                       },
-                       "JsonBackend": {
-                           "File": "backend_json.so",
-                           "Run": "always",
-                           "Filters": [
-                               "1 1 EQ"
-                           ]
-                       }
-                   }
-               },
-               "StorageBackend": {
-                   "Json": {
-                       "File": "/var/log/elos/elosd_event.log"
-                   }
-               },
-               "Scanner": {
-                   "Path": "/usr/local/lib/elos/scanner",
-                   "Plugins": {
-                       "SyslogScanner": {
-                           "File": "scanner_syslog.so",
-                           "Run": "always",
-                           "Config": {
-                               "SyslogPath": "/dev/log",
-                               "MappingRules": {
-                                   "MessageCodes": {
-                                       "4000": ".event.source.appName 'ssh' STRCMP",
-                                       "2000": ".event.source.appName 'crinit' STRCMP",
-                                       "1000": ".event.source.appName 'login' STRCMP"
-                                   }
-                               }
-                           }
-                       },
-                       "KmsgScanner": {
-                           "File": "scanner_kmsg.so",
-                           "Run": "always",
-                           "Config": {
-                               "KmsgFile": "/dev/kmsg"
-                           }
-                       }
-                   },
-                   "KmsgScanner": {
-                       "KmsgFile": "/dev/kmsg"
-                   }
-               }
-           }
-       }
-   }
+.. literalinclude:: /src/components/config/elosd.json
+   :language: json
+   :caption: elos default config shipped with elos
+   :linenos:
 
 These options are used if the UseEnv variable is set to false. Otherwise
 elos will use environment variables (if there are any defined). The
@@ -780,10 +711,6 @@ use another default value, decided by us.
    by unauthorized clients.
 -  **authorizedProcesses**: A list of process filters that determines if
    a client is authorized to publish critical events.
--  **StorageBackend/Json/File**: The file where elosd will store all the
-   logged events (``ELOS_STORAGE_BACKEND_JSON_FILE``)
--  **Scanner/Path**: Path to the scanner plugins (``ELOS_SCANNER_PATH``
-   default value: ``"/usr/lib/elos/scanner"``)
 -  **Scanner/Plugins/<KmsgScanner>/Config/KmsgFile**: Character device or FIFO file node
    to receive logs in kmsg format from (``ELOS_KMSG_FILE`` default
    value: ``"/dev/kmsg"``)
@@ -793,6 +720,8 @@ use another default value, decided by us.
 -  **Scanner/Plugins/<SyslogScanner>/Config/MappingRules/MessageCodes**: contain
    ``message code, filter`` pairs to set a specific ``message code`` for
    an event if the given filter matches the event.
+
+For a more details see :ref:`src/components/config/index:Elos Configuration`.
 
 Note: You can create/overwrite environment variables by typing something
 like i.e.: ``export ELOSD_PORT='1234'`` If you want to store them
@@ -806,8 +735,8 @@ Event Authorization
 Event authorization is implemented by setting two filters in the config
 file. The two filters are :
 
--  EventBlacklist: This is an event filter which separtes an event into
-   critical and non-crtical events and blacklists it, if critical, to
+-  EventBlacklist: This is an event filter which separates an event into
+   critical and non-critical events and blacklists it, if critical, to
    prevent it from being published by an unauthorized client.
 
 -  authorizedProcesses: This is a list of process filters which
