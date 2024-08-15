@@ -6,15 +6,19 @@ The shmem scanner is a proof of concept for converting eb log entries into elos 
 Configuration
 --------------
 
-The scanner is configured via the elosd.json file, with a block like the following located under ``root/elos/Scanner``::
+The scanner is configured via the elosd.json file, with a block like the following located under ``root/elos/Scanner/Plugins/``::
 
-    "Shmem": {
-        "ShmemFile": "scanner_shmem",
-        "ShmemCreate": true,
-        "ShmemLogEntries": 256,
-        "ShmemOffset": 0,
-        "SemFile": "scanner_shmem_sem",
-        "SemCreate": true
+    "<Name for the scanner>": {
+        "File": "scanner_shmem.so",
+        "Run": "always",
+        "Config": {
+            "ShmemFile": "scanner_shmem",
+            "ShmemCreate": true,
+            "ShmemLogEntries": 256,
+            "ShmemOffset": 0,
+            "SemFile": "scanner_shmem_sem",
+            "SemCreate": true
+        }
     }
 
 

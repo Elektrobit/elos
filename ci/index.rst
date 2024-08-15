@@ -120,6 +120,7 @@ In addition the `install_deps.py` provides the following command line options to
 
 .. program-output:: ./ci/install_deps.py -h
 
+To use binaries installed from dependencies add `build/deps/bin` to the `PATH` environment variable.
 
 `ci/build.sh`
 -------------

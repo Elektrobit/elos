@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(safu 0.50.1 REQUIRED)
+find_package(safu 0.56.2 REQUIRED)
 
 include(../../cmake/shared_library.cmake)
 

@@ -21,6 +21,8 @@ extensions = [
     'sphinxcontrib.plantuml',
     'sphinx_favicon',
 
+    "sphinx.ext.autosectionlabel",  # better cross referencing
+
     # copy button on code blocks in HTML doc
     'sphinx_copybutton',
 
@@ -33,6 +35,8 @@ extensions = [
 ]
 
 myst_enable_extensions = ["tasklist"]
+autosectionlabel_prefix_document = True
+autosectionlabel_maxdepth = 2
 
 templates_path = ['doc/_templates']
 exclude_patterns = ['build/deps/**', 'build/*/cmake/_deps/*', 'README.md', '.venv']
@@ -106,12 +110,6 @@ c_autodoc_roots = [
     './src/components/rpnfilter/interface',
     './src/components/rpnfilter/private',
     './src/components/rpnfilter/public',
-    './src/components/scanner_legacy/interface',
-    './src/components/scanner_legacy/private',
-    './src/components/scanner_legacy/public',
-    './src/components/scanner_manager_legacy/interface',
-    './src/components/scanner_manager_legacy/private',
-    './src/components/scanner_manager_legacy/public',
     './src/components/scannermanager/interface',
     './src/components/scannermanager/private',
     './src/components/scannermanager/public',

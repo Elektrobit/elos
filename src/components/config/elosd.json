@@ -5,7 +5,6 @@
             "LogFilter": "",
             "LogLevel": "DEBUG",
             "ClientInputs": {
-                "PluginSearchPath": "/usr/local/lib/elos/client",
                 "Plugins": {
                     "LocalTcpClient": {
                         "File": "client_tcp.so",
@@ -14,7 +13,7 @@
                             "ConnectionLimit": 200,
                             "Port": 54321,
                             "Interface": "127.0.0.1",
-                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "EventBlacklist": ".event.messageCode 1000 LE",
                             "authorizedProcesses": [
                                 ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
                                 ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
@@ -26,16 +25,15 @@
                         "File": "client_tcp.so",
                         "Run": "always",
                         "Config": {
-                            "Port": 5422,
+                            "Port": 54322,
                             "Interface": "0.0.0.0",
-                            "EventBlacklist": ".event.messageCode 2000 EQ",
+                            "EventBlacklist": "1 1 EQ",
                             "authorizedProcesses": []
                         }
                     }
                 }
             },
             "EventLogging": {
-                "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
                 "Plugins": {
                     "Dummy": {
                         "File": "backend_dummy.so",
@@ -44,6 +42,10 @@
                             "1 1 EQ"
                         ]
                     },
+                    "SkippedDummy": {
+                        "File": "backend_dummy.so",
+                        "Run": "never"
+                    },
                     "JsonBackend": {
                         "File": "backend_json.so",
                         "Run": "always",
@@ -51,7 +53,18 @@
                             "1 1 EQ"
                         ],
                         "Config": {
-                            "StoragePath": ""
+                            "StoragePath": "/tmp/elosd_%host%_%date%_%count%.log",
+                            "Flags": []
+                        }
+                    },
+                    "SQLBackend": {
+                        "File": "backend_sql.so",
+                        "Run": "always",
+                        "Filter": [
+                            "1 1 EQ"
+                        ],
+                        "Config": {
+                            "ConnectionPath": "/tmp/elos.sqlite"
                         }
                     },
                     "DLT": {
@@ -68,13 +81,7 @@
                     }
                 }
             },
-            "StorageBackend": {
-                "Json": {
-                    "File": "/var/log/elos/elosd_event.log"
-                }
-            },
             "Scanner": {
-                "PluginSearchPath": "/usr/local/lib/elos/scanner",
                 "Plugins": {
                     "ScannerDummy": {
                         "File": "scanner_dummy.so",
@@ -83,28 +90,40 @@
                     "OomKiller": {
                         "File": "scanner_oomkiller.so",
                         "Run": "always"
-                    }
-                },
-                "KmsgScanner": {
-                    "KmsgFile": "/dev/kmsg"
-                },
-                "SyslogScanner": {
-                    "SyslogPath": "/dev/log",
-                    "MappingRules": {
-                        "MessageCodes": {
-                            "4000": ".event.source.appName 'ssh' STRCMP",
-                            "2000": ".event.source.appName 'crinit' STRCMP",
-                            "1000": ".event.source.appName 'login' STRCMP"
+                    },
+                    "SyslogScanner": {
+                        "File": "scanner_syslog.so",
+                        "Run": "always",
+                        "Config": {
+                            "SyslogPath": "/dev/log",
+                            "MappingRules": {
+                                "MessageCodes": {
+                                    "4000": ".event.source.appName 'ssh' STRCMP",
+                                    "2000": ".event.source.appName 'crinit' STRCMP",
+                                    "1000": ".event.source.appName 'login' STRCMP"
+                                }
+                            }
+                        }
+                    },
+                    "KmsgScanner": {
+                        "File": "scanner_kmsg.so",
+                        "Run": "always",
+                        "Config": {
+                            "KmsgFile": "/dev/kmsg"
+                        }
+                    },
+                    "Shmem": {
+                        "File": "scanner_shmem.so",
+                        "Run": "always",
+                        "Config": {
+                            "ShmemFile": "scanner_shmem",
+                            "ShmemCreate": true,
+                            "ShmemLogEntries": 256,
+                            "ShmemOffset": 0,
+                            "SemFile": "scanner_shmem_sem",
+                            "SemCreate": true
                         }
                     }
-                },
-                "Shmem": {
-                    "ShmemFile": "scanner_shmem",
-                    "ShmemCreate": true,
-                    "ShmemLogEntries": 256,
-                    "ShmemOffset": 0,
-                    "SemFile": "scanner_shmem_sem",
-                    "SemCreate": true
                 }
             }
         }

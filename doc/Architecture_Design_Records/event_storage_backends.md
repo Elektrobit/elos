@@ -56,7 +56,7 @@ are designed to search for through and for particular attributes of documents.
 *cons*
 * needs a mongoDB server which comes with additional dependencies like python
 
-### 2) Custom File Storage – Json File
+### 3) Custom File Storage – Json File
 
 To address the special requirements on storing events a sequential approach to
 store events serialized as newline Json separated strings is possible.
@@ -78,7 +78,7 @@ approach can be obtained from the corresponding design decision.
 * danger of reinventing some other stream or file storage system over time, as more and more "lessons learned"
 
 
-### 3) systemd like storage of logs
+### 4) systemd like storage of logs
 
 https://systemd.io/JOURNAL_FILE_FORMAT/
 https://github.com/systemd/systemd
@@ -88,14 +88,14 @@ systemds journald subsystem is a logging system not too different from syslog.
 It is, effectively, a block-based protocol, writing its logs to a socket.
 
 
-## Decision
+#### Decision
 
 Systemds journald will not be used.
 If the decision is reached to implement a completly new logging mechanism,
 the data storage format from journald is a good reference on how to write
 a logging format that is easily searchable.
 
-### Rationale
+#### Rationale
 
 The API of journald does not support writing to a custom file/location,
 which means that we can not simply use the API for logging.
@@ -146,7 +146,7 @@ encoding of our field names. Combining that with the efficient search with
 field names as search parameters would make lookup pretty efficient.
 
 
-### Open Points
+#### Open Points
 It is unclear if, should we be able to create a shared library for the journald
 server, how much of systemds other sources we would need to install as well to
 enable the server to run.
@@ -158,20 +158,20 @@ sync is and how many logs would accumulate in that time.
 It is unclear how good the corruption protection would work for elos, depending
 on how many lookups actually happen.
 
-### 4) Apache Avro Storage of logs
+### 5) Apache Avro Storage of logs
 
 https://avro.apache.org/docs/1.11.1/api/c/
 
 Avro supports storing of binary data in an easy way.
 
-# Decision
+#### Decision
 
 Creating a code poc is necessary to determine how the api performs in regards
 to writing blocks.
 During the creation of the poc, further development was halted and avro was
 abandoned as a possible logging backend.
 
-## Rationale
+#### Rationale
 
 It is certain that we can store an event fully in the data structures available
 from Avro.
@@ -191,19 +191,19 @@ in the necessary version locally, which would require building them as well.
 When trying to build avro locally, while supplying the necessary dependencies,
 The build failed to varying reasons, even with the same setup.
 
-## Open Points
+#### Open Points
 
 The amount of actual writes that happen when storing an event is unclear,
 but at least from the poc development, it seems reasonable to assume that it
 is possible to cache multiple events before actually writing them to file.
 
-### 5) Time-Series Databases
+### 6) Time-Series Databases
 
 As a representative for Time-Series Databases, InfluxDb was chosen.
 
 https://www.influxdata.com/products/influxdb-overview/.
 
-# Decision
+#### Decision
 
 Creating a code poc is necessary to determine how the api performs in regards.
 Due to the unavailability of InfluxDBv2 for yocto, the poc was implemented
@@ -216,7 +216,7 @@ the local storing we need for elos.
 
 Further development has not been decided as of yet.
 
-# Rational
+#### Rational
 
 It is confirmed that we can store an elos event to an InfluxDb table and
 read it again.
@@ -226,7 +226,7 @@ similar writes have been done, assumably since it needs to write its meta-
 data for the table only once, and subsequent writes are a lot smaller then for
 the other loggers.
 
-## Open Points
+#### Open Points
 Version 2 of InfluxDb uses a different storage format. The assumption
 is, that it could perform better in writes then the previous Storage formats.
 
@@ -234,7 +234,7 @@ It is also unclear how the write performance changes should we decide to cache
 events and write multiple at once, which is easily possible with the InfluxDb
 API, in both versions.
 
-### Test Results
+## Test Results
 
 The following table displays the results of performance tests, executed
 on the S32G.

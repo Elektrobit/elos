@@ -4,7 +4,6 @@
             "UseEnv": true,
             "LogLevel": "DEBUG",
             "ClientInputs": {
-                "PluginSearchPath": "/usr/local/lib/elos/client",
                 "Plugins": {
                     "LocalTcpClient": {
                         "File": "client_tcp.so",

@@ -17,9 +17,10 @@
 #define _CASE_EWOULDBLOCK
 #endif
 
+#define SCANNER_NAME "shmem"
+
 typedef struct elosScannerContextShmem {
     safuFlags_t flags;
-    const samconfConfig_t *config;
     int shmemFd;
     char *shmemFile;
     bool shmemCreate;
@@ -30,4 +31,5 @@ typedef struct elosScannerContextShmem {
     sem_t *semData;
     char *semFile;
     bool semCreate;
+    struct elosPublisher *publisher;
 } elosScannerContextShmem_t;
