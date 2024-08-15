@@ -100,7 +100,7 @@ filters. The event communication is realized in a publish-poll pattern:
 Clients interested in certain events will create an event filter on the
 server, which collects incoming matching events in an event queue. A
 filter can relate to one or more members of an event. For example only
-events from a specific aplication or with a specific severity could be
+events from a specific application or with a specific severity could be
 collected. Listening clients must keep up the connection to the server,
 so their filter and queues will exist further. When an event gets
 published by a client and doesn’t match any existing filters, it will be
@@ -195,7 +195,7 @@ Only match events of severity ``warning`` and above. (note: severity is
 
    .event.severity 3 LE
 
-Only match events releated to security incidents with severity
+Only matching events related to security incidents with severity
 ``warning`` or higher. (note: severity is 1 == FATAL to 6 == VERBOSE )
 
 ::
@@ -735,8 +735,8 @@ Event Authorization
 Event authorization is implemented by setting two filters in the config
 file. The two filters are :
 
--  EventBlacklist: This is an event filter which separtes an event into
-   critical and non-crtical events and blacklists it, if critical, to
+-  EventBlacklist: This is an event filter which separates an event into
+   critical and non-critical events and blacklists it, if critical, to
    prevent it from being published by an unauthorized client.
 
 -  authorizedProcesses: This is a list of process filters which
