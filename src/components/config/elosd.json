@@ -71,7 +71,7 @@
                         "File": "backend_dlt_logger.so",
                         "Run": "always",
                         "Filter": [
-                            ".messageCode 1000 GE"
+                            ".e.messageCode 1000 GE"
                         ],
                         "Config": {
                             "Connection": "/tmp/dlt",
