@@ -38,7 +38,7 @@
                     "Dummy": {
                         "File": "backend_dummy.so",
                         "Run": "always",
-                        "Filters": [
+                        "Filter": [
                             "1 1 EQ"
                         ]
                     },
@@ -49,7 +49,7 @@
                     "JsonBackend": {
                         "File": "backend_json.so",
                         "Run": "always",
-                        "Filters": [
+                        "Filter": [
                             "1 1 EQ"
                         ],
                         "Config": {
