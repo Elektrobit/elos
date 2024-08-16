@@ -54,7 +54,10 @@
                         ],
                         "Config": {
                             "StoragePath": "/tmp/elosd_%host%_%date%_%count%.log",
-                            "Flags": []
+                            "MaxSize": 60000,
+                            "Flags": [
+                                "O_SYNC"
+                            ]
                         }
                     },
                     "SQLBackend": {
