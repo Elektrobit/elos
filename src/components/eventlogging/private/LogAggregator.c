@@ -3,16 +3,34 @@
 
 #include <pthread.h>
 #include <safu/common.h>
+#include <safu/result.h>
 #include <safu/vector.h>
 
 #include "elos/config/config.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventfilter/vector.h"
+#include "elos/libelosplugin/StorageBackend_types.h"
 #include "elos/storagemanager/StorageBackend.h"
 #include "safu/log.h"
 #include "safu/mutex.h"
 
 static pthread_mutex_t elosLogAggregatorMutex = PTHREAD_MUTEX_INITIALIZER;
+
+#define FETCH_API_BACKEND_NAME "fetchapi"
+
+static int _findFetchApiPlugin(void const *element, UNUSED void const *data) {
+    int retVal = 0;
+    if ((element == NULL) || (*(elosStorageBackend_t **)element == NULL)) {
+        safuLogErr("StorageBackend is not configured correctly");
+        retVal = -1;
+    } else {
+        elosStorageBackend_t *backend = *(elosStorageBackend_t **)element;
+        if (strcmp(backend->name, FETCH_API_BACKEND_NAME) == 0) {
+            retVal = 1;
+        }
+    }
+    return retVal;
+}
 
 safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLogAggregatorParam_t const *param) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -28,6 +46,17 @@ safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLog
         if (result == SAFU_RESULT_OK) {
             logAggregator->lock = &elosLogAggregatorMutex;
             logAggregator->backends = param->backends;
+            logAggregator->fetchapiBacbdPluginIndex = UINT32_MAX;
+            int retVal = safuVecFind(logAggregator->backends, 0, _findFetchApiPlugin, NULL,
+                                     &logAggregator->fetchapiBacbdPluginIndex);
+            switch (retVal) {
+                case 0:
+                    safuLogDebug("no fetchapi plugin configured");
+                    break;
+                case -1:
+                    safuLogErr("Error while finding fetchapi plugin");
+                    result = SAFU_RESULT_FAILED;
+            }
             SAFU_PTHREAD_MUTEX_UNLOCK(&elosLogAggregatorMutex, result = SAFU_RESULT_FAILED);
         }
     }
@@ -42,6 +71,7 @@ safuResultE_t elosLogAggregatorShutdown(elosLogAggregator_t *logAggregator) {
         SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(logAggregator->lock, result);
         if (result == SAFU_RESULT_OK) {
             logAggregator->backends = NULL;
+            logAggregator->fetchapiBacbdPluginIndex = UINT32_MAX;
             SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
         }
     }
