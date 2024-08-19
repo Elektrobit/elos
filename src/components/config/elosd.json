@@ -101,9 +101,8 @@
                             "SyslogPath": "/dev/log",
                             "MappingRules": {
                                 "MessageCodes": {
-                                    "4000": ".event.source.appName 'ssh' STRCMP",
-                                    "2000": ".event.source.appName 'crinit' STRCMP",
-                                    "1000": ".event.source.appName 'login' STRCMP",
+                                    "8004": ".event.source.appName 'sshd' STRCMP .e.payload r'authentication failure' REGEX AND",
+                                    "8005": ".event.source.appName 'sshd' STRCMP .e.payload r'Accepted password for' REGEX AND",
                                     "1001": "1 1 EQ"
                                 }
                             }
