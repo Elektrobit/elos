@@ -15,7 +15,7 @@
                             "Interface": "127.0.0.1",
                             "EventBlacklist": ".event.messageCode 1000 LE",
                             "authorizedProcesses": [
-                                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.uid 0 EQ .process.gid 0 EQ AND .process.exec '/bin/elosc' STRCMP AND",
                                 ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
                                 ".process.pid 1 EQ"
                             ]
