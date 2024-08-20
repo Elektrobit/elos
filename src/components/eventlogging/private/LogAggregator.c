@@ -162,10 +162,15 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
                 result = SAFU_RESULT_OK;
                 SAFU_PTHREAD_MUTEX_LOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
                 if (result == SAFU_RESULT_OK) {
-                    elosStorageBackend_t *fetchapi = safuVecGet(logAggregator->backends, logAggregator->fetchapiBacbdPluginIndex);
-                    result = fetchapi->findEvent(fetchapi, &filter, events);
-                    if (result != SAFU_RESULT_OK) {
-                        safuLogErr("Find event for fetch api failed");
+                    elosStorageBackend_t **fetch = (elosStorageBackend_t **)safuVecGet(logAggregator->backends, index);
+                    if (fetch == NULL || *fetch == NULL || (*fetch)->findEvent == NULL) {
+                        safuLogErr("failed to get the fetchapi backend!");
+                    } else {
+                        elosStorageBackend_t *fetchapi = *fetch;
+                        result = fetchapi->findEvent(fetchapi, &filter, events);
+                        if (result != SAFU_RESULT_OK) {
+                            safuLogErr("Find events in fetchapi backend failed");
+                        }
                     }
                     SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
                 }
