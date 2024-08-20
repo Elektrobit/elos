@@ -138,33 +138,6 @@ safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elo
     return result;
 }
 
-typedef struct _findEventHelperData {
-    elosEventFilter_t *filter;
-    safuVec_t *eventVector;
-    safuResultE_t result;
-} _findEventHelperData_t;
-
-static int _logAggregatorFindEventsHelper(void const *element, void const *data) {
-    _findEventHelperData_t *helperData = (_findEventHelperData_t *)data;
-    safuResultE_t result = SAFU_RESULT_FAILED;
-
-    if ((element == NULL) || (*(elosStorageBackend_t **)element == NULL) || (data == NULL)) {
-        safuLogErr("StorageBackend is not configured correctly");
-    } else {
-        elosStorageBackend_t *backend = *(elosStorageBackend_t **)element;
-        result = backend->findEvent(backend, helperData->filter, helperData->eventVector);
-        if (result != SAFU_RESULT_OK) {
-            safuLogErrF("Find event in backend: %s failed", backend->name);
-        }
-    }
-
-    if (result != SAFU_RESULT_OK) {
-        helperData->result = result;
-    }
-
-    return 0;
-}
-
 safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule, safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
@@ -173,40 +146,32 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
     if (logAggregator == NULL || rule == NULL || events == NULL) {
         safuLogErr("Called elosLogAggregatorFindEvents with NULL-parameter");
     } else {
-        elosEventFilterParam_t const param = {.filterString = rule};
-        elosEventFilter_t filter = ELOS_EVENTFILTER_INIT;
-        elosRpnFilterResultE_t errVal;
-
-        errVal = elosEventFilterCreate(&filter, &param);
-        if (errVal == RPNFILTER_RESULT_ERROR) {
-            safuLogErrF("Failed to create filter for rule '%s'", rule);
-        } else {
-            int retVal;
-            _findEventHelperData_t helperData = {
-                .filter = &filter,
-                .eventVector = events,
-                .result = SAFU_RESULT_OK,
-            };
-
+        uint32_t index = logAggregator->fetchapiBacbdPluginIndex;
+        if (index == UINT32_MAX) {
             result = SAFU_RESULT_OK;
+            safuLogDebug("No fetchapi backend configured to get events from!");
+        } else {
+            elosEventFilterParam_t const param = {.filterString = rule};
+            elosEventFilter_t filter = ELOS_EVENTFILTER_INIT;
+            elosRpnFilterResultE_t errVal;
 
-            SAFU_PTHREAD_MUTEX_LOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
-            if (result == SAFU_RESULT_OK) {
-                retVal = safuVecIterate(logAggregator->backends, _logAggregatorFindEventsHelper, &helperData);
-                if (retVal < 0) {
-                    safuLogErr("Iterating through the backends failed");
-                    result = SAFU_RESULT_FAILED;
-                } else if (helperData.result != SAFU_RESULT_OK) {
-                    safuLogWarn("Errors happened in at least one backend");
-                    result = SAFU_RESULT_FAILED;
+            errVal = elosEventFilterCreate(&filter, &param);
+            if (errVal == RPNFILTER_RESULT_ERROR) {
+                safuLogErrF("Failed to create filter for rule '%s'", rule);
+            } else {
+                result = SAFU_RESULT_OK;
+                SAFU_PTHREAD_MUTEX_LOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
+                if (result == SAFU_RESULT_OK) {
+                    elosStorageBackend_t *fetchapi = safuVecGet(logAggregator->backends, logAggregator->fetchapiBacbdPluginIndex);
+                    result = fetchapi->findEvent(fetchapi, &filter, events);
+                    if (result != SAFU_RESULT_OK) {
+                        safuLogErr("Find event for fetch api failed");
+                    }
+                    SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
                 }
-
-                SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
             }
+            elosEventFilterDeleteMembers(&filter);
         }
-
-        elosEventFilterDeleteMembers(&filter);
     }
-
     return result;
 }
