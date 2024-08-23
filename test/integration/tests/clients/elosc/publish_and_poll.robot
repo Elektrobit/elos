@@ -142,7 +142,7 @@ Generate Client Logs
         ${message_received}=    Set Variable    0
         WHILE    ${message_received} == 0    limit=5 seconds
             ${client_output}=    Execute Command    cat ${log_files}
-            ${ret}=    Get Lines Containing String    ${client_output}    "messageCode":9
+            ${ret}=    Get Lines Containing String    ${client_output}    "appName":"publish_poll"
             ${message_received}=    Get Length    ${ret}
         END
         Append To List    ${SUBSCRIBED_CLIENTS_LOG}    ${client_output}
