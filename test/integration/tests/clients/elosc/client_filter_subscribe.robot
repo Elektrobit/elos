@@ -26,10 +26,10 @@ ${VALID_CLIENT_LOG}         /tmp/elos_client_valid.log
 ...                         ".event.Source.appName 'hugo' LT"
 ...                         ".event.Source.appName hugo STRCMP"
 ...                         ".event.definitely.not.existing.field 'hugo' STRCMP"
-@{MESSAGES}                 {"messageCode": 4,"payload":"testEventFiltering"}
-...                         {"messageCode": 40,"payload":"testEventFiltering"}
-...                         {"messageCode": 400,"payload":"testEventFiltering"}
-${VALID_FILTER}             ".event.messageCode 400 EQ"
+@{MESSAGES}                 {"messageCode": 1004,"payload":"testEventFiltering"}
+...                         {"messageCode": 1040,"payload":"testEventFiltering"}
+...                         {"messageCode": 1400,"payload":"testEventFiltering"}
+${VALID_FILTER}             ".event.messageCode 1400 EQ"
 @{PUBLISH_LOG}              @{EMPTY}
 ${EVENT}                    testEventFiltering
 ${EVENT_FAILED}             event subscription failed

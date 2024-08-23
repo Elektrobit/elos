@@ -101,7 +101,7 @@ Create Message
 
 Create Messages
     [Documentation]    Create multiple messages with message template
-    FOR    ${i}    IN RANGE    1    ${MESSAGE_COUNT}
+    FOR    ${i}    IN RANGE    1001    1001+${MESSAGE_COUNT}
         ${msg}=    Create Message    ${i}
         Append To List    ${MESSAGES}    ${msg}
     END

@@ -21,7 +21,7 @@ Test Template       Check Given Find Event Filter With Error Expectation
 ${ELOSD_VERSION}            1
 ${ELOSD_PUBLISH_CODE}       2
 ${ELOSD_QUERY_CODE}         4
-${ELOSD_PUBLISH_MESSAGE}    {"messageCode": 4,"payload":"message from tcp published"}
+${ELOSD_PUBLISH_MESSAGE}    {"messageCode": 1004,"payload":"message from tcp published"}
 
 
 *** Test Cases ***
