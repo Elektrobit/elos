@@ -8,6 +8,7 @@ add_subdirectory(elosEventQueueRead)
 add_subdirectory(elosEventSubscribe)
 add_subdirectory(elosEventUnsubscribe)
 add_subdirectory(elosLogFindEvent)
+add_subdirectory(elosFindEvents)
 add_subdirectory(elosSessionValid)
 
 add_subdirectory(private)
