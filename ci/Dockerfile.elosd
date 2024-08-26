@@ -51,7 +51,7 @@ RUN cmake -B /tmp/elos/build . -DCMAKE_BUILD_TYPE=Release -G Ninja -DUNIT_TESTS=
 RUN ninja -C /tmp/elos/build all
 RUN sudo ninja -C /tmp/elos/build install
 
-COPY ./test/integration/service/elosd.service /etc/init.d/elosd
+COPY ./ci/elosd.service /etc/init.d/elosd
 RUN chmod a+x /etc/init.d/elosd
 
 RUN sudo ldconfig
