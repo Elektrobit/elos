@@ -81,7 +81,7 @@
                     },
                     "JsonBackend": {
                         "File": "backend_json.so",
-                        "Run": "always",
+                        "Run": "never",
                         "Filter": [
                             "1 1 EQ"
                         ],
