@@ -7,14 +7,14 @@ class ElosdLibrary(object):
     with target elosd.
     """
     host = "127.0.0.1"
-    port = 8080
+    port = 54321
     socket = None
 
     def elosd_connect(self, host, port):
         """Connect to a elosd target.
 
-        | host | ip string to connect to | Default=8080 |
-        | port | elosd port | Default=8080 |
+        | host | ip string to connect to | Default=54321 |
+        | port | elosd port | Default=54321 |
         """
         self.host = host
         self.port = port

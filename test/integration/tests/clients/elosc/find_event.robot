@@ -18,10 +18,10 @@ Suite Teardown      Close All Connections
 
 
 *** Variables ***
-${FILTERSTRING}     ".event.messageCode 400 EQ"
-@{MESSAGES}         {"messageCode": 4,"payload":"testEventFiltering"}
-...                 {"messageCode": 40,"payload":"testEventFiltering"}
-...                 {"messageCode": 400,"payload":"testEventFiltering"}
+${FILTERSTRING}     ".event.messageCode 1400 EQ"
+@{MESSAGES}         {"messageCode": 1004,"payload":"testEventFiltering"}
+...                 {"messageCode": 1040,"payload":"testEventFiltering"}
+...                 {"messageCode": 1400,"payload":"testEventFiltering"}
 ${SEARCH_STRING}    testEventFiltering
 @{PUBLISH_LOG}      @{EMPTY}
 

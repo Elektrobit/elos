@@ -14,7 +14,7 @@ Library             libraries/TemplateConfig.py
 *** Variables ***
 ${ELOSD_PATH}      ${ELOS_INSTALL_PREFIX}/elosd
 ${ELOSC_PATH}      ${ELOS_INSTALL_PREFIX}/elosc
-${ELOSD_PORT}      54321
+${ELOSD_PORT}      ${ELOSD_DEFAULT_PORT_FORWARD}
 ${ELOS_SERVICE_STOP_RC}    -1
 
 
@@ -23,7 +23,7 @@ Connect To Elosd
     [Documentation]    connect to instance of elosd
 
     Wait Till Elosd Is Listening On    ${ELOSD_PORT}
-    ${rc}    Elosd Connect    ${TARGET}    ${ELOSD_PORT}
+    ${rc}    Elosd Connect    127.0.0.1    ${ELOSD_PORT}
     Should Be Equal As Integers    ${rc}    0
 
 Disconnect From Elosd

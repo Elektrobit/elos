@@ -101,7 +101,7 @@ Create Message
 
 Create Messages
     [Documentation]    Create multiple messages with message template
-    FOR    ${i}    IN RANGE    1    ${MESSAGE_COUNT}
+    FOR    ${i}    IN RANGE    1001    1001+${MESSAGE_COUNT}
         ${msg}=    Create Message    ${i}
         Append To List    ${MESSAGES}    ${msg}
     END
@@ -142,7 +142,7 @@ Generate Client Logs
         ${message_received}=    Set Variable    0
         WHILE    ${message_received} == 0    limit=5 seconds
             ${client_output}=    Execute Command    cat ${log_files}
-            ${ret}=    Get Lines Containing String    ${client_output}    "messageCode":9
+            ${ret}=    Get Lines Containing String    ${client_output}    "appName":"publish_poll"
             ${message_received}=    Get Length    ${ret}
         END
         Append To List    ${SUBSCRIBED_CLIENTS_LOG}    ${client_output}
