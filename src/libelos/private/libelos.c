@@ -7,6 +7,8 @@
 #include <safu/vector_types.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
+
 #include "elos/event/event_types.h"
 #include "elos/event/event_vector.h"
 #define _DEFAULT_SOURCE 1
@@ -211,60 +213,9 @@ safuResultE_t elosGetVersion(elosSession_t *session, char const **version) {
     return result;
 }
 
+// Deprecated
 safuResultE_t elosLogFindEvent(elosSession_t *session, const char *filterRule, elosEventVector_t **eventVector) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
-    bool retBool;
-
-    retBool = elosSessionValid(session);
-    if (retBool == false) {
-        if (elosLoggingEnabled) safuLogErr("Invalid session");
-    } else if ((filterRule == NULL) || (eventVector == NULL)) {
-        if (elosLoggingEnabled) safuLogErr("Invalid parameter");
-    } else {
-        json_object *jRequest = NULL;
-
-        jRequest = json_object_new_object();
-        if (!jRequest) {
-            if (elosLoggingEnabled) safuLogErr("json_object_new_object failed!");
-        } else {
-            json_object *filterRuleComplete = NULL;
-
-            filterRuleComplete = safuJsonAddNewString(jRequest, "filter", filterRule);
-            if (!filterRuleComplete) {
-                if (elosLoggingEnabled) safuLogErr("safuJsonAddNewString failed!");
-            } else {
-                uint8_t const messageId = ELOS_MESSAGE_LOG_FIND_EVENT;
-                json_object *jResponse;
-                safuResultE_t retResult;
-
-                if (elosLoggingEnabled) safuLogDebugF("will send filter rule: %s", filterRule);
-                retResult = elosSendAndReceiveJsonMessage(session, messageId, jRequest, &jResponse);
-                if (retResult != SAFU_RESULT_OK) {
-                    if (elosLoggingEnabled) safuLogErr("Communication with elosd failed!");
-                } else {
-                    json_object *eventVecJarr = safuJsonGetArray(jResponse, "eventArray", 0, NULL);
-                    if (!eventVecJarr) {
-                        if (elosLoggingEnabled) safuLogErr("Failed to read event vector json object!");
-                    } else {
-                        elosEventVector_t *newEventVector = NULL;
-
-                        retResult = elosEventVectorFromJsonArray(eventVecJarr, &newEventVector);
-                        if (retResult == SAFU_RESULT_FAILED) {
-                            if (elosLoggingEnabled) safuLogErr("Failed to read event vector json object!");
-                        } else {
-                            *eventVector = newEventVector;
-                            result = SAFU_RESULT_OK;
-                        }
-                    }
-                    json_object_put(jResponse);
-                }
-            }
-
-            json_object_put(jRequest);
-        }
-    }
-
-    return result;
+    return elosFindEvents(session, filterRule, &(struct timespec){0}, &(struct timespec){0}, eventVector);
 }
 
 static safuResultE_t _createFindEventRequest(const char *filterRule, struct timespec const *newest,
