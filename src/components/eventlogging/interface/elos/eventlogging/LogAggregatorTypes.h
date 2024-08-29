@@ -13,5 +13,5 @@ typedef struct elosLogAggregator {
     pthread_mutex_t *lock;
     samconfConfig_t const *config;
     elosStorageBackendPtrVector_t *backends;
-    uint32_t fetchapiBacbdPluginIndex;
+    uint32_t fetchapiBackendPluginIndex;
 } elosLogAggregator_t;

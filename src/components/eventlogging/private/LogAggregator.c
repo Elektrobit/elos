@@ -46,9 +46,9 @@ safuResultE_t elosLogAggregatorStart(elosLogAggregator_t *logAggregator, elosLog
         if (result == SAFU_RESULT_OK) {
             logAggregator->lock = &elosLogAggregatorMutex;
             logAggregator->backends = param->backends;
-            logAggregator->fetchapiBacbdPluginIndex = UINT32_MAX;
+            logAggregator->fetchapiBackendPluginIndex = UINT32_MAX;
             int retVal = safuVecFind(logAggregator->backends, 0, _findFetchApiPlugin, NULL,
-                                     &logAggregator->fetchapiBacbdPluginIndex);
+                                     &logAggregator->fetchapiBackendPluginIndex);
             switch (retVal) {
                 case 0:
                     safuLogDebug("no fetchapi plugin configured");
@@ -71,7 +71,7 @@ safuResultE_t elosLogAggregatorShutdown(elosLogAggregator_t *logAggregator) {
         SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(logAggregator->lock, result);
         if (result == SAFU_RESULT_OK) {
             logAggregator->backends = NULL;
-            logAggregator->fetchapiBacbdPluginIndex = UINT32_MAX;
+            logAggregator->fetchapiBackendPluginIndex = UINT32_MAX;
             SAFU_PTHREAD_MUTEX_UNLOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
         }
     }
@@ -146,7 +146,7 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
     if (logAggregator == NULL || rule == NULL || events == NULL) {
         safuLogErr("Called elosLogAggregatorFindEvents with NULL-parameter");
     } else {
-        uint32_t index = logAggregator->fetchapiBacbdPluginIndex;
+        uint32_t index = logAggregator->fetchapiBackendPluginIndex;
         if (index == UINT32_MAX) {
             result = SAFU_RESULT_OK;
             safuLogDebug("No fetchapi backend configured to get events from!");
@@ -162,7 +162,7 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
                 result = SAFU_RESULT_OK;
                 SAFU_PTHREAD_MUTEX_LOCK(logAggregator->lock, result = SAFU_RESULT_FAILED);
                 if (result == SAFU_RESULT_OK) {
-                    elosStorageBackend_t **fetch = (elosStorageBackend_t **)safuVecGet(logAggregator->backends, index);
+                    elosStorageBackend_t **fetch = safuVecGet(logAggregator->backends, index);
                     if (fetch == NULL || *fetch == NULL || (*fetch)->findEvent == NULL) {
                         safuLogErr("failed to get the fetchapi backend!");
                     } else {
