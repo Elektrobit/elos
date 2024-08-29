@@ -113,18 +113,23 @@ inline safuResultE_t elosPluginStore(elosPlugin_t *const plugin, const elosEvent
  * Do a log storage lookup of events for a given filter.
  *
  * Parameters:
- *      plugin : Pointer of a plugin data structure
- *      rule    : A string containing the event filter rule to be use to lookup
- *                historical events
- *      events  : A pointer to an initialised event vector to store the
- *                resulting events. The events in the vector must be freed by
- *                the caller by `elosEventDeleteMembers`.
+ *      plugin: Pointer of a plugin data structure
+ *      rule  : A string containing the event filter rule to be use to lookup
+ *              historical events
+ *      newest: A pointer to a `struct timespec` to select no events more
+ *              recent then given. A zeroed value mean unbounded.
+ *      oldest: A pointer to a `struct timespec` to select no events older
+ *              then given. A zeroed value mean unbounded.
+ *      events: A pointer to an initialised event vector to store the
+ *              resulting events. The events in the vector must be freed by
+ *              the caller by `elosEventDeleteMembers`.
  * Returns:
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
-static inline safuResultE_t elosPluginFindEvents(elosPlugin_t *const plugin, const char *const rule,
-                                                 safuVec_t *events) {
+inline safuResultE_t elosPluginFindEvents(elosPlugin_t *const plugin, const char *const rule,
+                                          UNUSED const struct timespec *newest, UNUSED const struct timespec *oldest,
+                                          safuVec_t *events) {
     struct timespec newest = {0, 0};
     struct timespec oldest = {0, 0};
     return plugin->findEvents(plugin->instanceRef, rule, &newest, &oldest, events);
