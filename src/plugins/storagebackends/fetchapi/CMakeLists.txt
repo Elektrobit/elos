@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(safu 0.54.0 REQUIRED)
+find_package(safu 0.57.0 REQUIRED)
 find_package(samconf 0.53.1 REQUIRED)
 
 enable_language(CXX)
