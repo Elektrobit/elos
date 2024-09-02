@@ -123,8 +123,10 @@ inline safuResultE_t elosPluginStore(elosPlugin_t *const plugin, const elosEvent
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
-inline safuResultE_t elosPluginFindEvents(elosPlugin_t *const plugin, const char *const rule, safuVec_t *events) {
-    return plugin->findEvents(plugin->instanceRef, rule, events);
+static inline safuResultE_t elosPluginFindEvents(elosPlugin_t *const plugin, const char *const rule, safuVec_t *events) {
+    struct timespec newest = {0};
+    struct timespec oldest = {0};
+    return plugin->findEvents(plugin->instanceRef, rule, newest, oldest, events);
 }
 
 /*******************************************************************

@@ -217,7 +217,8 @@ safuResultE_t elosPluginControlPublish(elosPublisher_t *publisher, const elosEve
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
-safuResultE_t elosPluginControlFindEvents(elosPluginControl_t *pluginControl, const char *rule, safuVec_t *events);
+safuResultE_t elosPluginControlFindEvents(elosPluginControl_t *pluginControl, const char *rule, struct timespec newest,
+                                          struct timespec oldest, safuVec_t *events);
 
 /*******************************************************************
  * Implements the actual retrieval of all events from an event queue,
