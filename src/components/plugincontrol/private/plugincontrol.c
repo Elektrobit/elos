@@ -463,7 +463,9 @@ safuResultE_t elosPluginControlPublish(elosPublisher_t *publisher, const elosEve
     return result;
 }
 
-safuResultE_t elosPluginControlFindEvents(elosPluginControl_t *pluginControl, const char *rule, struct timespec newest, struct timespec oldest, safuVec_t *events) {
+safuResultE_t elosPluginControlFindEvents(elosPluginControl_t *pluginControl, const char *rule,
+                                          struct timespec const *newest, struct timespec const *oldest,
+                                          safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     result = elosLogAggregatorFindEvents(pluginControl->logAggregator, rule, newest, oldest, events);

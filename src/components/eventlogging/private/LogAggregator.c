@@ -138,8 +138,9 @@ safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elo
     return result;
 }
 
-safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule, struct timespec newest,
-                                          struct timespec oldest, safuVec_t *events) {
+safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule,
+                                          struct timespec const *newest, struct timespec const *oldest,
+                                          safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     safuLogDebugF("received filterRule: %s", rule);

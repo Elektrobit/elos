@@ -138,8 +138,9 @@ static safuResultE_t elosNoSqlBackendFilterEvent(elosRpnFilter_t *filter, safuVe
     return result;
 }
 
-safuResultE_t elosNoSqlBackendFindEvents(elosStorageBackend_t *backend, elosRpnFilter_t *filter, struct timespec newest,
-                                         struct timespec oldest, safuVec_t *events) {
+safuResultE_t elosNoSqlBackendFindEvents(elosStorageBackend_t *backend, elosRpnFilter_t *filter,
+                                         struct timespec const *newest, struct timespec const *oldest,
+                                         safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosNoSqlBackend_t *noSqlBackend = NULL;
     bson_t *selectAll = NULL;

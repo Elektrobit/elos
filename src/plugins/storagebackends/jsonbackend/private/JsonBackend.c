@@ -357,7 +357,8 @@ static safuResultE_t elosJsonBackendFilterEvent(elosEventFilter_t *filter, safuV
  *         SAFU_RESULT_FAILURE – on failure.
  */
 safuResultE_t elosJsonBackendFindEvents(elosStorageBackend_t *backend, elosEventFilter_t *filter,
-                                        struct timespec newest, struct timespec oldest, safuVec_t *events) {
+                                        struct timespec const *newest, struct timespec const *oldest,
+                                        safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosJsonBackend_t *jsonBackend = NULL;
     FILE *jsonBackendFile = NULL;

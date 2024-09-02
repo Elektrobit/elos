@@ -433,7 +433,8 @@ static inline safuResultE_t _influxJsonToEvents(json_object *dataPoint, elosEven
 }
 
 safuResultE_t elosInfluxDbBackendFindEvents(elosStorageBackend_t *backend, elosEventFilter_t *filter,
-                                            struct timespec newest, struct timespec oldest, safuVec_t *events) {
+                                            struct timespec const *newest, struct timespec const *oldest,
+                                            safuVec_t *events) {
     int i;
     size_t arrayLength = 0;
     struct callbackStorage buf = {0};

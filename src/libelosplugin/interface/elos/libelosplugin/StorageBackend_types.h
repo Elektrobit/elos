@@ -54,6 +54,8 @@ typedef safuResultE_t elosStorageBackendPersist_t(elosStorageBackend_t *backend,
  * Parameters:
  *     backend (elosStorageBackend_t*): The Storage Backend instance itself.
  *     filter (safuVec_t*): The filter to find matching events.
+ *     newest (struct timespec const *): the most recent timetamp to check for
+ *     oldest (struct timespec const *): timstamp befor oldest event to find
  *     events (safuVec_t*): A vector to store matching events.
  *
  * Returns:
@@ -64,7 +66,8 @@ typedef safuResultE_t elosStorageBackendPersist_t(elosStorageBackend_t *backend,
  */
 #endif
 typedef safuResultE_t elosStorageBackendFindEvent_t(elosStorageBackend_t *backend, elosEventFilter_t *filter,
-                                                    struct timespec newest, struct timespec oldest, safuVec_t *events);
+                                                    struct timespec const *newest, struct timespec const *oldest,
+                                                    safuVec_t *events);
 
 #ifdef SPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS
 /**

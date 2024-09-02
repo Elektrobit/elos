@@ -41,8 +41,8 @@ static safuResultE_t _backendPersist(elosStorageBackend_t *backend, const elosEv
     return result;
 }
 
-static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend, elosRpnFilter_t *filter, struct timespec newest,
-                                       struct timespec oldest, safuVec_t *events) {
+static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend, elosRpnFilter_t *filter, struct timespec const *newest,
+                                       struct timespec const *oldest, safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((backend == NULL) || (filter == NULL) || (events == NULL)) {
