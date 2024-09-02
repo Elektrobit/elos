@@ -168,7 +168,7 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
                         safuLogErr("failed to get the fetchapi backend!");
                     } else {
                         elosStorageBackend_t *fetchapi = *fetch;
-                        result = fetchapi->findEvent(fetchapi, &filter, events);
+                        result = fetchapi->findEvent(fetchapi, &filter, newest, oldest, events);
                         if (result != SAFU_RESULT_OK) {
                             safuLogErr("Find events in fetchapi backend failed");
                         }

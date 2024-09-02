@@ -152,7 +152,9 @@ safuResultE_t elosSqlBackendPersist(elosStorageBackend_t *backend, const elosEve
     return result;
 }
 
-safuResultE_t elosSqlBackendFindEvents(elosStorageBackend_t *backend, elosRpnFilter_t *filter, safuVec_t *events) {
+safuResultE_t elosSqlBackendFindEvents(elosStorageBackend_t *backend, elosRpnFilter_t *filter,
+                                       UNUSED struct timespec newest, UNUSED struct timespec oldest,
+                                       safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (backend == NULL || filter == NULL || events == NULL) {

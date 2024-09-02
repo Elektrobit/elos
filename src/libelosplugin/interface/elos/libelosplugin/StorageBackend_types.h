@@ -64,7 +64,7 @@ typedef safuResultE_t elosStorageBackendPersist_t(elosStorageBackend_t *backend,
  */
 #endif
 typedef safuResultE_t elosStorageBackendFindEvent_t(elosStorageBackend_t *backend, elosEventFilter_t *filter,
-                                                    safuVec_t *events);
+                                                    struct timespec newest, struct timespec oldest, safuVec_t *events);
 
 #ifdef SPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS
 /**
