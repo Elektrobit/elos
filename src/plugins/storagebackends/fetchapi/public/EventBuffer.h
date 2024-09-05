@@ -23,5 +23,6 @@ class elosEventBuffer {
     elosEventBuffer(elosEventBuffer &buff) = delete;
     elosEventBuffer(elosEventBuffer &&buff) = delete;
     safuResultE_t elosPushEvent(const elosEvent_t &event) noexcept;
-    safuResultE_t elosFindEvents(const elosRpnFilter_t &filter, safuVec_t &eventList) const noexcept;
+    safuResultE_t elosFindEvents(const elosRpnFilter_t &filter, const timespec &newest, const timespec &oldest,
+                                 safuVec_t &eventList) const noexcept;
 };

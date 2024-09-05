@@ -303,7 +303,8 @@ safuResultE_t elosJsonBackendPersist(elosStorageBackend_t *backend, const elosEv
     return result;
 }
 
-static safuResultE_t elosJsonBackendFilterEvent(elosEventFilter_t *filter, safuVec_t *events, char *jsonString) {
+static safuResultE_t elosJsonBackendFilterEvent(elosEventFilter_t *filter, struct timespec const *newest,
+                                                struct timespec const *oldest, safuVec_t *events, char *jsonString) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosRpnFilterResultE_t filterResult;
     elosEvent_t *event = NULL;
@@ -321,7 +322,7 @@ static safuResultE_t elosJsonBackendFilterEvent(elosEventFilter_t *filter, safuV
     if (result == SAFU_RESULT_OK) {
         safuLogDebugF("Event created: %s", jsonString);
 
-        filterResult = elosEventFilterExecute(filter, NULL, event);
+        filterResult = elosEventFilterExecuteInTimeRange(filter, NULL, newest, oldest, event);
         if (filterResult == RPNFILTER_RESULT_MATCH) {
             safuVecPush(events, event);  // copies event and free's its members
             free(event);
@@ -385,7 +386,7 @@ safuResultE_t elosJsonBackendFindEvents(elosStorageBackend_t *backend, elosEvent
             for (int idx = 1;; idx++) {
                 readSuccess = getline(&buffer, &bufferSize, jsonBackendFile);  // calls malloc / realloc internally
                 if (readSuccess > 0) {
-                    result = elosJsonBackendFilterEvent(filter, events, buffer);
+                    result = elosJsonBackendFilterEvent(filter, newest, oldest, events, buffer);
                     if (result == SAFU_RESULT_FAILED) {
                         safuLogErr("elosJsonBackendFilterEvent failed");
                         free(buffer);

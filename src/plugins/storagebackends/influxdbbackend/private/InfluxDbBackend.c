@@ -487,7 +487,9 @@ safuResultE_t elosInfluxDbBackendFindEvents(elosStorageBackend_t *backend, elosE
         for (i = events->elementCount - 1; i >= 0; i--) {
             event = safuVecGet(events, i);
             if (event != NULL) {
-                filterResult = elosEventFilterExecute(filter, NULL, event);
+                // NOTE:  could be updated to just get events in the time range from influxdb
+                // and then only run the filter here
+                filterResult = elosEventFilterExecuteInTimeRange(filter, NULL, newest, oldest, event);
                 if (filterResult == RPNFILTER_RESULT_MATCH) {
                     safuLogDebug("Append event: Match");
                 } else if (filterResult == RPNFILTER_RESULT_NO_MATCH) {

@@ -56,7 +56,7 @@ static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend, elosRpnFil
         elosRpnFilterResultE_t filterResult;
 
         elosEvent_t event = {0};
-        filterResult = elosEventFilterExecute(filter, NULL, &event);
+        filterResult = elosEventFilterExecuteInTimeRange(filter, NULL, newest, oldest, &event);
         if (filterResult == RPNFILTER_RESULT_MATCH || filterResult == RPNFILTER_RESULT_NO_MATCH) {
             result = SAFU_RESULT_OK;
         } else {

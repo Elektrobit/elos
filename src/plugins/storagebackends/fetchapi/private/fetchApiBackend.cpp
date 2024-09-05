@@ -44,15 +44,16 @@ static safuResultE_t _backendPersist(elosStorageBackend_t *backend, const elosEv
     return result;
 }
 
-static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend, elosRpnFilter_t *filter, struct timespec const *newest,
-                                       struct timespec const *oldest, safuVec_t *events) {
+static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend, elosRpnFilter_t *filter,
+                                       struct timespec const *newest, struct timespec const *oldest,
+                                       safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((backend == nullptr) || (filter == nullptr) || (events == nullptr)) {
         safuLogErr("Null parameter given");
     } else {
         auto *eventBuffer = (elosEventBuffer *)backend->backendData;
-        result = eventBuffer->elosFindEvents(*filter, *events);
+        result = eventBuffer->elosFindEvents(*filter, *newest, *oldest, *events);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("Finding events failed!");
         }
