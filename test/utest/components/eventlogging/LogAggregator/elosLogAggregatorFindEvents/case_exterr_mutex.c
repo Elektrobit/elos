@@ -31,6 +31,8 @@ void elosTestElosLogAggregatorFindEventsExterrMutex(void **state) {
     TEST("elosEventQueueRead (mutex locking)");
     SHOULD("%s", "return SAFU_RESULT_FAILED when mutex locking fails");
 
+    struct timespec nullTime = {0};
+
     MOCK_FUNC_ALWAYS(raise);
     will_return_always(__wrap_raise, 0);
 
@@ -40,7 +42,7 @@ void elosTestElosLogAggregatorFindEventsExterrMutex(void **state) {
     will_return(__wrap_pthread_mutex_lock, -1);
     expect_value(__wrap_raise, __sig, SIGTERM);
 
-    result = elosLogAggregatorFindEvents(&test->logAggregator, filterRule, &test->eventVector);
+    result = elosLogAggregatorFindEvents(&test->logAggregator, filterRule, &nullTime, &nullTime, &test->eventVector);
     assert_true(result == SAFU_RESULT_FAILED);
 
     PARAM("%s", "pthread_mutex_unlock fails");
@@ -54,7 +56,7 @@ void elosTestElosLogAggregatorFindEventsExterrMutex(void **state) {
     will_return(__wrap_pthread_mutex_unlock, -1);
     expect_value(__wrap_raise, __sig, SIGTERM);
 
-    result = elosLogAggregatorFindEvents(&test->logAggregator, filterRule, &test->eventVector);
+    result = elosLogAggregatorFindEvents(&test->logAggregator, filterRule, &nullTime, &nullTime, &test->eventVector);
     assert_true(result == SAFU_RESULT_FAILED);
 
     MOCK_FUNC_NEVER(raise);

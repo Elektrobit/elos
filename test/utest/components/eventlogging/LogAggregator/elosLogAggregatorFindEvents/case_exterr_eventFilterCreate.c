@@ -37,6 +37,8 @@ void elosTestElosLogAggregatorFindEventsExterrEventFilterCreate(void **state) {
     will_set_parameter(elosEventFilterCreate, filter, &filter);
     will_return(elosEventFilterCreate, RPNFILTER_RESULT_ERROR);
 
-    result = elosLogAggregatorFindEvents(&testState->logAggregator, filterRule, &testState->eventVector);
+    struct timespec nullTime = {0};
+    result = elosLogAggregatorFindEvents(&testState->logAggregator, filterRule, &nullTime, &nullTime,
+                                         &testState->eventVector);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }
