@@ -5,6 +5,7 @@ create_unit_test(
   NAME
   test_vector_elosEventVectorPushDeepCopy_utest
   SOURCES
+    case_success.c
     case_mock.c
     case_copy_failed.c
     elosEventVectorPushDeepCopy_utest.c

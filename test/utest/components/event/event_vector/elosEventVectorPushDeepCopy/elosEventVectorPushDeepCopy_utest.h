@@ -7,3 +7,4 @@
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventVectorPushDeepCopyMock)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventVectorPushDeepCopyCopyFailed)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventVectorPushDeepCopySuccess)

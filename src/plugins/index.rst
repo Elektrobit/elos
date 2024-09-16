@@ -17,3 +17,4 @@ Plugins
    storagebackends/jsonbackend/index
    storagebackends/nosqlbackend/index
    storagebackends/sqlbackend/index
+   storagebackends/fetchapi/index

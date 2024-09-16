@@ -344,10 +344,10 @@ safuResultE_t elosEventVectorPush(elosEventVector_t *eventVector, elosEvent_t co
 }
 
 safuResultE_t elosEventVectorPushDeepCopy(elosEventVector_t *eventVector, elosEvent_t const *event) {
-    elosEvent_t *newEvent = {0};
-    safuResultE_t result = elosEventDeepCopy(newEvent, event);
+    elosEvent_t newEvent = {0};
+    safuResultE_t result = elosEventDeepCopy(&newEvent, event);
     if (result == SAFU_RESULT_OK) {
-        result = safuVecPush(eventVector, newEvent);
+        result = safuVecPush(eventVector, &newEvent);
     }
     return result;
 }

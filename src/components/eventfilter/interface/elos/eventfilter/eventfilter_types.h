@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <sys/cdefs.h>
+
 #include "elos/event/event_types.h"
 #include "elos/rpnfilter/rpnfilter_types.h"
+
+__BEGIN_DECLS
 
 #define ELOS_EVENTFILTER_INIT ELOS_RPNFILTER_INIT
 
@@ -26,3 +30,5 @@ typedef enum elosEventFilterValueTypeE {
 typedef elosRpnFilterParam_t elosEventFilterParam_t;
 typedef elosRpnFilterStack_t elosEventFilterStack_t;
 typedef elosRpnFilter_t elosEventFilter_t;
+
+__END_DECLS

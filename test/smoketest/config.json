@@ -36,6 +36,16 @@
             },
             "EventLogging": {
                 "Plugins": {
+                    "fetchapi": {
+                        "File": "backend_fetchapi.so",
+                        "Run": "never",
+                        "Filter": [
+                            ".event.messageCode 1000 LE"
+                        ],
+                        "Config": {
+                            "BufferSize": 100
+                        }
+                    },
                     "Dummy": {
                         "File": "backend_dummy.so",
                         "Run": "always",
@@ -59,7 +69,7 @@
                         "File": "backend_sql.so",
                         "Run": "always",
                         "Filter": [
-                            "1 1 EQ"
+                            ".event.messageCode 1000 GT"
                         ],
                         "Config": {
                             "ConnectionPath": "/tmp/elos.sqlite"
