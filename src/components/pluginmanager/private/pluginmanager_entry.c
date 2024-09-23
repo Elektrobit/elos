@@ -18,24 +18,24 @@ safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elos
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
         elosPluginControlParam_t pluginParam = *param;
-        elosPluginControl_t plugin = {0};
+        elosPluginControl_t *plugin = safuAllocMem(NULL, sizeof(elosPluginControl_t));
 
         pluginParam.id = pluginManager->nextId;
 
-        result = elosPluginControlInitialize(&plugin, &pluginParam);
+        result = elosPluginControlInitialize(plugin, &pluginParam);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginControlInitialize failed");
         } else {
-            result = elosPluginControlVectorPush(&pluginManager->pluginVector, &plugin);
+            result = elosPluginControlVectorPush(&pluginManager->pluginVector, plugin);
             if (result != SAFU_RESULT_OK) {
-                result = elosPluginControlDeleteMembers(&plugin);
+                result = elosPluginControlDeleteMembers(plugin);
                 if (result != SAFU_RESULT_OK) {
                     safuLogErr("elosPluginControlDeleteMembers failed, possible memory leak");
                 }
                 safuLogErr("elosPluginControlInitialize failed");
             } else {
                 if (id != NULL) {
-                    *id = plugin.context.id;
+                    *id = plugin->context.id;
                 }
 
                 pluginManager->nextId += 1;

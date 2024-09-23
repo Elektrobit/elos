@@ -4,7 +4,7 @@
 #include "elos/plugincontrol/types.h"
 
 #ifndef PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE
-#define PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE 20
+#define PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE 8
 #endif
 
 typedef enum elosPluginManagerStateE {
