@@ -37,7 +37,7 @@
                 "Plugins": {
                     "fetchapi": {
                         "File": "backend_fetchapi.so",
-                        "Run": "never",
+                        "Run": "always",
                         "Filter": [
                             "1 1 EQ"
                         ],

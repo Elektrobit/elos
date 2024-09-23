@@ -34,20 +34,6 @@ Test Publish And Retrieve Data
     Retrieve Published Message
     Disconnect From Elosd
 
-Test Elosd Data Persistence
-    [Documentation]    A published message in elosd in remains
-    ...    logged upon elosd restart.
-
-    Connect To Elosd
-    Send Message To Elosd    ${ELOSD_VERSION}    ${ELOSD_PUBLISH_CODE}    ${ELOSD_PUBLISH_MESSAGE}
-    No Error Received
-    Retrieve Published Message
-    Disconnect From Elosd
-    Restart Elosd
-    Connect To Elosd
-    Retrieve Published Message
-    Disconnect From Elosd
-
 
 *** Keywords ***
 No Error Received

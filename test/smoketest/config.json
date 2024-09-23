@@ -38,9 +38,9 @@
                 "Plugins": {
                     "fetchapi": {
                         "File": "backend_fetchapi.so",
-                        "Run": "never",
+                        "Run": "always",
                         "Filter": [
-                            ".event.messageCode 1000 LE"
+                            "1 1 EQ"
                         ],
                         "Config": {
                             "BufferSize": 100
@@ -81,7 +81,7 @@
                     },
                     "JsonBackend": {
                         "File": "backend_json.so",
-                        "Run": "always",
+                        "Run": "never",
                         "Filter": [
                             "1 1 EQ"
                         ],
