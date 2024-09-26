@@ -118,3 +118,22 @@ MOCK_FUNC_BODY(elosEventFilterExecute, elosRpnFilterResultE_t, const elosEventFi
 
     return result;
 }
+
+MOCK_FUNC_BODY(elosEventFilterExecuteInTimeRange, elosRpnFilterResultE_t, const elosEventFilter_t *filter,
+               const elosEventFilterStack_t *param, struct timespec const *newest, struct timespec const *oldest,
+               elosEvent_t *input) {
+    elosRpnFilterResultE_t result;
+
+    if (MOCK_IS_ACTIVE(elosEventFilterExecuteInTimeRange)) {
+        check_expected_ptr(filter);
+        check_expected_ptr(param);
+        check_expected_ptr(newest);
+        check_expected_ptr(oldest);
+        check_expected_ptr(input);
+        result = mock_type(elosRpnFilterResultE_t);
+    } else {
+        result = MOCK_FUNC_REAL(elosEventFilterExecuteInTimeRange)(filter, param, newest, oldest, input);
+    }
+
+    return result;
+}

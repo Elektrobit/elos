@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 
+#include <safu/result.h>
+
 #include "elos/eventfilter/builder.h"
 #include "elos/eventfilter/eventfilter.h"
 #include "elos/eventfilter/execute.h"
+#include "elos/rpnfilter/rpnfilter_types.h"
 #include "safu/common.h"
 #include "safu/log.h"
+#include "safu/time.h"
 
 elosRpnFilterResultE_t _executeEvent(elosRpnFilterExecute_t *ctx) {
     elosRpnFilterResultE_t result = RPNFILTER_RESULT_OK;
@@ -114,4 +118,18 @@ elosRpnFilterResultE_t elosEventFilterExecute(elosRpnFilter_t const *filter, elo
                                               elosEvent_t *input) {
     elosRpnFilterExecuteFunc_t func[] = {elosEventFilterExecuteStep, elosRpnFilterExecuteStep};
     return elosRpnFilterExecuteWith(filter, param, input, func, ARRAY_SIZE(func));
+}
+
+elosRpnFilterResultE_t elosEventFilterExecuteInTimeRange(elosEventFilter_t const *filter,
+                                                         elosEventFilterStack_t const *param,
+                                                         struct timespec const *newest, struct timespec const *oldest,
+                                                         elosEvent_t *input) {
+    elosRpnFilterResultE_t result = RPNFILTER_RESULT_NO_MATCH;
+    if (newest == NULL || oldest == NULL || input == NULL) {
+        safuLogErr("paramterer NULL pointer");
+        result = RPNFILTER_RESULT_ERROR;
+    } else if (safuTimeSpecInTimeRange(*newest, input->date, *oldest)) {
+        result = elosEventFilterExecute(filter, param, input);
+    }
+    return result;
 }

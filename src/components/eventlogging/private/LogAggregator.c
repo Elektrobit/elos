@@ -138,7 +138,9 @@ safuResultE_t elosLogAggregatorAdd(elosLogAggregator_t *logAggregator, const elo
     return result;
 }
 
-safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule, safuVec_t *events) {
+safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule,
+                                          struct timespec const *newest, struct timespec const *oldest,
+                                          safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     safuLogDebugF("received filterRule: %s", rule);
@@ -167,7 +169,7 @@ safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, co
                         safuLogErr("failed to get the fetchapi backend!");
                     } else {
                         elosStorageBackend_t *fetchapi = *fetch;
-                        result = fetchapi->findEvent(fetchapi, &filter, events);
+                        result = fetchapi->findEvent(fetchapi, &filter, newest, oldest, events);
                         if (result != SAFU_RESULT_OK) {
                             safuLogErr("Find events in fetchapi backend failed");
                         }

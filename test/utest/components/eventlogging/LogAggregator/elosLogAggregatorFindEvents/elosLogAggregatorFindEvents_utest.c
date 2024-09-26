@@ -66,7 +66,8 @@ static safuResultE_t _backendPersistFunc(UNUSED elosStorageBackend_t *backend, U
     return SAFU_RESULT_OK;
 }
 
-static safuResultE_t _backendFindFunc(elosStorageBackend_t *backend, elosRpnFilter_t *filter, safuVec_t *events) {
+static safuResultE_t _backendFindFunc(elosStorageBackend_t *backend, elosRpnFilter_t *filter,
+                                      struct timespec const *newest, struct timespec const *oldest, safuVec_t *events) {
     elosRpnFilterResultE_t filterResult;
     safuResultE_t result;
     elosEvent_t event = {0};
@@ -74,7 +75,7 @@ static safuResultE_t _backendFindFunc(elosStorageBackend_t *backend, elosRpnFilt
     result = elosEventDeserialize(&event, backend->backendData);
     assert_int_equal(result, SAFU_RESULT_OK);
 
-    filterResult = elosEventFilterExecute(filter, NULL, &event);
+    filterResult = elosEventFilterExecuteInTimeRange(filter, NULL, newest, oldest, &event);
     if (filterResult == RPNFILTER_RESULT_MATCH) {
         int retVal;
 

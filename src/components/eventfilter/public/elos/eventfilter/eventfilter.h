@@ -116,4 +116,24 @@ elosRpnFilterResultE_t elosEventFilterCreate(elosEventFilter_t *filter, const el
 elosRpnFilterResultE_t elosEventFilterExecute(elosEventFilter_t const *filter, elosEventFilterStack_t const *param,
                                               elosEvent_t *input);
 
+/*******************************************************************
+ * Function:     elosEventFilterExecuteInTimeRange
+ *------------------------------------------------------------------
+ * Description:
+ *      - Runs an elosRpnFilter on the given data
+ *      - the event has to be older or equal to newest
+ *        and newer than oldest for it to match
+ * Input:
+ *      - elosRpnFilter and parameters
+ *      - time range in which the event is
+ * Return:
+ *      - FILTER_RESULT_MATCH on success with a match,
+ *      - FILTER_RESULT_NO_MATCH on success with no match,
+ *      - FILTER_RESULT_ERROR on failure.
+ ******************************************************************/
+elosRpnFilterResultE_t elosEventFilterExecuteInTimeRange(elosEventFilter_t const *filter,
+                                                         elosEventFilterStack_t const *param,
+                                                         struct timespec const *newest, struct timespec const *oldest,
+                                                         elosEvent_t *input);
+
 __END_DECLS

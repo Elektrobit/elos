@@ -58,7 +58,8 @@ safuResultE_t elosEventBuffer::elosPushEvent(const elosEvent_t &event) noexcept 
     }
     return result;
 }
-safuResultE_t elosEventBuffer::elosFindEvents(const elosEventFilter_t &filter, safuVec_t &eventList) const noexcept {
+safuResultE_t elosEventBuffer::elosFindEvents(const elosEventFilter_t &filter, const timespec &newest,
+                                              const timespec &oldest, safuVec_t &eventList) const noexcept {
     safuResultE_t result = SAFU_RESULT_OK;
     if (SIZE_MAX == this->end) {
         safuLogDebug("EventRingBuffer is empty!");
@@ -67,7 +68,7 @@ safuResultE_t elosEventBuffer::elosFindEvents(const elosEventFilter_t &filter, s
     size_t idx = this->start;
     do {
         elosRpnFilterResultE_t filterResult;
-        filterResult = elosEventFilterExecute(&filter, nullptr, &this->buffer[idx]);
+        filterResult = elosEventFilterExecuteInTimeRange(&filter, NULL, &newest, &oldest, &this->buffer[idx]);
         if (filterResult == RPNFILTER_RESULT_MATCH) {
             result = elosEventVectorPushDeepCopy(&eventList, &this->buffer[idx]);
             if (result != SAFU_RESULT_OK) {
