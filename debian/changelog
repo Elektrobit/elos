@@ -1,3 +1,9 @@
+elos (0.63.0-1) unstable; urgency=medium
+
+  * New upstream tag 0.63.0
+
+ -- Isaac True <isaac.true@emlix.com>  Thu, 26 Sep 2024 15:48:13 +0000
+
 elos (0.62.6-1) unstable; urgency=medium
 
   * New upstream tag 0.62.6
