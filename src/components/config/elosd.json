@@ -15,7 +15,7 @@
                             "Interface": "127.0.0.1",
                             "EventBlacklist": ".event.messageCode 1000 LE",
                             "authorizedProcesses": [
-                                ".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.uid 0 EQ .process.gid 0 EQ AND .process.exec '/bin/elosc' STRCMP AND",
                                 ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
                                 ".process.pid 1 EQ"
                             ]
@@ -38,7 +38,7 @@
                     "Dummy": {
                         "File": "backend_dummy.so",
                         "Run": "always",
-                        "Filters": [
+                        "Filter": [
                             "1 1 EQ"
                         ]
                     },
@@ -49,12 +49,15 @@
                     "JsonBackend": {
                         "File": "backend_json.so",
                         "Run": "always",
-                        "Filters": [
+                        "Filter": [
                             "1 1 EQ"
                         ],
                         "Config": {
                             "StoragePath": "/tmp/elosd_%host%_%date%_%count%.log",
-                            "Flags": []
+                            "MaxSize": 60000,
+                            "Flags": [
+                                "O_SYNC"
+                            ]
                         }
                     },
                     "SQLBackend": {
@@ -71,7 +74,7 @@
                         "File": "backend_dlt_logger.so",
                         "Run": "always",
                         "Filter": [
-                            ".messageCode 1000 GE"
+                            ".e.messageCode 1000 GE"
                         ],
                         "Config": {
                             "Connection": "/tmp/dlt",
@@ -98,9 +101,9 @@
                             "SyslogPath": "/dev/log",
                             "MappingRules": {
                                 "MessageCodes": {
-                                    "4000": ".event.source.appName 'ssh' STRCMP",
-                                    "2000": ".event.source.appName 'crinit' STRCMP",
-                                    "1000": ".event.source.appName 'login' STRCMP"
+                                    "8004": ".event.source.appName 'sshd' STRCMP .e.payload r'authentication failure' REGEX AND",
+                                    "8005": ".event.source.appName 'sshd' STRCMP .e.payload r'Accepted password for' REGEX AND",
+                                    "1001": "1 1 EQ"
                                 }
                             }
                         }

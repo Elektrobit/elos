@@ -1,7 +1,7 @@
 *** Test Cases ***,${event_filter},${is_error_expected},[Documentation]
-Check Filter Is Valid,"{""filter"":"".event.messageCode 4 EQ""}",NO,Test case to check if event filter is valid
+Check Filter Is Valid,"{""filter"":"".event.messageCode 1004 EQ""}",NO,Test case to check if event filter is valid
 Empty Filter Causes Error,{},YES,Test case to check if empty event filter throws an error
-Invalid Filter Format Causes Error,{filter:.event.messageCode 4 EQ},YES,Invalid filter string format causes error.Filter should be json formatted
-Check Filter With Multiple Conditions Is Valid,"{""filter"":"".event.messageCode 4 EQ .event.payload 'message from tcp published' STRCMP AND""}",NO,Test case to check if multiple filter strings are valid
-Check Filter With Multiple Conditions Is Invalid,"{""filter"":"".event.messageCode 4 EQ & .event.payload 'message from tcp published' STRCMP""}",YES,Test case to check if multiple filter strings are invalid
-Check Filter Invalid Comparison,"{""filter"":"".event.messageCode 4 STRCMP""}",YES,Test case to check if event filter format string comparison is invalid
+Invalid Filter Format Causes Error,{filter:.event.messageCode 1004 EQ},YES,Invalid filter string format causes error.Filter should be json formatted
+Check Filter With Multiple Conditions Is Valid,"{""filter"":"".event.messageCode 1004 EQ .event.payload 'message from tcp published' STRCMP AND""}",NO,Test case to check if multiple filter strings are valid
+Check Filter With Multiple Conditions Is Invalid,"{""filter"":"".event.messageCode 1004 EQ & .event.payload 'message from tcp published' STRCMP""}",YES,Test case to check if multiple filter strings are invalid
+Check Filter Invalid Comparison,"{""filter"":"".event.messageCode 1004 STRCMP""}",YES,Test case to check if event filter format string comparison is invalid

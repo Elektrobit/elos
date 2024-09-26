@@ -45,6 +45,9 @@ Connect To Target And Log In
     Open Connection    ${TARGET}    timeout=${TIMEOUT}    port=${SSH_PORT}
     Wait Until Keyword Succeeds    ${RETRY_TIME}    ${TIMEOUT}
     ...    Login    ${USERNAME}    ${PASSWORD}
+    Create Local SSH Tunnel
+    ...    ${ELOSD_DEFAULT_PORT_FORWARD}    127.0.0.1
+    ...    ${ELOSD_DEFAULT_PORT_FORWARD}    bind_address=127.0.0.1
 
 Target IP Address Is Valid
     [Documentation]    Checks that TARGET_IP variable is set
