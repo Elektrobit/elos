@@ -229,8 +229,6 @@ safuResultE_t elosOomKillerScannerDelete(elosOomKillerScanner_t *oomKillerScanne
             safuLogErr("Invalid parameters to OomKillerScannerShutdown");
         }
 
-        free((elosSubscription_t *)oomKillerScanner->oomEventSubscription);
-
         result = elosPluginDeleteSubscriber(plugin, oomKillerScanner->oomEventSubscriber);
         if (result == SAFU_RESULT_FAILED) {
             failed = true;
