@@ -3,7 +3,6 @@
         "elos": {
             "UseEnv": true,
             "ClientInputs": {
-                "PluginSearchPath": "/usr/local/lib/elos/client",
                 "Plugins": {
                     "LocalTcpClient": {
                         "File": "client_tcp.so",
@@ -23,7 +22,6 @@
                 }
             },
             "EventLogging": {
-                "PluginSearchPath": "/usr/local/lib/elos/backend",
                 "Plugins": {
                     "Dummy": {
                         "File": "backend_dummy.so",
@@ -50,7 +48,6 @@
                 }
             },
             "Scanner": {
-                "PluginSearchPath": "/usr/local/lib/elos/scanner",
                 "Plugins": {
                     "OomKiller": {
                         "File": "scanner_oomkiller.so",

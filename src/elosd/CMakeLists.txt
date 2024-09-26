@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-find_package(safu 0.50.1 REQUIRED)
-find_package(samconf 0.50.1 REQUIRED)
+find_package(safu 0.56.2 REQUIRED)
+find_package(samconf 0.56.3 REQUIRED)
 
 add_executable(
   elosd
@@ -32,9 +32,7 @@ target_link_libraries(
     pluginmanager_static
     eventlogging_static
     clientmanager_static
-    scanner_manager_legacy_static
     scannermanager_static
-    elos_scanner_legacy_interface
     Threads::Threads
     safu::safu
     samconf::samconf

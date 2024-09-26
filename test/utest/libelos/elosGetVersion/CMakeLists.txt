@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-find_package(safu 0.50.1 REQUIRED)
-find_package(cmocka_mocks)
+find_package(safu 0.56.2 REQUIRED)
+find_package(cmocka_mocks 0.54.2 REQUIRED)
 
 create_unit_test(
   NAME
@@ -11,7 +11,6 @@ create_unit_test(
     case_success.c
     elosGetVersion_utest.c
   LIBRARIES
-    scanner_manager_legacy_static_weak
     mock_libelos_static
     libelos_static_weak
     safu::mock_safu

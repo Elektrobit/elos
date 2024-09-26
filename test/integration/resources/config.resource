@@ -25,7 +25,6 @@ Valid Configuration
     ...    ".process.pid 1 EQ"
     ...    ],
     ...    "EventLogging": {
-    ...    "PluginSearchPath": "/usr/lib/x86_64-linux-gnu/elos/backend",
     ...    "Plugins": {
     ...    "Dummy": {
     ...    "File": "backend_dummy.so",
@@ -54,13 +53,7 @@ Valid Configuration
     ...    }
     ...    }
     ...    }
-    ${default_config}=    Default Config Core
-    ${plugin_search_path}=    Get Value From Json
-    ...    ${default_config}
-    ...    $..EventLogging.PluginSearchPath
-    ${valid_config}=    Update Value To Json    ${config}
-    ...    $..EventLogging.PluginSearchPath    ${plugin_search_path}[0]
-    RETURN    ${valid_config}
+    RETURN    ${config}
 
 Invalid Configuration
     [Documentation]    An Invalid Configuration for elosd

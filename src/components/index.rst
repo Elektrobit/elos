@@ -5,6 +5,7 @@ Components
    :maxdepth: 2
    :caption: Contents:
 
+   config/index
    clientmanager/index
    scannermanager/index
    eloslog/index
@@ -15,8 +16,6 @@ Components
    plugincontrol/index
    pluginmanager/index
    rpnfilter/index
-   scanner_legacy/index
-   scanner_manager_legacy/index
    storagemanager/index
 
 
