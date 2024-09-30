@@ -11,6 +11,7 @@ Elos Source
    demos/index
    elosd/index
    libelos/index
+   libelos-cpp/index
    libelosdlt/index
    libelosplugin/index
    libelos_common/index
