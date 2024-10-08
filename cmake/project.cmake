@@ -26,7 +26,15 @@ macro(project_set_environment)
   option(UNIT_TESTS "Build unit tests" ${ELOS_BUILD_DEFAULTS})
   option(INSTALL_UNIT_TESTS "Install unit tests" ON)
 
+  option(ELOS_COMMON "build libelos_common" ${ELOS_BUILD_DEFAULTS})
+
+  option(ELOS_LIBRARY "build libelos" ${ELOS_BUILD_DEFAULTS})
+  option(ELOS_LIBRARY_CPP "build libelos-cpp" ${ELOS_BUILD_DEFAULTS})
+
+  option(ELOS_PLUGIN_LIBRARY "build libelosplugin" ${ELOS_BUILD_DEFAULTS})
+
   option(ELOS_LIBRARY_LITE "build libelos-lite" OFF)
+
   option(ELOS_DAEMON "Build elosd" ${ELOS_BUILD_DEFAULTS})
   option(INSTALL_ELOS_DAEMON "Install elosd" ON)
 
