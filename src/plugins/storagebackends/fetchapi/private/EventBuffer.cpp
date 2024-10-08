@@ -13,7 +13,9 @@
 #include <cstdlib>
 #include <new>
 
-elosEventBuffer::elosEventBuffer(size_t len) : size(len), start(0), end(SIZE_MAX), buffer(new elosEvent_t[len]) {
+namespace elos {
+namespace fetchapi {
+EventBuffer::EventBuffer(size_t len) : size(len), start(0), end(SIZE_MAX), buffer(new elosEvent_t[len]) {
     for (size_t idx = 0; idx < size; idx++) {
         safuResultE_t result = elosEventInitialize(&this->buffer[idx]);
         if (result != SAFU_RESULT_OK) {
@@ -22,7 +24,7 @@ elosEventBuffer::elosEventBuffer(size_t len) : size(len), start(0), end(SIZE_MAX
         }
     }
 }
-elosEventBuffer::~elosEventBuffer() noexcept(false) {
+EventBuffer::~EventBuffer() noexcept(false) {
     safuResultE_t result = SAFU_RESULT_OK;
     for (size_t idx = 0; idx < this->size; idx++) {
         if (elosEventDeleteMembers(&this->buffer[idx]) != SAFU_RESULT_OK) {
@@ -34,10 +36,10 @@ elosEventBuffer::~elosEventBuffer() noexcept(false) {
         throw SAFU_RESULT_FAILED;
     }
 }
-size_t elosEventBuffer::elosIndexIncrement(size_t idx) const noexcept {
+size_t EventBuffer::indexIncrement(size_t idx) const noexcept {
     return (idx + 1) % this->size;
 }
-safuResultE_t elosEventBuffer::elosPushEvent(const elosEvent_t &event) noexcept {
+safuResultE_t EventBuffer::pushEvent(const elosEvent_t &event) noexcept {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (SIZE_MAX == this->end) {
@@ -52,14 +54,14 @@ safuResultE_t elosEventBuffer::elosPushEvent(const elosEvent_t &event) noexcept 
         result = elosEventDeepCopy(&this->buffer[this->end], &event);
 
         if (this->start == this->end) {
-            this->start = this->elosIndexIncrement(this->start);
+            this->start = this->indexIncrement(this->start);
         }
-        this->end = this->elosIndexIncrement(this->end);
+        this->end = this->indexIncrement(this->end);
     }
     return result;
 }
-safuResultE_t elosEventBuffer::elosFindEvents(const elosEventFilter_t &filter, const timespec &newest,
-                                              const timespec &oldest, safuVec_t &eventList) const noexcept {
+safuResultE_t EventBuffer::findEvents(const elosEventFilter_t &filter, const timespec &newest, const timespec &oldest,
+                                      safuVec_t &eventList) const noexcept {
     safuResultE_t result = SAFU_RESULT_OK;
     if (SIZE_MAX == this->end) {
         safuLogDebug("EventRingBuffer is empty!");
@@ -78,8 +80,10 @@ safuResultE_t elosEventBuffer::elosFindEvents(const elosEventFilter_t &filter, c
             safuLogErr("Error fetching event from in memory backend!");
             result = SAFU_RESULT_FAILED;
         }
-        idx = this->elosIndexIncrement(idx);
+        idx = this->indexIncrement(idx);
     } while (idx != this->end && result == SAFU_RESULT_OK);
 
     return result;
 }
+}  // namespace fetchapi
+}  // namespace elos
