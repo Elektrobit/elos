@@ -1,0 +1,4 @@
+usr/include/elos/libelos-cpp
+usr/lib/*/pkgconfig/elos-cpp.pc
+usr/lib/*/libelos-cpp.so
+usr/lib/*/cmake/libelos-cpp

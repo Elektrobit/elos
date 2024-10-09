@@ -18,6 +18,8 @@
 
 #include "public/EventBuffer.h"
 
+using namespace elos::fetchapi;
+
 static safuResultE_t _backendStart(elosStorageBackend_t *backend) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
@@ -35,8 +37,8 @@ static safuResultE_t _backendPersist(elosStorageBackend_t *backend, const elosEv
     if ((backend == nullptr) || (event == nullptr)) {
         safuLogErr("Null parameter given");
     } else {
-        auto *eventBuffer = (elosEventBuffer *)backend->backendData;
-        result = eventBuffer->elosPushEvent(*event);
+        auto *eventBuffer = (EventBuffer *)backend->backendData;
+        result = eventBuffer->pushEvent(*event);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("Event serialization failed");
         }
@@ -52,8 +54,8 @@ static safuResultE_t _backendFindEvent(elosStorageBackend_t *backend, elosRpnFil
     if ((backend == nullptr) || (filter == nullptr) || (events == nullptr)) {
         safuLogErr("Null parameter given");
     } else {
-        auto *eventBuffer = (elosEventBuffer *)backend->backendData;
-        result = eventBuffer->elosFindEvents(*filter, *newest, *oldest, *events);
+        auto *eventBuffer = (EventBuffer *)backend->backendData;
+        result = eventBuffer->findEvents(*filter, *newest, *oldest, *events);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("Finding events failed!");
         }
@@ -94,7 +96,7 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
             size_t elements = samconfConfigGetInt32Or(plugin->config, "Config/BufferSize", 1000);
 
             try {
-                newBackend->backendData = new elosEventBuffer(elements);
+                newBackend->backendData = new EventBuffer(elements);
             } catch (safuResultE_t err) {
                 result = err;
                 safuLogErr("event buffer initialization failed!");
@@ -162,7 +164,7 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);
         auto *backendValues = (elosStorageBackend_t *)plugin->data;
         if (backendValues != nullptr) {
-            auto *eventBuffer = (elosEventBuffer *)backendValues->backendData;
+            auto *eventBuffer = (EventBuffer *)backendValues->backendData;
             try {
                 delete eventBuffer;
             } catch (safuResultE_t error) {
