@@ -17,40 +17,6 @@ macro(project_set_environment)
   set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
   include(GNUInstallDirs)
 
-  option(ELOS_BUILD_DEFAULTS "enable all default builds" ON)
-
-  option(ENABLE_ANALYZER "Build with -fanalyzer" ON)
-  option(ENABLE_ASAN "Link with ASAN" ON)
-  option(ENABLE_CI "Use CI mode for building" OFF)
-  option(ENABLE_GIT_VERSION "Enable the git hash for the version" ON)
-
-  option(UNIT_TESTS "Build unit tests" ${ELOS_BUILD_DEFAULTS})
-  option(INSTALL_UNIT_TESTS "Install unit tests" ON)
-
-  option(ELOS_COMMON "build libelos_common" ${ELOS_BUILD_DEFAULTS})
-
-  option(ELOS_LIBRARY "build libelos" ${ELOS_BUILD_DEFAULTS})
-  option(ELOS_LIBRARY_CPP "build libelos-cpp" ${ELOS_BUILD_DEFAULTS})
-
-  option(ELOS_PLUGIN_LIBRARY "build libelosplugin" ${ELOS_BUILD_DEFAULTS})
-
-  option(ELOS_LIBRARY_LITE "build libelos-lite" OFF)
-
-  option(ELOS_DAEMON "Build elosd" ${ELOS_BUILD_DEFAULTS})
-  option(INSTALL_ELOS_DAEMON "Install elosd" ON)
-
-  option(ELOS_TOOLS "Build elosc and other tools" ${ELOS_BUILD_DEFAULTS})
-  option(INSTALL_ELOS_TOOLS "Install elosc and other tools" ON)
-
-  option(ELOS_MOCK_LIBRARY "Build the mock libraries" OFF)
-  option(INSTALL_ELOS_MOCK_LIBRARY "Install the mock libraries" ON)
-
-  option(ELOS_DEMOS "Build the elos demos" ${ELOS_BUILD_DEFAULTS})
-  option(INSTALL_ELOS_DEMOS "Install the elos demos" ON)
-
-  option(ELOS_PLUGINS "Build the elos plugins" ${ELOS_BUILD_DEFAULTS})
-  option(INSTALL_ELOS_PLUGINS "install the elos plugins" ON)
-
   add_compile_options(
     -Wshadow -Wall -Wextra -pedantic -D_DEFAULT_SOURCE
   )
