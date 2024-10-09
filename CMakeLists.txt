@@ -47,6 +47,9 @@ option(INSTALL_ELOS_DEMOS "Install the elos demos" ON)
 option(UNIT_TESTS "Build unit tests" ${ELOS_BUILD_DEFAULTS})
 option(INSTALL_UNIT_TESTS "Install unit tests" ON)
 
+option(SMOKE_TESTS "Build smoke tests" ${ELOS_BUILD_DEFAULTS})
+option(INSTALL_SMOKE_TESTS "Build smoke tests" OFF)
+
 option(ELOS_MOCK_LIBRARY "Build the mock libraries" OFF)
 option(INSTALL_ELOS_MOCK_LIBRARY "Install the mock libraries" ON)
 
@@ -65,6 +68,7 @@ if(UNIT_TESTS)
   add_subdirectory(test/tsan)
 endif(UNIT_TESTS)
 add_subdirectory(test/utest)
+add_subdirectory(test/smoketest)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
