@@ -47,7 +47,7 @@ function(create_unit_test)
   if(INSTALL_UNIT_TESTS)
     install(
       TARGETS ${PARSED_ARGS_NAME} DESTINATION
-      ${CMAKE_INSTALL_LIBDIR}/test/${PROJECT_NAME}/${UNIT_NAME}
+      ${CMAKE_INSTALL_LIBDIR}/test/${PROJECT_NAME}/utest/${UNIT_NAME}
     )
   endif()
 endfunction()
