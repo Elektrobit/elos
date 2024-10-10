@@ -157,6 +157,9 @@ safuResultE_t elosEventQueueRead(elosSession_t *session, elosEventQueueId_t even
  *      - In case no events are in the log, the vector parameter won't be changed.
  *      - The memory of the event vector will be allocated by the library
  *        and must be freed afterwards with elosEventVectorDelete().
+ *
+ * Warning: Deprecated and can be removed without further notice. Use `elosFindEvents` instead.
+ *
  * Input:
  *      - **session**:     session data structure
  *      - **filterRule**:  filter rule for entry selection
@@ -166,6 +169,30 @@ safuResultE_t elosEventQueueRead(elosSession_t *session, elosEventQueueId_t even
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosLogFindEvent(elosSession_t *session, const char *filterRule, elosEventVector_t **eventVector);
+
+/*******************************************************************
+ * Function: elosFindEvents
+ *------------------------------------------------------------------
+ * Description:
+ *      Fetches all logged events based on the used filter (e.g. based on payload or other data).
+ *
+ *      - In case no events are in the log, the vector parameter won't be changed.
+ *      - The memory of the event vector will be allocated by the library
+ *        and must be freed afterwards with elosEventVectorDelete().
+ *
+ *
+ * Input:
+ *      - **session**:     session data structure
+ *      - **filterRule**:  filter rule for entry selection
+ *      - **newest**:      time of the earliest event to look for
+ *      - **oldest**:      time of the oldest event to look for
+ * Output:
+ *      - **vector**:      list of event structs
+ * Returns:
+ *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosFindEvents(elosSession_t *session, const char *filterRule, struct timespec const *newest,
+                             struct timespec const *oldest, elosEventVector_t **eventVector);
 
 /*******************************************************************
  * Function: elosSessionValid

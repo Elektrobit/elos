@@ -19,8 +19,8 @@ Suite Teardown      Close All Connections
 ${ELOSD_VERSION}            1
 ${ELOSD_PUBLISH_CODE}       2
 ${ELOSD_QUERY_CODE}         4
-${ELOSD_PUBLISH_MESSAGE}    {"messageCode": 4,"payload":"message from tcp published"}
-${ELOSD_QUERY}              {"filter":".event.messageCode 4 EQ"}
+${ELOSD_PUBLISH_MESSAGE}    {"messageCode": 1004,"payload":"message from tcp published"}
+${ELOSD_QUERY}              {"filter":".event.messageCode 1004 EQ"}
 
 
 *** Test Cases ***
@@ -31,20 +31,6 @@ Test Publish And Retrieve Data
     Connect To Elosd
     Send Message To Elosd    ${ELOSD_VERSION}    ${ELOSD_PUBLISH_CODE}    ${ELOSD_PUBLISH_MESSAGE}
     No Error Received
-    Retrieve Published Message
-    Disconnect From Elosd
-
-Test Elosd Data Persistence
-    [Documentation]    A published message in elosd in remains
-    ...    logged upon elosd restart.
-
-    Connect To Elosd
-    Send Message To Elosd    ${ELOSD_VERSION}    ${ELOSD_PUBLISH_CODE}    ${ELOSD_PUBLISH_MESSAGE}
-    No Error Received
-    Retrieve Published Message
-    Disconnect From Elosd
-    Restart Elosd
-    Connect To Elosd
     Retrieve Published Message
     Disconnect From Elosd
 

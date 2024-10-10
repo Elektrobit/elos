@@ -52,6 +52,27 @@ MOCK_FUNC_BODY(elosGetVersion, safuResultE_t, elosSession_t *session, const char
     return result;
 }
 
+MOCK_FUNC_BODY(elosFindEvents, safuResultE_t, elosSession_t *session, const char *filterRule,
+               struct timespec const *newest, struct timespec const *oldest, elosEventVector_t **vector) {
+    safuResultE_t result;
+
+    if (MOCK_IS_ACTIVE(elosLogFindEvent)) {
+        check_expected_ptr(session);
+        check_expected_ptr(filterRule);
+        check_expected_ptr(newest);
+        check_expected_ptr(oldest);
+        check_expected_ptr(vector);
+        if (vector != NULL) {
+            *vector = mock_type(elosEventVector_t *);
+        }
+        result = mock_type(safuResultE_t);
+    } else {
+        result = MOCK_FUNC_REAL(elosFindEvents)(session, filterRule, newest, oldest, vector);
+    }
+
+    return result;
+}
+
 MOCK_FUNC_BODY(elosLogFindEvent, safuResultE_t, elosSession_t *session, const char *filterRule,
                elosEventVector_t **vector) {
     safuResultE_t result;

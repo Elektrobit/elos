@@ -17,7 +17,7 @@ Suite Teardown      Close All Connections
 *** Variables ***
 ${ELOSD_VERSION}            1
 ${ELOSD_PUBLISH_CODE}       2
-${ELOSD_VALID_MESSAGE}      {"messageCode": 4,"payload":"testEventFiltering"}
+${ELOSD_VALID_MESSAGE}      {"messageCode": 1004,"payload":"testEventFiltering"}
 ${ELOSD_INVALID_MESSAGE}    {"messageCode": 4"payload":"testEventFiltering"}
 
 

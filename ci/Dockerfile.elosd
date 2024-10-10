@@ -40,7 +40,7 @@ WORKDIR /home/elos
 COPY ./ /home/elos
 
 RUN mkdir /etc/elos
-COPY ./test/integration/service/config.json /etc/elos/elosd.json
+COPY ./src/components/config/elosd.json /etc/elos/elosd.json
 RUN chmod 644 /etc/elos/elosd.json
 
 ENV SOURCES_URI=$SOURCES_URI
@@ -51,7 +51,7 @@ RUN cmake -B /tmp/elos/build . -DCMAKE_BUILD_TYPE=Release -G Ninja -DUNIT_TESTS=
 RUN ninja -C /tmp/elos/build all
 RUN sudo ninja -C /tmp/elos/build install
 
-COPY ./test/integration/service/elosd.service /etc/init.d/elosd
+COPY ./ci/elosd.service /etc/init.d/elosd
 RUN chmod a+x /etc/init.d/elosd
 
 RUN sudo ldconfig

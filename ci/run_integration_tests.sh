@@ -118,6 +118,7 @@ docker run -d -ti --rm \
 	-v $BASE_DIR:/base \
 	-w /base \
 	--env "PROJECT=${PROJECT}" \
+	--env "TARGET_NAME=${ELOSD_DOCKER_NAME}" \
 	--env "TEST_OUTPUT=/base/build/${BUILD_TYPE}/result/integration" \
 	${TEST_IMAGE_NAME}
 

@@ -63,6 +63,19 @@ Description: Event logging and management with normalized output-format (Dummy p
  .
  Dummy backend plugin.
 
+Package: elos-plugin-backend-fetchapi
+Section: libs
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (Dummy plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ A backend which implements the fetch API, thus elos can provide historical events.
+
 Package: elos-plugin-backend-influxdb
 Section: libs
 Architecture: any
@@ -329,6 +342,19 @@ Description: Event logging and management with normalized output-format DLT libr
  .
  DLT shared library package.
 
+Package: libelos-cpp0
+Section: libs
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format C++ library
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ C++ shared library package.
+
 Package: libelosplugin0
 Section: libs
 Architecture: any
@@ -386,6 +412,19 @@ Description: Development package for libelosdlt
  while providing easy access to the collected data.
  .
  Development package for libelosdlt.
+
+Package: libelos-cpp-dev
+Section: libdevel
+Architecture: any
+Depends:
+ ${misc:Depends},
+ libelos-cpp0 (= ${binary:Version}),
+Description: Development package for libelos-cpp
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ Development package for libelos-cpp.
 
 Package: libelos-common-dev
 Section: libdevel

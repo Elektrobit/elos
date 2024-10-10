@@ -54,6 +54,8 @@ void elosTestElosJsonBackendFindEventsSuccess(void **state) {
     TEST("elosJsonBackendFindEvents");
     SHOULD("%s", "test if filtering events from json backend works properly");
 
+    struct timespec nullTime = {0};
+
     print_message("Test event: %s\n", testState->eventJsonString);
 
     MOCK_FUNC_ALWAYS(fdopen);
@@ -77,7 +79,8 @@ void elosTestElosJsonBackendFindEventsSuccess(void **state) {
         expect_any(__wrap_ftell, stream);
         will_return(__wrap_ftell, testState->eventStrLen);
 
-        result = testState->backend->findEvent(testState->backend, &testState->filter[idx], testState->eventVector);
+        result = testState->backend->findEvent(testState->backend, &testState->filter[idx], &nullTime, &nullTime,
+                                               testState->eventVector);
         assert_int_not_equal(result, SAFU_RESULT_FAILED);
 
         fclose(mockJsonBackend);

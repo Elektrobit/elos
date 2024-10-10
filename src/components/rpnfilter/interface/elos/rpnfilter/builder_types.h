@@ -6,6 +6,8 @@
 #include "elos/rpnfilter/rpnfilter_types.h"
 #include "elos/rpnfilter/step_types.h"
 
+__BEGIN_DECLS
+
 #define ELOS_RPNFILTER_CREATE_STACK_DEFAULT_SIZE 8
 #define ELOS_RPNFILTER_CREATE_TOKEN_DEFAULT_SIZE 8
 #define ELOS_RPNFILTER_CREATE_STEP_DEFAULT_SIZE  8
@@ -64,3 +66,5 @@ typedef struct elosRpnFilterBuilder {
 typedef elosRpnFilterResultE_t (*elosRpnFilterBuilderTokenizeParseFunc_t)(size_t *idx, elosRpnFilterBuilder_t *data);
 typedef elosRpnFilterResultE_t (*elosRpnFilterBuilderCompileFunc_t)(elosRpnFilterBuilderTokenEntry_t const *token,
                                                                     elosRpnFilterBuilder_t *data);
+
+__END_DECLS

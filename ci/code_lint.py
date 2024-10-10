@@ -61,7 +61,7 @@ def collect_sources_all(path_list):
     for path in path_list:
         for root, _, files in os.walk(path):
             for file in files:
-                if file.endswith(".c") or file.endswith(".h"):
+                if file.endswith(".c") or file.endswith(".h") or file.endswith(".cpp"):
                     source_set.add(os.path.abspath(os.path.join(root, file)))
 
     return source_set
@@ -118,7 +118,7 @@ def collect_sources_used(build_dir, json_file=None):
         results = output.stdout.decode("utf-8").split()
         results = [
             os.path.abspath(x) for x in results
-            if x.endswith(".c") or x.endswith(".h")
+            if x.endswith(".c") or x.endswith(".h") or x.endswith(".cpp")
         ]
         # Remove generated files like version.c from the list
         results = [
@@ -155,7 +155,7 @@ def collect_sources_diff(base_dir, target_branch):
     ]
     results = [
         os.path.abspath(x) for x in results
-        if x.endswith(".c") or x.endswith(".h")
+        if x.endswith(".c") or x.endswith(".h") or x.endswith(".cpp")
     ]
     # Remove sources outside of base_dir
     results = [

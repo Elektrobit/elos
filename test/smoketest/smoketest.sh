@@ -705,6 +705,25 @@ smoketest_compile_program_using_libelos() {
     return $TEST_RESULT
 }
 
+smoketest_compile_program_using_libeloscpp() {
+    prepare_env "compile_program_using_libelos-cpp"
+    TEST_RESULT=0
+
+    log "Try to compile simple program using libelos-cpp"
+    printf '#include <elos/libelos-cpp/libelos-cpp.h>\nint main(int argc, char* argv[]){return 0;}' \
+        | g++ -v -xc++ -std=c++14 \
+        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
+        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -o "${SMOKETEST_TMP_DIR}/testlibelos-cpp" - -lelos-cpp\
+        >> "$RESULT_DIR/libelos-cpp.log" 2>&1
+    if [ $? -ne 0 ]; then
+        log_err "failed to compile test program for libelos-cpp"
+        TEST_RESULT=1
+    fi
+
+    return $TEST_RESULT
+}
+
 smoketest_compile_program_with_cpp() {
     prepare_env "compile_program_with_cpp"
     TEST_RESULT=0
@@ -890,6 +909,7 @@ call_test "dual_json_plugin" || FAILED_TESTS=$((FAILED_TESTS+1))
 
 if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
     call_test "compile_program_using_libelos" || FAILED_TESTS=$((FAILED_TESTS+1))
+    call_test "compile_program_using_libeloscpp" || FAILED_TESTS=$((FAILED_TESTS+1))
     call_test "compile_program_with_cpp" || FAILED_TESTS=$((FAILED_TESTS+1))
     call_test "compile_program_using_pkgconfig" || FAILED_TESTS=$((FAILED_TESTS+1))
 fi

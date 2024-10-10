@@ -20,7 +20,7 @@ Suite Teardown      Close All Connections
 @{MESSAGES}         {"messageCode": 4,"payload":"testEventFiltering"}
 ...                 {"messageCode": 40,"payload":"testEventFiltering"}
 ...                 {"messageCode": 400,"payload":"testEventFiltering"}
-${SEARCH_STRING}    "log event find failed"
+${SEARCH_STRING}    "event find failed"
 @{PUBLISH_LOG}      @{EMPTY}
 
 

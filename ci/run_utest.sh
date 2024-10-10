@@ -1,4 +1,23 @@
 #!/bin/bash
+###############################################################################
+print_info() {
+    echo "
+    Run the unit test suite or parts of it. Default is to run all unit
+    tests for the Debug build.
+
+    Usage: ${0} [build type] [--test-regex|-R <test name pattern>] [-h|--help]
+
+    build type:       usually Debug or Release but can be any other build type
+    --test-regex|-R:  execute all tests matching the pattern
+    -h|--help:        print this help
+
+    Examples:
+    ${0} Release # run all unit test on Release build
+    ${0} Release -R elosRpn # run all unit test containing elosRpn in
+    the name for the Release build.
+    "
+}
+###############################################################################
 set -e -u -o pipefail
 
 CMD_PATH="$(realpath "$(dirname "$0")")"
@@ -12,8 +31,13 @@ while [ $# -gt 0 ]; do
             TESTS_REGEX="--tests-regex ${2}"
             shift
             ;;
+        -h|--help)
+            print_info
+            exit 0 ;;
         -*)
-            echo "error: unknown option: $1"; exit 1 ;;
+            echo "error: unknown option: $1"
+            print_info
+            exit 1 ;;
         *)
             PARAM="$PARAM ${1}" ;;
     esac

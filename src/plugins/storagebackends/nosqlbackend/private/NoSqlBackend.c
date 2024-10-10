@@ -104,7 +104,9 @@ static safuResultE_t _convertBsonEventToEvent(const bson_t *bEvent, elosEvent_t 
     return result;
 }
 
-static safuResultE_t elosNoSqlBackendFilterEvent(elosRpnFilter_t *filter, safuVec_t *events, const bson_t *bEvent) {
+static safuResultE_t elosNoSqlBackendFilterEvent(elosRpnFilter_t *filter, struct timespec const *newest,
+                                                 struct timespec const *oldest, safuVec_t *events,
+                                                 const bson_t *bEvent) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     elosRpnFilterResultE_t filterResult;
 
@@ -117,7 +119,7 @@ static safuResultE_t elosNoSqlBackendFilterEvent(elosRpnFilter_t *filter, safuVe
 
         _convertBsonEventToEvent(bEvent, event);
 
-        filterResult = elosEventFilterExecute(filter, NULL, event);
+        filterResult = elosEventFilterExecuteInTimeRange(filter, NULL, newest, oldest, event);
         if (filterResult == RPNFILTER_RESULT_MATCH) {
             safuVecPush(events, event);
             free(event);
@@ -138,7 +140,9 @@ static safuResultE_t elosNoSqlBackendFilterEvent(elosRpnFilter_t *filter, safuVe
     return result;
 }
 
-safuResultE_t elosNoSqlBackendFindEvents(elosStorageBackend_t *backend, elosRpnFilter_t *filter, safuVec_t *events) {
+safuResultE_t elosNoSqlBackendFindEvents(elosStorageBackend_t *backend, elosRpnFilter_t *filter,
+                                         struct timespec const *newest, struct timespec const *oldest,
+                                         safuVec_t *events) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosNoSqlBackend_t *noSqlBackend = NULL;
     bson_t *selectAll = NULL;
@@ -167,7 +171,7 @@ safuResultE_t elosNoSqlBackendFindEvents(elosStorageBackend_t *backend, elosRpnF
         mongoc_cursor_t *cursor = mongoc_collection_find_with_opts(noSqlBackend->collection, selectAll, NULL, NULL);
         const bson_t *bEvent = NULL;
         while (mongoc_cursor_next(cursor, &bEvent)) {
-            result = elosNoSqlBackendFilterEvent(filter, events, bEvent);
+            result = elosNoSqlBackendFilterEvent(filter, newest, oldest, events, bEvent);
             if (result == SAFU_RESULT_FAILED) {
                 safuLogErr("elosNoSqlBackendFilterEvent failed");
             }

@@ -41,7 +41,8 @@ typedef struct elosPluginContext {
     struct elosPluginControl *instanceRef;
     safuResultE_t (*publish)(struct elosPublisher *publisher, const elosEvent_t *event);
     safuResultE_t (*store)(struct elosPluginControl *instanceRef, const elosEvent_t *event);
-    safuResultE_t (*findEvents)(struct elosPluginControl *instanceRef, const char *rule, safuVec_t *events);
+    safuResultE_t (*findEvents)(struct elosPluginControl *instanceRef, const char *rule, struct timespec const *newest,
+                                struct timespec const *oldest, safuVec_t *events);
     safuResultE_t (*subscribe)(struct elosSubscriber *subscriber, char const *const *filterStrings, size_t filterCount,
                                const elosSubscription_t **const subscription);
     safuResultE_t (*readQueue)(struct elosSubscriber *subscriber, const elosSubscription_t *subscription,
