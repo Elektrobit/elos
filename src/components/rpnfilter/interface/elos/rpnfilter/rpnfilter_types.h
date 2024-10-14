@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 typedef enum elosRpnFilterResultE {
     RPNFILTER_RESULT_ERROR = -1,
@@ -90,9 +93,12 @@ typedef struct elosRpnFilterStackEntry {
     (__stack)->entry[__idx].bytes = sizeof(uint32_t);    \
     (__stack)->entry[__idx].data.u32 = (__data);
 
+#define VARIADIC_SIZE 1
 typedef struct elosFilterStack {
     size_t count;
-    elosRpnFilterStackEntry_t entry[];
+    // NOTE: teaches c++ to work with this as an include
+    // https://stackoverflow.com/questions/4412749/are-flexible-array-members-valid-in-c
+    elosRpnFilterStackEntry_t entry[VARIADIC_SIZE];
 } elosRpnFilterStack_t;
 
 // Filter based data types
@@ -112,3 +118,5 @@ typedef struct elosRpnFilter {
     elosRpnFilterStep_t *steps;
     elosRpnFilterStack_t *values;
 } elosRpnFilter_t;
+
+__END_DECLS

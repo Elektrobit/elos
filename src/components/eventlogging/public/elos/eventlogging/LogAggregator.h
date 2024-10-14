@@ -59,7 +59,9 @@ safuResultE_t elosLogAggregatorShutdown(elosLogAggregator_t *logAggregator);
  *      - `SAFU_RESULT_OK` on success
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
-safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule, safuVec_t *events);
+safuResultE_t elosLogAggregatorFindEvents(elosLogAggregator_t *logAggregator, const char *rule,
+                                          struct timespec const *newest, struct timespec const *oldest,
+                                          safuVec_t *events);
 
 __END_DECLS
 

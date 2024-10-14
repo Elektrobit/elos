@@ -21,4 +21,5 @@ create_mock_lib(
     elosEventFilterClone
     elosEventFilterCreate
     elosEventFilterExecute
+    elosEventFilterExecuteInTimeRange
 )

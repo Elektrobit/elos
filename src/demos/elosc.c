@@ -338,9 +338,11 @@ static safuResultE_t _commandLogFindEvent(elosSession_t *session, elosConfig_t *
     elosEventVector_t *eventVector = NULL;
     int retVal;
 
-    retVal = elosLogFindEvent(session, config->commandArgs, &eventVector);
+    struct timespec newest = {0};
+    struct timespec oldest = {0};
+    retVal = elosFindEvents(session, config->commandArgs, &newest, &oldest, &eventVector);
     if (retVal < 0) {
-        fprintf(stderr, "log event find failed!\n");
+        fprintf(stderr, "event find failed!\n");
     } else if (eventVector == NULL) {
         printf("No matching events returned\n");
         result = SAFU_RESULT_OK;

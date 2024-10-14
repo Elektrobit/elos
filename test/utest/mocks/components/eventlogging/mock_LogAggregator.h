@@ -19,6 +19,6 @@ MOCK_FUNC_PROTOTYPE(elosLogAggregatorStart, safuResultE_t, elosLogAggregator_t *
 MOCK_FUNC_PROTOTYPE(elosLogAggregatorAdd, safuResultE_t, elosLogAggregator_t *logAggregator, const elosEvent_t *)
 MOCK_FUNC_PROTOTYPE(elosLogAggregatorShutdown, safuResultE_t, elosLogAggregator_t *logAggregator)
 MOCK_FUNC_PROTOTYPE(elosLogAggregatorFindEvents, safuResultE_t, elosLogAggregator_t *logAggregator, const char *rule,
-                    safuVec_t *events)
+                    struct timespec const *newest, struct timespec const *oldest, safuVec_t *events)
 
 #endif /* __MOCK_ELOS_ELOSD_LOG_AGGREGATOR_H__ */

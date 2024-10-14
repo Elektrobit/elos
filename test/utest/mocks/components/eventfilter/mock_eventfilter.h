@@ -30,4 +30,8 @@ MOCK_FUNC_PROTOTYPE(elosEventFilterCreate, elosRpnFilterResultE_t, elosEventFilt
 MOCK_FUNC_PROTOTYPE(elosEventFilterExecute, elosRpnFilterResultE_t, const elosEventFilter_t *filter,
                     const elosEventFilterStack_t *param, elosEvent_t *input)
 
+MOCK_FUNC_PROTOTYPE(elosEventFilterExecuteInTimeRange, elosRpnFilterResultE_t, const elosEventFilter_t *filter,
+                    const elosEventFilterStack_t *param, struct timespec const *newest, struct timespec const *oldest,
+                    elosEvent_t *input)
+
 #endif /* ELOS_EVENTFILTER_EVENTFILTER_MOCK_H */

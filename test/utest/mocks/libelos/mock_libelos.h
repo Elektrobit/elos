@@ -20,6 +20,9 @@ MOCK_FUNC_PROTOTYPE(elosGetVersion, safuResultE_t, elosSession_t *session, const
 MOCK_FUNC_PROTOTYPE(elosLogFindEvent, safuResultE_t, elosSession_t *session, const char *filterRule,
                     elosEventVector_t **vector)
 
+MOCK_FUNC_PROTOTYPE(elosFindEvents, safuResultE_t, elosSession_t *session, const char *filterRule,
+                    struct timespec const *newest, struct timespec const *oldest, elosEventVector_t **vector)
+
 MOCK_FUNC_PROTOTYPE(elosSessionValid, bool, elosSession_t const *session)
 
 MOCK_FUNC_PROTOTYPE(elosEventSubscribe, safuResultE_t, elosSession_t *session, char const **filterRuleArray,

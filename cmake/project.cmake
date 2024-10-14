@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.63.0)
+set(ELOS_VERSION 0.64.3)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -21,7 +21,7 @@ macro(project_set_environment)
   option(ENABLE_ANALYZER "Build with -fanalyzer" ON)
   option(ENABLE_ASAN "Link with ASAN" ON)
   option(ENABLE_CI "Use CI mode for building" OFF)
-  option(ENABLE_GIT_VERSION "Enable the git hash for the version" OFF)
+  option(ENABLE_GIT_VERSION "Enable the git hash for the version" ON)
 
   option(UNIT_TESTS "Build unit tests" ${ELOS_BUILD_DEFAULTS})
   option(INSTALL_UNIT_TESTS "Install unit tests" ON)

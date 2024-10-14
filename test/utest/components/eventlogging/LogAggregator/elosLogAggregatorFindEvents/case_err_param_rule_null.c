@@ -27,6 +27,8 @@ void elosTestElosLogAggregatorFindEventsErrParamRuleNull(void **state) {
     TEST("elosLogAggregatorFindEvents");
     SHOULD("%s", "return SAFU_RESULT_FAILED when parameter rule is null");
 
-    result = elosLogAggregatorFindEvents(&testState->logAggregator, NULL, &testState->eventVector);
+    struct timespec nullTime = {0};
+    result =
+        elosLogAggregatorFindEvents(&testState->logAggregator, NULL, &nullTime, &nullTime, &testState->eventVector);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }

@@ -1,22 +1,26 @@
 // SPDX-License-Identifier: MIT
 
-#include <bits/stdint-uintn.h>
 #include <json-c/json_object.h>
-#include <safu/common.h>
+#include <json-c/json_types.h>
+#include <safu/result.h>
+#include <safu/vector.h>
+#include <safu/vector_types.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
+
+#include "elos/event/event_types.h"
+#include "elos/event/event_vector.h"
 #define _DEFAULT_SOURCE 1
 
-#include <arpa/inet.h>
-#include <errno.h>
-#include <json-c/json.h>
 #include <netdb.h>
+#include <safu/json.h>
+#include <safu/log.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -25,9 +29,6 @@
 #include "elos/libelos/libelos.h"
 #include "libelos_communication.h"
 #include "libelos_constructor.h"
-#include "safu/common.h"
-#include "safu/json.h"
-#include "safu/log.h"
 
 #define VERSION_DATA_LEN 128
 
@@ -212,57 +213,118 @@ safuResultE_t elosGetVersion(elosSession_t *session, char const **version) {
     return result;
 }
 
+// Deprecated
 safuResultE_t elosLogFindEvent(elosSession_t *session, const char *filterRule, elosEventVector_t **eventVector) {
+    return elosFindEvents(session, filterRule, &(struct timespec){0}, &(struct timespec){0}, eventVector);
+}
+
+static safuResultE_t _createFindEventRequest(const char *filterRule, struct timespec const *newest,
+                                             struct timespec const *oldest, json_object **jRequest) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    json_object *newJsonRequest = json_object_new_object();
+    if (newJsonRequest == NULL) {
+        if (elosLoggingEnabled) safuLogErr("json_object_new_object failed!");
+    } else {
+        json_object *jsonAttribute = NULL;
+        jsonAttribute = safuJsonAddNewString(newJsonRequest, "filter", filterRule);
+        if (jsonAttribute == NULL) {
+            if (elosLoggingEnabled) safuLogErr("safuJsonAddNewString failed!");
+        } else {
+            jsonAttribute = safuJsonAddNewTimestamp(newJsonRequest, "newest", newest);
+            if (jsonAttribute == NULL) {
+                if (elosLoggingEnabled) safuLogErr("safuJsonAddNewTimestamp failed!");
+            } else {
+                jsonAttribute = safuJsonAddNewTimestamp(newJsonRequest, "oldest", oldest);
+                if (jsonAttribute == NULL) {
+                    if (elosLoggingEnabled) safuLogErr("safuJsonAddNewTimestamp failed!");
+                }
+            }
+        }
+
+        if (jsonAttribute == NULL) {
+            json_object_put(newJsonRequest);
+        } else {
+            *jRequest = newJsonRequest;
+            result = SAFU_RESULT_OK;
+        }
+    }
+
+    return result;
+}
+
+static safuResultE_t _readFindEventResponse(json_object *jResponse, elosEventVector_t **eventVector,
+                                            bool *isTruncated) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    json_object *jIsTruncated = safuJsonGetObject(jResponse, "isTruncated", 0);
+    if (jIsTruncated != NULL && json_object_get_type(jIsTruncated) == json_type_boolean) {
+        *isTruncated = json_object_get_boolean(jIsTruncated);
+    } else {
+        *isTruncated = false;
+    }
+
+    json_object *eventVecJarr = safuJsonGetArray(jResponse, "eventArray", 0, NULL);
+    if (!eventVecJarr) {
+        if (elosLoggingEnabled) safuLogErr("Failed to read event vector json object!");
+    } else {
+        elosEventVector_t *newEventVector = NULL;
+
+        result = elosEventVectorFromJsonArray(eventVecJarr, &newEventVector);
+        if (result == SAFU_RESULT_FAILED) {
+            if (elosLoggingEnabled) safuLogErr("Failed to read event vector json object!");
+        } else {
+            if (*eventVector == NULL) {
+                *eventVector = newEventVector;
+            } else {
+                size_t eventCount = safuVecElements(newEventVector);
+                for (size_t i = 0; i < eventCount; i++) {
+                    elosEventVectorPush(*eventVector, safuVecGet(newEventVector, i));
+                }
+                safuVecFree(newEventVector);
+                free(newEventVector);
+            }
+            result = SAFU_RESULT_OK;
+        }
+    }
+    return result;
+}
+
+safuResultE_t elosFindEvents(elosSession_t *session, const char *filterRule, struct timespec const *newest,
+                             struct timespec const *oldest, elosEventVector_t **eventVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     bool retBool;
+    bool isTruncated = false;
 
     retBool = elosSessionValid(session);
     if (retBool == false) {
         if (elosLoggingEnabled) safuLogErr("Invalid session");
-    } else if ((filterRule == NULL) || (eventVector == NULL)) {
+    } else if ((filterRule == NULL) || (eventVector == NULL) || (newest == NULL) || (oldest == NULL)) {
         if (elosLoggingEnabled) safuLogErr("Invalid parameter");
     } else {
-        json_object *jRequest = NULL;
-
-        jRequest = json_object_new_object();
-        if (!jRequest) {
-            if (elosLoggingEnabled) safuLogErr("json_object_new_object failed!");
-        } else {
-            json_object *filterRuleComplete = NULL;
-
-            filterRuleComplete = safuJsonAddNewString(jRequest, "filter", filterRule);
-            if (!filterRuleComplete) {
-                if (elosLoggingEnabled) safuLogErr("safuJsonAddNewString failed!");
-            } else {
-                uint8_t const messageId = ELOS_MESSAGE_LOG_FIND_EVENT;
-                json_object *jResponse;
-                safuResultE_t retResult;
-
+        struct timespec currentOldest = *oldest;
+        do {
+            json_object *jRequest = NULL;
+            result = _createFindEventRequest(filterRule, newest, &currentOldest, &jRequest);
+            if (result == SAFU_RESULT_OK) {
                 if (elosLoggingEnabled) safuLogDebugF("will send filter rule: %s", filterRule);
-                retResult = elosSendAndReceiveJsonMessage(session, messageId, jRequest, &jResponse);
-                if (retResult != SAFU_RESULT_OK) {
+
+                json_object *jResponse = NULL;
+                result = elosSendAndReceiveJsonMessage(session, ELOS_MESSAGE_LOG_FIND_EVENT, jRequest, &jResponse);
+                if (result != SAFU_RESULT_OK) {
                     if (elosLoggingEnabled) safuLogErr("Communication with elosd failed!");
                 } else {
-                    json_object *eventVecJarr = safuJsonGetArray(jResponse, "eventArray", 0, NULL);
-                    if (!eventVecJarr) {
-                        if (elosLoggingEnabled) safuLogErr("Failed to read event vector json object!");
-                    } else {
-                        elosEventVector_t *newEventVector = NULL;
-
-                        retResult = elosEventVectorFromJsonArray(eventVecJarr, &newEventVector);
-                        if (retResult == SAFU_RESULT_FAILED) {
-                            if (elosLoggingEnabled) safuLogErr("Failed to read event vector json object!");
-                        } else {
-                            *eventVector = newEventVector;
-                            result = SAFU_RESULT_OK;
-                        }
+                    result = _readFindEventResponse(jResponse, eventVector, &isTruncated);
+                    if (result == SAFU_RESULT_OK && isTruncated) {
+                        elosEvent_t *lastEvent = safuVecGetLast(*eventVector);
+                        currentOldest = lastEvent->date;
                     }
                     json_object_put(jResponse);
                 }
-            }
 
-            json_object_put(jRequest);
-        }
+                json_object_put(jRequest);
+            }
+        } while (isTruncated);
     }
 
     return result;

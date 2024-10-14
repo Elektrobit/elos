@@ -6,6 +6,8 @@
 #include "elos/eventfilter/step_types.h"
 #include "elos/rpnfilter/builder.h"
 
+__BEGIN_DECLS
+
 #define elosEventFilterBuilderNew    elosRpnFilterBuilderNew
 #define elosEventFilterBuilderDelete elosRpnFilterBuilderDelete
 
@@ -13,8 +15,6 @@ typedef enum elosEventFilterBuilderTokenTypeE {
     EVENTFILTER_TOKEN_EVENT = RPNFILTER_TOKEN_TYPE_COUNT,
     EVENTFILTER_TOKEN_TYPE_COUNT,
 } elosEventFilterBuilderTokenTypeE_t;
-
-__BEGIN_DECLS
 
 elosRpnFilterResultE_t elosEventFilterBuilderCompileToken(elosRpnFilterBuilderTokenEntry_t const *token,
                                                           elosRpnFilterBuilder_t *data);
