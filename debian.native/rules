@@ -33,14 +33,6 @@ override_dh_auto_configure:
 override_dh_auto_install:
 	dh_auto_install
 
-	install -Dm0644 "$(CURDIR)/src/components/config/elosd.json" \
-		"$(CURDIR)/debian/tmp/etc/elos/elosd.json"
-
-	# No need to override plugin search path, use compile default /usr/lib/elos/
-	$(call edit_config,'del(.root.elos.ClientInputs.PluginSearchPath)')
-	$(call edit_config,'del(.root.elos.EventLogging.PluginSearchPath)')
-	$(call edit_config,'del(.root.elos.Scanner.Path)')
-
 	# Don't need demo dummy storage backend
 	$(call edit_config,'del(.root.elos.EventLogging.Plugins.Dummy)')
 
