@@ -63,6 +63,19 @@ Description: Event logging and management with normalized output-format (Dummy p
  .
  Dummy backend plugin.
 
+Package: elos-plugin-backend-fetchapi
+Section: libs
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (Dummy plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ A backend which implements the fetch API, thus elos can provide historical events.
+
 Package: elos-plugin-backend-influxdb
 Section: libs
 Architecture: any
