@@ -79,3 +79,16 @@ bool _connectTcpipv6(const char *host, uint16_t port, elosSession_t *session) {
     };
     return elosConnect(addinf, session);
 }
+
+bool elosDisconnect(elosSession_t *session) {
+    if (session == NULL) {
+        return false;
+    }
+    int retVal = close(session->fd);
+    if (retVal < 0) {
+        return false;
+    }
+    session->connected = false;
+
+    return true;
+}

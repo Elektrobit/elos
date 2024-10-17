@@ -40,3 +40,15 @@ bool elosConnect(struct addrinfo addrInfo, elosSession_t *session);
  *      - `true` for success or `false` on failure
  ******************************************************************/
 bool elosConnectTcpip(const char *host, uint16_t port, elosSession_t *session);
+
+/*******************************************************************
+ * Function: elosDisconnect
+ *------------------------------------------------------------------
+ * Description:
+ *      Closes a connection to elos.
+ * Input:
+ *      - **session**:  session data structure holding the connection
+ * Return:
+ *      - `true` for success or `false` on failure
+ ******************************************************************/
+bool elosDisconnect(elosSession_t *session);
