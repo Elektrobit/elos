@@ -7,8 +7,8 @@ BUILD_TYPE="${BUILD_TYPE-Debug}"
 ELOSD_PORT=54323
 
 . ${CMDPATH}/smoketest_env.sh
+. ${CMDPATH}/smoketest_utils.sh
 
-export NETSTAT=$(which netstat 2>/dev/null || which ss 2> /dev/null || echo "no ${NETSTAT} compliant tool found")
 export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
 
 prepare_env() {
@@ -65,8 +65,7 @@ wait_for_file() {
 
 wait_for_elosd_socket() {
     local i=0
-    ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
-    while [ $? -ne 0 ]
+    while ! is_listening_on "${1}" "${ELOSD_PORT}"
     do
       i=$((i+1))
       sleep 0.1s
@@ -74,7 +73,6 @@ wait_for_elosd_socket() {
          log "Error: Waiting for elosd socket timed out"
          exit 124
       fi
-      ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
     done
 }
 
@@ -97,9 +95,6 @@ stop_dlt_mock() {
     fi
 }
 
-get_parent_pid() {
-   cut -f 4 -d ' ' "/proc/${1}/stat"
-}
 
 smoketest_elosd() {
     prepare_env "elosd"
@@ -115,7 +110,7 @@ smoketest_elosd() {
     elosd > $RESULT_DIR/elosd.txt 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
     find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \; &&
     wait $ELOSD_PID || true
     log "Killed Elosd"
@@ -220,7 +215,7 @@ smoketest_coredump() {
     elosd > $RESULT_DIR/elosd.log 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
 
     log "Starting elos coredump test"
 
@@ -255,7 +250,7 @@ smoketest_syslog() {
     elosd > $RESULT_DIR/elosd.log 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $ELOS_SYSLOG_PATH
 
     log "Starting syslog test"
@@ -294,7 +289,7 @@ smoketest_kmsg() {
     elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $ELOS_KMSG_FILE
 
     log "Polling KMSG"
@@ -613,7 +608,7 @@ smoketest_plugins() {
     log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
     elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
 
     log "Stop elosd ($ELOSD_PID)"
     kill $ELOSD_PID #> /dev/null
@@ -652,7 +647,7 @@ smoketest_dual_json_plugin() {
     elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $COREDUMP_FILE
     wait_for_file $JSONBACKEND_FILE
 
