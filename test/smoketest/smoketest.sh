@@ -34,8 +34,8 @@ prepare_env() {
 
     ELOSD_PIDS=$(pgrep elosd || echo "")
     for ELOSD_PID in $ELOSD_PIDS; do
-       find /proc/$$ -type d -name $ELOSD_PID >/dev/null 2>&1
-       if [ $? -ne 0 ]; then
+        PARENT_PID="$(get_parent_pid "${ELOSD_PID}")"
+        if [ "${PARENT_PID}" -ne $$ ]; then
            log "Found elosd from other process".
            continue
        fi
@@ -95,6 +95,10 @@ stop_dlt_mock() {
     if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
         rm -f "${ELOS_DLT_PIPE_PATH}"
     fi
+}
+
+get_parent_pid() {
+   cut -f 4 -d ' ' "/proc/${1}/stat"
 }
 
 smoketest_elosd() {
