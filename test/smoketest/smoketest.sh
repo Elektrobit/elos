@@ -595,20 +595,19 @@ smoketest_find_event() {
     log "Ask elosd to find matching events..."
     elosc -P $ELOSD_PORT -f "$FILTERSTRING" > $LOG_ELOSC_FINDEVENT 2>&1
 
-    # Check success conditions
-    ELOSC_FINDEVENT_MATCHES=$(grep -wc testEventFiltering $LOG_ELOSC_FINDEVENT)
-    log $(ps -p ${ELOSD_PID})
-    if [ $? -eq 0 ]
-    then
-        ELOSD_ALIVE=1
-    fi
-
     # Unsubscribe from event queues
     elosc -P $ELOSD_PORT -u "$EVENT_QUEUE_ID" > $LOG_ELOSC_UNSUBSCRIBE 2>&1
 
+    # Check success conditions
+    ELOSC_FINDEVENT_MATCHES=$(grep -wc testEventFiltering $LOG_ELOSC_FINDEVENT)
+    log $(ps -p ${ELOSD_PID})
+    if ps -p ${ELOSD_PID} 2>&1 >/dev/null; then
+        ELOSD_ALIVE=1
+    fi
+
     #teardown
-    kill -TERM $ELOSC_SUBSCRIBE_PID $ELOSD_PID
-    wait $ELOSC_SUBSCRIBE_PID $ELOSD_PID > /dev/null 2>&1
+    log "$(kill -TERM $ELOSC_SUBSCRIBE_PID $ELOSD_PID 2>&1)"
+    log "$(wait $ELOSC_SUBSCRIBE_PID $ELOSD_PID 2>&1)"
 
     if [ "$ELOSD_ALIVE" = "1" ] && [ "$ELOSC_FINDEVENT_MATCHES" = "1" ]
     then

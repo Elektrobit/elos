@@ -558,8 +558,9 @@ safuResultE_t elosPluginControlUnsubscribe(elosSubscriber_t *subscriber, elosSub
         if (res != 1) {
             safuLogWarnF("subscription %p not found in subscriber for removal ", (void *)subscription);
             result = SAFU_RESULT_FAILED;
+        } else {
+            free((void *)subscription);
         }
-        free((void *)subscription);
     }
     return result;
 }
