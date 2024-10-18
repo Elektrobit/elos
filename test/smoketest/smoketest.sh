@@ -76,6 +76,11 @@ wait_for_elosd_socket() {
     done
 }
 
+wait_for_elosd_claims_running() {
+    grep -q "Running..." "${1}" || \
+        (tail -f -n0 "${1}"&) | timeout 5 grep -q "Running..."
+}
+
 start_dlt_mock() {
     if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
         rm -f "${ELOS_DLT_PIPE_PATH}"
@@ -99,6 +104,7 @@ stop_dlt_mock() {
 smoketest_elosd() {
     prepare_env "elosd"
 
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
@@ -108,13 +114,15 @@ smoketest_elosd() {
     start_dlt_mock
 
     log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
-    elosd > $RESULT_DIR/elosd.txt 2>&1 &
+    elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
     wait_for_elosd_socket "${ELOSD_PID}"
-    find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \; &&
+    wait_for_file "${ELOS_DLT_PIPE_PATH}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+    find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \;
     wait $ELOSD_PID || true
-    log "Killed Elosd"
+    log "stopped Elosd"
 
     stop_dlt_mock
 
@@ -133,7 +141,7 @@ Shutting down..."
     while IFS= read -r str; do
 
         log "look for '$str'"
-        grep "$str" $RESULT_DIR/elosd.txt > /dev/null 2>&1
+        grep "$str" "${LOG_ELOSD}" > /dev/null 2>&1
         case $? in
             0)
                 log "Found: '$str'"
@@ -150,7 +158,7 @@ Shutting down..."
         esac
     done < ${SMOKETEST_TMP_DIR}/expected_elosd_logs.txt
 
-    grep -e "WARNING\|ERROR" $RESULT_DIR/elosd.txt > /dev/null 2>&1
+    grep -e "WARNING\|ERROR" "${LOG_ELOSD}" > /dev/null 2>&1
     if [ $? -ne 1 ]; then
         FAIL=$((FAIL+1))
         log_err "Elos log contains WARNINGS or ERRORS"
@@ -211,6 +219,7 @@ smoketest_coredump() {
     prepare_env "elos-coredump"
 
     RESULT=0
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
 
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
@@ -221,10 +230,11 @@ smoketest_coredump() {
     start_dlt_mock
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
 
     wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Starting elos coredump test"
 
@@ -257,13 +267,15 @@ smoketest_syslog() {
     prepare_env "syslog"
 
     TEST_MESSAGE="an arbitrary syslog message"
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
 
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $ELOS_SYSLOG_PATH
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Starting syslog test"
     syslog_example -m "$TEST_MESSAGE" -P $ELOSD_PORT > $RESULT_DIR/syslog_example.log 2>&1 &
@@ -303,6 +315,7 @@ smoketest_kmsg() {
 
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $ELOS_KMSG_FILE
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Polling KMSG"
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $LOG_ELOSCL 2>&1 &
@@ -347,6 +360,7 @@ check_for_attribute() {
 smoketest_publish_poll() {
     prepare_env "publish_poll"
 
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
     local ELOSC_FILE_NAME=$(which elosc)
     local FILTERSTRING=".event.source.appName 'publish_poll' STRCMP"
     local MESSAGE_TEMPLATE="
@@ -365,10 +379,10 @@ smoketest_publish_poll() {
 }"
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
-
-    sleep 0.5s
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Polling client 1 ..."
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_1.log 2>&1 &
@@ -419,11 +433,15 @@ smoketest_locale() {
 \"fileName\":\"𝔾𝓻ÿ𝓣𝔃ë𝐋𝐵𝓲𝓂𝓕\",\"pid\":42},\"severity\":💀💀💀,\"hardwareid\":\"🙊\",\
 \"classification\":\"🙉\",\"messageCode\":\"🙈\",\"payload\":\"♔♕♖♗♘♙♚♛♜♝♞♟\"}"
 
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
+
     #start elos and client
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     sleep 0.5s
 
@@ -431,7 +449,6 @@ smoketest_locale() {
     elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
 
-    sleep 0.5s
 
     #send valid messages
     tinyElosc -P $ELOSD_PORT -v >> $RESULT_DIR/event.log 2>&1
@@ -469,9 +486,11 @@ smoketest_locale() {
     export LC_ALL=de_DE.utf8
 
     log "Restart elosd and client"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
-    sleep 0.5s
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+
     elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
     sleep 0.5s
@@ -552,9 +571,10 @@ smoketest_find_event() {
 
     # Setup environment
     log "Start elosd..."
-    ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="$RESULT_DIR/elosd_event_%count%.log" elosd > $LOG_ELOSD 2>&1 &
+    ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="$RESULT_DIR/elosd_event_%count%.log" elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
-    sleep 0.5s
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Start subscriber client ..."
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" -r 100 > $LOG_ELOSC_SUBSCRIBE 2>&1 &
@@ -623,7 +643,7 @@ smoketest_plugins() {
     elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
     wait_for_elosd_socket "${ELOSD_PID}"
-
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
     log "Stop elosd ($ELOSD_PID)"
     kill $ELOSD_PID #> /dev/null
     wait $ELOSD_PID #> /dev/null
@@ -664,6 +684,7 @@ smoketest_dual_json_plugin() {
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $COREDUMP_FILE
     wait_for_file $JSONBACKEND_FILE
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     elosc -P $ELOSD_PORT -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
     elosc -P $ELOSD_PORT -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
