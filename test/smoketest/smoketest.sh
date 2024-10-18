@@ -102,8 +102,9 @@ smoketest_elosd() {
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
-    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
 
+    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
     start_dlt_mock
 
     log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
@@ -211,6 +212,14 @@ smoketest_coredump() {
 
     RESULT=0
 
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+
+    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+    start_dlt_mock
+
     log "Starting elosd"
     elosd > $RESULT_DIR/elosd.log 2>&1 &
     ELOSD_PID=$!
@@ -236,7 +245,10 @@ smoketest_coredump() {
     log "Stop elosd ($ELOSD_PID) ..."
     kill $ELOSD_PID > /dev/null
     wait $ELOSD_PID > /dev/null
+    stop_dlt_mock
     log "done"
+
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
     return $RESULT
 }
@@ -601,6 +613,8 @@ smoketest_plugins() {
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+
+    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
     sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
 
     start_dlt_mock
