@@ -24,5 +24,10 @@ int main(int argc, const char *argv[]) {
     } else {
         printf("connection failed!\n");
     }
+    if (elosDisconnect(&session)) {
+        printf("disconnected!\n");
+    } else {
+        printf("disconnecting failed!\n");
+    }
     return 0;
 }
