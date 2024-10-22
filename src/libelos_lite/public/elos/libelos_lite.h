@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/*******************************************************************
+ * safes a handle for a connection to elosd
+ ******************************************************************/
 typedef struct elosSession {
     int fd;
     bool connected;
@@ -13,42 +16,35 @@ typedef struct elosSession {
 const char *elosGetLibraryVersion();
 
 /*******************************************************************
- * Function: elosConnect
- *------------------------------------------------------------------
- * Description:
- *      Establishes connection to elos.
- * Input:
- *      - **addrInfo**: addrinfo struct for the host to connect to
- * Output:
- *      - **session**:  session data structure used by other functions
- * Return:
- *      - `true` for success or `false` on failure
+ * Establishes connection to elos.
+ *
+ * Parameters:
+ *      addrInfo: addrinfo struct for the host to connect to
+ *      session: session data structure used to store the connection
+ *          for other functions
+ * Returns:
+ *      `true` for success or `false` on failure
  ******************************************************************/
 bool elosConnect(struct addrinfo addrInfo, elosSession_t *session);
 
 /*******************************************************************
- * Function: elosConnectTcpip
- *------------------------------------------------------------------
- * Description:
- *      Establishes connection to elos over tcp/ip.
- * Input:
- *      - **host**:     host address as ipv4 or ipv6, e.g. "192.168.2.1"
- *      - **port**:     port number, e.g. 54321
- * Output:
- *      - **session**:  session data structure used by other functions
- * Return:
- *      - `true` for success or `false` on failure
+ * Establishes connection to elos over tcp/ip.
+ *
+ * Parameters:
+ *      host:     host address as ipv4 or ipv6, e.g. "192.168.2.1"
+ *      port:     port number, e.g. 54321
+ *      session:  session data structure used by other functions
+ * Returns:
+ *      `true` for success or `false` on failure
  ******************************************************************/
 bool elosConnectTcpip(const char *host, uint16_t port, elosSession_t *session);
 
 /*******************************************************************
- * Function: elosDisconnect
- *------------------------------------------------------------------
- * Description:
- *      Closes a connection to elos.
- * Input:
- *      - **session**:  session data structure holding the connection
+ * Closes a connection to elos.
+ *
+ * Parameters:
+ *      session:  session data structure holding the connection
  * Return:
- *      - `true` for success or `false` on failure
+ *      `true` for success or `false` on failure
  ******************************************************************/
 bool elosDisconnect(elosSession_t *session);
