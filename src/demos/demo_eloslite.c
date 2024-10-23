@@ -15,16 +15,16 @@ int main(int argc, const char *argv[]) {
         case 2:
             host = argv[1];
     }
-    printf("Libelos lite version: %s\n", elosGetLibraryVersion());
+    printf("Libelos lite version: %s\n", elosliteGetLibraryVersion());
 
     printf("connecting to %s:%d\n", host, port);
-    elosSession_t session = {0};
-    if (elosConnectTcpip(host, port, &session)) {
+    elosliteSession_t session = {0};
+    if (elosliteConnectTcpip(host, port, &session)) {
         printf("connected!\n");
     } else {
         printf("connection failed!\n");
     }
-    if (elosDisconnect(&session)) {
+    if (elosliteDisconnect(&session)) {
         printf("disconnected!\n");
     } else {
         printf("disconnecting failed!\n");

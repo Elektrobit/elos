@@ -8,12 +8,12 @@
 /*******************************************************************
  * safes a handle for a connection to elosd
  ******************************************************************/
-typedef struct elosSession {
+typedef struct elosliteSession {
     int fd;
     bool connected;
-} elosSession_t;
+} elosliteSession_t;
 
-const char *elosGetLibraryVersion();
+const char *elosliteGetLibraryVersion();
 
 /*******************************************************************
  * Establishes connection to elos.
@@ -25,7 +25,7 @@ const char *elosGetLibraryVersion();
  * Returns:
  *      `true` for success or `false` on failure
  ******************************************************************/
-bool elosConnect(struct addrinfo addrInfo, elosSession_t *session);
+bool elosliteConnect(struct addrinfo addrInfo, elosliteSession_t *session);
 
 /*******************************************************************
  * Establishes connection to elos over tcp/ip.
@@ -37,7 +37,7 @@ bool elosConnect(struct addrinfo addrInfo, elosSession_t *session);
  * Returns:
  *      `true` for success or `false` on failure
  ******************************************************************/
-bool elosConnectTcpip(const char *host, uint16_t port, elosSession_t *session);
+bool elosliteConnectTcpip(const char *host, uint16_t port, elosliteSession_t *session);
 
 /*******************************************************************
  * Closes a connection to elos.
@@ -47,4 +47,4 @@ bool elosConnectTcpip(const char *host, uint16_t port, elosSession_t *session);
  * Return:
  *      `true` for success or `false` on failure
  ******************************************************************/
-bool elosDisconnect(elosSession_t *session);
+bool elosliteDisconnect(elosliteSession_t *session);

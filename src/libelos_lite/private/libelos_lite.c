@@ -8,14 +8,14 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-const char *elosGetLibraryVersion() {
+const char *elosliteGetLibraryVersion() {
     return ELOS_VERSION;
 }
 
-static bool _connectTcpipv4(const char *host, uint16_t port, elosSession_t *session);
-static bool _connectTcpipv6(const char *host, uint16_t port, elosSession_t *session);
+static bool _connectTcpipv4(const char *host, uint16_t port, elosliteSession_t *session);
+static bool _connectTcpipv6(const char *host, uint16_t port, elosliteSession_t *session);
 
-bool elosConnect(struct addrinfo addrInfo, elosSession_t *session) {
+bool elosliteConnect(struct addrinfo addrInfo, elosliteSession_t *session) {
     int sfd = socket(addrInfo.ai_family, addrInfo.ai_socktype, addrInfo.ai_protocol);
     if (sfd == -1) {
         return false;
@@ -30,7 +30,7 @@ bool elosConnect(struct addrinfo addrInfo, elosSession_t *session) {
     return true;
 }
 
-bool elosConnectTcpip(const char *host, uint16_t port, elosSession_t *session) {
+bool elosliteConnectTcpip(const char *host, uint16_t port, elosliteSession_t *session) {
     if (_connectTcpipv4(host, port, session)) {
         return true;
     }
@@ -40,7 +40,7 @@ bool elosConnectTcpip(const char *host, uint16_t port, elosSession_t *session) {
     return false;
 }
 
-bool _connectTcpipv4(const char *host, uint16_t port, elosSession_t *session) {
+bool _connectTcpipv4(const char *host, uint16_t port, elosliteSession_t *session) {
     struct in_addr inAddr = {0};
     if (!inet_aton(host, &inAddr)) {
         return false;
@@ -57,10 +57,10 @@ bool _connectTcpipv4(const char *host, uint16_t port, elosSession_t *session) {
         .ai_addr = (struct sockaddr *)&sockaddrIn,
         .ai_addrlen = sizeof(sockaddrIn),
     };
-    return elosConnect(addinf, session);
+    return elosliteConnect(addinf, session);
 }
 
-bool _connectTcpipv6(const char *host, uint16_t port, elosSession_t *session) {
+bool _connectTcpipv6(const char *host, uint16_t port, elosliteSession_t *session) {
     struct in6_addr inAddr = {0};
     if (!inet_pton(AF_INET6, host, &inAddr)) {
         return false;
@@ -77,10 +77,10 @@ bool _connectTcpipv6(const char *host, uint16_t port, elosSession_t *session) {
         .ai_addr = (struct sockaddr *)&sockaddrIn,
         .ai_addrlen = sizeof(sockaddrIn),
     };
-    return elosConnect(addinf, session);
+    return elosliteConnect(addinf, session);
 }
 
-bool elosDisconnect(elosSession_t *session) {
+bool elosliteDisconnect(elosliteSession_t *session) {
     if (session == NULL) {
         return false;
     }
