@@ -47,6 +47,6 @@ target_link_libraries(
 if (INSTALL_ELOS_DEMOS)
   install(TARGETS elos_log4c_demo DESTINATION ${CMAKE_INSTALL_BINDIR})
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/log4crc
-    DESTINATION ../${CMAKE_INSTALL_SYSCONFDIR}/elos/elos_log4c_demo)
+    DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/elos/elos_log4c_demo)
 endif()
 
