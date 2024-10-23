@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: MIT
 find_package(safu 0.56.2 REQUIRED)
 find_package(samconf 0.56.3 REQUIRED)
-
-if(ELOSD_EVENTLOGGING_BACKEND_SQL)
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(SQLITE3 REQUIRED sqlite3)
-endif()
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SQLITE3 REQUIRED sqlite3)
 
 
 add_library(
