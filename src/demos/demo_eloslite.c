@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 int main(int argc, const char *argv[]) {
-    const char *host = "localhost";
+    const char *host = "127.0.0.1";
     uint16_t port = 54321;
     switch (argc) {
         case 3:
