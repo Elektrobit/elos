@@ -13,4 +13,4 @@
 #include "elos/pluginmanager/pluginmanager.h"
 
 MOCK_FUNC_PROTOTYPE(elosPluginManagerUnload, safuResultE_t, elosPluginManager_t *pluginManager,
-                    elosPluginControlPtrVector_t *controlPtrVector)
+                    elosPluginControlVector_t *controlPtrVector)

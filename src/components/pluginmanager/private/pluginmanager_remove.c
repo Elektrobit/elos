@@ -8,8 +8,7 @@
 #include "elos/plugincontrol/plugincontrol.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
-safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager,
-                                      elosPluginControlPtrVector_t *controlPtrVector) {
+safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPluginControlVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((pluginManager == NULL) || (controlPtrVector == NULL)) {

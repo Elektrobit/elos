@@ -13,12 +13,11 @@
 #include "elos/pluginmanager/pluginmanager.h"
 
 static safuResultE_t _loadPluginList(elosPluginManager_t *pluginManager, samconfConfig_t const *pluginConfig,
-                                     elosPluginControlParam_t pluginParam,
-                                     elosPluginControlPtrVector_t *controlPtrVector);
+                                     elosPluginControlParam_t pluginParam, elosPluginControlVector_t *controlPtrVector);
 
 safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
                                     samconfConfig_t const *moduleConfig, char const *pluginSearchPath,
-                                    elosPluginControlPtrVector_t *controlPtrVector) {
+                                    elosPluginControlVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
     samconfConfig_t const *pluginConfig = NULL;
 
@@ -59,7 +58,7 @@ safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPlug
 
 static safuResultE_t _loadPluginList(elosPluginManager_t *pluginManager, samconfConfig_t const *pluginConfig,
                                      elosPluginControlParam_t pluginParam,
-                                     elosPluginControlPtrVector_t *controlPtrVector) {
+                                     elosPluginControlVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_OK;
     for (size_t i = 0; i < pluginConfig->childCount; i += 1) {
         char const *key = pluginConfig->children[i]->key;

@@ -31,6 +31,6 @@ typedef struct elosStorageManager {
     elosPluginManager_t *pluginManager;
     samconfConfig_t const *config;
     const char *searchPath;
-    elosPluginControlPtrVector_t pluginControlPtrVector;
+    elosPluginControlVector_t pluginControlPtrVector;
     elosStorageBackendPtrVector_t backends;
 } elosStorageManager_t;

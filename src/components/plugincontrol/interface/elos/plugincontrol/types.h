@@ -69,4 +69,3 @@ typedef struct elosPluginControl {
 } elosPluginControl_t;
 
 typedef safuVec_t elosPluginControlVector_t;
-typedef safuVec_t elosPluginControlPtrVector_t;
