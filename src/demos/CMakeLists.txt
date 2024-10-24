@@ -165,3 +165,16 @@ if (ELOS_DEMOS)
   endif()
 
 endif()
+
+if (ELOS_LIBRARY_LITE)
+  add_executable(
+    demo_eloslite
+    demo_eloslite.c
+  )
+  target_link_libraries(
+    demo_eloslite
+    PRIVATE
+      libelos-lite
+  )
+  install(TARGETS demo_eloslite DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif (ELOS_LIBRARY_LITE)
