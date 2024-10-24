@@ -1,9 +1,9 @@
-#!/bin/sh
+# SPDX-License-Identifier: MIT
 
-FILE=$RESULT_DIR/smoketest.log
+FILE="${SMOKETEST_RESULT_DIR}/smoketest.log"
 
 setup_log() {
-	if [ "$RESULT_DIR" = "" ]; then
+	if [ "${SMOKETEST_RESULT_DIR}" = "" ]; then
 		echo "No Result dir available! Exitting" >&3
 		exit 2
 	fi

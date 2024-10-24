@@ -2,8 +2,6 @@
 # shellcheck disable=SC2317
 
 CMDPATH=$(realpath "$(dirname "$0")")
-BASE_DIR=$(realpath "${CMDPATH}/../..")
-BUILD_TYPE="${BUILD_TYPE-Debug}"
 ELOSD_PORT=54323
 
 . ${CMDPATH}/smoketest_env.sh
@@ -47,6 +45,10 @@ prepare_env() {
     done
 
     export ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="${result_dir}/elosd_event_%count%.log"
+}
+
+run_in_source_tree() {
+    [ -d "${SMOKETEST_DIR}/../../build/deps" ]
 }
 
 wait_for_file() {
@@ -711,11 +713,17 @@ smoketest_compile_program_using_libelos() {
     prepare_env "compile_program_using_libelos"
     TEST_RESULT=0
 
+    EXTRA_FLAGS=""
+    if run_in_source_tree; then
+        BUILD_DEPS_PREFIX="${SMOKETEST_DIR}/../../build/deps"
+        EXTRA_FLAGS="-I ${BUILD_DEPS_PREFIX}/include/ -L ${BUILD_DEPS_PREFIX}/lib"
+    fi
+
     log "Try to compile simple program using libelos"
     printf '#include <elos/libelos/libelos.h>\nint main(int argc, char* argv[]){return 0;}' \
         | gcc -v -xc -lelos -lelos_common \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+        ${EXTRA_FLAGS} \
         -o "${SMOKETEST_TMP_DIR}/testlibelos" - \
         >> "$RESULT_DIR/libelos.log" 2>&1
     if [ $? -ne 0 ]; then
@@ -723,16 +731,18 @@ smoketest_compile_program_using_libelos() {
         TEST_RESULT=1
     fi
 
-    log "Try to compile syslog demo using libelos"
-    gcc -v  \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
-        -o "${SMOKETEST_TMP_DIR}/testlibelos_syslog" "${TEST_SOURCE_DIR}/../../src/demos/syslog.c" \
-        -lelos -lsafu -lelos_common \
-        >> "$RESULT_DIR/libelos.log" 2>&1
-    if [ $? -ne 0 ]; then
-        log_err "failed to compile test program for libelos"
-        TEST_RESULT=1
+    if run_in_source_tree; then
+        log "Try to compile syslog demo using libelos"
+        gcc -v  \
+            -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+            ${EXTRA_FLAGS} \
+            -o "${SMOKETEST_TMP_DIR}/testlibelos_syslog" "${SMOKETEST_DIR}/../../src/demos/syslog.c" \
+            -lelos -lsafu -lelos_common \
+            >> "$RESULT_DIR/libelos.log" 2>&1
+        if [ $? -ne 0 ]; then
+            log_err "failed to compile test program for libelos"
+            TEST_RESULT=1
+        fi
     fi
 
     return $TEST_RESULT
@@ -742,11 +752,17 @@ smoketest_compile_program_using_libeloscpp() {
     prepare_env "compile_program_using_libelos-cpp"
     TEST_RESULT=0
 
+    EXTRA_FLAGS=""
+    if run_in_source_tree; then
+        BUILD_DEPS_PREFIX="${SMOKETEST_DIR}/../../build/deps"
+        EXTRA_FLAGS="-I ${BUILD_DEPS_PREFIX}/include/ -L ${BUILD_DEPS_PREFIX}/lib"
+    fi
+
     log "Try to compile simple program using libelos-cpp"
     printf '#include <elos/libelos-cpp/libelos-cpp.h>\nint main(int argc, char* argv[]){return 0;}' \
         | g++ -v -xc++ -std=c++14 \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+        ${EXTRA_FLAGS} \
         -o "${SMOKETEST_TMP_DIR}/testlibelos-cpp" - -lelos-cpp\
         >> "$RESULT_DIR/libelos-cpp.log" 2>&1
     if [ $? -ne 0 ]; then
@@ -760,6 +776,12 @@ smoketest_compile_program_using_libeloscpp() {
 smoketest_compile_program_with_cpp() {
     prepare_env "compile_program_with_cpp"
     TEST_RESULT=0
+
+    EXTRA_FLAGS=""
+    if run_in_source_tree; then
+        BUILD_DEPS_PREFIX="${SMOKETEST_DIR}/../../build/deps"
+        EXTRA_FLAGS="-I ${BUILD_DEPS_PREFIX}/include/ -L ${BUILD_DEPS_PREFIX}/lib"
+    fi
 
     log "Try to compile a simple C++ program using libelos"
     printf "%s\n" \
@@ -786,8 +808,8 @@ smoketest_compile_program_with_cpp() {
         '    return 0;' \
         '}' \
         | g++ -v -xc++ -std=c++11 \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
+        -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+        ${EXTRA_FLAGS} \
         -o "${SMOKETEST_TMP_DIR}/testlibelos" - -lelos -lsafu \
         >> "$RESULT_DIR/cpp_compile.log" 2>&1
     if [ $? -ne 0 ]; then

@@ -2,7 +2,7 @@
 set -eou pipefail
 
 CMD_PATH="$(realpath "$(dirname "$0")")"
-BASE_DIR="$(realpath "$CMD_PATH/..")"
+BASE_DIR=${CMD_PATH%/*}
 
 PARAM=""
 INTERACTIVE=0
@@ -28,25 +28,28 @@ done
 
 set -- $PARAM
 BUILD_TYPE="${1:-Debug}"
-
 . "$BASE_DIR/ci/common_names.sh"
-
-rm -rf $RESULT_DIR/smoketest_results
-mkdir -p $RESULT_DIR/smoketest_results
 
 if [ "${CI:-false}" = true ]; then
     export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR:-"$(realpath "${BUILD_DIR}/tmp")"}"
 fi
 
+
+export PREFIX_PATH="${BUILD_DIR}/dist/usr/local"
+export LD_LIBRARY_PATH="${BASE_DIR}/build/deps/lib"
+export PKG_CONFIG_PATH="${BASE_DIR}/build/deps/lib/pkgconfig"
+export SMOKETEST_RESULT_DIR="${SMOKETEST_RESULT_DIR-$BUILD_DIR/result/smoketest}"
 export ENABLED_TESTS="${ENABLED_TESTS}"
 export DISABLED_TESTS="${DISABLED_TESTS}"
+
+rm -rf "${SMOKETEST_RESULT_DIR}"
+mkdir -p "${SMOKETEST_RESULT_DIR}"
+
 if [ "${INTERACTIVE}" -eq 0 ]; then
     BUILD_TYPE=$BUILD_TYPE \
     $BASE_DIR/test/smoketest/smoketest.sh | \
-        tee "$RESULT_DIR/smoketest_results/smoktests.log"
+        tee "${SMOKETEST_RESULT_DIR}/smoktests.log"
 else
     BUILD_TYPE=$BUILD_TYPE \
     $BASE_DIR/test/smoketest/smoketest_interactive.sh
 fi
-
-#tapview > $BUILD_DIR/result/smoketest_results/summary < $BUILD_DIR/result/smoketest_results/log
