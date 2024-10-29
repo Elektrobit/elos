@@ -92,3 +92,25 @@ bool elosliteDisconnect(elosliteSession_t *session) {
 
     return true;
 }
+#define ELOS_PROTOCOL_VERSION         0x01
+#define ELOS_MESSAGE_EVENT_PUBLISH    0x02
+struct elosliteMessageHead {
+    uint8_t version;
+    uint8_t message;
+    uint16_t length;
+};
+bool eloslitePublish(elosliteSession_t *session, elosliteEvent_t *event) {
+    if (session == NULL || event == NULL || session->connected == false) {
+        return false;
+    }
+    const char mesg[] = "{\"date\":[0,0],\"source\":{\"appName\":\"demo_eloslite\",\"fileName\":\"/usr/local/bin/demo_eloslite\",\"pid\":208},\"severity\":0,\"hardwareid\":\"817d6b97-75f8-4faf-ba3c-583ae1123558\",\"classification\":6,\"messageCode\":8000,\"payload\":\"...PAYLOAD...\"}";
+    struct elosliteMessageHead msgHeader = {
+        .version = ELOS_PROTOCOL_VERSION,
+        .message = ELOS_MESSAGE_EVENT_PUBLISH,
+        .length = sizeof(mesg),
+    };
+    send(session->fd, (void *)&msgHeader, sizeof(msgHeader), MSG_NOSIGNAL);
+    send(session->fd, (void *)&mesg, sizeof(mesg), MSG_NOSIGNAL);
+
+    return true;
+}
