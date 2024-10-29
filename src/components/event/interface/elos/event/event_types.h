@@ -6,43 +6,8 @@
 #include <time.h>
 
 #include "elos/event/event_message_codes.h"
-
-#define ELOS_CLASSIFICATION_ELOS_MASK      0x00000000FFFFFFFFULL
-#define ELOS_CLASSIFICATION_USER_MASK      0x000000FF00000000ULL
-#define ELOS_CLASSIFICATION_RESERVED_MASK  0xFFFFFF0000000000ULL
-#define ELOS_CLASSIFICATION_UNDEFINED      0x0000000000000000ULL
-#define ELOS_CLASSIFICATION_KERNEL         0x0000000000000001ULL
-#define ELOS_CLASSIFICATION_NETWORK        0x0000000000000002ULL
-#define ELOS_CLASSIFICATION_SECURITY       0x0000000000000004ULL
-#define ELOS_CLASSIFICATION_POWER          0x0000000000000008ULL
-#define ELOS_CLASSIFICATION_STORAGE        0x0000000000000010ULL
-#define ELOS_CLASSIFICATION_PROCESS        0x0000000000000020ULL
-#define ELOS_CLASSIFICATION_IPC            0x0000000000000040ULL
-#define ELOS_CLASSIFICATION_HARDWARE       0x0000000000000080ULL
-#define ELOS_CLASSIFICATION_ELOS           0x0000000000000100ULL
-#define ELOS_CLASSIFICATION_PROCESS_ERRORS 0x0000000000000200ULL
-#define ELOS_CLASSIFICATION_USER_0         0x0000000100000000ULL
-#define ELOS_CLASSIFICATION_USER_1         0x0000000200000000ULL
-#define ELOS_CLASSIFICATION_USER_2         0x0000000400000000ULL
-#define ELOS_CLASSIFICATION_USER_3         0x0000000800000000ULL
-#define ELOS_CLASSIFICATION_USER_4         0x0000001000000000ULL
-#define ELOS_CLASSIFICATION_USER_5         0x0000002000000000ULL
-#define ELOS_CLASSIFICATION_USER_6         0x0000004000000000ULL
-#define ELOS_CLASSIFICATION_USER_7         0x0000008000000000ULL
-
-/*******************************************************************
- * The possible severities for an :c:expr:`elosEvent_t *` can have
- ******************************************************************/
-typedef enum elosSeverityE {
-    /**/  // this comment is needet so that the enumerators are listet in the documentation!
-    ELOS_SEVERITY_OFF = 0,
-    ELOS_SEVERITY_FATAL,
-    ELOS_SEVERITY_ERROR,
-    ELOS_SEVERITY_WARN,
-    ELOS_SEVERITY_INFO,
-    ELOS_SEVERITY_DEBUG,
-    ELOS_SEVERITY_VERBOSE,
-} elosSeverityE_t;
+#include "elos/event/event_classification.h"
+#include "elos/event/event_severity.h"
 
 /*******************************************************************
  * Source of an :c:type:`elosEvent_t`
