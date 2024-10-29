@@ -12,6 +12,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/private/
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public/>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface>
     $<INSTALL_INTERFACE:include/>
 )
 
@@ -26,6 +27,14 @@ target_compile_definitions(libelos-lite PRIVATE ELOS_VERSION="${ELOS_VERSION}")
 
 install(TARGETS libelos-lite DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(
+  FILES
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface/elos/event/event_message_codes.h>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface/elos/event/event_classification.h>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface/elos/event/event_severity.h>
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/elos/event/
+)
+
 
 install(
   EXPORT libelos-liteTargets

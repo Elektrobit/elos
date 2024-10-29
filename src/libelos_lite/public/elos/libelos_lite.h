@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "elos/lite/event.h"
+
 #include <netdb.h>
 #include <stdbool.h>
 #include <stdint.h>
