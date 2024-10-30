@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: MIT
 
 #include "elos/libelos_lite.h"
+#include "elos/lite/event.h"
 
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <string.h>
 
 const char *elosliteGetLibraryVersion() {
     return ELOS_VERSION;
@@ -107,6 +111,82 @@ struct elosliteMessageHead {
     uint8_t message;
     uint16_t length;
 };
+
+static size_t _numLen(int64_t num) {
+    //printf("#(%ld) = ", num);
+    size_t result = 0;
+    if (num == 0) result = 1;
+    while (num) {
+        num /= 10;
+        result += 1;
+    }
+    //printf("%ld\n", result);
+    return result; // length of number as base10 string
+}
+static size_t _msgLen(elosliteEvent_t *event) {
+    size_t msgLen = 2;
+    bool elementBefore = false;
+    if (event->date.tv_sec != 0 || event->date.tv_nsec != 0) {
+        elementBefore = true;
+        msgLen += strlen("\"date\":[,]");
+        msgLen += _numLen(event->date.tv_sec);
+        msgLen += _numLen(event->date.tv_nsec);
+    }
+    if (event->source.appName != NULL || event->source.fileName != NULL || event->source.pid != 0) {
+        msgLen += elementBefore ? 1 : 0;
+        elementBefore = true;
+        msgLen += strlen("\"source\":{}");
+        bool sourceElementBefore = false;
+        if (event->source.appName != NULL) {
+            sourceElementBefore = true;
+            msgLen += strlen("\"appName\":\"\"");
+            msgLen += strlen(event->source.appName);
+        }
+        if (event->source.fileName != NULL) {
+            msgLen += sourceElementBefore ? 1 : 0;
+            sourceElementBefore = true;
+            msgLen += strlen("\"fileName\":\"\"");
+            msgLen += strlen(event->source.fileName);
+        }
+        if (event->source.pid != 0) {
+            msgLen += sourceElementBefore ? 1 : 0;
+            msgLen += strlen("\"pid\":");
+            msgLen += _numLen(event->source.pid);
+        }
+    }
+    if (event->severity != 0) {
+        msgLen += elementBefore ? 1 : 0;
+        elementBefore = true;
+        msgLen += strlen("\"severity\":");
+        msgLen += _numLen(event->severity);
+    }
+    if (event->hardwareid != NULL) {
+        msgLen += elementBefore ? 1 : 0;
+        elementBefore = true;
+        msgLen += strlen("\"hardwareid\":\"\"");
+        msgLen += strlen(event->hardwareid);
+    }
+    if (event->classification != 0) {
+        msgLen += elementBefore ? 1 : 0;
+        elementBefore = true;
+        msgLen += strlen("\"classification\":");
+        msgLen += _numLen(event->classification);
+    }
+    if (event->messageCode != 0) {
+        msgLen += elementBefore ? 1 : 0;
+        elementBefore = true;
+        msgLen += strlen("\"messageCode\":");
+        msgLen += _numLen(event->messageCode);
+    }
+    if (event->payload != NULL) {
+        msgLen += elementBefore ? 1 : 0;
+        elementBefore = true;
+        msgLen += strlen("\"payload\":\"\"");
+        msgLen += strlen(event->payload);
+    }
+    return msgLen;
+}
+
 static bool _prepMsg(elosliteEvent_t *event, struct elosliteMessage *msg) {
     msg->version = ELOS_PROTOCOL_VERSION;
     msg->message = ELOS_MESSAGE_EVENT_PUBLISH;
@@ -168,13 +248,115 @@ static bool _prepMsg(elosliteEvent_t *event, struct elosliteMessage *msg) {
     return true;
 }
 
+static bool _sendMsgParts(elosliteSession_t *session, elosliteEvent_t *event) {
+    char partBuf[60];
+    size_t sendNum = 0;
+    sendNum += send(session->fd, (void *)"{", 1, MSG_NOSIGNAL);
+    bool elementBefore = false;
+    if (event->date.tv_sec != 0 || event->date.tv_nsec != 0) {
+        elementBefore = true;
+        sprintf(partBuf, "\"date\":[%ld,%ld]", event->date.tv_sec, event->date.tv_nsec); // maxlen: 10 + 20 + 20 + 1 = 51
+        sendNum += send(session->fd, (void *)partBuf, strlen(partBuf), MSG_NOSIGNAL);
+    }
+    if (event->source.appName != NULL || event->source.fileName != NULL || event->source.pid != 0) {
+        if (elementBefore) {
+            sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+        }
+        elementBefore = true;
+        char *part = "\"source\":{";
+        sendNum += send(session->fd, (void *)part, strlen(part), MSG_NOSIGNAL);
+        bool sourceElementBefore = false;
+        if (event->source.appName != NULL) {
+            sourceElementBefore = true;
+            part = "\"appName\":\"";
+            sendNum += send(session->fd, (void *)part, strlen(part), MSG_NOSIGNAL);
+            sendNum += send(session->fd, (void *)event->source.appName, strlen(event->source.appName), MSG_NOSIGNAL);
+            sendNum += send(session->fd, (void *)"\"", 1, MSG_NOSIGNAL);
+        }
+        if (event->source.fileName != NULL) {
+            if (sourceElementBefore) {
+                sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+            }
+            sourceElementBefore = true;
+            part = "\"fileName\":\"";
+            sendNum += send(session->fd, (void *)part, strlen(part), MSG_NOSIGNAL);
+            sendNum += send(session->fd, (void *)event->source.fileName, strlen(event->source.fileName), MSG_NOSIGNAL);
+            sendNum += send(session->fd, (void *)"\"", 1, MSG_NOSIGNAL);
+        }
+        if (event->source.pid != 0) {
+            if (sourceElementBefore) {
+                sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+            }
+            sprintf(partBuf, "\"pid\":%d", event->source.pid); // maxlen: 6 + 10 + 1 = 17
+            sendNum += send(session->fd, (void *)partBuf, strlen(partBuf), MSG_NOSIGNAL);
+        }
+        sendNum += send(session->fd, (void *)&"}", 1, MSG_NOSIGNAL);
+    }
+    if (event->severity != 0) {
+        if (elementBefore) {
+            sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+        }
+        elementBefore = true;
+        sprintf(partBuf, "\"severity\":%d", event->severity); // maxlen: 10 + 10 + 1 = 21
+        sendNum += send(session->fd, (void *)partBuf, strlen(partBuf), MSG_NOSIGNAL);
+    }
+    if (event->hardwareid != NULL) {
+        if (elementBefore) {
+            sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+        }
+        elementBefore = true;
+        char *part = "\"hardwareid\":\"";
+        sendNum += send(session->fd, (void *)part, strlen(part), MSG_NOSIGNAL);
+        sendNum += send(session->fd, (void *)event->hardwareid, strlen(event->hardwareid), MSG_NOSIGNAL);
+        sendNum += send(session->fd, (void *)"\"", 1, MSG_NOSIGNAL);
+    }
+    if (event->classification != 0) {
+        if (elementBefore) {
+            sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+        }
+        elementBefore = true;
+        sprintf(partBuf, "\"classification\":%ld", event->classification); // maxlen: 10 + 20 + 1 = 31
+        sendNum += send(session->fd, (void *)partBuf, strlen(partBuf), MSG_NOSIGNAL);
+    }
+    if (event->messageCode != 0) {
+        if (elementBefore) {
+            sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+        }
+        elementBefore = true;
+        sprintf(partBuf, "\"messageCode\":%d", event->messageCode); // maxlen: 10 + 10 + 1 = 21
+        sendNum += send(session->fd, (void *)partBuf, strlen(partBuf), MSG_NOSIGNAL);
+    }
+    if (event->payload != NULL) {
+        if (elementBefore) {
+            sendNum += send(session->fd, (void *)",", 1, MSG_NOSIGNAL);
+        }
+        elementBefore = true;
+        char *part = "\"payload\":\"";
+        sendNum += send(session->fd, (void *)part, strlen(part), MSG_NOSIGNAL);
+        sendNum += send(session->fd, (void *)event->payload, strlen(event->payload), MSG_NOSIGNAL);
+        sendNum += send(session->fd, (void *)"\"", 1, MSG_NOSIGNAL);
+    }
+    sendNum += send(session->fd, (void *)"}", 1, MSG_NOSIGNAL);
+    printf("sendNum: %ld\n", sendNum);
+    return true;
+}
 bool eloslitePublish(elosliteSession_t *session, elosliteEvent_t *event) {
     if (session == NULL || event == NULL || session->connected == false) {
         return false;
     }
-    struct elosliteMessage msg = {0};
-    _prepMsg(event, &msg);
-    send(session->fd, (void *)&msg, sizeof(msg), MSG_NOSIGNAL);
+    //struct elosliteMessage msg = {0};
+    //_prepMsg(event, &msg);
+    //send(session->fd, (void *)&msg, sizeof(msg), MSG_NOSIGNAL);
+    //printf("%s\n", msg.json);
+
+    struct elosliteMessageHead msgHead = {
+        .version = ELOS_PROTOCOL_VERSION,
+        .message = ELOS_MESSAGE_EVENT_PUBLISH,
+        .length = _msgLen(event),
+    };
+    send(session->fd, (void *)&msgHead, sizeof(msgHead), MSG_NOSIGNAL);
+    printf("msgLen: %d\n", msgHead.length);
+    _sendMsgParts(session, event);
 
     return true;
 }
