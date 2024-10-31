@@ -45,17 +45,6 @@
                             "BufferSize": 100
                         }
                     },
-                    "Dummy": {
-                        "File": "backend_dummy.so",
-                        "Run": "always",
-                        "Filter": [
-                            "1 1 EQ"
-                        ]
-                    },
-                    "SkippedDummy": {
-                        "File": "backend_dummy.so",
-                        "Run": "never"
-                    },
                     "JsonBackend": {
                         "File": "backend_json.so",
                         "Run": "always",
@@ -96,10 +85,6 @@
             },
             "Scanner": {
                 "Plugins": {
-                    "ScannerDummy": {
-                        "File": "scanner_dummy.so",
-                        "Run": "always"
-                    },
                     "OomKiller": {
                         "File": "scanner_oomkiller.so",
                         "Run": "always"
