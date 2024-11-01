@@ -9,6 +9,13 @@ RESULT_DIR="${BASE_DIR}/build/Docker/result"
 IMAGE_NAME="${PROJECT}"
 TARGET_NAME="${PROJECT}-target"
 
+IT="-it"
+if [ "${CI}" = true ]; then
+    echo "Running in CI"
+    . "$BASE_DIR/ci/ignored_sources.sh"
+    IT=""
+fi
+
 echo "==> create docker image"
 cd $BASE_DIR
 docker build \
@@ -33,11 +40,14 @@ if [ "$SSH_AUTH_SOCK" ]; then
 fi
 
 mkdir -p "${RESULT_DIR}"
-docker run --rm -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined $SSH_AGENT_OPTS \
+docker run --rm ${IT} \
+    --name ${TARGET_NAME} \
+    --privileged \
+    --cap-add=SYS_ADMIN \
+    --security-opt apparmor=unconfined \
+    $SSH_AGENT_OPTS \
     ${LINK_NOSQL:+ --link elos-mongo} \
     ${ENV_OPTIONS-""} \
     -v "${RESULT_DIR}:/results:rw" \
-    --privileged \
-    --name ${TARGET_NAME} \
     -w / \
     ${IMAGE_NAME} $@
