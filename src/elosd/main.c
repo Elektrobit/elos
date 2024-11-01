@@ -269,6 +269,8 @@ int main(int argc, char **argv) {
     }
 
     safuLogInfo("Running...");
+    fflush(stdout);
+    fflush(stderr);
 
     while (elosActive) {
         // Temporary solution to allow graceful program termination with raise() from threads
