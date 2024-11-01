@@ -6,6 +6,7 @@ ELOSD_PORT=54323
 
 . ${CMDPATH}/smoketest_env.sh
 . ${CMDPATH}/smoketest_utils.sh
+. $CMDPATH/smoketest_log.sh
 
 export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
 
@@ -27,8 +28,7 @@ prepare_env() {
 
     export RESULT_DIR=$result_dir
 
-    . $CMDPATH/smoketest_log.sh
-    setup_log
+    setup_log "${result_dir}"
 
     ELOSD_PIDS=$(pgrep elosd || echo "")
     for ELOSD_PID in $ELOSD_PIDS; do
