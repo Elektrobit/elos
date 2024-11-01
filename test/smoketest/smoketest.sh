@@ -1,14 +1,49 @@
 #!/bin/sh
 # shellcheck disable=SC2317
+###############################################################################
+print_info() {
+    SCRIPT_NAME=${0##*/}
+    echo "
+    Run the smoketest test suite or parts of it. Default is to run all
+    smoketest tests.
+
+    Usage: ${SCRIPT_NAME} [-h|--help]
+
+    -h|--help:        print this help
+
+
+    Examples:
+    ${SCRIPT_NAME} # run all unit test on Release build
+    ENABLED_TESTS="elosd syslog" ${SCRIPT_NAME} # run only elosd and syslog test
+    DISABLED_TESTS="elosd syslog" ${SCRIPT_NAME} # skip elosd and syslog test
+
+    To control which testcases are executed the following environment variables
+    can be used:
+
+    ENABLED_TESTS - spaces separated list of tests to run, default is run all
+            test.
+    DISABLED_TESTS - spaces separated list of tests to skip, default is run all
+            test.
+    SMOKETEST_ENABLE_COMPILE_TESTS - enable compile test, which check if
+            neccessary header, pkg-config and cmake files to compile a basic
+            program using elos libraries are gets are as expected. Default is
+            off, set to any value to enable it.
+
+    The smoketest can be configured through several environment variables. See
+    smoketest_env.sh for more details about how to setup the test suite and
+    about the defaults.
+
+    $(cat $(realpath "$(dirname "${0}")/smoketest_env.sh"))
+    "
+}
+###############################################################################
 
 CMDPATH=$(realpath "$(dirname "$0")")
-ELOSD_PORT=54323
 
 . ${CMDPATH}/smoketest_env.sh
 . ${CMDPATH}/smoketest_utils.sh
-. $CMDPATH/smoketest_log.sh
+. ${CMDPATH}/smoketest_log.sh
 
-export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
 
 prepare_env() {
     test_name=${1?:"first parameter missing"}
@@ -948,6 +983,20 @@ call_test() {
 
     return ${result}
 }
+
+
+while [ $# -gt 0 ]; do
+    case ${1} in
+        --help|-h)
+            print_info
+            exit 0;;
+        *)
+            echo "error: unknown option: $1"
+            echo "Use ${SCRIPT_NAME} --help"
+            exit 1 ;;
+    esac
+    shift
+done
 
 FAILED_TESTS=0
 call_test "elosd" || FAILED_TESTS=$((FAILED_TESTS+1))
