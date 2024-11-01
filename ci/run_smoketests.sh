@@ -1,4 +1,46 @@
 #!/bin/bash
+###############################################################################
+print_info() {
+    SCRIPT_NAME=${0##*/}
+    echo "
+    Run the smoketest test suite or parts of it against actual build. Default
+    is to run all smoketest tests.
+
+    Usage: ${SCRIPT_NAME} [option] [build type]
+
+    Options:
+
+    -h|--help:                  print this help
+    -e|--enable <test name>:    run test with name, can be specified
+                                multiple times
+    -d|--disable <test name>:   skip test with name, can be specified
+                                multiple times
+    -i|--interactive:           run a prepared shell environment
+
+    Build Type:
+
+    Debug   - Run smoketest or interactive shell against the Debug Build
+    Release - Run smoketest or interactive shell against the Debug Build
+    ...     - Any build type located in build/ can be provided:w
+
+    <Debug> is the default build type, if nothing is specified.
+
+    Examples:
+
+    $>${SCRIPT_NAME} # run all smoke tests on Debug build
+
+    $>${SCRIPT_NAME} Release # run all smoke tests on Release build
+
+    # run only syslog and kmsg tests against Release build
+    $>${SCRIPT_NAME} -e syslog -e kmsg Release 
+
+    # run all except syslog and kmsg tests against Release build
+    $>${SCRIPT_NAME} -d syslog -d kmsg Release 
+
+    $>${SCRIPT_NAME} -i # run interactive environment against the Debug build
+    "
+}
+###############################################################################
 set -eou pipefail
 
 CMD_PATH="$(realpath "$(dirname "$0")")"
@@ -18,6 +60,9 @@ while [ $# -gt 0 ]; do
         --enable|-e)
             ENABLED_TESTS="${ENABLED_TESTS} $2"
             shift ;;
+        --help|-h)
+            print_info
+            exit 0;;
         -*)
             echo "error: unknown option: $1"; exit 1 ;;
         *)
