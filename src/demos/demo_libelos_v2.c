@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     signal(SIGINT, elosSigintHandler);
 
     printf("connecting to event logging and management system...\n");
-    result = elosConnectTcpip("127.0.0.1", 54321, &session);
+    result = elosConnectTcpip("127.0.0.1", strtoul(safuGetEnvOr("ELOSD_PORT", "54321"), NULL, 10), &session);
     catch_errors(result);
 
     printf("get event logging and management system version...\n");
