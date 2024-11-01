@@ -156,7 +156,7 @@ smoke-test-release:
   artifacts:
     when: always
     paths:
-      - build/Release/result/smoketest_results/
+      - build/Release/result/smoketest/
 
 smoke-test-debug:
   stage: test
@@ -169,7 +169,32 @@ smoke-test-debug:
   artifacts:
     when: always
     paths:
-      - build/Debug/result/smoketest_results/
+      - build/Debug/result/smoketest/
+
+smoke-test-installed:
+  stage: test
+  needs: []
+  image: ubuntu:jammy
+  variables:
+    BUILD_ARG: "--build-arg USER=gitlab-runner"
+    DOCKER_BUILDKIT: 0
+    BUILD_ID: $CI_JOB_ID
+    GIT_COMMIT: $CI_COMMIT_SHORT_SHA
+    ENV_OPTIONS: |
+      -e PREFIX_PATH=/usr/local/
+      -e SMOKETEST_RESULT_DIR=/results/smoketest
+      -e SMOKETEST_ENABLE_COMPILE_TESTS=yes
+  before_script:
+    - apt-get update
+    - apt-get install -y docker.io
+  script: |
+      mkdir -p build/docker/result 
+      ci/docker-target-run.sh /usr/local/lib/test/elos/smoketest/smoketest.sh
+  artifacts:
+    when: always
+    paths:
+      - build/Docker/result/smoketest/
+
 
 code-lint:
   stage: test

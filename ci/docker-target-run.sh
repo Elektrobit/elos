@@ -4,6 +4,7 @@
 #
 CMD_PATH="$(realpath "$(dirname "$0")")"
 BASE_DIR="$(realpath "$CMD_PATH/..")"
+RESULT_DIR="${BASE_DIR}/build/Docker/result"
 . "$BASE_DIR/ci/common_names.sh"
 IMAGE_NAME="${PROJECT}"
 TARGET_NAME="${PROJECT}-target"
@@ -31,8 +32,11 @@ if [ "$SSH_AUTH_SOCK" ]; then
     SSH_AGENT_OPTS="-v $SSH_AGENT_SOCK:/run/ssh-agent -e SSH_AUTH_SOCK=/run/ssh-agent"
 fi
 
+mkdir -p "${RESULT_DIR}"
 docker run --rm -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined $SSH_AGENT_OPTS \
     ${LINK_NOSQL:+ --link elos-mongo} \
+    ${ENV_OPTIONS-""} \
+    -v "${RESULT_DIR}:/results:rw" \
     --privileged \
     --name ${TARGET_NAME} \
     -w / \
