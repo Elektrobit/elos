@@ -13,7 +13,6 @@ int elosTestSubscribeSuccessTeardown(UNUSED void **state) {
 
 void elosTestSubscribeSuccess(UNUSED void **state) {
     using namespace elos;
-    elosSession_t *testSession = NULL;
     const char *testFilterRule = NULL;
     size_t testSize = 0;
     elosEventQueueId_t *testQueue = NULL;
@@ -23,6 +22,6 @@ void elosTestSubscribeSuccess(UNUSED void **state) {
     TEST("subscribe");
     SHOULD("%s", "Create a subscription message, send it, evaluate the response and return list of message queue ids");
 
-    result = testObject.subscribe(&testSession, &testFilterRule, testSize, testQueue);
+    result = testObject.subscribe(&testFilterRule, testSize, testQueue);
     assert_int_equal(result, SAFU_RESULT_OK);
 }

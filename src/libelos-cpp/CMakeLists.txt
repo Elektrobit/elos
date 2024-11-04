@@ -24,6 +24,15 @@ target_link_libraries(
     libelos
 )
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+# gcc-fanalyzer has an issue with std::regex, tested with gcc.14.2 and gcc-11.4
+  set_source_files_properties(
+      private/libelos-cpp.cpp
+      PROPERTIES
+          COMPILE_FLAGS "-fno-analyzer"
+  )
+endif()
+
 set_target_properties(libelos-cpp PROPERTIES PREFIX "")
 set_target_properties(
   libelos-cpp

@@ -11,7 +11,6 @@ int elosTestPublishSuccessTeardown(UNUSED void **state) {
 
 void elosTestPublishSuccess(UNUSED void **state) {
     using namespace elos;
-    elosSession_t *testSession = NULL;
     elosEvent_t *testEvent = NULL;
     safuResultE_t result;
     Elos testObject;
@@ -19,6 +18,6 @@ void elosTestPublishSuccess(UNUSED void **state) {
     TEST("publish");
     SHOULD("%s", "successfully publish an event");
 
-    result = testObject.publish(&testSession, testEvent);
+    result = testObject.publish(testEvent);
     assert_int_equal(result, SAFU_RESULT_OK);
 }
