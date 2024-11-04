@@ -33,9 +33,6 @@ override_dh_auto_configure:
 override_dh_auto_install:
 	dh_auto_install
 
-	# Don't need demo dummy storage backend
-	$(call edit_config,'del(.root.elos.EventLogging.Plugins.Dummy)')
-
 	# Don't need DLT storage backend
 	$(call edit_config,'del(.root.elos.EventLogging.Plugins.DLT)')
 
