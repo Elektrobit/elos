@@ -32,6 +32,23 @@ Depends:
  ${misc:Depends},
  elosd (= ${binary:Version}),
  elosc (= ${binary:Version}),
+Recommends:
+ elos-coredump (= ${binary:Version}),
+ elos-plugin-client-tcp (= ${binary:Version}),
+ elos-plugin-backend-fetchapi (= ${binary:Version}),
+ elos-plugin-backend-json (= ${binary:Version}),
+ elos-plugin-backend-sql (= ${binary:Version}),
+ elos-plugin-backend-dlt (= ${binary:Version}),
+ elos-plugin-scanner-kmsg (= ${binary:Version}),
+ elos-plugin-scanner-syslog (= ${binary:Version}),
+ elos-plugin-scanner-shmem (= ${binary:Version}),
+ elos-plugin-scanner-oomkiller (= ${binary:Version}),
+Suggests:
+ elos-plugin-backend-influxdb (= ${binary:Version}),
+ elos-plugin-backend-nosql (= ${binary:Version}),
+ elos-plugin-backend-dummy (= ${binary:Version}),
+ elos-plugin-scanner-dummy (= ${binary:Version}),
+ elos-plugin-client-dummy (= ${binary:Version}),
 Description: Event logging and management with normalized output-format metapackage
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
@@ -293,22 +310,6 @@ Architecture: any
 Depends:
  ${misc:Depends},
  ${shlibs:Depends},
-Recommends:
- libelosplugin0 (= ${binary:Version}),
- elos-plugin-backend-dlt (= ${binary:Version}),
- elos-plugin-backend-dummy (= ${binary:Version}),
- elos-plugin-backend-influxdb (= ${binary:Version}),
- elos-plugin-backend-json (= ${binary:Version}),
- elos-plugin-backend-nosql (= ${binary:Version}),
- elos-plugin-backend-sql (= ${binary:Version}),
- elos-plugin-client-dummy (= ${binary:Version}),
- elos-plugin-scanner-oomkiller (= ${binary:Version}),
- elos-plugin-scanner-kmsg (= ${binary:Version}),
- elos-plugin-scanner-shmem (= ${binary:Version}),
- elos-plugin-scanner-syslog (= ${binary:Version}),
- elos-plugin-scanner-dummy (= ${binary:Version}),
-Suggests:
- libelosdlt0 (= ${binary:Version}),
 Description: Event logging and management with normalized output-format library
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
