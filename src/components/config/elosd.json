@@ -15,8 +15,8 @@
                             "Interface": "127.0.0.1",
                             "EventBlacklist": ".event.messageCode 1000 LE",
                             "authorizedProcesses": [
-                                ".process.uid 0 EQ .process.gid 0 EQ AND .process.exec '/bin/elosc' STRCMP AND",
-                                ".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND",
+                                ".process.uid 0 EQ .process.gid 0 EQ AND .process.exec '/usr/bin/elosc' STRCMP AND",
+                                ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
                                 ".process.pid 1 EQ"
                             ]
                         }
@@ -44,17 +44,6 @@
                         "Config": {
                             "BufferSize": 100
                         }
-                    },
-                    "Dummy": {
-                        "File": "backend_dummy.so",
-                        "Run": "always",
-                        "Filter": [
-                            "1 1 EQ"
-                        ]
-                    },
-                    "SkippedDummy": {
-                        "File": "backend_dummy.so",
-                        "Run": "never"
                     },
                     "JsonBackend": {
                         "File": "backend_json.so",
@@ -96,10 +85,6 @@
             },
             "Scanner": {
                 "Plugins": {
-                    "ScannerDummy": {
-                        "File": "scanner_dummy.so",
-                        "Run": "always"
-                    },
                     "OomKiller": {
                         "File": "scanner_oomkiller.so",
                         "Run": "always"

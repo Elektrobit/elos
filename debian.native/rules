@@ -33,25 +33,16 @@ override_dh_auto_configure:
 override_dh_auto_install:
 	dh_auto_install
 
-	install -Dm0644 "$(CURDIR)/src/components/config/elosd.json" \
-		"$(CURDIR)/debian/tmp/etc/elos/elosd.json"
-
-	# No need to override plugin search path, use compile default /usr/lib/elos/
-	$(call edit_config,'del(.root.elos.ClientInputs.PluginSearchPath)')
-	$(call edit_config,'del(.root.elos.EventLogging.PluginSearchPath)')
-	$(call edit_config,'del(.root.elos.Scanner.Path)')
-
-	# Don't need demo dummy storage backend
-	$(call edit_config,'del(.root.elos.EventLogging.Plugins.Dummy)')
-
-	# Don't need DLT storage backend
-	$(call edit_config,'del(.root.elos.EventLogging.Plugins.DLT)')
+	# The DLT storage backend is a recomended package, but the DLT daemon has
+	# to be provided separately. Therefore just provide a default config but do
+	# not load the plugin on default. It has to be enabled explicitly if needed.
+	$(call edit_config,'.root.elos.EventLogging.Plugins.DLT.Run = "never"')
 
 	# log everything with json backend
 	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Filter = ["1 1 EQ"]')
 
 	# Set log storage path
-	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Config.StoragePath = "/var/log/elos/elos.json"')
+	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Config.StoragePath = "/var/log/elos/elosd_%host%_%date%_%count%.log"')
 
 	# Default log level is Debug , reduce verbosity
 	$(call edit_config,'.root.elos.LogLevel = "ERROR"')
