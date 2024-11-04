@@ -42,7 +42,7 @@ override_dh_auto_install:
 	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Filter = ["1 1 EQ"]')
 
 	# Set log storage path
-	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Config.StoragePath = "/var/log/elos/elos.json"')
+	$(call edit_config,'.root.elos.EventLogging.Plugins.JsonBackend.Config.StoragePath = "/var/log/elos/elosd_%host%_%date%_%count%.log"')
 
 	# Default log level is Debug , reduce verbosity
 	$(call edit_config,'.root.elos.LogLevel = "ERROR"')
