@@ -58,12 +58,6 @@ elosUri elosParseUri(const std::string &uri);
  ******************************************************************/
 class Elos {
    public:
-    std::string elosHost;
-
-    uint16_t elosPort;
-
-    elosSession_t session;
-
     /*******************************************************************
      * Constructor: Elos
      *------------------------------------------------------------------
@@ -111,5 +105,10 @@ class Elos {
     safuResultE_t disconnect() noexcept;
     safuResultE_t publish(const elosEvent_t *event);
     safuResultE_t subscribe(char const **filterRuleArray, size_t filterRuleArraySize, elosEventQueueId_t *eventQueueId);
+
+   protected:
+    std::string elosHost;
+    uint16_t elosPort;
+    elosSession_t session;
 };
 }  // namespace elos

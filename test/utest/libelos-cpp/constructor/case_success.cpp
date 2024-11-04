@@ -5,6 +5,27 @@
 
 #include "constructor_utest.h"
 
+namespace elos {
+
+class ElosTest : public Elos {
+   public:
+    using Elos::Elos;
+
+    const elosSession_t &getSession() const {
+        return session;
+    }
+
+    uint16_t getPort() const {
+        return elosPort;
+    }
+
+    const std::string &getHost() const {
+        return elosHost;
+    }
+};
+
+}  // namespace elos
+
 int elosTestConstructorSuccessSetup(UNUSED void **state) {
     return 0;
 }
@@ -28,25 +49,25 @@ void elosTestConstructorSuccess(UNUSED void **state) {
     SHOULD("%s", "create successfully an elos instance");
 
     PARAM("Default Constructor");
-    Elos defC;
-    assert_string_equal(defC.elosHost.c_str(), "127.0.0.1");
-    assert_int_equal(defC.elosPort, 54321);
+    ElosTest defC;
+
+    assert_string_equal(defC.getHost().c_str(), "127.0.0.1");
+    assert_int_equal(defC.getPort(), 54321);
 
     PARAM("Parameterize Constructor");
-    Elos paramC(MOCK_IP_ADDR, MOCK_PORT);
-    assert_string_equal(paramC.elosHost.c_str(), MOCK_IP_ADDR);
-    assert_int_equal(paramC.elosPort, MOCK_PORT);
+    ElosTest paramC(MOCK_IP_ADDR, MOCK_PORT);
+    assert_string_equal(paramC.getHost().c_str(), MOCK_IP_ADDR);
+    assert_int_equal(paramC.getPort(), MOCK_PORT);
 
-    std::vector<std::unique_ptr<Elos>> uriC(size);
     for (size_t i = 0; i < size; ++i) {
         PARAM("Constructor with uri string : %s", uriTestStrings[i].c_str());
-        uriC[i] = std::make_unique<Elos>(uriTestStrings[i]);
-        assert_string_equal(uriC[i]->elosHost.c_str(), uriTestHost[i].c_str());
-        assert_int_equal(uriC[i]->elosPort, uriTestPort[i]);
+        auto uriC = std::make_unique<ElosTest>(uriTestStrings[i]);
+        assert_string_equal(uriC->getHost().c_str(), uriTestHost[i].c_str());
+        assert_int_equal(uriC->getPort(), uriTestPort[i]);
     }
 
     PARAM("Move Constructor");
-    Elos moveC(std::move(defC));
-    assert_string_equal(moveC.elosHost.c_str(), "127.0.0.1");
-    assert_int_equal(moveC.elosPort, 54321);
+    ElosTest moveC(std::move(defC));
+    assert_string_equal(moveC.getHost().c_str(), "127.0.0.1");
+    assert_int_equal(moveC.getPort(), 54321);
 }
