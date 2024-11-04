@@ -2,11 +2,7 @@
 #pragma once
 
 #include <elos/event/event.h>
-#include <elos/event/event_vector.h>
-#include <elos/event/eventqueue_types.h>
 #include <elos/libelos/libelos.h>
-#include <safu/log.h>
-#include <safu/result.h>
 
 #include <string>
 
@@ -16,6 +12,22 @@
  * The Elos public interface namespace.
  ******************************************************************/
 namespace elos {
+
+/*******************************************************************
+ * Result codes for elos operations.
+ *
+ * Members:
+ *     ELOS_RESULT_FAILED    : Operation failed.
+ *     ELOS_RESULT_OK        : Operation succeeded.
+ *     ELOS_RESULT_NOT_FOUND : Specified item was not found.
+ *     ELOS_RESULT_CLOSED    : Operation could not be completed because it is closed.
+ ******************************************************************/
+enum elosResultE {
+    ELOS_RESULT_FAILED = -1,
+    ELOS_RESULT_OK = 0,
+    ELOS_RESULT_NOT_FOUND = 1,
+    ELOS_RESULT_CLOSED = 2,
+};
 
 /*******************************************************************
  * Parsed uri string
@@ -101,10 +113,10 @@ class Elos {
      ******************************************************************/
     ~Elos();
 
-    safuResultE_t connect() noexcept;
-    safuResultE_t disconnect() noexcept;
-    safuResultE_t publish(const elosEvent_t *event);
-    safuResultE_t subscribe(char const **filterRuleArray, size_t filterRuleArraySize, elosEventQueueId_t *eventQueueId);
+    elosResultE connect() noexcept;
+    elosResultE disconnect() noexcept;
+    elosResultE publish(const elosEvent_t *event);
+    elosResultE subscribe(char const **filterRuleArray, size_t filterRuleArraySize, elosEventQueueId_t *eventQueueId);
 
    protected:
     std::string elosHost;

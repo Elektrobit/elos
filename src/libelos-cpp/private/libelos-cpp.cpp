@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #include "elos/libelos-cpp/libelos-cpp.h"
 
+#include <safu/log.h>
+
 #include <regex>
 #include <stdexcept>
 #include <string>
@@ -57,27 +59,27 @@ Elos::~Elos() {
     session = {0, false};
 }
 
-safuResultE_t Elos::connect() noexcept {
-    safuResultE_t result = SAFU_RESULT_OK;
+elosResultE Elos::connect() noexcept {
+    elosResultE result = ELOS_RESULT_OK;
     safuLogInfo("ElosCpp Connect to Tcpip");
     return result;
 }
 
-safuResultE_t Elos::disconnect() noexcept {
-    safuResultE_t result = SAFU_RESULT_OK;
+elosResultE Elos::disconnect() noexcept {
+    elosResultE result = ELOS_RESULT_OK;
     safuLogInfo("ElosCpp Disonnect");
     return result;
 }
 
-safuResultE_t Elos::publish(UNUSED const elosEvent_t *event) {
-    safuResultE_t result = SAFU_RESULT_OK;
+elosResultE Elos::publish(UNUSED const elosEvent_t *event) {
+    elosResultE result = ELOS_RESULT_OK;
     safuLogInfo("ElosCpp Publish");
     return result;
 }
 
-safuResultE_t Elos::subscribe(UNUSED const char **filterRuleArray, UNUSED size_t filterRuleArraySize,
-                              UNUSED elosEventQueueId_t *eventQueueId) {
-    safuResultE_t result = SAFU_RESULT_OK;
+elosResultE Elos::subscribe(UNUSED const char **filterRuleArray, UNUSED size_t filterRuleArraySize,
+                            UNUSED elosEventQueueId_t *eventQueueId) {
+    elosResultE result = ELOS_RESULT_OK;
     safuLogInfo("ElosCpp Subscribe");
     return result;
 }

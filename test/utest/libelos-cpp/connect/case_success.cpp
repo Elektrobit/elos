@@ -11,12 +11,12 @@ int elosTestConnectSuccessTeardown(UNUSED void **state) {
 
 void elosTestConnectSuccess(UNUSED void **state) {
     using namespace elos;
-    safuResultE_t result;
+    elosResultE result;
     Elos testObject(MOCK_IP_ADDR, MOCK_PORT);
 
     TEST("connect");
     SHOULD("%s", "create successfully a tcp-ip connection");
 
     result = testObject.connect();
-    assert_int_equal(result, SAFU_RESULT_OK);
+    assert_int_equal(result, ELOS_RESULT_OK);
 }

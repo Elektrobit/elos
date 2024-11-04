@@ -12,12 +12,12 @@ int elosTestPublishSuccessTeardown(UNUSED void **state) {
 void elosTestPublishSuccess(UNUSED void **state) {
     using namespace elos;
     elosEvent_t *testEvent = NULL;
-    safuResultE_t result;
+    elosResultE result;
     Elos testObject;
 
     TEST("publish");
     SHOULD("%s", "successfully publish an event");
 
     result = testObject.publish(testEvent);
-    assert_int_equal(result, SAFU_RESULT_OK);
+    assert_int_equal(result, ELOS_RESULT_OK);
 }
