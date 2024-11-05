@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.67.1)
+set(ELOS_VERSION 0.67.2)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -9,6 +9,7 @@ set(ELOS_VERSION 0.67.1)
 
 macro(project_set_environment)
   set(CMAKE_C_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_C_STANDARD_REQUIRED ON)
   set(CMAKE_C_EXTENSIONS OFF)
   set(CMAKE_C_FLAGS_DEBUG "")
