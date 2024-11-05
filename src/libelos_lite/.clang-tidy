@@ -1,0 +1,9 @@
+InheritParentConfig: true
+CheckOptions:
+  - { key: readability-identifier-naming.TypedefPrefix,          value: eloslite }
+  - { key: readability-identifier-naming.StructPrefix,           value: eloslite }
+  - { key: readability-identifier-naming.EnumPrefix,             value: eloslite }
+  - { key: readability-identifier-naming.UnionPrefix,            value: eloslite }
+  - { key: readability-identifier-naming.FunctionPrefix,         value: eloslite }
+  - { key: readability-identifier-naming.GlobalVariablePrefix,   value: eloslite }
+  - { key: readability-identifier-naming.GlobalConstantPrefix,   value: eloslite }

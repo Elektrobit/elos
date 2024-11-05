@@ -38,3 +38,8 @@ CheckOptions:
   - { key: readability-identifier-naming.GlobalVariablePrefix,   value: elos                   }
   - { key: readability-identifier-naming.GlobalConstantCase,     value: CamelCase              }
   - { key: readability-identifier-naming.GlobalConstantPrefix,   value: elos                   }
+  - { key: readability-identifier-naming.ClassCase,              value: CamelCase              }
+  - { key: readability-identifier-naming.PublicMethodCase,       value: camelBack              }
+  - { key: readability-identifier-naming.PublicMemberCase,       value: camelBack              }
+  - { key: readability-identifier-naming.PrivateMethodCase,      value: camelBack              }
+  - { key: readability-identifier-naming.PrivateMemberCase,      value: camelBack              }

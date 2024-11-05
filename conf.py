@@ -118,6 +118,7 @@ c_autodoc_roots = [
     './src/components/storagemanager/public',
     './src/libelos/public',
     './src/libelos/public/elos',
+    './src/libelos_lite/public',
     './src/libelosdlt/interface',
     './src/libelosdlt/private',
     './src/libelosdlt/public',

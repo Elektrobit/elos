@@ -51,6 +51,12 @@ function createApiDocu() {
         --tocfile index \
         ${ELOS_SOURCE_SOURCE_DIR}/libelos/public/elos
 
+    sphinx-c-apidoc --force \
+        -o ${SPHINX_GENERATED_SOURCE_DIR}/api/elos/libelos_lite \
+        --tocfile index \
+        ${ELOS_SOURCE_SOURCE_DIR}/libelos_lite/public
+
+
     echo -e "
 Elos API
 ==========================
@@ -60,6 +66,7 @@ Elos API
   :caption: Contents:
 
   libelos <libelos/index>
+  libelos_lite <elos/libelos_lite/index>
 " > ${SPHINX_GENERATED_SOURCE_DIR}/api/index.rst
 }
 
@@ -71,6 +78,11 @@ function createModuleApiDoc() {
             # use already generated for the user manual and avoid duplicate
             # "Duplicate C declaration" warnings
             API_INDEX_TABLE="${API_INDEX_TABLE}  ${MODULE} <../../api/libelos/index>\n"
+            ;;
+        libelos_lite)
+            # use already generated for the user manual and avoid duplicate
+            # "Duplicate C declaration" warnings
+            API_INDEX_TABLE="${API_INDEX_TABLE}  ${MODULE} <../../api/elos/libelos_lite/index>\n"
             ;;
           src | clients | demo | components | plugins | scanners | storagebackends)
             echo "SKIP ${MODULE}"
