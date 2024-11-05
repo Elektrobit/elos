@@ -35,6 +35,37 @@ MOCK_FUNC_BODY(elosDisconnect, safuResultE_t, elosSession_t *session) {
     return result;
 }
 
+MOCK_FUNC_BODY(elosConnectSessionTcpip, safuResultE_t, const char *host, uint16_t port, elosSession_t *session) {
+    safuResultE_t result;
+
+    if (MOCK_IS_ACTIVE(elosConnectSessionTcpip)) {
+        check_expected_ptr(host);
+        check_expected(port);
+        check_expected_ptr(session);
+        if (session != NULL) {
+            session->connected = true;
+        }
+        result = mock_type(safuResultE_t);
+    } else {
+        result = MOCK_FUNC_REAL(elosConnectSessionTcpip)(host, port, session);
+    }
+
+    return result;
+}
+
+MOCK_FUNC_BODY(elosDisconnectSession, safuResultE_t, elosSession_t *session) {
+    safuResultE_t result;
+
+    if (MOCK_IS_ACTIVE(elosDisconnectSession)) {
+        check_expected_ptr(session);
+        result = mock_type(safuResultE_t);
+    } else {
+        result = MOCK_FUNC_REAL(elosDisconnectSession)(session);
+    }
+
+    return result;
+}
+
 MOCK_FUNC_BODY(elosGetVersion, safuResultE_t, elosSession_t *session, const char **version) {
     safuResultE_t result;
 

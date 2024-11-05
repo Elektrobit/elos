@@ -96,8 +96,12 @@ Elos::~Elos() {
 }
 
 elosResultE Elos::connect() noexcept {
-    elosResultE result = ELOS_RESULT_OK;
+    elosResultE result = SAFU_RESULT_OK;
+
+    result = elosConnectTcpip(char const *host, uint16_t port, elosSession_t **session);
+
     safuLogInfo("ElosCpp Connect to Tcpip");
+
     return result;
 }
 

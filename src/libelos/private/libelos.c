@@ -42,6 +42,54 @@ bool elosSessionValid(elosSession_t const *session) {
     return result;
 }
 
+safuResultE_t elosConnectSessionTcpip(char const *host, uint16_t port, elosSession_t *session) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    int retVal;
+    char service[6];
+    struct addrinfo *serverInfo;
+    struct addrinfo hints = {
+        .ai_family = AF_UNSPEC, /* Allow IPv4 or IPv6 */
+        .ai_socktype = SOCK_STREAM,
+        .ai_protocol = IPPROTO_TCP, /* Allow TCP/IP connections */
+    };
+
+    snprintf(service, ARRAY_SIZE(service), "%d", port);
+
+    retVal = getaddrinfo(host, service, &hints, &serverInfo);
+    if (retVal != 0) {
+        if (elosLoggingEnabled) safuLogErrF("Failed to fetch address info: %s\n", gai_strerror(retVal));
+    } else {
+        int sfd;
+        struct addrinfo *ap;
+
+        // iterate threw addresses returned by getaddrinfo()
+        for (ap = serverInfo; ap != NULL; ap = ap->ai_next) {
+            sfd = socket(ap->ai_family, ap->ai_socktype, ap->ai_protocol);
+            if (sfd == -1) {
+                continue;
+            }
+
+            retVal = connect(sfd, ap->ai_addr, ap->ai_addrlen);
+            if (retVal != -1) {
+                break; /* Success */
+            }
+
+            close(sfd);
+        }
+
+        freeaddrinfo(serverInfo);
+
+        if (ap == NULL) {
+            if (elosLoggingEnabled) safuLogErrF("connect to %s:%d failed!", host, port);
+        } else {
+            result = SAFU_RESULT_OK;
+            session->fd = sfd;
+            session->connected = true;
+        }
+    }
+    return result;
+}
+
 safuResultE_t elosConnectTcpip(char const *host, uint16_t port, elosSession_t **session) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
@@ -54,57 +102,15 @@ safuResultE_t elosConnectTcpip(char const *host, uint16_t port, elosSession_t **
         if (newSession == NULL) {
             if (elosLoggingEnabled) safuLogErr("Memory allocation failed");
         } else {
-            int retVal;
-            char service[6];
-            struct addrinfo *serverInfo;
-            struct addrinfo hints = {
-                .ai_family = AF_UNSPEC, /* Allow IPv4 or IPv6 */
-                .ai_socktype = SOCK_STREAM,
-                .ai_protocol = IPPROTO_TCP, /* Allow TCP/IP connections */
-            };
+            result = elosConnectSessionTcpip(host, port, newSession);
 
-            snprintf(service, ARRAY_SIZE(service), "%d", port);
-
-            retVal = getaddrinfo(host, service, &hints, &serverInfo);
-            if (retVal != 0) {
-                if (elosLoggingEnabled) safuLogErrF("Failed to fetch address info: %s\n", gai_strerror(retVal));
+            if (result == SAFU_RESULT_OK) {
+                *session = newSession;
             } else {
-                int sfd;
-                struct addrinfo *ap;
-
-                // iterate threw addresses returned by getaddrinfo()
-                for (ap = serverInfo; ap != NULL; ap = ap->ai_next) {
-                    sfd = socket(ap->ai_family, ap->ai_socktype, ap->ai_protocol);
-                    if (sfd == -1) {
-                        continue;
-                    }
-
-                    retVal = connect(sfd, ap->ai_addr, ap->ai_addrlen);
-                    if (retVal != -1) {
-                        break; /* Success */
-                    }
-
-                    close(sfd);
-                }
-
-                freeaddrinfo(serverInfo);
-
-                if (ap == NULL) {
-                    if (elosLoggingEnabled) safuLogErrF("connect to %s:%d failed!", host, port);
-                } else {
-                    result = SAFU_RESULT_OK;
-                    newSession->fd = sfd;
-                    newSession->connected = true;
-                    *session = newSession;
-                }
-            }
-
-            if (result != SAFU_RESULT_OK) {
                 free(newSession);
             }
         }
     }
-
     return result;
 }
 
@@ -148,18 +154,26 @@ safuResultE_t elosConnectUnix(char const *path, elosSession_t **session) {
     return result;
 }
 
+safuResultE_t elosDisconnectSession(elosSession_t *session) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    int retVal = close(session->fd);
+    if (retVal < 0) {
+        if (elosLoggingEnabled) safuLogErrErrno("close failed!");
+        return SAFU_RESULT_FAILED;
+    }
+
+    session->fd = 0;
+    session->connected = false;
+
+    return result;
+}
+
 safuResultE_t elosDisconnect(elosSession_t *session) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (session != NULL) {
-        int retVal;
-
-        retVal = close(session->fd);
-        if (retVal < 0) {
-            if (elosLoggingEnabled) safuLogErrErrno("close failed!");
-            result = SAFU_RESULT_FAILED;
-        }
-
+        result = elosDisconnectSession(session);
         free(session);
     }
 
