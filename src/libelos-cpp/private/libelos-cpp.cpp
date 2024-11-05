@@ -29,6 +29,42 @@ elosUri elosParseUri(const std::string &uri) {
     return newUri;
 }
 
+Event::Event() noexcept(false) {}
+
+Event::Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t severity, const std::string &hardwareid,
+             uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) noexcept(false) {
+    elosResultE result = ELOS_RESULT_OK;
+
+    event.date = date;
+    result = (elosResultE)elosEventSourceDeepCopy(&event.source, &source);
+    if (result == ELOS_RESULT_FAILED) {
+        safuLogErr("copying event source failed!");
+        throw ELOS_RESULT_FAILED;
+    }
+    event.severity = severity;
+    event.messageCode = messageCode;
+    event.classification = classification;
+    event.hardwareid = strdup(hardwareid.c_str());
+    if (!event.hardwareid) {
+        safuLogErr("allocation for hardware ID failed!");
+        throw ELOS_RESULT_FAILED;
+    }
+    event.payload = strdup(payload.c_str());
+    if (!event.payload) {
+        safuLogErr("allocation for payload failed!");
+        throw ELOS_RESULT_FAILED;
+    }
+}
+
+Event::~Event() noexcept(false) {
+    elosResultE result = ELOS_RESULT_OK;
+    result = (elosResultE)elosEventDeleteMembers(&event);
+    if (result == ELOS_RESULT_FAILED) {
+        safuLogErr("deleting event failed!");
+        throw ELOS_RESULT_FAILED;
+    }
+}
+
 Elos::Elos() : elosHost("127.0.0.1"), elosPort(54321), session{0, false} {}
 
 Elos::Elos(const std::string &host, uint16_t port) : elosHost(host), elosPort(port), session{0, false} {}

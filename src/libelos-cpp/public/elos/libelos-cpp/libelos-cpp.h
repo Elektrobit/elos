@@ -61,6 +61,47 @@ struct elosUri {
 elosUri elosParseUri(const std::string &uri);
 
 /*******************************************************************
+ * Elos event class
+ *
+ * Public Members:
+ *     event : Representation of an elos event
+ ******************************************************************/
+class Event {
+   public:
+    elosEvent_t event{};
+
+    /*******************************************************************
+     * Constructor: Event
+     *------------------------------------------------------------------
+     * Allocates a new elos event
+     ******************************************************************/
+    Event() noexcept(false);
+
+    /*******************************************************************
+     * Parameterized Constructor: Event
+     *------------------------------------------------------------------
+     * Representation of an elos event.
+     * Parameters:
+     *     - date: The unix timestamp in nano seconds resolution.
+     *     - source: A struct containing informations about where the event originated from.
+     *     - severity:The possible severities for an Event.
+     *     - hardwareid: An unique identifier for the hardware.
+     *     - classification: The classification attribute is used to categorize events.
+     *     - messageCode: Provide information without text in payload.
+     *     - payload: The actual payload of the information.
+     ******************************************************************/
+    Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t severity, const std::string &hardwareid,
+          uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) noexcept(false);
+
+    /*******************************************************************
+     * Destructor
+     *------------------------------------------------------------------
+     * Clean up elos object resources and deallocates event.
+     ******************************************************************/
+    ~Event() noexcept(false);
+};
+
+/*******************************************************************
  * Elos API class
  *
  * Members:
