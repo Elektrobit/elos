@@ -3,16 +3,14 @@
 #include "elos/libelos_lite.h"
 
 #include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/auxv.h>
+// #include <sys/auxv.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdarg.h>
 
 #include "elos/lite/event.h"
 
@@ -100,10 +98,11 @@ bool elosliteDisconnect(elosliteSession_t *session) {
 
     return true;
 }
-#define ELOS_PROTOCOL_VERSION                   0x01
-#define ELOS_MESSAGE_EVENT_PUBLISH              0x02
-#define ELOS_MESSAGE_RESPONSE_BIT               0x80
-#define ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH     (ELOS_MESSAGE_EVENT_PUBLISH | ELOS_MESSAGE_RESPONSE_BIT)
+
+#define ELOS_PROTOCOL_VERSION               0x01
+#define ELOS_MESSAGE_EVENT_PUBLISH          0x02
+#define ELOS_MESSAGE_RESPONSE_BIT           0x80
+#define ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH (ELOS_MESSAGE_EVENT_PUBLISH | ELOS_MESSAGE_RESPONSE_BIT)
 
 struct elosliteMessageHead {
     uint8_t version;
@@ -253,8 +252,7 @@ static int _sendMsgParts(elosliteSession_t *session, elosliteEvent_t *event) {
     bool elementBefore = false;
     if (event->date.tv_sec != 0 || event->date.tv_nsec != 0) {
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"date\":[%ld,%ld]", event->date.tv_sec,
-                event->date.tv_nsec);
+        sendNum += _sendPartF(session, "\"date\":[%ld,%ld]", event->date.tv_sec, event->date.tv_nsec);
     }
     if (event->source.appName != NULL || event->source.fileName != NULL || event->source.pid != 0) {
         if (elementBefore) {
