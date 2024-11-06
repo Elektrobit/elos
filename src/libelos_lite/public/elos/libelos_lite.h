@@ -8,21 +8,11 @@
 #include "elos/lite/event.h"
 
 /*******************************************************************
- * holds a small buffeer for sending events
- ******************************************************************/
-typedef struct elosliteBuffer {
-    char *buffer;
-    size_t size;
-    size_t pos;
-} elosliteBuffer_t;
-
-/*******************************************************************
  * safes a handle for a connection to elosd
  ******************************************************************/
 typedef struct elosliteSession {
     int fd;
     bool connected;
-    elosliteBuffer_t buffer;
 } elosliteSession_t;
 
 const char *elosliteGetLibraryVersion();

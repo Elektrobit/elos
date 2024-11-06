@@ -184,54 +184,61 @@ static uint16_t _msgLen(elosliteEvent_t *event) {
     return msgLen;
 }
 
+/*******************************************************************
+ * holds a small buffeer for sending events
+ ******************************************************************/
+typedef struct elosliteBuffer {
+    char *buffer;
+    size_t size;
+    size_t pos;
+} elosliteBuffer_t;
+
 #ifndef ELOSLITE_SEND_BUFFER
 #define ELOSLITE_SEND_BUFFER 60 /* AT_PAGESZ */
 #endif
 
-static int _sendFlush(elosliteSession_t *session) {
-    printf("Buffer[%ld]: %s\n", strlen(session->buffer.buffer), session->buffer.buffer);
-    int sendNum = send(session->fd, (void *)session->buffer.buffer, session->buffer.pos, MSG_NOSIGNAL);
-    session->buffer.pos = 0;
-    session->buffer.buffer[0] = 0;
+static int _sendFlush(elosliteSession_t *session, elosliteBuffer_t *buffer) {
+    int sendNum = send(session->fd, (void *)buffer->buffer, buffer->pos, MSG_NOSIGNAL);
+    buffer->pos = 0;
+    buffer->buffer[0] = 0;
     return sendNum;
 }
 
-static int _sendPartF(elosliteSession_t *session, const char *fmt, ...) {
+static int _sendPartF(elosliteSession_t *session, elosliteBuffer_t *buffer, const char *fmt, ...) {
     int sendNum = 0;
-    int sizeLeft = session->buffer.size - session->buffer.pos;
+    int sizeLeft = buffer->size - buffer->pos;
     va_list args;
     va_start(args, fmt);
-    int off = vsnprintf(&session->buffer.buffer[session->buffer.pos], sizeLeft, fmt, args);
+    int off = vsnprintf(&buffer->buffer[buffer->pos], sizeLeft, fmt, args);
     va_end(args);
     if (off < 0) {
         return -1;
     } else if (off >= sizeLeft) {
-        session->buffer.buffer[session->buffer.pos] = 0;
-        sendNum = _sendFlush(session);
+        buffer->buffer[buffer->pos] = 0;
+        sendNum = _sendFlush(session, buffer);
         va_list rargs;
         va_start(rargs, fmt);
-        off = vsnprintf(session->buffer.buffer, session->buffer.size, fmt, rargs);
+        off = vsnprintf(buffer->buffer, buffer->size, fmt, rargs);
         va_end(rargs);
-        if (off < 0 || (size_t)off > session->buffer.size) {
+        if (off < 0 || (size_t)off > buffer->size) {
             return -1;
         } else {
-            session->buffer.pos += off;
+            buffer->pos += off;
         }
     } else {
-        session->buffer.pos += off;
+        buffer->pos += off;
     }
     return sendNum;
 }
 
-static int _sendPartStr(elosliteSession_t *session, const char *str) {
+static int _sendPartStr(elosliteSession_t *session, elosliteBuffer_t *buffer, const char *str) {
     int sendNum = 0;
     size_t strLen = strlen(str);
-    if (strLen < session->buffer.size) {
-        sendNum = _sendPartF(session, str);
+    if (strLen < buffer->size) {
+        sendNum = _sendPartF(session, buffer, str);
     } else {
-        sendNum = _sendFlush(session);
+        sendNum = _sendFlush(session, buffer);
         if (sendNum >= 0) {
-            printf("Str[%ld]:  %s\n", strLen, str);
             int sendStrLen = send(session->fd, (void *)str, strLen, MSG_NOSIGNAL);
             if (sendStrLen < 0) {
                 return sendStrLen;
@@ -244,87 +251,89 @@ static int _sendPartStr(elosliteSession_t *session, const char *str) {
 
 static int _sendMsgParts(elosliteSession_t *session, elosliteEvent_t *event) {
     char partBuf[ELOSLITE_SEND_BUFFER];
-    session->buffer.buffer = partBuf;
-    session->buffer.size = ELOSLITE_SEND_BUFFER;
-    session->buffer.pos = 0;
+    elosliteBuffer_t buffer = {
+        .buffer = partBuf,
+        .size = ELOSLITE_SEND_BUFFER,
+        .pos = 0,
+    };
     size_t sendNum = 0;
-    sendNum += _sendPartF(session, "{");
+    sendNum += _sendPartF(session, &buffer, "{");
     bool elementBefore = false;
     if (event->date.tv_sec != 0 || event->date.tv_nsec != 0) {
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"date\":[%ld,%ld]", event->date.tv_sec, event->date.tv_nsec);
+        sendNum += _sendPartF(session, &buffer, "\"date\":[%ld,%ld]", event->date.tv_sec, event->date.tv_nsec);
     }
     if (event->source.appName != NULL || event->source.fileName != NULL || event->source.pid != 0) {
         if (elementBefore) {
-            sendNum += _sendPartF(session, ",");
+            sendNum += _sendPartF(session, &buffer, ",");
         }
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"source\":{");
+        sendNum += _sendPartF(session, &buffer, "\"source\":{");
         bool sourceElementBefore = false;
         if (event->source.appName != NULL) {
             sourceElementBefore = true;
-            sendNum += _sendPartF(session, "\"appName\":\"");
-            sendNum += _sendPartStr(session, event->source.appName);
-            sendNum += _sendPartF(session, "\"");
+            sendNum += _sendPartF(session, &buffer, "\"appName\":\"");
+            sendNum += _sendPartStr(session, &buffer, event->source.appName);
+            sendNum += _sendPartF(session, &buffer, "\"");
         }
         if (event->source.fileName != NULL) {
             if (sourceElementBefore) {
-                sendNum += _sendPartF(session, ",");
+                sendNum += _sendPartF(session, &buffer, ",");
             }
             sourceElementBefore = true;
-            sendNum += _sendPartF(session, "\"fileName\":\"");
-            sendNum += _sendPartStr(session, event->source.fileName);
-            sendNum += _sendPartF(session, "\"");
+            sendNum += _sendPartF(session, &buffer, "\"fileName\":\"");
+            sendNum += _sendPartStr(session, &buffer, event->source.fileName);
+            sendNum += _sendPartF(session, &buffer, "\"");
         }
         if (event->source.pid != 0) {
             if (sourceElementBefore) {
-                sendNum += _sendPartF(session, ",");
+                sendNum += _sendPartF(session, &buffer, ",");
             }
-            sendNum += _sendPartF(session, "\"pid\":%d", event->source.pid);
+            sendNum += _sendPartF(session, &buffer, "\"pid\":%d", event->source.pid);
         }
-        sendNum += _sendPartF(session, "}", event->source.pid);
+        sendNum += _sendPartF(session, &buffer, "}", event->source.pid);
     }
     if (event->severity != 0) {
         if (elementBefore) {
-            sendNum += _sendPartF(session, ",");
+            sendNum += _sendPartF(session, &buffer, ",");
         }
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"severity\":%d", event->severity);
+        sendNum += _sendPartF(session, &buffer, "\"severity\":%d", event->severity);
     }
     if (event->hardwareid != NULL) {
         if (elementBefore) {
-            sendNum += _sendPartF(session, ",");
+            sendNum += _sendPartF(session, &buffer, ",");
         }
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"hardwareid\":\"");
-        sendNum += _sendPartStr(session, event->hardwareid);
-        sendNum += _sendPartF(session, "\"");
+        sendNum += _sendPartF(session, &buffer, "\"hardwareid\":\"");
+        sendNum += _sendPartStr(session, &buffer, event->hardwareid);
+        sendNum += _sendPartF(session, &buffer, "\"");
     }
     if (event->classification != 0) {
         if (elementBefore) {
-            sendNum += _sendPartF(session, ",");
+            sendNum += _sendPartF(session, &buffer, ",");
         }
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"classification\":%ld", event->classification);
+        sendNum += _sendPartF(session, &buffer, "\"classification\":%ld", event->classification);
     }
     if (event->messageCode != 0) {
         if (elementBefore) {
-            sendNum += _sendPartF(session, ",");
+            sendNum += _sendPartF(session, &buffer, ",");
         }
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"messageCode\":%d", event->messageCode);
+        sendNum += _sendPartF(session, &buffer, "\"messageCode\":%d", event->messageCode);
     }
     if (event->payload != NULL) {
         if (elementBefore) {
-            sendNum += _sendPartF(session, ",");
+            sendNum += _sendPartF(session, &buffer, ",");
         }
         elementBefore = true;
-        sendNum += _sendPartF(session, "\"payload\":\"");
-        sendNum += _sendPartStr(session, event->payload);
-        sendNum += _sendPartF(session, "\"");
+        sendNum += _sendPartF(session, &buffer, "\"payload\":\"");
+        sendNum += _sendPartStr(session, &buffer, event->payload);
+        sendNum += _sendPartF(session, &buffer, "\"");
     }
-    sendNum += _sendPartF(session, "}");
-    sendNum += _sendFlush(session);
+    sendNum += _sendPartF(session, &buffer, "}");
+    sendNum += _sendFlush(session, &buffer);
     return sendNum;
 }
 
