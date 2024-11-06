@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "elos/lite/event.h"
-
 #include <netdb.h>
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "elos/lite/event.h"
+
+/*******************************************************************
+ * holds a small buffeer for sending events
+ ******************************************************************/
 typedef struct elosliteBuffer {
-    char *buffer; // = NULL
-    size_t size; // sizeof(buffer)
-    size_t pos; // = 0
+    char *buffer;
+    size_t size;
+    size_t pos;
 } elosliteBuffer_t;
 
 /*******************************************************************
