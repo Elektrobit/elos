@@ -3,6 +3,10 @@
 #include <elos/libelos_lite.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <elos/event/event_severity.h>
+#include <elos/event/event_classification.h>
+#include <elos/event/event_message_codes.h>
+#include <unistd.h>
 
 int main(int argc, const char *argv[]) {
     const char *host = "127.0.0.1";
@@ -39,9 +43,32 @@ int main(int argc, const char *argv[]) {
     };
 
     if (eloslitePublish(&session, &event)) {
-        printf("published!\n");
+        printf("published an event!\n");
     } else {
-        printf("publishing failed!\n");
+        printf("publishing of event failed!\n");
+    }
+
+    elosliteEvent_t longevent = {
+        .date = {0,0},
+        .source = {
+            .appName = "demo_eloslite",
+        },
+        .severity = 1,
+        .classification = 0,
+        .messageCode = 8000,
+        .payload = "A very long message payload that shows that we can deal with longer messages than fit into the buffer!!!!!!",
+    };
+
+    if (eloslitePublish(&session, &longevent)) {
+        printf("published a long event!\n");
+    } else {
+        printf("publishing of long event failed!\n");
+    }
+
+    if (eloslitePublish(&session, &event)) {
+        printf("published an event!\n");
+    } else {
+        printf("publishing of event failed!\n");
     }
 
     if (elosliteDisconnect(&session)) {
