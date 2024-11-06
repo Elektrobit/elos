@@ -7,12 +7,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef struct elosliteBuffer {
+    char *buffer; // = NULL
+    size_t size; // sizeof(buffer)
+    size_t pos; // = 0
+} elosliteBuffer_t;
+
 /*******************************************************************
  * safes a handle for a connection to elosd
  ******************************************************************/
 typedef struct elosliteSession {
     int fd;
     bool connected;
+    elosliteBuffer_t buffer;
 } elosliteSession_t;
 
 const char *elosliteGetLibraryVersion();
