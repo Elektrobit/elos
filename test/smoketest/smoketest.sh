@@ -1,15 +1,49 @@
 #!/bin/sh
 # shellcheck disable=SC2317
+###############################################################################
+print_info() {
+    SCRIPT_NAME=${0##*/}
+    echo "
+    Run the smoketest test suite or parts of it. Default is to run all
+    smoketest tests.
+
+    Usage: ${SCRIPT_NAME} [-h|--help]
+
+    -h|--help:        print this help
+
+
+    Examples:
+    ${SCRIPT_NAME} # run all unit test on Release build
+    ENABLED_TESTS="elosd syslog" ${SCRIPT_NAME} # run only elosd and syslog test
+    DISABLED_TESTS="elosd syslog" ${SCRIPT_NAME} # skip elosd and syslog test
+
+    To control which testcases are executed the following environment variables
+    can be used:
+
+    ENABLED_TESTS - spaces separated list of tests to run, default is run all
+            test.
+    DISABLED_TESTS - spaces separated list of tests to skip, default is run all
+            test.
+    SMOKETEST_ENABLE_COMPILE_TESTS - enable compile test, which check if
+            neccessary header, pkg-config and cmake files to compile a basic
+            program using elos libraries are gets are as expected. Default is
+            off, set to any value to enable it.
+
+    The smoketest can be configured through several environment variables. See
+    smoketest_env.sh for more details about how to setup the test suite and
+    about the defaults.
+
+    $(cat $(realpath "$(dirname "${0}")/smoketest_env.sh"))
+    "
+}
+###############################################################################
 
 CMDPATH=$(realpath "$(dirname "$0")")
-BASE_DIR=$(realpath "${CMDPATH}/../..")
-BUILD_TYPE="${BUILD_TYPE-Debug}"
-ELOSD_PORT=54323
 
 . ${CMDPATH}/smoketest_env.sh
+. ${CMDPATH}/smoketest_utils.sh
+. ${CMDPATH}/smoketest_log.sh
 
-export NETSTAT=$(which netstat 2>/dev/null || which ss 2> /dev/null || echo "no ${NETSTAT} compliant tool found")
-export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
 
 prepare_env() {
     test_name=${1?:"first parameter missing"}
@@ -29,13 +63,12 @@ prepare_env() {
 
     export RESULT_DIR=$result_dir
 
-    . $CMDPATH/smoketest_log.sh
-    setup_log
+    setup_log "${result_dir}"
 
     ELOSD_PIDS=$(pgrep elosd || echo "")
     for ELOSD_PID in $ELOSD_PIDS; do
-       find /proc/$$ -type d -name $ELOSD_PID >/dev/null 2>&1
-       if [ $? -ne 0 ]; then
+        PARENT_PID="$(get_parent_pid "${ELOSD_PID}")"
+        if [ "${PARENT_PID}" -ne $$ ]; then
            log "Found elosd from other process".
            continue
        fi
@@ -47,6 +80,10 @@ prepare_env() {
     done
 
     export ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="${result_dir}/elosd_event_%count%.log"
+}
+
+run_in_source_tree() {
+    [ -d "${SMOKETEST_DIR}/../../build/deps" ]
 }
 
 wait_for_file() {
@@ -65,8 +102,7 @@ wait_for_file() {
 
 wait_for_elosd_socket() {
     local i=0
-    ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
-    while [ $? -ne 0 ]
+    while ! is_listening_on "${1}" "${ELOSD_PORT}"
     do
       i=$((i+1))
       sleep 0.1s
@@ -74,8 +110,12 @@ wait_for_elosd_socket() {
          log "Error: Waiting for elosd socket timed out"
          exit 124
       fi
-      ${NETSTAT} -l | grep 54323 | grep tcp 2>&1 > /dev/null
     done
+}
+
+wait_for_elosd_claims_running() {
+    grep -q "Running..." "${1}" || \
+        (tail -f -n0 "${1}"&) | timeout 5 grep -q "Running..."
 }
 
 start_dlt_mock() {
@@ -97,24 +137,29 @@ stop_dlt_mock() {
     fi
 }
 
+
 smoketest_elosd() {
     prepare_env "elosd"
 
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
-    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
 
+    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
     start_dlt_mock
 
     log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
-    elosd > $RESULT_DIR/elosd.txt 2>&1 &
+    elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
-    wait_for_elosd_socket
-    find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \; &&
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_file "${ELOS_DLT_PIPE_PATH}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+    find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \;
     wait $ELOSD_PID || true
-    log "Killed Elosd"
+    log "stopped Elosd"
 
     stop_dlt_mock
 
@@ -133,7 +178,7 @@ Shutting down..."
     while IFS= read -r str; do
 
         log "look for '$str'"
-        grep "$str" $RESULT_DIR/elosd.txt > /dev/null 2>&1
+        grep "$str" "${LOG_ELOSD}" > /dev/null 2>&1
         case $? in
             0)
                 log "Found: '$str'"
@@ -150,7 +195,7 @@ Shutting down..."
         esac
     done < ${SMOKETEST_TMP_DIR}/expected_elosd_logs.txt
 
-    grep -e "WARNING\|ERROR" $RESULT_DIR/elosd.txt > /dev/null 2>&1
+    grep -e "WARNING\|ERROR" "${LOG_ELOSD}" > /dev/null 2>&1
     if [ $? -ne 1 ]; then
         FAIL=$((FAIL+1))
         log_err "Elos log contains WARNINGS or ERRORS"
@@ -211,12 +256,22 @@ smoketest_coredump() {
     prepare_env "elos-coredump"
 
     RESULT=0
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
+
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+
+    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+    start_dlt_mock
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Starting elos coredump test"
 
@@ -237,7 +292,10 @@ smoketest_coredump() {
     log "Stop elosd ($ELOSD_PID) ..."
     kill $ELOSD_PID > /dev/null
     wait $ELOSD_PID > /dev/null
+    stop_dlt_mock
     log "done"
+
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
     return $RESULT
 }
@@ -246,13 +304,15 @@ smoketest_syslog() {
     prepare_env "syslog"
 
     TEST_MESSAGE="an arbitrary syslog message"
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $ELOS_SYSLOG_PATH
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Starting syslog test"
     syslog_example -m "$TEST_MESSAGE" -P $ELOSD_PORT > $RESULT_DIR/syslog_example.log 2>&1 &
@@ -290,8 +350,9 @@ smoketest_kmsg() {
     elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $ELOS_KMSG_FILE
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Polling KMSG"
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $LOG_ELOSCL 2>&1 &
@@ -336,6 +397,7 @@ check_for_attribute() {
 smoketest_publish_poll() {
     prepare_env "publish_poll"
 
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
     local ELOSC_FILE_NAME=$(which elosc)
     local FILTERSTRING=".event.source.appName 'publish_poll' STRCMP"
     local MESSAGE_TEMPLATE="
@@ -354,10 +416,10 @@ smoketest_publish_poll() {
 }"
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
-
-    sleep 0.5s
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Polling client 1 ..."
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_1.log 2>&1 &
@@ -408,11 +470,15 @@ smoketest_locale() {
 \"fileName\":\"𝔾𝓻ÿ𝓣𝔃ë𝐋𝐵𝓲𝓂𝓕\",\"pid\":42},\"severity\":💀💀💀,\"hardwareid\":\"🙊\",\
 \"classification\":\"🙉\",\"messageCode\":\"🙈\",\"payload\":\"♔♕♖♗♘♙♚♛♜♝♞♟\"}"
 
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
+
     #start elos and client
 
     log "Starting elosd"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     sleep 0.5s
 
@@ -420,7 +486,6 @@ smoketest_locale() {
     elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
 
-    sleep 0.5s
 
     #send valid messages
     tinyElosc -P $ELOSD_PORT -v >> $RESULT_DIR/event.log 2>&1
@@ -458,9 +523,11 @@ smoketest_locale() {
     export LC_ALL=de_DE.utf8
 
     log "Restart elosd and client"
-    elosd > $RESULT_DIR/elosd.log 2>&1 &
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
-    sleep 0.5s
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+
     elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
     sleep 0.5s
@@ -541,9 +608,10 @@ smoketest_find_event() {
 
     # Setup environment
     log "Start elosd..."
-    ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="$RESULT_DIR/elosd_event_%count%.log" elosd > $LOG_ELOSD 2>&1 &
+    ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="$RESULT_DIR/elosd_event_%count%.log" elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
-    sleep 0.5s
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Start subscriber client ..."
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" -r 100 > $LOG_ELOSC_SUBSCRIBE 2>&1 &
@@ -564,20 +632,19 @@ smoketest_find_event() {
     log "Ask elosd to find matching events..."
     elosc -P $ELOSD_PORT -f "$FILTERSTRING" > $LOG_ELOSC_FINDEVENT 2>&1
 
-    # Check success conditions
-    ELOSC_FINDEVENT_MATCHES=$(grep -wc testEventFiltering $LOG_ELOSC_FINDEVENT)
-    log $(ps -p ${ELOSD_PID})
-    if [ $? -eq 0 ]
-    then
-        ELOSD_ALIVE=1
-    fi
-
     # Unsubscribe from event queues
     elosc -P $ELOSD_PORT -u "$EVENT_QUEUE_ID" > $LOG_ELOSC_UNSUBSCRIBE 2>&1
 
+    # Check success conditions
+    ELOSC_FINDEVENT_MATCHES=$(grep -wc testEventFiltering $LOG_ELOSC_FINDEVENT)
+    log $(ps -p ${ELOSD_PID})
+    if ps -p ${ELOSD_PID} 2>&1 >/dev/null; then
+        ELOSD_ALIVE=1
+    fi
+
     #teardown
-    kill -TERM $ELOSC_SUBSCRIBE_PID $ELOSD_PID
-    wait $ELOSC_SUBSCRIBE_PID $ELOSD_PID > /dev/null 2>&1
+    log "$(kill -TERM $ELOSC_SUBSCRIBE_PID $ELOSD_PID 2>&1)"
+    log "$(wait $ELOSC_SUBSCRIBE_PID $ELOSD_PID 2>&1)"
 
     if [ "$ELOSD_ALIVE" = "1" ] && [ "$ELOSC_FINDEVENT_MATCHES" = "1" ]
     then
@@ -602,6 +669,8 @@ smoketest_plugins() {
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+
+    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
     sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
 
     start_dlt_mock
@@ -609,8 +678,8 @@ smoketest_plugins() {
     log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
     elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
-    wait_for_elosd_socket
-
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
     log "Stop elosd ($ELOSD_PID)"
     kill $ELOSD_PID #> /dev/null
     wait $ELOSD_PID #> /dev/null
@@ -648,9 +717,10 @@ smoketest_dual_json_plugin() {
     elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
 
-    wait_for_elosd_socket
+    wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_file $COREDUMP_FILE
     wait_for_file $JSONBACKEND_FILE
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     elosc -P $ELOSD_PORT -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
     elosc -P $ELOSD_PORT -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
@@ -678,11 +748,17 @@ smoketest_compile_program_using_libelos() {
     prepare_env "compile_program_using_libelos"
     TEST_RESULT=0
 
+    EXTRA_FLAGS=""
+    if run_in_source_tree; then
+        BUILD_DEPS_PREFIX="${SMOKETEST_DIR}/../../build/deps"
+        EXTRA_FLAGS="-I ${BUILD_DEPS_PREFIX}/include/ -L ${BUILD_DEPS_PREFIX}/lib"
+    fi
+
     log "Try to compile simple program using libelos"
     printf '#include <elos/libelos/libelos.h>\nint main(int argc, char* argv[]){return 0;}' \
         | gcc -v -xc -lelos -lelos_common \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+        ${EXTRA_FLAGS} \
         -o "${SMOKETEST_TMP_DIR}/testlibelos" - \
         >> "$RESULT_DIR/libelos.log" 2>&1
     if [ $? -ne 0 ]; then
@@ -690,16 +766,18 @@ smoketest_compile_program_using_libelos() {
         TEST_RESULT=1
     fi
 
-    log "Try to compile syslog demo using libelos"
-    gcc -v  \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
-        -o "${SMOKETEST_TMP_DIR}/testlibelos_syslog" "${TEST_SOURCE_DIR}/../../src/demos/syslog.c" \
-        -lelos -lsafu -lelos_common \
-        >> "$RESULT_DIR/libelos.log" 2>&1
-    if [ $? -ne 0 ]; then
-        log_err "failed to compile test program for libelos"
-        TEST_RESULT=1
+    if run_in_source_tree; then
+        log "Try to compile syslog demo using libelos"
+        gcc -v  \
+            -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+            ${EXTRA_FLAGS} \
+            -o "${SMOKETEST_TMP_DIR}/testlibelos_syslog" "${SMOKETEST_DIR}/../../src/demos/syslog.c" \
+            -lelos -lsafu -lelos_common \
+            >> "$RESULT_DIR/libelos.log" 2>&1
+        if [ $? -ne 0 ]; then
+            log_err "failed to compile test program for libelos"
+            TEST_RESULT=1
+        fi
     fi
 
     return $TEST_RESULT
@@ -709,11 +787,17 @@ smoketest_compile_program_using_libeloscpp() {
     prepare_env "compile_program_using_libelos-cpp"
     TEST_RESULT=0
 
+    EXTRA_FLAGS=""
+    if run_in_source_tree; then
+        BUILD_DEPS_PREFIX="${SMOKETEST_DIR}/../../build/deps"
+        EXTRA_FLAGS="-I ${BUILD_DEPS_PREFIX}/include/ -L ${BUILD_DEPS_PREFIX}/lib"
+    fi
+
     log "Try to compile simple program using libelos-cpp"
     printf '#include <elos/libelos-cpp/libelos-cpp.h>\nint main(int argc, char* argv[]){return 0;}' \
         | g++ -v -xc++ -std=c++14 \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
+        -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+        ${EXTRA_FLAGS} \
         -o "${SMOKETEST_TMP_DIR}/testlibelos-cpp" - -lelos-cpp\
         >> "$RESULT_DIR/libelos-cpp.log" 2>&1
     if [ $? -ne 0 ]; then
@@ -727,6 +811,12 @@ smoketest_compile_program_using_libeloscpp() {
 smoketest_compile_program_with_cpp() {
     prepare_env "compile_program_with_cpp"
     TEST_RESULT=0
+
+    EXTRA_FLAGS=""
+    if run_in_source_tree; then
+        BUILD_DEPS_PREFIX="${SMOKETEST_DIR}/../../build/deps"
+        EXTRA_FLAGS="-I ${BUILD_DEPS_PREFIX}/include/ -L ${BUILD_DEPS_PREFIX}/lib"
+    fi
 
     log "Try to compile a simple C++ program using libelos"
     printf "%s\n" \
@@ -753,8 +843,8 @@ smoketest_compile_program_with_cpp() {
         '    return 0;' \
         '}' \
         | g++ -v -xc++ -std=c++11 \
-        -I "${DIST_DIR}/usr/local/include/" -L "${DIST_DIR}/usr/local/lib" \
-        -I "${BASE_DIR}/build/deps/include/" -L "${BASE_DIR}/build/deps/lib" \
+        -I "${PREFIX_PATH}/include/" -L "${PREFIX_PATH}/lib" \
+        ${EXTRA_FLAGS} \
         -o "${SMOKETEST_TMP_DIR}/testlibelos" - -lelos -lsafu \
         >> "$RESULT_DIR/cpp_compile.log" 2>&1
     if [ $? -ne 0 ]; then
@@ -893,6 +983,20 @@ call_test() {
 
     return ${result}
 }
+
+
+while [ $# -gt 0 ]; do
+    case ${1} in
+        --help|-h)
+            print_info
+            exit 0;;
+        *)
+            echo "error: unknown option: $1"
+            echo "Use ${SCRIPT_NAME} --help"
+            exit 1 ;;
+    esac
+    shift
+done
 
 FAILED_TESTS=0
 call_test "elosd" || FAILED_TESTS=$((FAILED_TESTS+1))

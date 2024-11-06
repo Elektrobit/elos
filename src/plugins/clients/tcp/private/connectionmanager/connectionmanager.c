@@ -56,6 +56,7 @@ static safuResultE_t _initializeListener(elosConnectionManager_t *connectionMana
             } else {
                 retVal = bind(connectionManager->fd, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
                 if (retVal != 0) {
+                    safuLogDebugF("tried to listen on: %s:%d", interface, port);
                     safuLogErrErrnoValue("bind failed", retVal);
                 } else {
                     result = SAFU_RESULT_OK;

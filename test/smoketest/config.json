@@ -3,7 +3,6 @@
         "elos": {
             "UseEnv": true,
             "LogLevel": "DEBUG",
-            "Port": 54323,
             "LogFilter": "",
             "ClientInputs": {
                 "Plugins": {
@@ -129,11 +128,11 @@
                         "File": "scanner_shmem.so",
                         "Run": "always",
                         "Config": {
-                            "ShmemFile": "scanner_shmem",
+                            "ShmemFile": "scanner_shmem_smoketest",
                             "ShmemCreate": true,
                             "ShmemLogEntries": 16,
                             "ShmemOffset": 0,
-                            "SemFile": "scanner_shmem_sem",
+                            "SemFile": "scanner_shmem_sem_smoketest",
                             "SemCreate": true
                         }
                     }

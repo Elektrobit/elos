@@ -20,8 +20,13 @@ on various Debian-based distributions and series. E.g., to build it on Ubuntu
 Jammy:
 
 ```bash
+docker run --rm -v $(pwd):/build -w /build ubuntu:jammy ci/build_debs.sh
+```
+or
+```bash
 podman run --rm -v $(pwd):/build -w /build ubuntu:jammy ci/build_debs.sh
 ```
+
 
 Please note that there are some dependencies which are not (yet) in the Debian
 or Ubuntu archives. These have been built and published for Ubuntu in the
