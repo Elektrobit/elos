@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 0.65.1)
+set(ELOS_VERSION 0.67.3)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -9,6 +9,7 @@ set(ELOS_VERSION 0.65.1)
 
 macro(project_set_environment)
   set(CMAKE_C_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_C_STANDARD_REQUIRED ON)
   set(CMAKE_C_EXTENSIONS OFF)
   set(CMAKE_C_FLAGS_DEBUG "")
@@ -25,6 +26,15 @@ macro(project_set_environment)
 
   option(UNIT_TESTS "Build unit tests" ${ELOS_BUILD_DEFAULTS})
   option(INSTALL_UNIT_TESTS "Install unit tests" ON)
+
+  option(ELOS_COMMON "build libelos_common" ${ELOS_BUILD_DEFAULTS})
+
+  option(ELOS_LIBRARY "build libelos" ${ELOS_BUILD_DEFAULTS})
+  option(ELOS_LIBRARY_CPP "build libelos-cpp" ${ELOS_BUILD_DEFAULTS})
+
+  option(ELOS_PLUGIN_LIBRARY "build libelosplugin" ${ELOS_BUILD_DEFAULTS})
+
+  option(ELOS_LIBRARY_LITE "build libelos-lite" OFF)
 
   option(ELOS_DAEMON "Build elosd" ${ELOS_BUILD_DEFAULTS})
   option(INSTALL_ELOS_DAEMON "Install elosd" ON)

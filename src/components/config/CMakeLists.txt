@@ -45,3 +45,10 @@ create_weak_library(
   FROM
     config_static
 )
+
+install(
+  FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/elosd.json
+  DESTINATION
+    ${CMAKE_INSTALL_SYSCONFDIR}/elos/
+)
