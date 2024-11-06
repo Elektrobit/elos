@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "elos/event/event_message_codes.h"
 #include "elos/event/event_classification.h"
+#include "elos/event/event_message_codes.h"
 #include "elos/event/event_severity.h"
 
 /*******************************************************************
