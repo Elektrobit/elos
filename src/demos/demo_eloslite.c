@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/event/event_classification.h>
+#include <elos/event/event_message_codes.h>
+#include <elos/event/event_severity.h>
 #include <elos/libelos_lite.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <elos/event/event_severity.h>
-#include <elos/event/event_classification.h>
-#include <elos/event/event_message_codes.h>
 #include <unistd.h>
 
 int main(int argc, const char *argv[]) {
@@ -29,12 +29,13 @@ int main(int argc, const char *argv[]) {
     }
 
     elosliteEvent_t event = {
-        .date = {42,0},
-        .source = {
-            .appName = "demo_eloslite",
-            .fileName = "/usr/local/bin/demo_eloslite",
-            .pid = 208,
-        },
+        .date = {42, 0},
+        .source =
+            {
+                .appName = "demo_eloslite",
+                .fileName = "/usr/local/bin/demo_eloslite",
+                .pid = 208,
+            },
         .severity = 1,
         .hardwareid = "817d6b97-75f8-4faf-ba3c-583ae1123558",
         .classification = 6,
@@ -49,14 +50,17 @@ int main(int argc, const char *argv[]) {
     }
 
     elosliteEvent_t longevent = {
-        .date = {0,0},
-        .source = {
-            .appName = "demo_eloslite",
-        },
+        .date = {0, 0},
+        .source =
+            {
+                .appName = "demo_eloslite",
+            },
         .severity = 1,
         .classification = 0,
         .messageCode = 8000,
-        .payload = "A very long message payload that shows that we can deal with longer messages than fit into the buffer!!!!!!",
+        .payload =
+            "A very long message payload that shows that we can deal with longer messages than fit into the "
+            "buffer!!!!!!",
     };
 
     if (eloslitePublish(&session, &longevent)) {
