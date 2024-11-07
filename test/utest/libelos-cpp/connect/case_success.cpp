@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "connect_utest.h"
 
 int elosTestConnectSuccessSetup(UNUSED void **state) {
@@ -16,6 +17,12 @@ void elosTestConnectSuccess(UNUSED void **state) {
 
     TEST("connect");
     SHOULD("%s", "create successfully a tcp-ip connection");
+
+    MOCK_FUNC_AFTER_CALL(elosConnectSessionTcpip, 0);
+    expect_string(elosConnectSessionTcpip, host, MOCK_IP_ADDR);
+    expect_value(elosConnectSessionTcpip, port, MOCK_PORT);
+    expect_any(elosConnectSessionTcpip, session);
+    will_return(elosConnectSessionTcpip, ELOS_RESULT_OK);
 
     result = testObject.connect();
     assert_int_equal(result, ELOS_RESULT_OK);
