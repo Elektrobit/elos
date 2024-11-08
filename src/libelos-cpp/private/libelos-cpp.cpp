@@ -92,7 +92,9 @@ Elos::Elos(Elos &&other)
     : elosHost(std::move(other.elosHost)), elosPort(other.elosPort), session(std::move(other.session)) {}
 
 Elos::~Elos() {
-    session = {0, false};
+    if (elosSessionValid(&session)) {
+        disconnect();
+    }
 }
 
 elosResultE Elos::connect() noexcept {

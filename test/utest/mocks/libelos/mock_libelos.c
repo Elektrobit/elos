@@ -58,6 +58,9 @@ MOCK_FUNC_BODY(elosDisconnectSession, safuResultE_t, elosSession_t *session) {
 
     if (MOCK_IS_ACTIVE(elosDisconnectSession)) {
         check_expected_ptr(session);
+        if (session != NULL) {
+            session->connected = false;
+        }
         result = mock_type(safuResultE_t);
     } else {
         result = MOCK_FUNC_REAL(elosDisconnectSession)(session);
