@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSDISCONNECTSESSION_H__
-#define __ELOS_ELOSDISCONNECTSESSION_H__
+#pragma once
 
 #include <arpa/inet.h>
 #include <cmocka_extensions/cmocka_extensions.h>
@@ -14,5 +13,3 @@
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosDisconnectSessionSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosDisconnectSessionExtErrClose)
-
-#endif /* __ELOS_ELOSDISCONNECTSESSION_H__ */

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSDISCONNECT_H__
-#define __ELOS_ELOSDISCONNECT_H__
+#pragma once
 
 #include <arpa/inet.h>
 #include <cmocka_extensions/cmocka_extensions.h>
@@ -19,5 +18,3 @@ typedef struct elosUnitTestState {
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosDisconnectSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosDisconnectExtErrClose)
-
-#endif /* __ELOS_ELOSDISCONNECT_H__ */

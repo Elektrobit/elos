@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSLOGFINDEVENT_H__
-#define __ELOS_ELOSLOGFINDEVENT_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_mocks/mock_jsonc.h>
@@ -65,5 +64,3 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosLogFindEventSuccess)
     will_return(__wrap_safuRecvExactly, (__testState)->responsePayloadLength);
 
 #define _SEND_RECV_MOCK_CLEANUP MOCK_FUNC_NEVER(safuRecvExactly);
-
-#endif /* __ELOS_ELOSLOGFINDEVENT_H__ */

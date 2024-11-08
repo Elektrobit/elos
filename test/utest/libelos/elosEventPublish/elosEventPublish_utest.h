@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSEVENTPUBLISH_H__
-#define __ELOS_ELOSEVENTPUBLISH_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_mocks/mock_jsonc.h>
@@ -28,5 +27,3 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventPublishErrConvert)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventPublishErrCommunication)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventPublishErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventPublishSuccess)
-
-#endif /* __ELOS_ELOSEVENTPUBLISH_H__ */

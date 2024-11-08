@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSCONNECTTCPIP_H__
-#define __ELOS_ELOSCONNECTTCPIP_H__
+#pragma once
 
 #include <arpa/inet.h>
 #include <cmocka_extensions/cmocka_extensions.h>
@@ -18,5 +17,3 @@ elosSession_t *elosConnectTcpipCreateSession();
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConnectTcpipErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConnectTcpipExtErrAllocMem)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConnectTcpipSuccess)
-
-#endif /* __ELOS_ELOSCONNECTTCPIP_H__ */

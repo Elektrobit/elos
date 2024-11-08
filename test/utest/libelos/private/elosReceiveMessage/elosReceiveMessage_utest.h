@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef ELOS_LIBELOS_ELOSRECEIVEMESSAGE_UTEST_H
-#define ELOS_LIBELOS_ELOSRECEIVEMESSAGE_UTEST_H
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <stddef.h>
@@ -35,5 +34,3 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosReceiveMessageErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosReceiveMessageErrReceiveBody)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosReceiveMessageErrReceiveHeader)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosReceiveMessageSuccess)
-
-#endif /* ELOS_LIBELOS_ELOSRECEIVEMESSAGE_UTEST_H */
