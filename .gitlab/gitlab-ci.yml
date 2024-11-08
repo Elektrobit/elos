@@ -101,6 +101,8 @@ integration-tests:
     when: always
     paths:
       - build/Release/result/integration/
+    reports:
+      junit: build/Release/result/integration/elos_integration_tests/xunit.xml
 
 baseos-lab-tests:
   stage: test
