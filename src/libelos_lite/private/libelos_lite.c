@@ -346,6 +346,9 @@ static bool _msgHandleResponse(elosliteSession_t *session) {
     char buf[20];
     while (msgHead.length > 0) {
         int res = recv(session->fd, buf, 50, 0);
+        if (res < 0) {
+            return false;
+        }
         msgHead.length -= res;
     }
     return true;
@@ -360,11 +363,19 @@ bool eloslitePublish(elosliteSession_t *session, elosliteEvent_t *event) {
         .message = ELOS_MESSAGE_EVENT_PUBLISH,
         .length = _msgLen(event),
     };
-    send(session->fd, (void *)&msgHead, sizeof(msgHead), MSG_NOSIGNAL);
-    int sendNum = _sendMsgParts(session, event);
-    if (sendNum != msgHead.length) {
+    int sendNum = send(session->fd, (void *)&msgHead, sizeof(msgHead), MSG_NOSIGNAL);
+    if (sendNum < 0) {
+        elosliteDisconnect(session);
         return false;
     }
-    _msgHandleResponse(session);
+    sendNum = _sendMsgParts(session, event);
+    if (sendNum != msgHead.length) {
+        elosliteDisconnect(session);
+        return false;
+    }
+    if (!_msgHandleResponse(session)) {
+        elosliteDisconnect(session);
+        return false;
+    }
     return true;
 }
