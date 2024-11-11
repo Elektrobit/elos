@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSEVENTQUEUEREAD_H__
-#define __ELOS_ELOSEVENTQUEUEREAD_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_mocks/mock_libc.h>
@@ -30,5 +29,3 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventQueueReadErrExchange)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventQueueReadErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventQueueReadErrRequest)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventQueueReadSuccess)
-
-#endif /* __ELOS_ELOSEVENTQUEUEREAD_H__ */

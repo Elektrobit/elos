@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSGETVERSION_H__
-#define __ELOS_ELOSGETVERSION_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
@@ -22,5 +21,3 @@ void elosMockReceiveJsonMessage(elosUnitTestState_t *test, char const *responseS
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosGetVersionErrCall)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosGetVersionErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosGetVersionSuccess)
-
-#endif /* __ELOS_ELOSGETVERSION_H__ */

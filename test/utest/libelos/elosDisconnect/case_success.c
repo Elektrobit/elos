@@ -35,9 +35,9 @@ void elosTestElosDisconnectSuccess(void **state) {
     SHOULD("%s", "successfully close a connection");
 
     PARAM("%s", "With session");
-    expect_value(__wrap_close, fd, MOCK_FD);
-    will_return(__wrap_close, 0);
-    MOCK_FUNC_AFTER_CALL(close, 0);
+    MOCK_FUNC_AFTER_CALL(elosDisconnectSession, 0);
+    expect_any(elosDisconnectSession, session);
+    will_return(elosDisconnectSession, SAFU_RESULT_OK);
 
     result = elosDisconnect(test->session);
     assert_int_equal(result, SAFU_RESULT_OK);

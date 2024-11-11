@@ -20,6 +20,21 @@ typedef struct elosSession {
 __BEGIN_DECLS
 
 /*******************************************************************
+ * Function: elosConnectSessionTcpip
+ *------------------------------------------------------------------
+ * Description:
+ *      Establishes connection to elos over tcp/ip with an already allocated session.
+ * Input:
+ *      - **host**:     host address as hostname, ipv4 or ipv6, e.g. "192.168.2.1"
+ *      - **port**:     port number, e.g. 54321
+ * Output:
+ *      - **session**:  session data structure used by other functions
+ * Return:
+ *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosConnectSessionTcpip(const char *host, uint16_t port, elosSession_t *session);
+
+/*******************************************************************
  * Function: elosConnectTcpip
  *------------------------------------------------------------------
  * Description:
@@ -49,13 +64,25 @@ safuResultE_t elosConnectTcpip(const char *host, uint16_t port, elosSession_t **
 safuResultE_t elosConnectUnix(const char *path, elosSession_t **session);
 
 /*******************************************************************
+ * Function: elosDisconnectSession
+ *------------------------------------------------------------------
+ * Description:
+ *      Disconnects Session from elos.
+ * Input:
+ *      - **session**:  session data structure
+ * Return:
+ *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosDisconnectSession(elosSession_t *session);
+
+/*******************************************************************
  * Function: elosDisconnect
  *------------------------------------------------------------------
  * Description:
  *      Disconnects from elos and frees the allocated memory and objects.
  * Input:
  *      - **session**:  session data structure (invalid after function call)
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosDisconnect(elosSession_t *session);
@@ -69,7 +96,7 @@ safuResultE_t elosDisconnect(elosSession_t *session);
  *      - **session**:  session data structure
  * Output:
  *      - **version**:  version of the elos server in form of *"major.minor"* (e.g. "1.0")
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosGetVersion(elosSession_t *session, const char **version);
@@ -92,7 +119,7 @@ safuResultE_t elosGetVersion(elosSession_t *session, const char **version);
  *      - **filterRuleArraySize**:  the lenght of the `filterRuleArray`
  * Output:
  *      - **eventQueueId**:         an id for the created eventlist that is used for fetching events
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosEventSubscribe(elosSession_t *session, char const **filterRuleArray, size_t filterRuleArraySize,
@@ -109,7 +136,7 @@ safuResultE_t elosEventSubscribe(elosSession_t *session, char const **filterRule
  *      - **session**:              session data structure
  * Output:
  *      - **eventQueueId**:         an id for the eventlist tto be removed
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosEventUnsubscribe(elosSession_t *session, elosEventQueueId_t eventQueueId);
@@ -123,7 +150,7 @@ safuResultE_t elosEventUnsubscribe(elosSession_t *session, elosEventQueueId_t ev
  *      - **session**:  session data structure
  * Output:
  *      - **event**:    content of the event in form of a elosEvent_t struct
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosEventPublish(elosSession_t *session, const elosEvent_t *event);
@@ -142,7 +169,7 @@ safuResultE_t elosEventPublish(elosSession_t *session, const elosEvent_t *event)
  *      - **eventQueueId**:  the id of the eventQueue to read from
  * Output:
  *      - **eventsVector**:  list of elosEvent_t structs containing the occuring events
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosEventQueueRead(elosSession_t *session, elosEventQueueId_t eventQueueId,
@@ -165,7 +192,7 @@ safuResultE_t elosEventQueueRead(elosSession_t *session, elosEventQueueId_t even
  *      - **filterRule**:  filter rule for entry selection
  * Output:
  *      - **vector**:      list of event structs
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosLogFindEvent(elosSession_t *session, const char *filterRule, elosEventVector_t **eventVector);
@@ -188,7 +215,7 @@ safuResultE_t elosLogFindEvent(elosSession_t *session, const char *filterRule, e
  *      - **oldest**:      time of the oldest event to look for
  * Output:
  *      - **vector**:      list of event structs
- * Returns:
+ * Return:
  *      - `SAFU_RESULT_OK` for success or `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosFindEvents(elosSession_t *session, const char *filterRule, struct timespec const *newest,
@@ -201,7 +228,7 @@ safuResultE_t elosFindEvents(elosSession_t *session, const char *filterRule, str
  *      Checks if the session is valid.
  * Input:
  *      - **session**:  session data structure to check if its valid.
- * Returns:
+ * Return:
  *      - `true` for a valid seesion and `false` otherwise.
  ******************************************************************/
 bool elosSessionValid(elosSession_t const *session);

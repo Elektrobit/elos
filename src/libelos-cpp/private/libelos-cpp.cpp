@@ -92,18 +92,42 @@ Elos::Elos(Elos &&other)
     : elosHost(std::move(other.elosHost)), elosPort(other.elosPort), session(std::move(other.session)) {}
 
 Elos::~Elos() {
-    session = {0, false};
+    if (elosSessionValid(&session)) {
+        disconnect();
+    }
 }
 
 elosResultE Elos::connect() noexcept {
     elosResultE result = ELOS_RESULT_OK;
-    safuLogInfo("ElosCpp Connect to Tcpip");
+
+    if (!elosSessionValid(&session)) {
+        result = (elosResultE)elosConnectSessionTcpip(elosHost.c_str(), elosPort, &session);
+    } else {
+        safuLogErr("ElosCpp Connect from Tcpip failed: Connection already active");
+        return ELOS_RESULT_FAILED;
+    }
+
+    if (result == ELOS_RESULT_FAILED) {
+        safuLogErr("ElosCpp Connect to Tcpip failed!");
+    }
+
     return result;
 }
 
 elosResultE Elos::disconnect() noexcept {
     elosResultE result = ELOS_RESULT_OK;
-    safuLogInfo("ElosCpp Disonnect");
+
+    if (elosSessionValid(&session)) {
+        result = (elosResultE)elosDisconnectSession(&session);
+    } else {
+        safuLogErr("ElosCpp Disconnect from Tcpip failed: No active connection");
+        return ELOS_RESULT_FAILED;
+    }
+
+    if (result == ELOS_RESULT_FAILED) {
+        safuLogErr("ElosCpp Disconnect from Tcpip failed!");
+    }
+
     return result;
 }
 

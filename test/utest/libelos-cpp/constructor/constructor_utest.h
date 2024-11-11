@@ -4,6 +4,8 @@
 
 extern "C" {
 #include <cmocka_extensions/cmocka_extensions.h>
+
+#include "../../mocks/libelos/mock_libelos.h"
 }
 
 #define MOCK_PORT    1234

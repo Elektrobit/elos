@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef ELOS_LIBELOS_ELOSSENDMESSAGE_UTEST_H
-#define ELOS_LIBELOS_ELOSSENDMESSAGE_UTEST_H
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
@@ -15,5 +14,3 @@ typedef struct elosUnitTestState {
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosSendMessageErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosSendMessageErrSend)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosSendMessageSuccess)
-
-#endif /* ELOS_LIBELOS_ELOSSENDMESSAGE_UTEST_H */

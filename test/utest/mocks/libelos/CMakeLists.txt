@@ -24,6 +24,8 @@ target_link_options(
   PUBLIC
     -Wl,--wrap=elosConnectTcpip
     -Wl,--wrap=elosDisconnect
+    -Wl,--wrap=elosConnectSessionTcpip
+    -Wl,--wrap=elosDisconnectSession
     -Wl,--wrap=elosGetVersion
     -Wl,--wrap=elosLogFindEvent
     -Wl,--wrap=elosSessionValid
