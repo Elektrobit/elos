@@ -21,7 +21,7 @@ typedef struct elosPluginManagerParam {
 
 typedef struct elosPluginManager {
     elosPluginManagerStateE_t state;
-    elosPluginControlVector_t pluginVector;
+    elosPluginControlPtrVector_t pluginPtrVector;
     samconfConfig_t *config;
     bool useEnv;
     char const *errStr;

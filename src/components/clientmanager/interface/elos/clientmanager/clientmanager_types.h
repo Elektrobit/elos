@@ -30,5 +30,5 @@ typedef struct elosClientManager {
     elosPluginManager_t *pluginManager;
     samconfConfig_t const *config;
     const char *searchPath;
-    elosPluginControlVector_t pluginControlPtrVector;
+    elosPluginControlPtrVector_t pluginControlPtrVector;
 } elosClientManager_t;

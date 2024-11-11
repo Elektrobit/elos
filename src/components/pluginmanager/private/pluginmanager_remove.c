@@ -8,7 +8,8 @@
 #include "elos/plugincontrol/plugincontrol.h"
 #include "elos/pluginmanager/pluginmanager.h"
 
-safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPluginControlVector_t *controlPtrVector) {
+safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager,
+                                      elosPluginControlPtrVector_t *controlPtrVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((pluginManager == NULL) || (controlPtrVector == NULL)) {
@@ -16,8 +17,8 @@ safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPl
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INITIALIZED) {
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
-        elosPluginControlVector_t *pluginVector = &pluginManager->pluginVector;
-        ssize_t const elements = safuVecElements(pluginVector);
+        elosPluginControlPtrVector_t *pluginPtrVector = &pluginManager->pluginPtrVector;
+        ssize_t const elements = safuVecElements(pluginPtrVector);
 
         result = SAFU_RESULT_OK;
 

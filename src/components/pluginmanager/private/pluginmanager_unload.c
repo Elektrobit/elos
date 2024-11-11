@@ -21,7 +21,7 @@ static int _pluginManagerUnloadHelper(void const *element, UNUSED void const *da
     return 0;
 }
 
-safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager, elosPluginControlVector_t *controlVector) {
+safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager, elosPluginControlPtrVector_t *controlVector) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((pluginManager == NULL) || (controlVector == NULL)) {
@@ -29,9 +29,9 @@ safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager, elosPl
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INITIALIZED) {
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
-        result = elosPluginControlVectorIterate(controlVector, _pluginManagerUnloadHelper, pluginManager, NULL);
+        result = elosPluginControlPtrVectorIterate(controlVector, _pluginManagerUnloadHelper, pluginManager, NULL);
         if (result == SAFU_RESULT_FAILED) {
-            safuLogErr("elosPluginControlVectorIterate failed");
+            safuLogErr("elosPluginControlPtrVectorIterate failed");
         }
     }
 

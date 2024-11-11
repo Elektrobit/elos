@@ -12,19 +12,20 @@
 
 #include "elos/plugincontrol/vector.h"
 
-MOCK_FUNC_PROTOTYPE(elosPluginControlVectorInitialize, safuResultE_t, elosPluginControlVector_t *controlVector,
+MOCK_FUNC_PROTOTYPE(elosPluginControlPtrVectorInitialize, safuResultE_t, elosPluginControlPtrVector_t *controlPtrVector,
                     size_t elements)
 
-MOCK_FUNC_PROTOTYPE(elosPluginControlVectorPush, safuResultE_t, elosPluginControlVector_t *controlVector,
+MOCK_FUNC_PROTOTYPE(elosPluginControlPtrVectorPush, safuResultE_t, elosPluginControlPtrVector_t *controlPtrVector,
                     elosPluginControl_t *control)
 
-MOCK_FUNC_PROTOTYPE(elosPluginControlVectorIterate, safuResultE_t, elosPluginControlVector_t *controlVector,
+MOCK_FUNC_PROTOTYPE(elosPluginControlPtrVectorIterate, safuResultE_t, elosPluginControlPtrVector_t *controlPtrVector,
                     safuVecFunc_t *func, void *data, int *iterResult)
 
-MOCK_FUNC_PROTOTYPE(elosPluginControlVectorGetById, safuResultE_t, elosPluginControlVector_t *controlVector,
+MOCK_FUNC_PROTOTYPE(elosPluginControlPtrVectorGetById, safuResultE_t, elosPluginControlPtrVector_t *controlPtrVector,
                     elosPluginId_t id, elosPluginControl_t **control)
 
-MOCK_FUNC_PROTOTYPE(elosPluginControlVectorRemoveById, safuResultE_t, elosPluginControlVector_t *controlVector,
+MOCK_FUNC_PROTOTYPE(elosPluginControlPtrVectorRemoveById, safuResultE_t, elosPluginControlPtrVector_t *controlPtrVector,
                     elosPluginId_t id)
 
-MOCK_FUNC_PROTOTYPE(elosPluginControlVectorDeleteMembers, safuResultE_t, elosPluginControlVector_t *controlVector)
+MOCK_FUNC_PROTOTYPE(elosPluginControlPtrVectorDeleteMembers, safuResultE_t,
+                    elosPluginControlPtrVector_t *controlPtrVector)

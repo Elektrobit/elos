@@ -14,4 +14,4 @@
 
 MOCK_FUNC_PROTOTYPE(elosPluginManagerLoad, safuResultE_t, elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
                     samconfConfig_t const *moduleConfig, char const *pluginSearchPath,
-                    elosPluginControlVector_t *controlPtrVector)
+                    elosPluginControlPtrVector_t *controlPtrVector)

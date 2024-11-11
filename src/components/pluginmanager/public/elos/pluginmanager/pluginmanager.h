@@ -12,11 +12,13 @@ safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, el
 
 safuResultE_t elosPluginManagerLoad(elosPluginManager_t *pluginManager, elosPluginTypeE_t type,
                                     samconfConfig_t const *pluginConfig, char const *pluginSearchPath,
-                                    elosPluginControlVector_t *pluginVector);
+                                    elosPluginControlPtrVector_t *pluginPtrVector);
 
-safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager, elosPluginControlVector_t *pluginVector);
+safuResultE_t elosPluginManagerUnload(elosPluginManager_t *pluginManager,
+                                      elosPluginControlPtrVector_t *pluginPtrVector);
 
-safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager, elosPluginControlVector_t *pluginVector);
+safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager,
+                                      elosPluginControlPtrVector_t *pluginPtrVector);
 
 safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elosPluginControlParam_t const *param,
                                         elosPluginId_t *id);
