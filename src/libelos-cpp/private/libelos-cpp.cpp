@@ -4,6 +4,7 @@
 #include <safu/log.h>
 #include <safu/result.h>
 
+#include <new>
 #include <regex>
 #include <stdexcept>
 #include <string>
@@ -30,10 +31,10 @@ elosUri elosParseUri(const std::string &uri) {
     return newUri;
 }
 
-Event::Event() noexcept(false) {}
+Event::Event() {}
 
 Event::Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t severity, const std::string &hardwareid,
-             uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) noexcept(false) {
+             uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) {
     elosResultE result = ELOS_RESULT_OK;
 
     event.date = date;
@@ -57,12 +58,25 @@ Event::Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t se
     }
 }
 
-Event::~Event() noexcept(false) {
+Event::Event(struct timespec date, elosEventSource_t &&source, elosSeverityE_t severity, const std::string &hardwareid,
+             uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) {
+    event.date = date;
+    event.source = source;
+    event.severity = severity;
+    event.messageCode = messageCode;
+    event.classification = classification;
+    event.hardwareid = strdup(hardwareid.c_str());
+    event.payload = strdup(payload.c_str());
+    if (!event.hardwareid || !event.payload) {
+        throw std::bad_alloc();
+    }
+}
+
+Event::~Event() {
     elosResultE result = ELOS_RESULT_OK;
     result = (elosResultE)elosEventDeleteMembers(&event);
     if (result == ELOS_RESULT_FAILED) {
         safuLogErr("deleting event failed!");
-        throw ELOS_RESULT_FAILED;
     }
 }
 
@@ -132,10 +146,27 @@ elosResultE Elos::disconnect() noexcept {
     return result;
 }
 
-elosResultE Elos::publish(UNUSED const elosEvent_t *event) {
-    elosResultE result = ELOS_RESULT_OK;
-    safuLogInfo("ElosCpp Publish");
+elosResultE Elos::publish(const Event &event, bool shallConnect = true) {
+    elosResultE result = ELOS_RESULT_FAILED;
+    if (shallConnect && !elosSessionValid(&session)) {
+        this->connect();
+    }
+    if (elosSessionValid(&session)) {
+        result = (elosResultE)elosEventPublish(&session, &event.event);
+    }
     return result;
+}
+
+elosResultE Elos::publish(Event &&event, bool shallConnect = true) {
+    return publish(event, shallConnect);
+}
+
+void Elos::operator<<(const Event &event) {
+    publish(event);
+}
+
+void Elos::operator<<(Event &&event) {
+    publish(event);
 }
 
 Subscription Elos::subscribe(std::string filter) {
