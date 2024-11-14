@@ -340,16 +340,17 @@ static int _sendMsgParts(elosliteSession_t *session, elosliteEvent_t *event) {
 static bool _msgHandleResponse(elosliteSession_t *session) {
     struct elosliteMessageHead msgHead = {0};
     recv(session->fd, &msgHead, sizeof(msgHead), 0);
-    if (msgHead.message != ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH) {
+    if ((msgHead.message != ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH) || (msgHead.version != ELOS_PROTOCOL_VERSION)) {
         return false;
     }
     char buf[20];
-    while (msgHead.length > 0) {
-        int res = recv(session->fd, buf, 50, 0);
+    uint16_t lengthRecv = 0;
+    while (lengthRecv < msgHead.length) {
+        int res = recv(session->fd, buf, 20, 0);
         if (res < 0) {
             return false;
         }
-        msgHead.length -= res;
+        lengthRecv += res;
     }
     return true;
 }
