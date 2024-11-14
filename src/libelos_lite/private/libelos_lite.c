@@ -8,9 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <sys/auxv.h>
+#include <sys/auxv.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include <sys/resource.h>
 
 #include "elos/lite/event.h"
 
@@ -193,10 +195,6 @@ typedef struct elosliteBuffer {
     size_t pos;
 } elosliteBuffer_t;
 
-#ifndef ELOSLITE_SEND_BUFFER
-#define ELOSLITE_SEND_BUFFER 60 /* AT_PAGESZ */
-#endif
-
 static int _sendFlush(elosliteSession_t *session, elosliteBuffer_t *buffer) {
     int sendNum = send(session->fd, (void *)buffer->buffer, buffer->pos, MSG_NOSIGNAL);
     buffer->pos = 0;
@@ -250,12 +248,15 @@ static int _sendPartStr(elosliteSession_t *session, elosliteBuffer_t *buffer, co
 }
 
 static int _sendMsgParts(elosliteSession_t *session, elosliteEvent_t *event) {
-    char partBuf[ELOSLITE_SEND_BUFFER];
-    elosliteBuffer_t buffer = {
-        .buffer = partBuf,
-        .size = ELOSLITE_SEND_BUFFER,
-        .pos = 0,
-    };
+    elosliteBuffer_t buffer = {0};
+    buffer.pos = 0;
+#ifndef ELOSLITE_SEND_BUFFER_SIZE
+    buffer.size = getauxval(AT_PAGESZ);
+#else
+    buffer.size = ELOSLITE_SEND_BUFFER_SIZE;
+#endif
+    char *partBuf = alloca(buffer.size);
+    buffer.buffer = partBuf;
     size_t sendNum = 0;
     sendNum += _sendPartF(session, &buffer, "{");
     bool elementBefore = false;
