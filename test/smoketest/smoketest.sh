@@ -342,6 +342,7 @@ smoketest_kmsg() {
 
     LOG_ELOSD="$RESULT_DIR/elosd.log"
     LOG_ELOSCL="$RESULT_DIR/elosc_poll.log"
+    LOG_ELOSC_FIND="$RESULT_DIR/elosc_find.log"
     LOG_KMSG="$RESULT_DIR/kmsg_example.log"
     TEST_MESSAGE="12,1234,12345678901,-;smoketest: kernel message"
     FILTERSTRING=".event.source.fileName '${ELOS_KMSG_FILE}' STRCMP"
@@ -363,7 +364,10 @@ smoketest_kmsg() {
     echo $TEST_MESSAGE > $ELOS_KMSG_FILE 2> $LOG_KMSG
     sleep 1s
 
+    elosc -P $ELOSD_PORT -f "$FILTERSTRING" > $LOG_ELOSC_FIND 2>&1 
+
     log "Stop elosd ($ELOSD_PID)"
+
     kill $ELOSD_PID > /dev/null
     wait $ELOSD_PID > /dev/null
 
@@ -372,9 +376,15 @@ smoketest_kmsg() {
     wait $POLL_CLIENT_PID > /dev/null
 
     TEST_RESULT=0
-    grep "smoketest" $LOG_ELOSCL | grep -q "$TEST_MESSAGE"
-    if [ $? -ne 0 ]; then
-        log_err "missing message: '$TEST_MESSAGE'"
+    if ! message_count=$(grep -c "${TEST_MESSAGE}" "${LOG_ELOSCL}") \
+        || [ $message_count -ne 1 ]; then
+            log_err "unexpected message count (${message_count}) published: '$TEST_MESSAGE'"
+        TEST_RESULT=1
+    fi
+
+    if ! message_count=$(grep -c "${TEST_MESSAGE}" "${LOG_ELOSC_FIND}") \
+        || [ $message_count -ne 1 ]; then
+            log_err "unexpected message count (${message_count}) in log storage: '$TEST_MESSAGE'"
         TEST_RESULT=1
     fi
 
