@@ -47,7 +47,7 @@ docker run --rm ${IT} \
     --security-opt apparmor=unconfined \
     $SSH_AGENT_OPTS \
     ${LINK_NOSQL:+ --link elos-mongo} \
-    ${ENV_OPTIONS-""} \
+    ${ENV_OPTIONS} \
     -v "${RESULT_DIR}:/results:rw" \
     -w / \
     ${IMAGE_NAME} $@
