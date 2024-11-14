@@ -2,6 +2,7 @@
 #include "elos/libelos-cpp/libelos-cpp.h"
 
 #include <safu/log.h>
+#include <safu/result.h>
 
 #include <regex>
 #include <stdexcept>
@@ -137,10 +138,15 @@ elosResultE Elos::publish(UNUSED const elosEvent_t *event) {
     return result;
 }
 
-elosResultE Elos::subscribe(UNUSED const char **filterRuleArray, UNUSED size_t filterRuleArraySize,
-                            UNUSED elosEventQueueId_t *eventQueueId) {
+Subscription Elos::subscribe(std::string filter) {
     elosResultE result = ELOS_RESULT_OK;
-    safuLogInfo("ElosCpp Subscribe");
-    return result;
+    Subscription newSubscription;
+    const char *filterArray[] = {filter.c_str(), nullptr};
+    result = (elosResultE)elosEventSubscribe(&session, filterArray, 1, &newSubscription.subscription.eventQueueId);
+    if (result != ELOS_RESULT_OK) {
+        safuLogErr("Invalid Session, publish failed");
+        newSubscription.subscription.eventQueueId = ELOS_ID_INVALID;
+    }
+    return newSubscription;
 }
 }  // namespace elos

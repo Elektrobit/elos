@@ -102,6 +102,39 @@ class Event {
 };
 
 /*******************************************************************
+ * Subscription class
+ *
+ * Members:
+ *     subscription : struct containing queue id
+ *     filter :  filter rule string to filter subscribed events.
+ ******************************************************************/
+class Subscription {
+   protected:
+    elosSubscription_t subscription;
+
+   public:
+    /*******************************************************************
+     * default empty constructor.
+     *
+     ******************************************************************/
+    Subscription() = default;
+
+    /*******************************************************************
+     * default move constructor.
+     *
+     ******************************************************************/
+    Subscription(const Subscription &subscription) = default;
+
+    /*******************************************************************
+     * default empty destructor.
+     *
+     ******************************************************************/
+    ~Subscription() = default;
+
+    friend class Elos;
+};
+
+/*******************************************************************
  * Elos API class
  *
  * Members:
@@ -157,7 +190,17 @@ class Elos {
     elosResultE connect() noexcept;
     elosResultE disconnect() noexcept;
     elosResultE publish(const elosEvent_t *event);
-    elosResultE subscribe(char const **filterRuleArray, size_t filterRuleArraySize, elosEventQueueId_t *eventQueueId);
+
+    /*******************************************************************
+     * Function: subscribe
+     *------------------------------------------------------------------
+     * Function to subscribe to events matching the filter.
+     * Parameters:
+     *      - filter:     filter string to subcribe to.
+     * Return:
+     *      - Subscription:  subscription object with filter added and elosSubscription member
+     ******************************************************************/
+    Subscription subscribe(std::string filter);
 
    protected:
     std::string elosHost;
