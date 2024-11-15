@@ -11,5 +11,6 @@ create_unit_test(
     case_success.cpp
     subscribe_utest.cpp
   LIBRARIES
+    mock_libelos_static
     libelos-cpp_static
 )
