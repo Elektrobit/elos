@@ -81,6 +81,15 @@ class Event {
      * Constructor for Event where event members are provided as arguments
      *
      * Parameters:
+     *     - newEvent: The plain C Representation of an elos event.
+     ******************************************************************/
+    Event(elosEvent_t &&newEvent);
+
+    /*******************************************************************
+     * Parameterized Constructor: Event
+     *------------------------------------------------------------------
+     * Representation of an elos event.
+     * Parameters:
      *     - date: The unix timestamp in nano seconds resolution.
      *     - source: A struct containing informations about where the event originated from.
      *     - severity:The possible severities for an Event.

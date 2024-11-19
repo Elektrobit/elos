@@ -33,6 +33,13 @@ elosUri elosParseUri(const std::string &uri) {
 
 Event::Event() {}
 
+Event::Event(elosEvent_t &&newEvent) : event(std::move(newEvent)) {
+    newEvent.hardwareid = nullptr;
+    newEvent.payload = nullptr;
+    newEvent.source.appName = nullptr;
+    newEvent.source.fileName = nullptr;
+}
+
 Event::Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t severity, const std::string &hardwareid,
              uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) {
     elosResultE result = ELOS_RESULT_OK;
