@@ -27,6 +27,10 @@ set_target_properties(
 )
 target_compile_definitions(libelos-lite PRIVATE ELOS_VERSION="${ELOS_VERSION}")
 
+if (DEFINED ELOSLITE_SEND_BUFFER_SIZE)
+  target_compile_definitions(libelos-lite PRIVATE ELOSLITE_SEND_BUFFER_SIZE=${ELOSLITE_SEND_BUFFER_SIZE})
+endif ()
+
 install(TARGETS libelos-lite DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(
