@@ -4,6 +4,7 @@ add_library(
   libelos-lite
   STATIC
     private/libelos_lite.c
+    private/message_utils.c
 )
 
 target_include_directories(
