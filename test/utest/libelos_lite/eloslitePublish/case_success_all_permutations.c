@@ -96,6 +96,7 @@ static void _testPublishSingleEvent(elosliteTestData_t *data, elosliteEvent_t *e
 #define CLASSIFICATION_MASK (1 << 8)
 #define MESSAGECODE_MASK    (1 << 9)
 #define PAYLOAD_MASK        (1 << 10)
+#define NUM_PERMUTATIONS    (1 << 11)
 
 void elosliteTestEloslitePublishSuccessAllPermutations(void **state) {
     elosliteTestData_t *data = *state;
@@ -108,7 +109,7 @@ void elosliteTestEloslitePublishSuccessAllPermutations(void **state) {
     expect_value_count(__wrap_recv, sockfd, session->fd, -1);
     expect_value_count(__wrap_recv, flags, 0, -1);
 
-    for (int permutation = 0; permutation < (1 << 11); permutation++) {
+    for (int permutation = 0; permutation < NUM_PERMUTATIONS; permutation++) {
         elosliteEvent_t event = (elosliteEvent_t){
             .date =
                 {

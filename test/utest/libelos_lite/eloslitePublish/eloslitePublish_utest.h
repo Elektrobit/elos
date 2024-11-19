@@ -3,16 +3,7 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <elos/libelos_lite.h>
 
-#define ELOS_PROTOCOL_VERSION               0x01
-#define ELOS_MESSAGE_EVENT_PUBLISH          0x02
-#define ELOS_MESSAGE_RESPONSE_BIT           0x80
-#define ELOS_MESSAGE_RESPONSE_EVENT_PUBLISH (ELOS_MESSAGE_EVENT_PUBLISH | ELOS_MESSAGE_RESPONSE_BIT)
-
-struct elosliteMessageHead {
-    uint8_t version;
-    uint8_t message;
-    uint16_t length;
-};
+#include "../../src/libelos_lite/private/message_utils.h"
 
 typedef struct elosliteTestMessageBuffer {
     size_t len;
