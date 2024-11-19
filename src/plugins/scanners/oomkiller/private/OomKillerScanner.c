@@ -149,7 +149,13 @@ static int _foreachEvent(void const *element, void const *data) {
         safuLogErr("elosPluginPublish failed");
     }
 
-    safuResultE_t result = elosEventDeleteMembers(&oomkillerEvent);
+    safuResultE_t result = elosPluginStore(helperData->plugin, &oomkillerEvent);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("elosPluginStore failed");
+        helperData->result = result;
+    }
+
+    result = elosEventDeleteMembers(&oomkillerEvent);
     if (result != SAFU_RESULT_OK) {
         safuLogErr("elosEventDeleteMembers failed");
         helperData->result = result;

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSSESSIONVALID_H__
-#define __ELOS_ELOSSESSIONVALID_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
@@ -11,5 +10,3 @@ typedef struct elosUnitTestState {
 } elosUnitTestState_t;
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosSessionValidSuccess)
-
-#endif /* __ELOS_ELOSSESSIONVALID_H__ */

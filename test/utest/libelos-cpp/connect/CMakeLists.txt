@@ -12,4 +12,6 @@ create_unit_test(
     connect_utest.cpp
   LIBRARIES
     libelos-cpp_static
+    mock_libelos_static
+    safu::mock_safu
 )

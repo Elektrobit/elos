@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: MIT
 
 add_subdirectory(elosConnectTcpip)
+add_subdirectory(elosConnectSessionTcpip)
 add_subdirectory(elosGetVersion)
 add_subdirectory(elosDisconnect)
+add_subdirectory(elosDisconnectSession)
 add_subdirectory(elosEventPublish)
 add_subdirectory(elosEventQueueRead)
 add_subdirectory(elosEventSubscribe)

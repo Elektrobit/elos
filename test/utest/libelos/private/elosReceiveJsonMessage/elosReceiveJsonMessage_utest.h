@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef ELOS_LIBELOS_ELOSRECEIVEJSONMESSAGE_UTEST_H
-#define ELOS_LIBELOS_ELOSRECEIVEJSONMESSAGE_UTEST_H
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
@@ -29,5 +28,3 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosReceiveJsonMessageSuccess)
 
 safuResultE_t elosMessageClone(elosMessage_t **message, elosMessage_t const *from);
 void elosMockReceive(elosUnitTestState_t *test, elosMessage_t *message, safuResultE_t result);
-
-#endif /* ELOS_LIBELOS_ELOSRECEIVEJSONMESSAGE_UTEST_H */

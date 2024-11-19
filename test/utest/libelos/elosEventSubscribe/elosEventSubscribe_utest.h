@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSEVENTSUBSCRIBE_H__
-#define __ELOS_ELOSEVENTSUBSCRIBE_H__
+#pragma once
 
 #include <arpa/inet.h>
 #include <cmocka_extensions/cmocka_extensions.h>
@@ -42,5 +41,3 @@ void elosEventSubscribeUtestCreateMessage(elosMessage_t **message, size_t *messa
                                           const char *payload, size_t payloadSize);
 
 void elosMockSendAndReceiveJsonMessage(_TestState_t *test, safuResultE_t result);
-
-#endif /* __ELOS_ELOSEVENTSUBSCRIBE_H__ */

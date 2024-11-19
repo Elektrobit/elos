@@ -110,6 +110,11 @@ safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_
                     errstr = "Failed to publish event";
                     safuLogErr(errstr);
                 }
+                retval = elosPluginStore(conn->sharedData->plugin, &event);
+                if (retval != SAFU_RESULT_OK) {
+                    errstr = "Failed to log event";
+                    safuLogErr(errstr);
+                }
             }
 
             elosEventDeleteMembers(&event);

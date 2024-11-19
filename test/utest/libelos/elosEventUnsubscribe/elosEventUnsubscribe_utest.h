@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-#ifndef __ELOS_ELOSEVENTUNSUBSCRIBE_H__
-#define __ELOS_ELOSEVENTUNSUBSCRIBE_H__
+#pragma once
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_mocks/mock_libc.h>
@@ -24,5 +23,3 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventUnsubscribeErrRequest)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosEventUnsubscribeSuccess)
 
 void elosMockSendAndReceiveJsonMessage(elosTestState_t *test, char const *responseStr, safuResultE_t result);
-
-#endif /* __ELOS_ELOSEVENTUNSUBSCRIBE_H__ */
