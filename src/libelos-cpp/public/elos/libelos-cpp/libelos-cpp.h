@@ -5,6 +5,7 @@
 #include <elos/libelos/libelos.h>
 
 #include <string>
+#include <vector>
 
 /*******************************************************************
  * elos namespace
@@ -267,8 +268,8 @@ class Elos {
      ******************************************************************/
     void operator<<(Event &&event);
 
-    elosResultE connect() noexcept;
-    elosResultE disconnect() noexcept;
+    elosResultE connect();
+    elosResultE disconnect();
 
     /*******************************************************************
      * Function: subscribe
@@ -280,6 +281,16 @@ class Elos {
      *      - Subscription:  subscription object with filter added and elosSubscription member
      ******************************************************************/
     Subscription subscribe(std::string filter);
+
+    /*******************************************************************
+     * Function to read subscripted Events.
+     *
+     * Parameters:
+     *      - subscription: subscription object with filter added and elosSubscription
+     * Return:
+     *      - Event:        vector of new subscripted events
+     ******************************************************************/
+    std::vector<elos::Event> read(Subscription &subscription);
 
    protected:
     std::string elosHost;
