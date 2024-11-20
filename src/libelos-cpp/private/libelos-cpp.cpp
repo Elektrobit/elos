@@ -7,7 +7,8 @@
 #include <new>
 #include <regex>
 #include <stdexcept>
-#include <string>
+
+#include "elos/event/event_types.h"
 
 namespace elos {
 
@@ -32,6 +33,13 @@ elosUri elosParseUri(const std::string &uri) {
 }
 
 Event::Event() {}
+
+Event::Event(elosEvent_t &&newEvent) : event(std::move(newEvent)) {
+    newEvent.hardwareid = nullptr;
+    newEvent.payload = nullptr;
+    newEvent.source.appName = nullptr;
+    newEvent.source.fileName = nullptr;
+}
 
 Event::Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t severity, const std::string &hardwareid,
              uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) {
@@ -112,7 +120,7 @@ Elos::~Elos() {
     }
 }
 
-elosResultE Elos::connect() noexcept {
+elosResultE Elos::connect() {
     elosResultE result = ELOS_RESULT_OK;
 
     if (!elosSessionValid(&session)) {
@@ -129,7 +137,7 @@ elosResultE Elos::connect() noexcept {
     return result;
 }
 
-elosResultE Elos::disconnect() noexcept {
+elosResultE Elos::disconnect() {
     elosResultE result = ELOS_RESULT_OK;
 
     if (elosSessionValid(&session)) {
@@ -179,5 +187,45 @@ Subscription Elos::subscribe(std::string filter) {
         newSubscription.subscription.eventQueueId = ELOS_ID_INVALID;
     }
     return newSubscription;
+}
+
+std::vector<elos::Event> Elos::read(Subscription &subscription) {
+    elosEventVector_t *eventVector = nullptr;
+    elosResultE result = ELOS_RESULT_FAILED;
+    std::vector<elos::Event> msgVector;
+
+    if (!elosSessionValid(&session)) {
+        connect();
+    }
+
+    if (elosSessionValid(&session)) {
+        result = (elosResultE)elosEventQueueRead(&session, subscription.subscription.eventQueueId, &eventVector);
+
+        if (result == ELOS_RESULT_OK && eventVector != nullptr) {
+            msgVector.reserve(eventVector->elementCount);
+            for (auto idx = 0UL; idx < eventVector->elementCount; ++idx) {
+                auto *currentElement = safuVecGet((safuVec_t *)eventVector, idx);
+                if (currentElement == nullptr) {
+                    break;
+                }
+                elosEvent_t *eventData = reinterpret_cast<elosEvent_t *>(currentElement);
+                msgVector.emplace_back(std::move(*eventData));
+            }
+
+        } else {
+            safuLogErr("ElosCpp Read Subscription failed");
+        }
+    } else {
+        safuLogErr("ElosCpp Read Subscription failed -- no valid session");
+    }
+
+    if (eventVector != nullptr) {
+        if (eventVector->data != nullptr) {
+            safuVecFree(eventVector);
+        }
+        free(eventVector);
+    }
+
+    return msgVector;
 }
 }  // namespace elos

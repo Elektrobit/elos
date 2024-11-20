@@ -5,6 +5,7 @@
 #include <elos/libelos/libelos.h>
 
 #include <string>
+#include <vector>
 
 /*******************************************************************
  * elos namespace
@@ -80,6 +81,15 @@ class Event {
     /*******************************************************************
      * Constructor for Event where event members are provided as arguments
      *
+     * Parameters:
+     *     - newEvent: The plain C Representation of an elos event.
+     ******************************************************************/
+    Event(elosEvent_t &&newEvent);
+
+    /*******************************************************************
+     * Parameterized Constructor: Event
+     *------------------------------------------------------------------
+     * Representation of an elos event.
      * Parameters:
      *     - date: The unix timestamp in nano seconds resolution.
      *     - source: A struct containing informations about where the event originated from.
@@ -258,8 +268,25 @@ class Elos {
      ******************************************************************/
     void operator<<(Event &&event);
 
-    elosResultE connect() noexcept;
-    elosResultE disconnect() noexcept;
+    /*******************************************************************
+     * Function to connect to elos
+     *
+     * Parameters:
+     *
+     * Return:
+     *      - elosResultE: Returns whether connection attempt was successful
+     ******************************************************************/
+    elosResultE connect();
+
+    /*******************************************************************
+     * Function to disconnect from elos
+     *
+     * Parameters:
+     *
+     * Return:
+     *      - elosResultE: Returns whether disconnect attempt was successful
+     ******************************************************************/
+    elosResultE disconnect();
 
     /*******************************************************************
      * Function: subscribe
@@ -271,6 +298,16 @@ class Elos {
      *      - Subscription:  subscription object with filter added and elosSubscription member
      ******************************************************************/
     Subscription subscribe(std::string filter);
+
+    /*******************************************************************
+     * Function to read subscripted Events.
+     *
+     * Parameters:
+     *      - subscription: subscription object with filter added and elosSubscription
+     * Return:
+     *      - Event:        vector of new subscripted events
+     ******************************************************************/
+    std::vector<elos::Event> read(Subscription &subscription);
 
    protected:
     std::string elosHost;

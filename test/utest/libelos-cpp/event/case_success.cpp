@@ -40,6 +40,14 @@ void elosTestEventSuccess(UNUSED void **state) {
     assert_string_equal(paramC.event.hardwareid, MOCK_ID);
     assert_string_equal(paramC.event.payload, MOCK_PAYLOAD);
 
+    PARAM("Parameterize Constructor with moved elosEvent_t event");
+    std::unique_ptr<elosEvent_t> newEvent = std::make_unique<elosEvent_t>();
+    newEvent->hardwareid = strdup(MOCK_NAME);
+    Event paramCons(std::move(*newEvent));
+
+    assert_string_equal(paramCons.event.hardwareid, MOCK_NAME);
+    assert_null(newEvent->hardwareid);
+
     PARAM("Default Destructor");
     try {
         auto defD = std::make_unique<Event>();
