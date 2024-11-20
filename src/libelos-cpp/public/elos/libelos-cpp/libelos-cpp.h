@@ -7,8 +7,8 @@
 #include <string>
 
 /*******************************************************************
- * Function: elosConnectTcpip
- *------------------------------------------------------------------
+ * elos namespace
+ *
  * The Elos public interface namespace.
  ******************************************************************/
 namespace elos {
@@ -21,6 +21,7 @@ namespace elos {
  *     ELOS_RESULT_OK        : Operation succeeded.
  *     ELOS_RESULT_NOT_FOUND : Specified item was not found.
  *     ELOS_RESULT_CLOSED    : Operation could not be completed because it is closed.
+ *
  ******************************************************************/
 enum elosResultE {
     ELOS_RESULT_FAILED = -1,
@@ -50,9 +51,8 @@ struct elosUri {
 };
 
 /*******************************************************************
- * Function: elosParseUri
- *------------------------------------------------------------------
  * Function to parse given uri into its components
+ *
  * Parameters:
  *      - uri:      uri string with uri components
  * Return:
@@ -72,15 +72,14 @@ class Event {
 
     /*******************************************************************
      * Constructor: Event
-     *------------------------------------------------------------------
+     *
      * Allocates a new elos event
      ******************************************************************/
-    Event() noexcept(false);
+    Event();
 
     /*******************************************************************
-     * Parameterized Constructor: Event
-     *------------------------------------------------------------------
-     * Representation of an elos event.
+     * Constructor for Event where event members are provided as arguments
+     *
      * Parameters:
      *     - date: The unix timestamp in nano seconds resolution.
      *     - source: A struct containing informations about where the event originated from.
@@ -91,14 +90,29 @@ class Event {
      *     - payload: The actual payload of the information.
      ******************************************************************/
     Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t severity, const std::string &hardwareid,
-          uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) noexcept(false);
+          uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload);
 
     /*******************************************************************
-     * Destructor
-     *------------------------------------------------------------------
-     * Clean up elos object resources and deallocates event.
+     * Constructor for Event where member source is passed using the move
+     * semantic and other members are provided as arguments
+     *
+     * Parameters:
+     *     - date: The unix timestamp in nano seconds resolution.
+     *     - source: rvalue of source
+     *     - severity:The possible severities for an Event.
+     *     - hardwareid: An unique identifier for the hardware.
+     *     - classification: The classification attribute is used to categorize events.
+     *     - messageCode: Provide information without text in payload.
+     *     - payload: The actual payload of the information.
      ******************************************************************/
-    ~Event() noexcept(false);
+    Event(struct timespec date, elosEventSource_t &&source, elosSeverityE_t severity, const std::string &hardwareid,
+          uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload);
+
+    /*******************************************************************
+     * Destructor to clean up elos object resources and deallocates event.
+     *
+     ******************************************************************/
+    ~Event();
 };
 
 /*******************************************************************
@@ -145,16 +159,14 @@ class Subscription {
 class Elos {
    public:
     /*******************************************************************
-     * Constructor: Elos
-     *------------------------------------------------------------------
-     * Sets default host and port values to members
+     * Constructor to set default host and port values to members
+     *
      ******************************************************************/
     Elos();
 
     /*******************************************************************
-     * Parameterized Constructor: Elos
-     *------------------------------------------------------------------
-     * Sets given host and port values members.
+     * Parameterized Constructor to set given host and port values members.
+     *
      * Parameters:
      *     - host: The elos host address.
      *     - port: The elos host port.
@@ -162,9 +174,8 @@ class Elos {
     Elos(const std::string &host, uint16_t port);
 
     /*******************************************************************
-     * Parameterized Constructor: Elos Uri
-     *------------------------------------------------------------------
-     * Parse uri string to set host and port members
+     * Parameterized Constructor to parse uri string to set host and
+     * port members
      * Parameters:
      *     - uri: The uri string containing elos host and port.
      ******************************************************************/
@@ -174,22 +185,81 @@ class Elos {
     Elos(const Elos &) = delete;
 
     /*******************************************************************
-     * Move Constructor: Elos Uri
-     *------------------------------------------------------------------
-     * Move a existing elos object to another
+     * Move Constructor to move a existing elos object to another.
+     *
+     * Parameters:
+     *     - other: existing elos object.
      ******************************************************************/
     Elos(Elos &&other);
 
     /*******************************************************************
-     * Destructor
-     *------------------------------------------------------------------
-     * Clean up elos object resources
+     * Destructor to clean up elos object resources
+     *
      ******************************************************************/
     ~Elos();
 
+    /*******************************************************************
+     * Function to publish given reference to event
+     *
+     * Info:
+     *      publish will try to establish a connection with elosd, if current
+     *      class instance is not connected to elosd
+     *
+     * Parameters:
+     *      - event:        event to published by elos client
+     *      - shallConnect: if instance is not connected but tries to publish, this
+     *                      parameters shall inform if the instance should try to
+     *                      connect or not.
+     * Return:
+     *      - elosResultE:  ELOS_RESULT_OK - if event is published successfully
+     *                      ELOS_RESULT_FAILED - if invalid session or publish fails
+     ******************************************************************/
+    elosResultE publish(const Event &event, bool shallConnect);
+
+    /*******************************************************************
+     * Function to publish an event using move semantic
+     *
+     * Info:
+     *      publish will try to establish a connection with elosd, if current
+     *      class instance is not connected to elosd
+     *
+     * Parameters:
+     *      - event:     event to published by elos client
+     *      - shallConnect: if instance is not connected but tries to publish, this
+     *                      parameters shall inform if the instance should try to
+     *                      connect or not.
+     * Return:
+     *      - elosResultE:  ELOS_RESULT_OK - if event is published successfully
+     *                      ELOS_RESULT_FAILED - if invalid session or publish fails
+     ******************************************************************/
+    elosResultE publish(Event &&event, bool shallConnect);
+
+    /*******************************************************************
+     * Overloading the insertion operator to publish given event.
+     *
+     * Info:
+     *      publish will try to establish a connection with elosd, if current
+     *      class instance is not connected to elosd
+     *
+     * Parameter:
+     *      - event:     event to published by elos client
+     ******************************************************************/
+    void operator<<(const Event &event);
+
+    /*******************************************************************
+     * Overloading the insertion operator to publish event using move semantic
+     *
+     * Info:
+     *      publish will try to establish a connection with elosd, if current
+     *      class instance is not connected to elosd
+     *
+     * Parameter:
+     *      - event:     event to published by elos client
+     ******************************************************************/
+    void operator<<(Event &&event);
+
     elosResultE connect() noexcept;
     elosResultE disconnect() noexcept;
-    elosResultE publish(const elosEvent_t *event);
 
     /*******************************************************************
      * Function: subscribe
