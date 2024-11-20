@@ -69,6 +69,15 @@ To verify the elos version use :
 
 .. command-output:: demo_libelos_v2 -v
 
+demo_libeloslite
+----------------
+
+This demo is a simple demonstration of libelos-lite.
+It Connects to elosd, publishes a simple event
+than publishes a very long event than a simple event again
+and finally disconnects from elosd again.
+
+
 demo_scanner_shmem - publish random messages into shared memory ringbuffer
 --------------------------------------------------------------------------
 
