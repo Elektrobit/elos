@@ -268,7 +268,24 @@ class Elos {
      ******************************************************************/
     void operator<<(Event &&event);
 
+    /*******************************************************************
+     * Function to connect to elos
+     *
+     * Parameters:
+     *
+     * Return:
+     *      - elosResultE: Returns whether connection attempt was successful
+     ******************************************************************/
     elosResultE connect();
+
+    /*******************************************************************
+     * Function to disconnect from elos
+     *
+     * Parameters:
+     *
+     * Return:
+     *      - elosResultE: Returns whether disconnect attempt was successful
+     ******************************************************************/
     elosResultE disconnect();
 
     /*******************************************************************
