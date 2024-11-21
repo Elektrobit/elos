@@ -309,6 +309,17 @@ class Elos {
      ******************************************************************/
     std::vector<elos::Event> read(Subscription &subscription);
 
+    /*******************************************************************
+     * Function to unsubscribe to events matching the filter.
+     *
+     * Parameters:
+     *      - subscription:     subscription to unsubscribe from.
+     * Return:
+     *      - ELOS_RESULT_OK:     if unsubscribe successfull
+     *      - ELOS_RESULT_FAILED: if unsubscribe failed
+     ******************************************************************/
+    elosResultE unsubscribe(Subscription &subscription);
+
    protected:
     std::string elosHost;
     uint16_t elosPort;

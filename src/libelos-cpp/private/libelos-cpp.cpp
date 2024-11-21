@@ -228,4 +228,8 @@ std::vector<elos::Event> Elos::read(Subscription &subscription) {
 
     return msgVector;
 }
+
+elosResultE Elos::unsubscribe(Subscription &subscription) {
+    return (elosResultE)elosEventUnsubscribe(&session, subscription.subscription.eventQueueId);
+}
 }  // namespace elos
