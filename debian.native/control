@@ -291,7 +291,7 @@ Description: Event logging and management with normalized output-format coredump
  .
  Coredump utility package.
 
-Package: libmock-libelos0
+Package: libmock-libelos1
 Section: libdevel
 Architecture: any
 Depends:
@@ -304,7 +304,7 @@ Description: Event logging and management with normalized output-format library 
  .
  Mock library package.
 
-Package: libelos0
+Package: libelos1
 Section: libs
 Architecture: any
 Depends:
@@ -317,7 +317,7 @@ Description: Event logging and management with normalized output-format library
  .
  Shared library package.
 
-Package: libelos-common0
+Package: libelos-common1
 Section: libs
 Architecture: any
 Depends:
@@ -330,7 +330,7 @@ Description: Event logging and management with normalized output-format DLT libr
  .
  Common parts used in multiple packages shared library package.
 
-Package: libelosdlt0
+Package: libelosdlt1
 Section: libs
 Architecture: any
 Depends:
@@ -343,7 +343,7 @@ Description: Event logging and management with normalized output-format DLT libr
  .
  DLT shared library package.
 
-Package: libelos-cpp0
+Package: libelos-cpp1
 Section: libs
 Architecture: any
 Depends:
@@ -356,7 +356,7 @@ Description: Event logging and management with normalized output-format C++ libr
  .
  C++ shared library package.
 
-Package: libelosplugin0
+Package: libelosplugin1
 Section: libs
 Architecture: any
 Depends:
@@ -374,7 +374,7 @@ Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
- libelos0 (= ${binary:Version}),
+ libelos1 (= ${binary:Version}),
  libelosplugin-dev (= ${binary:Version}),
  libelosdlt-dev (= ${binary:Version}),
  libelos-common-dev (= ${binary:Version}),
@@ -391,7 +391,7 @@ Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
- libelosplugin0 (= ${binary:Version}),
+ libelosplugin1 (= ${binary:Version}),
  libelos-common-dev (= ${binary:Version}),
 Description: Development package for libelosplugin
  elos is a tool to collect, store and publish various system events (i.e.
@@ -405,7 +405,7 @@ Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
- libelosdlt0 (= ${binary:Version}),
+ libelosdlt1 (= ${binary:Version}),
  libelos-common-dev (= ${binary:Version}),
 Description: Development package for libelosdlt
  elos is a tool to collect, store and publish various system events (i.e.
@@ -419,7 +419,7 @@ Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends},
- libelos-cpp0 (= ${binary:Version}),
+ libelos-cpp1 (= ${binary:Version}),
 Description: Development package for libelos-cpp
  elos is a tool to collect, store and publish various system events (i.e.
  syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
