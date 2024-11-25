@@ -18,11 +18,10 @@ safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elos
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
         elosPluginControlParam_t pluginParam = *param;
-        elosPluginControl_t *plugin = safuAllocMem(NULL, sizeof(elosPluginControl_t));
-
         pluginParam.id = pluginManager->nextId;
 
-        result = elosPluginControlInitialize(plugin, &pluginParam);
+        elosPluginControl_t *plugin = NULL;
+        result = elosPluginControlNew(&plugin, &pluginParam);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginControlInitialize failed");
         } else {
