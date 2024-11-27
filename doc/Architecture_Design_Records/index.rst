@@ -46,4 +46,5 @@ List of ADRs
    ./usage_of_FORTIFY_SOURCE
    ./communication_protocol
    ./libelos_logger_concept
+   ./libelos-cpp_api_concept
 

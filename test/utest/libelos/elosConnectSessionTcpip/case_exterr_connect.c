@@ -4,18 +4,18 @@
 
 #include "cmocka_mocks/mock_libc.h"
 #include "elos/libelos/libelos.h"
-#include "elosConnectTcpip_utest.h"
+#include "elosConnectSessionTcpip_utest.h"
 
-int elosTestElosConnectTcpipExtErrConnectSetup(UNUSED void **state) {
+int elosTestElosConnectSessionTcpipExtErrConnectSetup(UNUSED void **state) {
     return 0;
 }
 
-int elosTestElosConnectTcpipExtErrConnectTeardown(UNUSED void **state) {
+int elosTestElosConnectSessionTcpipExtErrConnectTeardown(UNUSED void **state) {
     return 0;
 }
 
-void elosTestElosConnectTcpipExtErrConnect(UNUSED void **state) {
-    elosSession_t *newSession = NULL;
+void elosTestElosConnectSessionTcpipExtErrConnect(UNUSED void **state) {
+    elosSession_t newSession = {0};
     safuResultE_t result;
     struct addrinfo infoRes = {
         .ai_family = AF_INET,
@@ -48,6 +48,6 @@ void elosTestElosConnectTcpipExtErrConnect(UNUSED void **state) {
     MOCK_FUNC_AFTER_CALL(freeaddrinfo, 0);
     expect_value(__wrap_freeaddrinfo, res, &infoRes);
 
-    result = elosConnectTcpip(MOCK_IP_ADDR, MOCK_PORT, &newSession);
+    result = elosConnectSessionTcpip(MOCK_IP_ADDR, MOCK_PORT, &newSession);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }

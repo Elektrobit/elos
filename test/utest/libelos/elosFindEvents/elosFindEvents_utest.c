@@ -2,14 +2,15 @@
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-#include <cmocka_extensions/cmocka_extensions.h>
-#include <cmocka_extensions/mock_extensions.h>
 #endif
 
+#include "elosFindEvents_utest.h"
+
+#include <cmocka_extensions/cmocka_extensions.h>
+#include <cmocka_extensions/mock_extensions.h>
 #include <json-c/json_object.h>
 #include <stdio.h>
 
-#include "elosFindEvents_utest.h"
 #include "mock_libelos_communication.h"
 
 int main() {

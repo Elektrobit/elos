@@ -444,20 +444,9 @@ safuResultE_t elosPluginControlDeleteSubscriber(UNUSED struct elosPluginControl 
 safuResultE_t elosPluginControlPublish(elosPublisher_t *publisher, const elosEvent_t *event) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    safuResultE_t bufferResult = elosEventBufferWrite(&publisher->eventBuffer, event);
-    if (bufferResult != SAFU_RESULT_OK) {
+    result = elosEventBufferWrite(&publisher->eventBuffer, event);
+    if (result != SAFU_RESULT_OK) {
         safuLogErr("Writing into the EventBuffer failed");
-        result = SAFU_RESULT_FAILED;
-    }
-
-    safuResultE_t loggerResult = elosLogAggregatorAdd(publisher->logAggregator, event);
-    if (loggerResult != SAFU_RESULT_OK) {
-        safuLogErr("elosLogAggregatorAdd failed");
-        result = SAFU_RESULT_FAILED;
-    }
-
-    if (bufferResult == SAFU_RESULT_OK && loggerResult == SAFU_RESULT_OK) {
-        result = SAFU_RESULT_OK;
     }
 
     return result;
@@ -558,8 +547,9 @@ safuResultE_t elosPluginControlUnsubscribe(elosSubscriber_t *subscriber, elosSub
         if (res != 1) {
             safuLogWarnF("subscription %p not found in subscriber for removal ", (void *)subscription);
             result = SAFU_RESULT_FAILED;
+        } else {
+            free((void *)subscription);
         }
-        free((void *)subscription);
     }
     return result;
 }

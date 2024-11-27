@@ -47,7 +47,12 @@ ENV SOURCES_URI=$SOURCES_URI
 ENV ELOS_DEPENDENCY_CONFIG=$ELOS_DEPENDENCY_CONFIG
 RUN env
 RUN ci/install_deps.py --global --no-tests --no-mocks --clean-first
-RUN cmake -B /tmp/elos/build . -DCMAKE_BUILD_TYPE=Release -G Ninja -DUNIT_TESTS=off
+RUN cmake -B /tmp/elos/build . \
+    -G Ninja  \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DUNIT_TESTS=off \
+    -DSMOKE_TESTS=on \
+    -DINSTALL_SMOKE_TESTS=on
 RUN ninja -C /tmp/elos/build all
 RUN sudo ninja -C /tmp/elos/build install
 
@@ -79,4 +84,4 @@ if [ "$START_ELOS" == "true" ]; then\n\
 fi\n\
 ' >> $HOME/.bashrc
 ENV START_ELOS="true"
-ENTRYPOINT /bin/bash
+CMD /bin/bash

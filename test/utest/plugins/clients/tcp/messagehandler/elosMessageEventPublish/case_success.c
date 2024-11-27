@@ -12,6 +12,7 @@
 
 extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 static elosEvent_t elosPublishedEvent = {0};
+static elosEvent_t elosStoredEvent = {0};
 
 int elosTestElosMessageEventPublishSuccessSetup(void **state) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));
@@ -63,8 +64,13 @@ int elosTestElosMessageEventPublishSuccessTeardown(void **state) {
 }
 
 static safuResultE_t _mockElosPluginPublish(UNUSED struct elosPublisher *const publisher,
-                                            UNUSED const elosEvent_t *const event) {
+                                            const elosEvent_t *const event) {
     elosEventDeepCopy(&elosPublishedEvent, event);
+    return SAFU_RESULT_OK;
+}
+
+static safuResultE_t _mockElosPluginStore(UNUSED struct elosPluginControl *plugin, const elosEvent_t *const event) {
+    elosEventDeepCopy(&elosStoredEvent, event);
     return SAFU_RESULT_OK;
 }
 
@@ -76,6 +82,7 @@ void elosTestElosMessageEventPublishSuccess(void **state) {
     SHOULD("%s", "publish event successfully");
 
     data->conn->sharedData->plugin->publish = _mockElosPluginPublish;
+    data->conn->sharedData->plugin->store = _mockElosPluginStore;
 
     MOCK_FUNC_AFTER_CALL(elosMessageHandlerSendJson, 0)
     expect_any(elosMessageHandlerSendJson, conn);
@@ -87,5 +94,7 @@ void elosTestElosMessageEventPublishSuccess(void **state) {
 
     assert_int_equal(ret, SAFU_RESULT_OK);
     int result = elosMessageEventPublishCheckEvent(data->event, &elosPublishedEvent);
+    assert_int_equal(result, 1);
+    result = elosMessageEventPublishCheckEvent(data->event, &elosStoredEvent);
     assert_int_equal(result, 1);
 }

@@ -15,6 +15,10 @@ MOCK_FUNC_PROTOTYPE(elosConnectTcpip, safuResultE_t, const char *ip, uint16_t po
 
 MOCK_FUNC_PROTOTYPE(elosDisconnect, safuResultE_t, elosSession_t *session)
 
+MOCK_FUNC_PROTOTYPE(elosConnectSessionTcpip, safuResultE_t, const char *host, uint16_t port, elosSession_t *session)
+
+MOCK_FUNC_PROTOTYPE(elosDisconnectSession, safuResultE_t, elosSession_t *session)
+
 MOCK_FUNC_PROTOTYPE(elosGetVersion, safuResultE_t, elosSession_t *session, const char **version)
 
 MOCK_FUNC_PROTOTYPE(elosLogFindEvent, safuResultE_t, elosSession_t *session, const char *filterRule,

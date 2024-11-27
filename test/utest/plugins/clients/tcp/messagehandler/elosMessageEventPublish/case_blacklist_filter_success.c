@@ -19,6 +19,7 @@
 
 extern int elosMessageEventPublish(elosClientConnection_t const *const conn, elosMessage_t const *const msg);
 static elosEvent_t elosPublishedEvent = {0};
+static elosEvent_t elosStoredEvent = {0};
 
 int elosTestelosMessageEventPublishBlacklistFilterSuccessSetup(void **state) {
     elosUtestState_t *data = safuAllocMem(NULL, sizeof(elosUtestState_t));
@@ -40,6 +41,7 @@ int elosTestelosMessageEventPublishBlacklistFilterSuccessSetup(void **state) {
 
     data->conn->sharedData->plugin = safuAllocMem(NULL, sizeof(elosPlugin_t));
     assert_non_null(data->conn->sharedData->plugin);
+    memset(data->conn->sharedData->plugin, 0, sizeof(elosPlugin_t));
 
     const char mockErrString[] = "unauthorized publishing attempt";
     data->response = elosMessageHandlerResponseCreate(mockErrString);
@@ -77,8 +79,13 @@ int elosTestelosMessageEventPublishBlacklistFilterSuccessTeardown(void **state) 
 }
 
 static safuResultE_t _mockElosPluginPublish(UNUSED struct elosPublisher *const publisher,
-                                            UNUSED const elosEvent_t *const event) {
+                                            const elosEvent_t *const event) {
     elosEventDeepCopy(&elosPublishedEvent, event);
+    return SAFU_RESULT_OK;
+}
+
+static safuResultE_t _mockElosPluginStore(UNUSED struct elosPluginControl *plugin, const elosEvent_t *const event) {
+    elosEventDeepCopy(&elosStoredEvent, event);
     return SAFU_RESULT_OK;
 }
 
@@ -112,6 +119,7 @@ void elosTestelosMessageEventPublishBlacklistFilterSuccess(void **state) {
     will_return(__wrap_safuGetHardwareId, "localhost");
 
     data->conn->sharedData->plugin->publish = _mockElosPluginPublish;
+    data->conn->sharedData->plugin->store = _mockElosPluginStore;
 
     MOCK_FUNC_ENABLE(elosMessageHandlerSendJson)
     expect_any(elosMessageHandlerSendJson, conn);
@@ -122,4 +130,8 @@ void elosTestelosMessageEventPublishBlacklistFilterSuccess(void **state) {
     ret = elosMessageEventPublish(data->conn, data->msg);
 
     assert_int_equal(ret, SAFU_RESULT_OK);
+    int result = elosMessageEventPublishCheckEvent(&securityEvent, &elosPublishedEvent);
+    assert_int_equal(result, 1);
+    result = elosMessageEventPublishCheckEvent(&securityEvent, &elosStoredEvent);
+    assert_int_equal(result, 1);
 }
