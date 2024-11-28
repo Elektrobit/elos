@@ -50,6 +50,9 @@ safuResultE_t elosScannerManagerStart(elosScannerManager_t *scannerManager) {
                                        scannerManager->searchPath, &scannerManager->pluginControlPtrVector);
         if (result != SAFU_RESULT_OK) {
             safuLogWarn("elosPluginManagerStart executed with errors");
+        } else {
+            safuLogInfoF("ScannerManager loaded %d scanner plugins",
+                         safuVecElements(&scannerManager->pluginControlPtrVector));
         }
     }
     return result;
