@@ -2,10 +2,13 @@
 #include "elos/libelos-cpp/libelos-cpp.h"
 
 #include <safu/log.h>
+#include <safu/result.h>
 
+#include <new>
 #include <regex>
 #include <stdexcept>
-#include <string>
+
+#include "elos/event/event_types.h"
 
 namespace elos {
 
@@ -29,10 +32,17 @@ elosUri elosParseUri(const std::string &uri) {
     return newUri;
 }
 
-Event::Event() noexcept(false) {}
+Event::Event() {}
+
+Event::Event(elosEvent_t &&newEvent) : event(std::move(newEvent)) {
+    newEvent.hardwareid = nullptr;
+    newEvent.payload = nullptr;
+    newEvent.source.appName = nullptr;
+    newEvent.source.fileName = nullptr;
+}
 
 Event::Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t severity, const std::string &hardwareid,
-             uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) noexcept(false) {
+             uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) {
     elosResultE result = ELOS_RESULT_OK;
 
     event.date = date;
@@ -56,12 +66,25 @@ Event::Event(struct timespec date, elosEventSource_t &source, elosSeverityE_t se
     }
 }
 
-Event::~Event() noexcept(false) {
+Event::Event(struct timespec date, elosEventSource_t &&source, elosSeverityE_t severity, const std::string &hardwareid,
+             uint64_t classification, elosEventMessageCodeE_t messageCode, const std::string &payload) {
+    event.date = date;
+    event.source = source;
+    event.severity = severity;
+    event.messageCode = messageCode;
+    event.classification = classification;
+    event.hardwareid = strdup(hardwareid.c_str());
+    event.payload = strdup(payload.c_str());
+    if (!event.hardwareid || !event.payload) {
+        throw std::bad_alloc();
+    }
+}
+
+Event::~Event() {
     elosResultE result = ELOS_RESULT_OK;
     result = (elosResultE)elosEventDeleteMembers(&event);
     if (result == ELOS_RESULT_FAILED) {
         safuLogErr("deleting event failed!");
-        throw ELOS_RESULT_FAILED;
     }
 }
 
@@ -97,7 +120,7 @@ Elos::~Elos() {
     }
 }
 
-elosResultE Elos::connect() noexcept {
+elosResultE Elos::connect() {
     elosResultE result = ELOS_RESULT_OK;
 
     if (!elosSessionValid(&session)) {
@@ -114,7 +137,7 @@ elosResultE Elos::connect() noexcept {
     return result;
 }
 
-elosResultE Elos::disconnect() noexcept {
+elosResultE Elos::disconnect() {
     elosResultE result = ELOS_RESULT_OK;
 
     if (elosSessionValid(&session)) {
@@ -131,16 +154,82 @@ elosResultE Elos::disconnect() noexcept {
     return result;
 }
 
-elosResultE Elos::publish(UNUSED const elosEvent_t *event) {
-    elosResultE result = ELOS_RESULT_OK;
-    safuLogInfo("ElosCpp Publish");
+elosResultE Elos::publish(const Event &event, bool shallConnect = true) {
+    elosResultE result = ELOS_RESULT_FAILED;
+    if (shallConnect && !elosSessionValid(&session)) {
+        this->connect();
+    }
+    if (elosSessionValid(&session)) {
+        result = (elosResultE)elosEventPublish(&session, &event.event);
+    }
     return result;
 }
 
-elosResultE Elos::subscribe(UNUSED const char **filterRuleArray, UNUSED size_t filterRuleArraySize,
-                            UNUSED elosEventQueueId_t *eventQueueId) {
+elosResultE Elos::publish(Event &&event, bool shallConnect = true) {
+    return publish(event, shallConnect);
+}
+
+void Elos::operator<<(const Event &event) {
+    publish(event);
+}
+
+void Elos::operator<<(Event &&event) {
+    publish(event);
+}
+
+Subscription Elos::subscribe(std::string filter) {
     elosResultE result = ELOS_RESULT_OK;
-    safuLogInfo("ElosCpp Subscribe");
-    return result;
+    Subscription newSubscription;
+    const char *filterArray[] = {filter.c_str(), nullptr};
+    result = (elosResultE)elosEventSubscribe(&session, filterArray, 1, &newSubscription.subscription.eventQueueId);
+    if (result != ELOS_RESULT_OK) {
+        safuLogErr("Invalid Session, publish failed");
+        newSubscription.subscription.eventQueueId = ELOS_ID_INVALID;
+    }
+    return newSubscription;
+}
+
+std::vector<elos::Event> Elos::read(Subscription &subscription) {
+    elosEventVector_t *eventVector = nullptr;
+    elosResultE result = ELOS_RESULT_FAILED;
+    std::vector<elos::Event> msgVector;
+
+    if (!elosSessionValid(&session)) {
+        connect();
+    }
+
+    if (elosSessionValid(&session)) {
+        result = (elosResultE)elosEventQueueRead(&session, subscription.subscription.eventQueueId, &eventVector);
+
+        if (result == ELOS_RESULT_OK && eventVector != nullptr) {
+            msgVector.reserve(eventVector->elementCount);
+            for (auto idx = 0UL; idx < eventVector->elementCount; ++idx) {
+                auto *currentElement = safuVecGet((safuVec_t *)eventVector, idx);
+                if (currentElement == nullptr) {
+                    break;
+                }
+                elosEvent_t *eventData = reinterpret_cast<elosEvent_t *>(currentElement);
+                msgVector.emplace_back(std::move(*eventData));
+            }
+
+        } else {
+            safuLogErr("ElosCpp Read Subscription failed");
+        }
+    } else {
+        safuLogErr("ElosCpp Read Subscription failed -- no valid session");
+    }
+
+    if (eventVector != nullptr) {
+        if (eventVector->data != nullptr) {
+            safuVecFree(eventVector);
+        }
+        free(eventVector);
+    }
+
+    return msgVector;
+}
+
+elosResultE Elos::unsubscribe(Subscription &subscription) {
+    return (elosResultE)elosEventUnsubscribe(&session, subscription.subscription.eventQueueId);
 }
 }  // namespace elos

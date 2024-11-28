@@ -3,35 +3,34 @@
 
 #include "publish_utest.h"
 
-int elosTestPublishSuccessSetup(UNUSED void **state) {
+int elosTestPublishErrSessionSetup(UNUSED void **state) {
     return 0;
 }
 
-int elosTestPublishSuccessTeardown(UNUSED void **state) {
+int elosTestPublishErrSessionTeardown(UNUSED void **state) {
     return 0;
 }
 
-void elosTestPublishSuccess(UNUSED void **state) {
+void elosTestPublishErrSession(UNUSED void **state) {
     using namespace elos;
     Event testEvent;
     elosResultE result;
     Elos testObject;
+    struct timespec testTime;
 
     TEST("publish");
-    SHOULD("%s", "successfully publish an event");
-
-    MOCK_FUNC_ALWAYS(elosEventPublish);
-    expect_any_always(elosEventPublish, session);
-    expect_any_always(elosEventPublish, event);
-    will_return_always(elosEventPublish, ELOS_RESULT_OK);
+    SHOULD("%s", "not publish an event, since session is invalid");
 
     MOCK_FUNC_ALWAYS(elosSessionValid);
     expect_any_always(elosSessionValid, session);
-    will_return_always(elosSessionValid, true);
+    will_return_always(elosSessionValid, false);
+
+    int ret = clock_gettime(CLOCK_REALTIME, &testTime);
+    assert_int_equal(ret, 0);
 
     PARAM("Default Event");
     result = testObject.publish(testEvent, true);
-    assert_int_equal(result, ELOS_RESULT_OK);
+    assert_int_equal(result, ELOS_RESULT_FAILED);
 
     PARAM("Event Initializer List");
     result = testObject.publish({elosCTestEvent.date,
@@ -42,7 +41,7 @@ void elosTestPublishSuccess(UNUSED void **state) {
                                  elosCTestEvent.messageCode,
                                  elosCTestEvent.payload},
                                 true);
-    assert_int_equal(result, ELOS_RESULT_OK);
+    assert_int_equal(result, ELOS_RESULT_FAILED);
     MOCK_FUNC_DISABLE(elosEventPublish);
     MOCK_FUNC_DISABLE(elosSessionValid);
 }

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <safu/vector_types.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -17,11 +16,11 @@
  *      fileName: a string containing the filename of the application the event originated from
  *      pid: an integeter containing the process id of the application the event originated from
  ******************************************************************/
-typedef struct elosEventSource {
+typedef struct elosliteEventSource {
     char *appName;
     char *fileName;
     pid_t pid;
-} elosEventSource_t;
+} elosliteEventSource_t;
 
 /*******************************************************************
  * Representation of an elos event
@@ -67,17 +66,12 @@ typedef struct elosEventSource {
  *
  *      payload: the actual payload of the information (text, number, structs)).
  ******************************************************************/
-typedef struct elosEvent {
+typedef struct elosliteEvent {
     struct timespec date;
-    elosEventSource_t source;
+    elosliteEventSource_t source;
     elosSeverityE_t severity;
     char *hardwareid;
     uint64_t classification;
     elosEventMessageCodeE_t messageCode;
     char *payload;
-} elosEvent_t;
-
-/*******************************************************************
- * typedef :c:type:`safuVec_t` to :c:type:`elosEventVector_t`.
- ******************************************************************/
-typedef safuVec_t elosEventVector_t;
+} elosliteEvent_t;

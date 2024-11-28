@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
-#include "publish_utest.h"
+
+#include "eloslitePublish_utest.h"
 
 TEST_SUITE_FUNC_PROTOTYPES(publishUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosTestPublishSuccess),
-        TEST_CASE(elosTestPublishSuccessInsert),
-        TEST_CASE(elosTestPublishErrSession),
+        TEST_CASE(elosliteTestEloslitePublishSuccessAllPermutations),
     };
 
     return RUN_TEST_SUITE(tests, publishUtest);

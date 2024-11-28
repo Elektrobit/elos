@@ -6,11 +6,12 @@ enable_language(CXX)
 
 create_unit_test(
   NAME
-    test_libelos-cpp_subscribe_utest
+    test_libelos-cpp_read_utest
   SOURCES
     case_success.cpp
-    subscribe_utest.cpp
+    case_error.cpp
+    read_utest.cpp
   LIBRARIES
-    mock_libelos_static
     libelos-cpp_static
+    mock_libelos_static
 )

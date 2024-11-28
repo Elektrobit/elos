@@ -6,4 +6,4 @@ extern "C" {
 }
 #include "mock_libelos.h"
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestSubscribeSuccess)
+TEST_CASE_FUNC_PROTOTYPES(elosTestUnsubscribeSuccess)

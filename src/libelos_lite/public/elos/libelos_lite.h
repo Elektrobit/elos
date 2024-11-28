@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "elos/lite/event.h"
+
 /*******************************************************************
  * safes a handle for a connection to elosd
  ******************************************************************/
@@ -48,3 +50,14 @@ bool elosliteConnectTcpip(const char *host, uint16_t port, elosliteSession_t *se
  *      `true` for success or `false` on failure
  ******************************************************************/
 bool elosliteDisconnect(elosliteSession_t *session);
+
+/*******************************************************************
+ * Publish an event to elos.
+ *
+ * Parameters:
+ *      session:  session data structure holding the connection
+ *      event:    the event to publish
+ * Return:
+ *      `true` for success or `false` on failure
+ ******************************************************************/
+bool eloslitePublish(elosliteSession_t *session, elosliteEvent_t *event);

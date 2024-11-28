@@ -4,6 +4,8 @@ add_library(
   libelos-lite
   STATIC
     private/libelos_lite.c
+    private/libelos_lite_publish.c
+    private/message_utils.c
 )
 
 target_include_directories(
@@ -12,6 +14,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/private/
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public/>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface>
     $<INSTALL_INTERFACE:include/>
 )
 
@@ -24,8 +27,20 @@ set_target_properties(
 )
 target_compile_definitions(libelos-lite PRIVATE ELOS_VERSION="${ELOS_VERSION}")
 
+if (DEFINED ELOSLITE_SEND_BUFFER_SIZE)
+  target_compile_definitions(libelos-lite PRIVATE ELOSLITE_SEND_BUFFER_SIZE=${ELOSLITE_SEND_BUFFER_SIZE})
+endif ()
+
 install(TARGETS libelos-lite DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(
+  FILES
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface/elos/event/event_message_codes.h>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface/elos/event/event_classification.h>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/components/event/interface/elos/event/event_severity.h>
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/elos/event/
+)
+
 
 install(
   EXPORT libelos-liteTargets
