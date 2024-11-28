@@ -3,7 +3,7 @@ Scanner Manager
 
 All events collected by elos are collected through scanners. The scanners are provided as elos-plugins.
 The Scanner Manager is responsible for loading all plugins via the generic Plugin Manager
-:doc:`/src/components/pluginmanager/index`, starting, stopping and unloading them.
+:doc:`/src/elosd/pluginmanager/index`, starting, stopping and unloading them.
 The scanner Manager also determine the configuration which is used to search
 for plugins.
 
@@ -11,14 +11,14 @@ for plugins.
 Static structure
 ----------------
 
-The Scanner Manager is a typical elos component (:doc:`/src/components/index`).
+The Scanner Manager is a typical elos component (:doc:`/src/elosd/index`).
 It uses the PluginManager to run scanner plugins.
 
 
 PluginManager
 ~~~~~~~~~~~~~~~~~~
 
-Detailed documentation about PluginManager is here :doc:`/src/components/pluginmanager/index`
+Detailed documentation about PluginManager is here :doc:`/src/elosd/pluginmanager/index`
 
 
 Dynamic behavior

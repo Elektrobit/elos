@@ -675,7 +675,7 @@ elosd Configuration - Options Explained
 By default the elosd config options, stored in ‘/etc/elos/elosd.json’ do
 look like this:
 
-.. literalinclude:: /src/components/config/elosd.json
+.. literalinclude:: /src/elosd/config/elosd.json
    :language: json
    :caption: elos default config shipped with elos
    :linenos:
@@ -721,7 +721,7 @@ use another default value, decided by us.
    ``message code, filter`` pairs to set a specific ``message code`` for
    an event if the given filter matches the event.
 
-For a more details see :ref:`src/components/config/index:Elos Configuration`.
+For a more details see :ref:`src/elosd/config/index:Elos Configuration`.
 
 Note: You can create/overwrite environment variables by typing something
 like i.e.: ``export ELOSD_PORT='1234'`` If you want to store them
