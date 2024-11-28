@@ -31,19 +31,16 @@ run_all()
 
 run_suite()
 {
-  TEST_SUITE=$(find ${TEST_DIR} -type f -name ${1})
-  if [ -f "${TEST_SUITE}" ]; then
-      TEST_NAME="elos_test_suite_$(basename "${TEST_SUITE}")"
-      printf '\nStart test suite %-s\n' "${TEST_SUITE}"
-      robot \
-          --variablefile="$VARIABLE_FILE" \
-          --pythonpath="$INTEGRATION_DIR" \
-          --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
-          --output="$TEST_NAME" \
-          --report="$TEST_NAME" "${TEST_SUITE}"
-  else
-      echo "provided path is not a .robot suite"
-  fi
+  TEST_SUITE="${1}"
+  TEST_NAME="$(echo "${TEST_SUITE}" | sed -e "s/ /_/g" -e "s/\./-/g" -e "s/\(.*\)/\L\1/g")"
+  printf '\nStart test suite %-s\n' "${TEST_SUITE}"
+  robot \
+      --variablefile="$VARIABLE_FILE" \
+      --pythonpath="$INTEGRATION_DIR" \
+      --outputdir="$TEST_OUTPUT"/elos_test_suite \
+      --output="$TEST_NAME" \
+      --report="$TEST_NAME" \
+      --suite "${TEST_SUITE}" "${TEST_DIR}"
 }
 
 run_module()
