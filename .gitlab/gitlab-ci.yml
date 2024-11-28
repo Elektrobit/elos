@@ -213,6 +213,7 @@ code-lint:
     when: always
     paths:
       - build/Release/cmake/lint_results/
+      - build/Release/result/integration/robot_lint
 
 benchmark:
   stage: test
