@@ -27,7 +27,6 @@ target_link_libraries(
     elos_common_interface
     elos_event_static
     samconf::samconf
-    config_static
 )
 
 target_include_directories(

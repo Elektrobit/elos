@@ -21,7 +21,6 @@ target_link_libraries(
   PUBLIC
     elos_common_interface
     samconf::samconf_interface
-    eventprocessor_static
     eloslog_static
     eventbuffer_static
     safu::safu

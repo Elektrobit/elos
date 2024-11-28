@@ -16,7 +16,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "elos/config/config.h"
 #include "elos/event/event.h"
 #include "elos/event/event_source.h"
 #include "logline_mapper.h"
