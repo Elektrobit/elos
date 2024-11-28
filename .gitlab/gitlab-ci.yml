@@ -214,6 +214,8 @@ code-lint:
     paths:
       - build/Release/cmake/lint_results/
       - build/Release/result/integration/robot_lint
+    reports:
+      codequality: build/Release/result/integration/robot_lint/robot_lint.json
 
 benchmark:
   stage: test

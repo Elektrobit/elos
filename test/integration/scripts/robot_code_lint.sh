@@ -22,8 +22,12 @@ static_code_check()
   echo "Static Code check"
  
   robocop -o ${TEST_OUTPUT}/robot_lint.log -A ${LINT_CONFIG} $INTEGRATION_TEST_DIR 
+  RC_CHECK=$?
 
-  RC_CHECK=$(echo $?)
+  if [ "${RC_CHECK}" -gt 0 ]; then
+      python "${CMD_PATH}/robc2gitlab.py" -i "${TEST_OUTPUT}/robot_lint.log" -o "${TEST_OUTPUT}/robot_lint.json" 
+      sed -i "s,${BASE_DIR}/,,"  "${TEST_OUTPUT}/robot_lint.json" 
+  fi
 
   echo "Found "$RC_CHECK" format errors in code"
 }
