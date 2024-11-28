@@ -24,10 +24,7 @@ Test New Valid Elosd Configuration
     ${Config}=    Valid Configuration
     Restart Elosd With Config From Template    &{Config}
     Elosd Is Running
-    [Teardown]    Run Keywords    Stop Elosd
-    ...    AND    Wait For Elosd To Stop
-    ...    AND    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test New Invalid Elosd Configuration
     [Documentation]    Set new invalid config for elosd
@@ -38,8 +35,7 @@ Test New Invalid Elosd Configuration
     Set Config From String    ${Config}
     Start Elosd
     Elosd Is Stopped
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test New Elosd Configuration Missing Plugin Filter
     [Documentation]    Set new config that is missing
@@ -51,8 +47,7 @@ Test New Elosd Configuration Missing Plugin Filter
 
     Restart Elosd With Config From Template    &{Config}
     Stop Elosd And Check Log For    WARNING: No filter rules for JsonBackend
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test New Elosd Configuration Empty Plugin Filter
     [Documentation]    Set new config that has an empty list
@@ -65,8 +60,7 @@ Test New Elosd Configuration Empty Plugin Filter
 
     Restart Elosd With Config From Template    &{Config}    LogLevel=${LOGLEVEL}
     Stop Elosd And Check Log For    Found 0 filter for JsonBackend
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test New Elosd Configuration Integer As Plugin Filter
     [Documentation]    Set new config that has an integer instead
@@ -79,8 +73,7 @@ Test New Elosd Configuration Integer As Plugin Filter
 
     Restart Elosd With Config From Template    &{Config}    LogLevel=${LOGLEVEL}
     Stop Elosd And Check Log For    Found 0 filter for JsonBackend
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test New Elosd Configuration Filter String Instead Of Filter List
     [Documentation]    Set new config that has a filter string instead
@@ -93,8 +86,7 @@ Test New Elosd Configuration Filter String Instead Of Filter List
 
     Restart Elosd With Config From Template    &{Config}    LogLevel=${LOGLEVEL}
     Stop Elosd And Check Log For    Found 0 filter for JsonBackend
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test New Elosd Configuration With Different Interface
     [Documentation]    Set new config that sets the Interface and Port
@@ -113,8 +105,7 @@ Test New Elosd Configuration With Different Interface
     Restart Elosd With Config From Template
     ...    &{Config}
     Stop Elosd And Check Log For    listen on: ${INTERFACE}:${PORT}
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 
 *** Keywords ***

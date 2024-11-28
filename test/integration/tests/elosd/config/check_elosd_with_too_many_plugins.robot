@@ -32,8 +32,7 @@ Test Elosd Configuration With A Lot Of Plugins
     ${Config}=    Add Many Backend Dummies To Config    ${NUM_PLUGINS}    ${Config}
     Ensure Elosd Is Running With New Config    &{Config}
 
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Ensure Elosd Is Started
+    [Teardown]    Reset Elosd Config
 
 
 *** Keywords ***

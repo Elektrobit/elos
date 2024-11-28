@@ -30,8 +30,7 @@ Test Elosd Configuration with missing Plugins Lists
     Ensure Elosd Is Stopped
     Check Elosd Log For    ClientManager loaded 0 client plugins
     Check Elosd Log For    StorageManager loaded 0 storage plugins
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd Configuration With Empty Plugins Lists
     [Documentation]    Set new config has an empty "Plugins" list
@@ -46,8 +45,7 @@ Test Elosd Configuration With Empty Plugins Lists
     Ensure Elosd Is Stopped
     Check Elosd Log For    ClientManager loaded 0 client plugins
     Check Elosd Log For    StorageManager loaded 0 storage plugins
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd With Missing ClientInputs Configuration
     [Documentation]    Set new config has no ClientInputs
@@ -60,8 +58,7 @@ Test Elosd With Missing ClientInputs Configuration
 
     Ensure Elosd Is Stopped
     Check Elosd Log For    DEBUG: No ClientInputs configured
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd With Missing StorageManager Configuration
     [Documentation]    Set new config has no StorageManager
@@ -74,8 +71,7 @@ Test Elosd With Missing StorageManager Configuration
 
     Ensure Elosd Is Stopped
     Check Elosd Log For    DEBUG: No EventLogging configured
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd Configuration With Empty EventLogging Configuration
     [Documentation]    Set new config with empty EventLogging part
@@ -88,9 +84,7 @@ Test Elosd Configuration With Empty EventLogging Configuration
 
     Ensure Elosd Is Stopped
     Check Elosd Log For    StorageManager loaded 0 storage plugins
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Check Elosd Log For    StorageManager loaded 0 storage plugins
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd Configuration With Empty ClientInputs Configuration
     [Documentation]    Set new config with empty ClientInputs part
@@ -103,8 +97,7 @@ Test Elosd Configuration With Empty ClientInputs Configuration
 
     Ensure Elosd Is Stopped
     Check Elosd Log For    ClientManager loaded 0 client plugins
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd With Wrong StorageManager Configuration
     [Documentation]    Set new config with wrong type for EventLogging
@@ -116,8 +109,7 @@ Test Elosd With Wrong StorageManager Configuration
     Fails To Start Elosd With New Config     &{Config}
 
     Check Elosd Log For    ERROR: elosStorageManagerInitialize had errors during execution
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd With Wrong ClientManager Configuration
     [Documentation]    Set new config with wrong type for StorageManager
@@ -129,8 +121,7 @@ Test Elosd With Wrong ClientManager Configuration
     Fails To Start Elosd With New Config     &{Config}
 
     Check Elosd Log For    ERROR: elosClientManagerInitialize had errors during execution
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 Test Elosd Configuration With Wrong Plugins Lists Type
     [Documentation]    Set new config has wrong "Plugins" list type
@@ -143,8 +134,7 @@ Test Elosd Configuration With Wrong Plugins Lists Type
     Fails To Start Elosd With New Config     &{Config}
 
     Check Elosd Log For    configuration is not in a valid format
-    [Teardown]    Run Keywords    Cleanup Template Config
-    ...    AND    Start Elosd
+    [Teardown]    Reset Elosd Config
 
 
 *** Keywords ***
