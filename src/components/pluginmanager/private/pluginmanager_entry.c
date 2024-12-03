@@ -18,24 +18,23 @@ safuResultE_t elosPluginManagerEntryAdd(elosPluginManager_t *pluginManager, elos
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
         elosPluginControlParam_t pluginParam = *param;
-        elosPluginControl_t plugin = {0};
-
         pluginParam.id = pluginManager->nextId;
 
-        result = elosPluginControlInitialize(&plugin, &pluginParam);
+        elosPluginControl_t *plugin = NULL;
+        result = elosPluginControlNew(&plugin, &pluginParam);
         if (result != SAFU_RESULT_OK) {
             safuLogErr("elosPluginControlInitialize failed");
         } else {
-            result = elosPluginControlVectorPush(&pluginManager->pluginVector, &plugin);
+            result = elosPluginControlPtrVectorPush(&pluginManager->pluginPtrVector, plugin);
             if (result != SAFU_RESULT_OK) {
-                result = elosPluginControlDeleteMembers(&plugin);
+                result = elosPluginControlDeleteMembers(plugin);
                 if (result != SAFU_RESULT_OK) {
                     safuLogErr("elosPluginControlDeleteMembers failed, possible memory leak");
                 }
                 safuLogErr("elosPluginControlInitialize failed");
             } else {
                 if (id != NULL) {
-                    *id = plugin.context.id;
+                    *id = plugin->context.id;
                 }
 
                 pluginManager->nextId += 1;
@@ -55,9 +54,9 @@ safuResultE_t elosPluginManagerEntryGet(elosPluginManager_t *pluginManager, elos
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INITIALIZED) {
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
-        result = elosPluginControlVectorGetById(&pluginManager->pluginVector, id, plugin);
+        result = elosPluginControlPtrVectorGetById(&pluginManager->pluginPtrVector, id, plugin);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosPluginControlVectorGetById failed");
+            safuLogErr("elosPluginControlPtrVectorGetById failed");
         }
     }
 
@@ -74,9 +73,9 @@ safuResultE_t elosPluginManagerEntryLoad(elosPluginManager_t *pluginManager, elo
     } else {
         elosPluginControl_t *plugin = NULL;
 
-        result = elosPluginControlVectorGetById(&pluginManager->pluginVector, id, &plugin);
+        result = elosPluginControlPtrVectorGetById(&pluginManager->pluginPtrVector, id, &plugin);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosPluginControlVectorGetById failed");
+            safuLogErr("elosPluginControlPtrVectorGetById failed");
         } else {
             result = elosPluginControlLoad(plugin);
             if (result != SAFU_RESULT_OK) {
@@ -98,9 +97,9 @@ safuResultE_t elosPluginManagerEntryUnload(elosPluginManager_t *pluginManager, e
     } else {
         elosPluginControl_t *plugin = NULL;
 
-        result = elosPluginControlVectorGetById(&pluginManager->pluginVector, id, &plugin);
+        result = elosPluginControlPtrVectorGetById(&pluginManager->pluginPtrVector, id, &plugin);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosPluginControlVectorGetById failed");
+            safuLogErr("elosPluginControlPtrVectorGetById failed");
         } else {
             result = elosPluginControlUnload(plugin);
             if (result != SAFU_RESULT_OK) {
@@ -122,9 +121,9 @@ safuResultE_t elosPluginManagerEntryStart(elosPluginManager_t *pluginManager, el
     } else {
         elosPluginControl_t *plugin = NULL;
 
-        result = elosPluginControlVectorGetById(&pluginManager->pluginVector, id, &plugin);
+        result = elosPluginControlPtrVectorGetById(&pluginManager->pluginPtrVector, id, &plugin);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosPluginControlVectorGetById failed");
+            safuLogErr("elosPluginControlPtrVectorGetById failed");
         } else {
             result = elosPluginControlStart(plugin);
             if (result != SAFU_RESULT_OK) {
@@ -146,9 +145,9 @@ safuResultE_t elosPluginManagerEntryStop(elosPluginManager_t *pluginManager, elo
     } else {
         elosPluginControl_t *plugin = NULL;
 
-        result = elosPluginControlVectorGetById(&pluginManager->pluginVector, id, &plugin);
+        result = elosPluginControlPtrVectorGetById(&pluginManager->pluginPtrVector, id, &plugin);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosPluginControlVectorGetById failed");
+            safuLogErr("elosPluginControlPtrVectorGetById failed");
         } else {
             result = elosPluginControlStop(plugin);
             if (result != SAFU_RESULT_OK) {
@@ -168,9 +167,9 @@ safuResultE_t elosPluginManagerEntryRemove(elosPluginManager_t *pluginManager, e
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INITIALIZED) {
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
-        result = elosPluginControlVectorRemoveById(&pluginManager->pluginVector, pluginId);
+        result = elosPluginControlPtrVectorRemoveById(&pluginManager->pluginPtrVector, pluginId);
         if (result != SAFU_RESULT_OK) {
-            safuLogErrF("elosPluginControlVectorRemoveById failed (pluginId: %u)", pluginId);
+            safuLogErrF("elosPluginControlPtrVectorRemoveById failed (pluginId: %u)", pluginId);
         }
     }
 

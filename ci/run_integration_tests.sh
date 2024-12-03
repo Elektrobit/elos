@@ -1,25 +1,53 @@
 #!/bin/bash
+###############################################################################
+print_info() {
+    SCRIPT_NAME="${0##*/}"
+    echo "
+    Run the integration tests or parts of it. Default is to run all integration
+    tests in Debug build.
+
+    Usage: ${SCRIPT_NAME} [BUILD_TYPE] [--test-regex|-R <test name pattern>] [-h|--help]
+
+    BUILD_TYPE		usually Debug or Release but can be any other build type
+    -a|--all		run all integration tests (default)
+    -m|--module MODULE	Run a test module
+    -s|--suite SUITE	Run a test suite
+	example: -s \"Tests.Clients.Elosc.Find Event\"
+    -c|--case CASE	Run a single test case
+    -h|--help:		print this help
+
+    Examples:
+    ${0} Release # run all unit test on Release build
+    ${0} Release -R elosRpn # run all unit test containing elosRpn in
+    the name for the Release build.
+    "
+}
+###############################################################################
 
 CMD_PATH=$(cd $(dirname $0) && pwd)
 BASE_DIR=${CMD_PATH%/*}
 
-TEST_PARAM="--all"
+TEST_PARAM=("--all")
 PARAM=""
 while [ $# -gt 0 ]; do
     case ${1} in
 	--all|-a)
-	    TEST_PARAM="--all" ;;
+	    TEST_PARAM=("--all") ;;
 	--module|-m)
-	    TEST_PARAM="--module \"${2}\""
+	    TEST_PARAM=("--module" "${2}")
 	    shift
 	    ;;
 	--suite|-s)
-	    TEST_PARAM="--suite \"${2}\""
+	    TEST_PARAM=("--suite" "${2}")
 	    shift
 	    ;;
 	--case|-c)
-	    TEST_PARAM="--case \"${2}\""
+	    TEST_PARAM=("--case" "${2}")
 	    shift
+	    ;;
+	--help|-h)
+	    print_info
+	    exit 0
 	    ;;
 	-*)
 	    echo "error: unknown option: $1"; exit 1 ;;
@@ -128,7 +156,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh ${TEST_PARAM}
+docker exec ${TEST_DOCKER_NAME} /base/test/integration/scripts/run_integration_tests.sh "${TEST_PARAM[@]}"
 
 ret=$?
 

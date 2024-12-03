@@ -17,8 +17,8 @@ safuResultE_t elosPluginManagerRemove(elosPluginManager_t *pluginManager,
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INITIALIZED) {
         safuLogErr("The given pluginManager struct is not in state 'INITIALIZED'");
     } else {
-        elosPluginControlVector_t *pluginVector = &pluginManager->pluginVector;
-        ssize_t const elements = safuVecElements(pluginVector);
+        elosPluginControlPtrVector_t *pluginPtrVector = &pluginManager->pluginPtrVector;
+        ssize_t const elements = safuVecElements(pluginPtrVector);
 
         result = SAFU_RESULT_OK;
 

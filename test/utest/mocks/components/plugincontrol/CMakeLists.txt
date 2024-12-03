@@ -23,10 +23,10 @@ create_mock_lib(
     elosPluginControlDeleteMembers
     elosPluginControlDelete
     elosPluginControlGetName
-    elosPluginControlVectorInitialize
-    elosPluginControlVectorPush
-    elosPluginControlVectorIterate
-    elosPluginControlVectorGetById
-    elosPluginControlVectorRemoveById
-    elosPluginControlVectorDeleteMembers
+    elosPluginControlPtrVectorInitialize
+    elosPluginControlPtrVectorPush
+    elosPluginControlPtrVectorIterate
+    elosPluginControlPtrVectorGetById
+    elosPluginControlPtrVectorRemoveById
+    elosPluginControlPtrVectorDeleteMembers
 )

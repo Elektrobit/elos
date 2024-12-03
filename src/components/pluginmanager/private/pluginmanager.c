@@ -20,9 +20,10 @@ safuResultE_t elosPluginManagerInitialize(elosPluginManager_t *pluginManager, el
     } else if (pluginManager->state != PLUGINMANAGER_STATE_INVALID) {
         safuLogErr("The given pluginManager struct is not in state 'INVALID'");
     } else {
-        result = elosPluginControlVectorInitialize(&pluginManager->pluginVector, PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE);
+        result =
+            elosPluginControlPtrVectorInitialize(&pluginManager->pluginPtrVector, PLUGINMANAGER_PLUGINVECTOR_INIT_SIZE);
         if (result != SAFU_RESULT_OK) {
-            safuLogErr("elosPluginControlVectorInitialize failed");
+            safuLogErr("elosPluginControlPtrVectorInitialize failed");
         } else {
             pluginManager->config = param->config;
             pluginManager->useEnv = elosConfigGetElosdUseEnv(param->config);
@@ -41,7 +42,7 @@ safuResultE_t elosPluginManagerDeleteMembers(elosPluginManager_t *pluginManager)
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if (pluginManager != NULL) {
-        result = elosPluginControlVectorDeleteMembers(&pluginManager->pluginVector);
+        result = elosPluginControlPtrVectorDeleteMembers(&pluginManager->pluginPtrVector);
     }
 
     return result;
