@@ -53,7 +53,12 @@ int main(int argc, char **argv) {
     signal(SIGINT, elosSigintHandler);
 
     printf("connecting to event logging and management system...\n");
-    result = elosConnectTcpip("127.0.0.1", strtoul(safuGetEnvOr("ELOSD_PORT", "54321"), NULL, 10), &session);
+    const char *ip = "127.0.0.1";
+    const unsigned long port = strtoul(safuGetEnvOr("ELOSD_PORT", "54321"), NULL, 10);
+    result = elosConnectTcpip(ip, port, &session);
+    if (result != SAFU_RESULT_OK) {
+        fprintf(stderr, "ERROR: connect to %s:%lu failed!\n", ip, port);
+    }
     catch_errors(result);
 
     printf("get event logging and management system version...\n");
