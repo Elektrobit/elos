@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 find_package(safu 0.56.2 REQUIRED)
 
+add_compile_definitions(SAFU_LOG="LOG")
+
 create_interface_library(
   FROM
     eventdispatcher
