@@ -52,6 +52,11 @@ To publish 100 events with 50Hz :
 .. command-output:: elosc -c 100 -r 50 -p '{"messageCode": 1001, "severity": 4, "payload": "publish 100 events at 50Hz"}'
    :returncode: 1
 
+To set unix domain socket :
+
+.. command-output:: elosc -U /run/elosd/elosd.socket -f "1 1 Q"
+   :returncode: 1
+
 To set host ip :
 
 .. command-output:: elosc -H 127.0.0.1 -f "1 1 Q"
