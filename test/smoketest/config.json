@@ -30,6 +30,19 @@
                             "EventBlacklist": ".event.messageCode 2000 EQ",
                             "authorizedProcesses": []
                         }
+                    },
+                    "unixClient": {
+                         "File": "client_unix.so",
+                         "Run": "always",
+                         "Config": {
+                             "path": "/run/elosd/elosd.socket",
+                             "EventBlacklist": ".event.messageCode 1000 LE",
+                             "authorizedProcesses": [
+                                 ".process.uid 0 EQ .process.gid 0 EQ AND .process.exec '/usr/bin/elosc' STRCMP AND",
+                                 ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                                 ".process.pid 1 EQ"
+                             ]
+                         }
                     }
                 }
             },

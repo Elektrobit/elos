@@ -252,6 +252,48 @@ smoketest_client() {
     return 0
 }
 
+smoketest_client_uds() {
+    prepare_env "client_uds"
+
+    MESSAGE="{\"messageCode\": 1001, \"severity\": 4, \"payload\": \"a custom event with severity INFO (4)\"}"
+
+    RESULT=0
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH="${RESULT_DIR}/test_config.json"
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+
+    log "Starting elosd"
+    elosd > "$LOG_ELOSD" 2>&1 &
+    ELOSD_PID=$!
+
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+
+    log "Publish Message via unix socket"
+    elosc -U "$ELOSD_SOCKET_PATH" -p "$MESSAGE" >> "$RESULT_DIR/elosc_unix_publish.txt" 2>&1
+
+    log "Find message published via unix socket"
+    elosc -U "$ELOSD_SOCKET_PATH" -f ".event.messageCode 1001 EQ" > "$RESULT_DIR/elosc_unix_publish_event.log" 2>&1
+
+    if grep -q "\"messageCode\":1001" "$RESULT_DIR/elosc_unix_publish_event.log"; then
+        log "Connection established, message logged as expected"
+    else
+        log_err "Message not published via unix socket"
+        RESULT=1
+    fi
+    
+    log "Stop elosd ($ELOSD_PID) ..."
+    kill "$ELOSD_PID" > /dev/null
+    wait "$ELOSD_PID" > /dev/null
+    log "done"
+
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
+
+    return "$RESULT"
+
+}
+
 smoketest_coredump() {
     prepare_env "elos-coredump"
 
@@ -482,7 +524,7 @@ smoketest_locale() {
 
     LOG_ELOSD="$RESULT_DIR/elosd.log"
 
-    #start elos and client
+#start elos and client
 
     log "Starting elosd"
     elosd > "${LOG_ELOSD}" 2>&1 &
@@ -1012,6 +1054,7 @@ FAILED_TESTS=0
 call_test "elosd" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "elosd_config_not_found" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "client" || FAILED_TESTS=$((FAILED_TESTS+1))
+call_test "client_uds" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "syslog" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "coredump" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "kmsg" || FAILED_TESTS=$((FAILED_TESTS+1))
