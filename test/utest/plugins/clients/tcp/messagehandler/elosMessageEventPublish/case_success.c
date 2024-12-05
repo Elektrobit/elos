@@ -44,7 +44,8 @@ int elosTestElosMessageEventPublishSuccessSetup(void **state) {
 
     data->msg = safuAllocMem(NULL, sizeof(elosMessage_t *) + strlen(msg) + 1);
     assert_non_null(data->msg);
-    memcpy(data->msg->json, msg, strlen(msg) + 1);
+    data->msg->length = strlen(msg) + 1;
+    memcpy(data->msg->json, msg, data->msg->length);
 
     *state = data;
     return 0;

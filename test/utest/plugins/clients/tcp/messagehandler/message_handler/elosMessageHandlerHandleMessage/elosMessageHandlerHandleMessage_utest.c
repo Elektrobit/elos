@@ -15,6 +15,7 @@ int main() {
         TEST_CASE(elosTestElosMessageHandlerHandleMessageErrInvalidMessageId),
         TEST_CASE(elosTestElosMessageHandlerHandleMessageErrMessageFunctionReturnFailure),
         TEST_CASE(elosTestElosMessageHandlerHandleMessageSuccess),
+        TEST_CASE(elosTestElosMessageHandlerHandleMessageErrLengthZero),
     };
 
     return RUN_TEST_SUITE(tests, elosMessageHandlerHandleMessageUtest);
