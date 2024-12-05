@@ -64,11 +64,18 @@ safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_
     const char *errstr = NULL;
     elosEvent_t event = {0};
     safuResultE_t retval = SAFU_RESULT_OK;
+    bool respond = true;
 
     if (conn == NULL || msg == NULL) {
         retval = SAFU_RESULT_FAILED;
-        errstr = "elosMessageEventPublish called with null parameters";
-        safuLogErr(errstr);
+        respond = false;
+        safuLogErr("elosMessageEventPublish called with null parameters");
+    }
+
+    if (retval == SAFU_RESULT_OK && msg->length == 0) {
+        retval = SAFU_RESULT_FAILED;
+        errstr = "invalid message: message length cannot be 0";
+        safuLogErr("elosMessageEventPublish called with json of length 0");
     }
 
     if (retval == SAFU_RESULT_OK) {
@@ -119,7 +126,9 @@ safuResultE_t elosMessageEventPublish(elosClientConnection_t *conn, elosMessage_
 
             elosEventDeleteMembers(&event);
         }
+    }
 
+    if (respond) {
         jresponse = elosMessageHandlerResponseCreate(errstr);
         if (jresponse == NULL) {
             safuLogErr("elosMessageHandlerResponseCreate failed");

@@ -16,31 +16,38 @@ safuResultE_t elosMessageEventUnsubscribe(elosClientConnection_t *conn, elosMess
     const char *errStr = NULL;
     int retVal;
 
-    request = json_tokener_parse(msg->json);
-    if (request != NULL) {
-        retVal = safuJsonGetUint32(request, "eventQueueId", 0, &eventQueueId);
-        if (retVal < 0) {
-            safuLogErr("safuJsonGetUint32 failed");
-            errStr = "Could not find field 'eventQueueId' in the message's json string";
-        } else if (eventQueueId == ELOS_ID_INVALID) {
-            safuLogErrF("eventQueueId '%d' is invalid", eventQueueId);
-            errStr = "Invalid value for 'eventQueueId'";
-        } else {
-            elosSubscription_t subscription = {ELOS_ID_INVALID};
-            result = elosPluginUnsubscribe(conn->sharedData->plugin, conn->data.subscriber, &subscription);
-            if (result != SAFU_RESULT_OK) {
-                safuLogErrF("elosEventFilterManagerNodeRemoveByEventQueueId failed with eventQueueId '%d'",
-                            eventQueueId);
-                errStr = "Removing the EventQueue filters failed";
-            } else {
-                safuLogDebugF("subscription removed for event queue %d.", eventQueueId);
-            }
-        }
+    if (msg->length == 0) {
+        safuLogErr("The messages json string failed");
+        errStr = "invalid message: message length cannot be 0";
+    }
 
-        json_object_put(request);
-    } else {
-        safuLogErr("json_tokener_parse failed");
-        errStr = "Parsing the message's json string failed";
+    if (errStr == NULL) {
+        request = json_tokener_parse(msg->json);
+        if (request != NULL) {
+            retVal = safuJsonGetUint32(request, "eventQueueId", 0, &eventQueueId);
+            if (retVal < 0) {
+                safuLogErr("safuJsonGetUint32 failed");
+                errStr = "Could not find field 'eventQueueId' in the message's json string";
+            } else if (eventQueueId == ELOS_ID_INVALID) {
+                safuLogErrF("eventQueueId '%d' is invalid", eventQueueId);
+                errStr = "Invalid value for 'eventQueueId'";
+            } else {
+                elosSubscription_t subscription = {ELOS_ID_INVALID};
+                result = elosPluginUnsubscribe(conn->sharedData->plugin, conn->data.subscriber, &subscription);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErrF("elosEventFilterManagerNodeRemoveByEventQueueId failed with eventQueueId '%d'",
+                                eventQueueId);
+                    errStr = "Removing the EventQueue filters failed";
+                } else {
+                    safuLogDebugF("subscription removed for event queue %d.", eventQueueId);
+                }
+            }
+
+            json_object_put(request);
+        } else {
+            safuLogErr("json_tokener_parse failed");
+            errStr = "Parsing the message's json string failed";
+        }
     }
 
     response = elosMessageHandlerResponseCreate(errStr);

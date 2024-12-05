@@ -58,6 +58,12 @@ safuResultE_t elosMessageLogFindEvent(elosClientConnection_t *conn, elosMessage_
         result = SAFU_RESULT_FAILED;
     }
 
+    if (msg->length == 0) {
+        safuLogErr("Called elosMessageLogFindEvent with json of lenth 0");
+        errStr = "invalid message: message length cannot be 0";
+        result = SAFU_RESULT_FAILED;
+    }
+
     if (result == SAFU_RESULT_OK) {
         safuLogDebugF("received message: %s", msg->json);
         result = _getFilterRuleFromJsonMessage(&filterRule, msg->json);

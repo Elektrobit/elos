@@ -21,11 +21,19 @@ safuResultE_t elosMessageEventSubscribe(elosClientConnection_t *conn, elosMessag
     int retval;
     safuResultE_t result = SAFU_RESULT_OK;
 
-    request = json_tokener_parse(msg->json);
-    if (request == NULL) {
-        safuLogErrF("%s", "json_tokener_parse");
-        safuLogDebugF("failed to parse json: '%s'", msg->json);
-        errStr = "failed to parse json";
+    if (msg->length == 0) {
+        safuLogErr("header sayes the JSON has lenth 0");
+        result = SAFU_RESULT_FAILED;
+        errStr = "invalid message: message length cannot be 0";
+    }
+
+    if (errStr == NULL) {
+        request = json_tokener_parse(msg->json);
+        if (request == NULL) {
+            safuLogErrF("%s", "json_tokener_parse");
+            safuLogDebugF("failed to parse json: '%s'", msg->json);
+            errStr = "failed to parse json";
+        }
     }
 
     if (errStr == NULL) {

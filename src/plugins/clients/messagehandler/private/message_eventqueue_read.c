@@ -19,20 +19,28 @@ safuResultE_t elosMessageEventQueueRead(elosClientConnection_t *conn, elosMessag
     const char *errStr = NULL;
     int retVal;
 
-    jRequest = json_tokener_parse(msg->json);
-    if (jRequest == NULL) {
-        safuLogErr("json_tokener_parse failed");
-        errStr = "Parsing the message's json string failed";
-    } else {
-        retVal = safuJsonGetUint32(jRequest, "eventQueueId", 0, &eventQueueId);
-        if (retVal < 0) {
-            safuLogErr("safuJsonGetUint32 failed");
-            errStr = "Could not find field 'eventQueueId' in the message's json string";
-        } else if (eventQueueId == ELOS_ID_INVALID) {
-            safuLogErrF("eventQueueId '%d' is invalid", eventQueueId);
-            errStr = "Invalid value for 'eventQueueId'";
+    if (msg->length == 0) {
+        safuLogErr("JSON length was 0");
+        result = SAFU_RESULT_FAILED;
+        errStr = "invalid message: message length cannot be 0";
+    }
+
+    if (errStr == NULL) {
+        jRequest = json_tokener_parse(msg->json);
+        if (jRequest == NULL) {
+            safuLogErr("json_tokener_parse failed");
+            errStr = "Parsing the message's json string failed";
+        } else {
+            retVal = safuJsonGetUint32(jRequest, "eventQueueId", 0, &eventQueueId);
+            if (retVal < 0) {
+                safuLogErr("safuJsonGetUint32 failed");
+                errStr = "Could not find field 'eventQueueId' in the message's json string";
+            } else if (eventQueueId == ELOS_ID_INVALID) {
+                safuLogErrF("eventQueueId '%d' is invalid", eventQueueId);
+                errStr = "Invalid value for 'eventQueueId'";
+            }
+            json_object_put(jRequest);
         }
-        json_object_put(jRequest);
     }
 
     if (errStr == NULL) {
