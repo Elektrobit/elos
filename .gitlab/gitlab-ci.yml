@@ -101,6 +101,8 @@ integration-tests:
     when: always
     paths:
       - build/Release/result/integration/
+    reports:
+      junit: build/Release/result/integration/elos_integration_tests/xunit.xml
 
 baseos-lab-tests:
   stage: test
@@ -211,6 +213,9 @@ code-lint:
     when: always
     paths:
       - build/Release/cmake/lint_results/
+      - build/Release/result/integration/robot_lint
+    reports:
+      codequality: build/Release/result/integration/robot_lint/robot_lint.json
 
 benchmark:
   stage: test

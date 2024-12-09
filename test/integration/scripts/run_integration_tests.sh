@@ -26,6 +26,7 @@ run_all()
       --pythonpath="$INTEGRATION_DIR" \
       --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
       --output="$TEST_NAME" \
+      --xunit="xunit.xml" \
       --report="$TEST_NAME" "${TEST_DIR}"
 }
 
@@ -40,6 +41,7 @@ run_suite()
       --outputdir="$TEST_OUTPUT"/elos_test_suite \
       --output="$TEST_NAME" \
       --report="$TEST_NAME" \
+      --xunit="xunit.xml" \
       --suite "${TEST_SUITE}" "${TEST_DIR}"
 }
 
@@ -53,6 +55,7 @@ run_module()
           --pythonpath="$INTEGRATION_DIR" \
           --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
           --output="$TEST_NAME" \
+          --xunit="xunit.xml" \
           --report="$TEST_NAME" "${1}"
   else
       echo "provided path is not a directory"
@@ -70,6 +73,7 @@ run_case()
       --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
       --output="$TEST_NAME" \
       --report="$TEST_NAME" \
+      --xunit="xunit.xml" \
       --test="*.${1}" "${TEST_DIR}"
 }
 

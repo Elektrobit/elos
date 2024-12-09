@@ -115,8 +115,8 @@ ENV LOG4C_RCPATH="/base/src/demos/elos_log4c_demo"
 ENV PATH=/home/$USER/.local/bin:$PATH
 
 WORKDIR /home/$USER
-RUN pip install robotframework-robocop>=4.1.1
-RUN pip install robotframework-tidy>=4.5.0
+RUN pip install robotframework-robocop==5.5.0
+RUN pip install robotframework-tidy==4.14.0
 
 WORKDIR /base
 
