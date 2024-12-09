@@ -35,7 +35,7 @@ WORKDIR /home/elos
 COPY ./ /home/elos
 
 RUN mkdir /etc/elos
-COPY ./src/components/config/elosd.json /etc/elos/elosd.json
+COPY ./src/elosd/config/elosd.json /etc/elos/elosd.json
 RUN chmod 644 /etc/elos/elosd.json
 
 ENV SOURCES_URI=$SOURCES_URI

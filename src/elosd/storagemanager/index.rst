@@ -4,7 +4,7 @@ Storage Manager
 To store historical events, elos is able to use multiple storage backends.
 These backends are provided as elos-plugins. The Storage Manager is responsible
 for loading all plugins via the generic Plugin Manager
-:doc:`/src/components/pluginmanager/index`, starting, stopping and unloading them.
+:doc:`/src/elosd/pluginmanager/index`, starting, stopping and unloading them.
 The Storage Manager also determine the configuration which is used to search
 for plugins.
 
@@ -12,7 +12,7 @@ for plugins.
 Static structure
 ----------------
 
-The Storage Manager is a typical elos component (:doc:`/src/components/index`).
+The Storage Manager is a elosd component (:doc:`/src/elosd/index`).
 It provides as subcomponents the
 
 * PluginFilterLoader

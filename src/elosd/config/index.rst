@@ -59,15 +59,15 @@ Global Elos Options
    default value: ``"Debug"``)
 -  **ClientInputs**: This section defines plugins wich provides interface to
    allow other applications to communicate with elos. See
-   :ref:`src/components/clientmanager/index:Client Manager` for more details on
+   :ref:`src/elosd/clientmanager/index:Client Manager` for more details on
    how to configure client plugins.
 -  **EventLogging**: This section defines plugins wich are used by elos to
    store events. They are often also referred to as storage backend plugins. See
-   :ref:`src/components/eventlogging/index:Event Logging` for more details on
+   :ref:`src/elosd/eventlogging/index:Event Logging` for more details on
    how to configure storage plugins.
 -  **Scanner**: This section defines plugins wich are used by elos to observe
    and poll system sources to produce events. See
-   :ref:`src/components/scannermanager/index:Scanner Manager` for more details
+   :ref:`src/elosd/scannermanager/index:Scanner Manager` for more details
    on how to configure Scanner plugins.
 
 Default Config
@@ -75,7 +75,7 @@ Default Config
 
 The default config is a good starting point to configure elos to your needs.
 
-.. literalinclude:: /src/components/config/elosd.json
+.. literalinclude:: /src/elosd/config/elosd.json
    :language: json
    :caption: elos default config shipped with elos
    :linenos:

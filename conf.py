@@ -65,94 +65,8 @@ plantuml_batch_size = 100
 plantuml_cache_path = 'build/_plantum'
 
 # c-autodoc
-c_autodoc_roots = [
-    './src/',
-    './src/common/interface',
-    './src/components/clientmanager/interface',
-    './src/components/clientmanager/private',
-    './src/components/clientmanager/public',
-    './src/components/config/interface',
-    './src/components/config/private',
-    './src/components/config/public',
-    './src/components/eloslog/interface',
-    './src/components/eloslog/private',
-    './src/components/eloslog/public',
-    './src/components/event/interface',
-    './src/components/event/private',
-    './src/components/event/public',
-    './src/components/eventbuffer/interface',
-    './src/components/eventbuffer/private',
-    './src/components/eventbuffer/public',
-    './src/components/eventdispatcher/interface',
-    './src/components/eventdispatcher/private',
-    './src/components/eventdispatcher/public',
-    './src/components/eventfilter/interface',
-    './src/components/eventfilter/private',
-    './src/components/eventfilter/public',
-    './src/components/eventlogging/interface',
-    './src/components/eventlogging/private',
-    './src/components/eventlogging/public',
-    './src/components/eventprocessor/interface',
-    './src/components/eventprocessor/private',
-    './src/components/eventprocessor/public',
-    './src/components/logger/interface',
-    './src/components/logger/private',
-    './src/components/logger/public',
-    './src/components/plugincontrol/interface',
-    './src/components/plugincontrol/private',
-    './src/components/plugincontrol/public',
-    './src/components/pluginmanager/interface',
-    './src/components/pluginmanager/private',
-    './src/components/pluginmanager/public',
-    './src/components/processfilter/interface',
-    './src/components/processfilter/private',
-    './src/components/processfilter/public',
-    './src/components/rpnfilter/interface',
-    './src/components/rpnfilter/private',
-    './src/components/rpnfilter/public',
-    './src/components/scannermanager/interface',
-    './src/components/scannermanager/private',
-    './src/components/scannermanager/public',
-    './src/components/storagemanager/interface',
-    './src/components/storagemanager/private',
-    './src/components/storagemanager/public',
-    './src/libelos/public',
-    './src/libelos/public/elos',
-    './src/libelos_lite/public',
-    './src/libelosdlt/interface',
-    './src/libelosdlt/private',
-    './src/libelosdlt/public',
-    './src/libelosplugin/interface',
-    './src/libelosplugin/private',
-    './src/libelosplugin/public',
-    './src/plugins/clients/tcp/interface/',
-    './src/plugins/clients/tcp/interface/connectionmanager',
-    './src/plugins/clients/tcp/interface/messagehandler',
-    './src/plugins/clients/tcp/private/',
-    './src/plugins/clients/tcp/private/connectionmanager',
-    './src/plugins/clients/tcp/private/messagehandler',
-    './src/plugins/clients/tcp/public/',
-    './src/plugins/clients/tcp/public/connectionmanager',
-    './src/plugins/clients/tcp/public/messagehandler',
-    './src/plugins/scanners/oomkiller/interface/',
-    './src/plugins/scanners/oomkiller/private/',
-    './src/plugins/scanners/kmsg/interface/',
-    './src/plugins/scanners/kmsg/private/',
-    './src/plugins/scanners/shmem/interface/',
-    './src/plugins/scanners/shmem/private/',
-    './src/plugins/scanners/syslog/interface/',
-    './src/plugins/scanners/syslog/private/',
-    './src/plugins/storagebackends/dlt/interface/',
-    './src/plugins/storagebackends/dlt/private/',
-    './src/plugins/storagebackends/influxdbbackend/interface/',
-    './src/plugins/storagebackends/influxdbbackend/private/',
-    './src/plugins/storagebackends/jsonbackend/interface/',
-    './src/plugins/storagebackends/jsonbackend/private/',
-    './src/plugins/storagebackends/nosqlbackend/interface/',
-    './src/plugins/storagebackends/nosqlbackend/private/',
-    './src/plugins/storagebackends/sqlbackend/interface/',
-    './src/plugins/storagebackends/sqlbackend/private/',
-]
+c_autodoc_roots = []
+
 c_autodoc_compilation_args = [
 #    '-DSPHINX_C_AUTODOC_USE_BROKEN_FUNC_POINTER_TYPEDEFS',
 ]
@@ -165,6 +79,26 @@ set_type_checking_flag = True
 
 import os
 
+def populate_c_autodoc_roots():
+    global c_autodoc_roots
+    source_directories = ['./src']
+    excluded_directories = [
+        './src/clients',
+        './src/demos',
+        './src/version',
+        './src/libelos/private',
+        './src/plugins/clients/dummy',
+        './src/plugins/storagebackends/dummy',
+        './src/plugins/scanners/dummy'
+    ]
+    excluded_directories = [os.path.abspath(directory) for directory in excluded_directories]
+    for source_dir in source_directories:
+        if os.path.exists(source_dir):
+            for current_root, subdirectories, _ in os.walk(source_dir):
+                normalized_root = os.path.abspath(current_root)
+                if not any(normalized_root.startswith(excluded_dir) for excluded_dir in excluded_directories):
+                    c_autodoc_roots.append(current_root)
+
 def pre_process_C_files(app, filename, contents, *args):
     _, file_ext = os.path.splitext(filename)
     if file_ext == '.h':
@@ -174,4 +108,5 @@ def pre_process_C_files(app, filename, contents, *args):
         contents[:] = [modified_contents]
 
 def setup(sphinx):
+    populate_c_autodoc_roots()
     sphinx.connect("c-autodoc-pre-process", pre_process_C_files)

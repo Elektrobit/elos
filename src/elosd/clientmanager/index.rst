@@ -3,7 +3,7 @@ Client Manager
 
 Interaction with elos externally are through clients. The clients are provided as elos-plugins.
 The Client Manager is responsible for loading all plugins via the generic Plugin Manager
-:doc:`/src/components/pluginmanager/index`, starting, stopping and unloading them.
+:doc:`/src/elosd/pluginmanager/index`, starting, stopping and unloading them.
 The Client Manager also determine the configuration which is used to search
 for plugins.
 
@@ -11,14 +11,14 @@ for plugins.
 Static structure
 ----------------
 
-The Client Manager is a typical elos component (:doc:`/src/components/index`).
+The Client Manager is a elosd component (:doc:`/src/elosd/index`).
 It uses the PluginManager to run client plugins.
 
 
 PluginManager
 ~~~~~~~~~~~~~~~~~~
 
-Detailed documentation about PluginManager is here :doc:`/src/components/pluginmanager/index`
+Detailed documentation about PluginManager is here :doc:`/src/elosd/pluginmanager/index`
 
 
 Dynamic behavior
