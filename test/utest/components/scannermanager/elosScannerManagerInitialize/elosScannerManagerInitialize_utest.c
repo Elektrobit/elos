@@ -28,7 +28,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosScannerManagerInitializeUtest)
 int main() {
     const struct CMUnitTest tests[] = {TEST_CASE(elosTestElosScannerManagerInitializeSuccess),
                                        TEST_CASE(elosTestElosScannerManagerInitializeSuccessDefaultSearchPath),
-                                       TEST_CASE(elosTestElosScannerManagerInitializeExtErrScannerConfigNull),
+                                       TEST_CASE(elosTestElosScannerManagerInitializeSuccessScannerConfigNull),
                                        TEST_CASE(elosTestElosScannerManagerInitializeErrScannerManagerNull),
                                        TEST_CASE(elosTestElosScannerManagerInitializeErrInitParamNull),
                                        TEST_CASE(elosTestElosScannerManagerInitializeErrParamConfigNull),

@@ -25,13 +25,18 @@ safuResultE_t elosScannerManagerInitialize(elosScannerManager_t *scannerManager,
         retVal = safuVecCreate(&scannerManager->pluginControlPtrVector, 1, sizeof(elosPluginControl_t *));
         if (retVal < 0) {
             safuLogErr("safuVecCreate failed");
+            result = SAFU_RESULT_FAILED;
         } else {
             scannerManager->searchPath = elosConfigGetElosdScannerPath(param->config);
             status = samconfConfigGet(param->config, ELOS_CONFIG_SCANNER, &scannerManager->config);
-            if (status != SAMCONF_CONFIG_OK) {
-                safuLogErr("Loading scannerManager config failed");
-            } else {
+            if (status == SAMCONF_CONFIG_NOT_FOUND) {
+                scannerManager->config = NULL;
                 result = SAFU_RESULT_OK;
+            } else if (status == SAMCONF_CONFIG_OK && scannerManager->config->type == SAMCONF_CONFIG_VALUE_OBJECT) {
+                result = SAFU_RESULT_OK;
+            } else {
+                safuLogErr("Error in Scanner config");
+                result = SAFU_RESULT_FAILED;
             }
         }
     }
@@ -43,6 +48,9 @@ safuResultE_t elosScannerManagerStart(elosScannerManager_t *scannerManager) {
 
     if (scannerManager == NULL) {
         safuLogErr("Called elosScannerManagerAdd with NULL-parameter");
+    } else if (scannerManager->config == NULL) {
+        safuLogDebug("No Scanner configured");
+        result = SAFU_RESULT_OK;
     } else {
         elosPluginTypeE_t type = PLUGIN_TYPE_SCANNER;
 
@@ -50,6 +58,9 @@ safuResultE_t elosScannerManagerStart(elosScannerManager_t *scannerManager) {
                                        scannerManager->searchPath, &scannerManager->pluginControlPtrVector);
         if (result != SAFU_RESULT_OK) {
             safuLogWarn("elosPluginManagerStart executed with errors");
+        } else {
+            safuLogInfoF("ScannerManager loaded %d scanner plugins",
+                         safuVecElements(&scannerManager->pluginControlPtrVector));
         }
     }
     return result;
