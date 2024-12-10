@@ -12,7 +12,7 @@ The configuration of the DLT storage plugin follows the usual pattern. To add
 an instance of a DLT storage backend add an entry like the following in the
 `/root/elos/EventLogging/Plugins` section in your elos configuration.
 
-.. literalinclude:: /src/components/config/elosd.json
+.. literalinclude:: /src/elosd/config/elosd.json
    :language: json
    :lineno-start: 64
    :lines: 64-74
@@ -21,7 +21,7 @@ an instance of a DLT storage backend add an entry like the following in the
 * **EcuId**: The ECU ID to be used in the log message.
 * **AppId**: The Application ID to be  used in the log message.
 
-You can find this example in :file:`/src/components/config/elosd.json`.
+You can find this example in :file:`/src/elosd/config/elosd.json`.
 
 Build
 -----

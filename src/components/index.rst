@@ -5,18 +5,10 @@ Components
    :maxdepth: 2
    :caption: Contents:
 
-   config/index
-   clientmanager/index
-   scannermanager/index
    eloslog/index
    event/index
-   eventlogging/index
-   eventprocessor/index
    logger/index
-   plugincontrol/index
-   pluginmanager/index
    rpnfilter/index
-   storagemanager/index
 
 
 Component Structure

@@ -94,12 +94,6 @@ Check Elosd Log For
 
     ${elosd_log}    Execute And Log    cat ${ELOSD_LOG}    ${RETURN_STDOUT}
     Should Contain    ${elosd_log}    ${part}    ignore_case=${ignore_case}
-    # IF    ${ignore_case}
-    #    ${rc}=    Execute And Log    grep -i "${part}" ${ELOSD_LOG}    ${RETURN_RC}
-    # ELSE
-    #    ${rc}=    Execute And Log    grep "${part}" ${ELOSD_LOG}    ${RETURN_RC}
-    # END
-    # Should Be Equal As Integers    ${rc}    0
 
 Get Elos Event Publish Time Threshold
     [Documentation]    Return the threshold event publish time, to check for

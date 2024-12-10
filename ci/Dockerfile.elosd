@@ -24,11 +24,6 @@ RUN apt-get update \
  libcurl4-openssl-dev \
  && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/mongodb/mongo-c-driver.git \
- && cd mongo-c-driver/build \
- && cmake .. -DCMAKE_INSTALL_PREFIX=/usr \
- && make && sudo make install
-
 RUN locale-gen en_US.UTF-8 \
  && locale-gen de_DE.UTF-8 \
  && groupadd -g $GID -o $USER \
@@ -40,7 +35,7 @@ WORKDIR /home/elos
 COPY ./ /home/elos
 
 RUN mkdir /etc/elos
-COPY ./src/components/config/elosd.json /etc/elos/elosd.json
+COPY ./src/elosd/config/elosd.json /etc/elos/elosd.json
 RUN chmod 644 /etc/elos/elosd.json
 
 ENV SOURCES_URI=$SOURCES_URI

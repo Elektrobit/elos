@@ -9,6 +9,16 @@ add_executable(
   main.c
 )
 
+add_subdirectory(clientmanager)
+add_subdirectory(config)
+add_subdirectory(eventdispatcher)
+add_subdirectory(eventlogging)
+add_subdirectory(eventprocessor)
+add_subdirectory(plugincontrol)
+add_subdirectory(pluginmanager)
+add_subdirectory(scannermanager)
+add_subdirectory(storagemanager)
+
 add_compile_definitions(ELOSD_PORT=${ELOSD_PORT})
 add_compile_definitions(ELOSD_INTERFACE="${ELOSD_INTERFACE}")
 add_compile_definitions(ELOSD_CONFIG_PATH="${ELOSD_CONFIG_PATH}")
@@ -25,7 +35,6 @@ target_link_libraries(
     eventbuffer_static
     eventdispatcher_static
     eventprocessor_static
-    eventlogging_static
     logger_static
     eloslog_static
     config_static
