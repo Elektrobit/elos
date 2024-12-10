@@ -5,6 +5,7 @@ Plugins
    :maxdepth: 2
    :caption: Contents:
    
+   clients/unix/index
    scanners/index
    scanners/kmsg/index
    scanners/oomkiller/index
