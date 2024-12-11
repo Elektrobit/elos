@@ -9,6 +9,7 @@
 #include <safu/log.h>
 #include <safu/result.h>
 #include <samconf/samconf.h>
+#include <samconf/samconf_types.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -25,6 +26,10 @@
 
 #ifndef ELOS_KMSG_FILE
 #define ELOS_KMSG_FILE "/dev/kmsg"
+#endif
+
+#ifndef ELOS_RUNDIR
+#define ELOS_RUNDIR "/run/elosd"
 #endif
 
 #define MAX_LOG_ENTRY_SIZE        4096
@@ -45,47 +50,151 @@ struct elosKmsgContext {
     struct elosPublisher *publisher;
 };
 
+static const samconfConfig_t *_getElosRootConfig(const samconfConfig_t *pluginConfig) {
+    bool isElosRootConfig = false;
+
+    const samconfConfig_t *node = pluginConfig != NULL ? pluginConfig->parent : NULL;
+    while (node != NULL) {
+        isElosRootConfig = strcmp(node->key, "elos") == 0;
+        if (isElosRootConfig == true) {
+            break;
+        } else {
+            node = node->parent;
+        }
+    }
+
+    return isElosRootConfig == true ? node : NULL;
+}
+
+static const char *_getElosRunDir(const samconfConfig_t *pluginConfig) {
+    const char *runDir = NULL;
+
+    runDir = safuGetEnvOr("ELOS_RUNDIR", NULL);
+    if (runDir == NULL) {
+        const samconfConfig_t *elosConfig = _getElosRootConfig(pluginConfig);
+        if (elosConfig != NULL) {
+            runDir = samconfConfigGetStringOr(elosConfig, "RunDir", ELOS_RUNDIR);
+        } else {
+            runDir = ELOS_RUNDIR;
+        }
+    }
+
+    return runDir;
+}
+
+static char *_getDefaultKmsgStateFile(const samconfConfig_t *pluginConfig) {
+    const char *runDir = _getElosRunDir(pluginConfig);
+
+    ssize_t length = snprintf(NULL, 0, "%s/kmsg.state", runDir);
+    char *defaultKmsgStateFile = safuAllocMem(NULL, length);
+    if (defaultKmsgStateFile != NULL) {
+        sprintf(defaultKmsgStateFile, "%s/kmsg.state", runDir);
+    }
+
+    return defaultKmsgStateFile;
+}
+
+static char *_getKmsgStateFile(const samconfConfig_t *pluginConfig) {
+    char *kmsgStateFile = NULL;
+
+    const char *stateFileFormEnv = safuGetEnvOr("ELOS_KMSGSTATEFILE", NULL);
+    if (stateFileFormEnv == NULL) {
+        const char *stateFileFromConfig = samconfConfigGetStringOr(pluginConfig, "Config/KmsgStateFile", NULL);
+        if (kmsgStateFile == NULL) {
+            kmsgStateFile = _getDefaultKmsgStateFile(pluginConfig);
+        } else {
+            kmsgStateFile = strdup(stateFileFromConfig);
+        }
+    } else {
+        kmsgStateFile = strdup(stateFileFormEnv);
+    }
+
+    return kmsgStateFile;
+}
+
+static safuResultE_t _touchFile(const char *file) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    int stateFd = open(file, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
+    if (stateFd == -1) {
+        safuLogErrErrnoValue("Failed to create kmsg state file", stateFd);
+    } else {
+        close(stateFd);
+        result = SAFU_RESULT_OK;
+    }
+
+    return result;
+}
+
 static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
     struct elosKmsgContext *context = plugin->data;
     struct stat stbuf = {0};
     int retval;
 
-    const char *defaultKmsgFile = samconfConfigGetStringOr(plugin->config, "Config/KmsgFile", ELOS_KMSG_FILE);
-    const char *kmsgFile = kmsgFile = safuGetEnvOr("ELOS_KMSG_FILE", defaultKmsgFile);
+    char *kmsgStateFile = _getKmsgStateFile(plugin->config);
+    if (kmsgStateFile == NULL) {
+        safuLogErr("Failed to setup kmsg state file.");
+    } else {
+        safuLogDebugF("Save kmsg-State in %s", kmsgStateFile);
 
-    context->kmsgFile = strdup(kmsgFile);
+        const char *defaultKmsgFile = samconfConfigGetStringOr(plugin->config, "Config/KmsgFile", ELOS_KMSG_FILE);
+        const char *kmsgFile = safuGetEnvOr("ELOS_KMSG_FILE", defaultKmsgFile);
+        context->kmsgFile = strdup(kmsgFile);
 
-    retval = stat(kmsgFile, &stbuf);
-    if (retval < 0) {
-        if (errno == ENOENT) {
-            mode_t mode = S_IRUSR | S_IWUSR;
-            retval = mkfifo(kmsgFile, mode);
-            if (retval < 0) {
-                safuLogErrF("mkfifo '%s' failed - %s", kmsgFile, strerror(errno));
+        retval = stat(kmsgFile, &stbuf);
+        if (retval < 0) {
+            if (errno == ENOENT) {
+                mode_t mode = S_IRUSR | S_IWUSR;
+                retval = mkfifo(kmsgFile, mode);
+                if (retval < 0) {
+                    safuLogErrF("mkfifo '%s' failed - %s", kmsgFile, strerror(errno));
+                    result = SAFU_RESULT_FAILED;
+                } else {
+                    context->flags |= SCANNER_KMSG_FILE_CREATED;
+                }
+            } else {
+                safuLogErrF("stat '%s' failed - %s", kmsgFile, strerror(errno));
+                result = SAFU_RESULT_FAILED;
+            }
+        } else if ((S_ISCHR(stbuf.st_mode) == 0) && (S_ISFIFO(stbuf.st_mode) == 0)) {
+            safuLogErrF("file '%s' is neither S_IFCHR or S_IFIFO", kmsgFile);
+            result = SAFU_RESULT_FAILED;
+        }
+
+        if (result == SAFU_RESULT_OK) {
+            context->kmsgPollFd = open(kmsgFile, O_RDONLY | O_NONBLOCK);
+            if (context->kmsgPollFd < 0) {
+                safuLogErrF("open '%s' failed (%s)", kmsgFile, strerror(errno));
                 result = SAFU_RESULT_FAILED;
             } else {
-                context->flags |= SCANNER_KMSG_FILE_CREATED;
+                bool skipBuffer = false;
+
+                int fileExists = access(kmsgStateFile, F_OK);
+                if (fileExists == 0) {
+                    skipBuffer = true;
+                } else {
+                    switch (errno) {
+                        case ENOENT:
+                            result = _touchFile(kmsgStateFile);
+                            if (result != SAFU_RESULT_OK) {
+                                skipBuffer = true;
+                            }
+                            break;
+                        default:
+                            safuLogErrErrno("Failed to check kmsg.state file, skip kmsg buffer content.");
+                            skipBuffer = true;
+                    }
+                }
+
+                if (skipBuffer == true && (context->flags & SCANNER_KMSG_FILE_CREATED) == 0) {
+                    lseek(context->kmsgPollFd, 0, SEEK_END);
+                }
             }
-        } else {
-            safuLogErrF("stat '%s' failed - %s", kmsgFile, strerror(errno));
-            result = SAFU_RESULT_FAILED;
-        }
-    } else if ((S_ISCHR(stbuf.st_mode) == 0) && (S_ISFIFO(stbuf.st_mode) == 0)) {
-        safuLogErrF("file '%s' is neither S_IFCHR or S_IFIFO", kmsgFile);
-        result = SAFU_RESULT_FAILED;
-    }
-
-    if (result == SAFU_RESULT_OK) {
-        context->kmsgPollFd = open(kmsgFile, O_RDONLY | O_NONBLOCK);
-        if (context->kmsgPollFd < 0) {
-            safuLogErrF("open '%s' failed (%s)", kmsgFile, strerror(errno));
-            result = SAFU_RESULT_FAILED;
-        } else if ((context->flags & SCANNER_KMSG_FILE_CREATED) == 0) {
-            lseek(context->kmsgPollFd, 0, SEEK_END);
         }
     }
 
+    free(kmsgStateFile);
     return result;
 }
 
