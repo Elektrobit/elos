@@ -29,6 +29,7 @@ add_compile_definitions(ELOSD_BACKEND_PATH="${ELOSD_BACKEND_PATH}")
 add_compile_definitions(ELOSD_LOG_PREFIX="${ELOSD_LOG_PREFIX}")
 add_compile_definitions(ELOSD_LOG_FILTER="${ELOSD_LOG_FILTER}")
 add_compile_definitions(ELOSD_LOG_LEVEL="${ELOSD_LOG_LEVEL}")
+add_compile_definitions(ELOSD_RUN_DIR="${ELOSD_RUN_DIR}")
 
 target_link_libraries(
   config_static

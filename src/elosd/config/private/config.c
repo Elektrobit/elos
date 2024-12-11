@@ -24,6 +24,10 @@
 #define ELOS_SYSLOG_PATH "/dev/log"
 #endif
 
+#ifndef ELOS_RUN_DIR
+#define ELOS_RUN_DIR "/run/elosd"
+#endif
+
 safuResultE_t elosConfigLoad(samconfConfig_t **config) {
     const char *location = NULL;
     samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
@@ -145,6 +149,10 @@ const char *elosConfigGetElosdScannerKmsgFile(const samconfConfig_t *config) {
 const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config) {
     return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "SyslogScanner/SyslogPath", "ELOS_SYSLOG_PATH",
                                           ELOS_SYSLOG_PATH);
+}
+
+const char *elosConfigGetElosdRunDir(const samconfConfig_t *config) {
+    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_ROOT "RunDir", "ELOS_RUNDIR", ELOS_RUN_DIR);
 }
 
 bool elosConfigGetElosdUseEnv(const samconfConfig_t *config) {

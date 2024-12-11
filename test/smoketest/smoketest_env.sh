@@ -28,6 +28,9 @@ export SMOKETEST_RESULT_DIR=${SMOKETEST_RESULT_DIR-"./results/smoketest"}
 # /tmp/elos_smoketest_XXXXXX, where XXXXXX is a random number
 export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"$(mktemp -d /tmp/elos_smoketest_XXXXXX)"}"
 
+# Overwrite the path to the elos runtime directory.
+export ELOS_RUNDIR=${ELOS_RUNDIR-"${SMOKETEST_TMP_DIR}/"}
+
 # Overwrite the path to the syslog socket to be used for the syslog scanner.
 export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"${SMOKETEST_TMP_DIR}/elosd.syslog.socket"}
 

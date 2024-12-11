@@ -2,9 +2,11 @@
 #include <errno.h>
 #include <locale.h>
 #include <safu/common.h>
+#include <safu/result.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "elos/clientmanager/clientmanager.h"
@@ -115,6 +117,24 @@ int elosServerShutdown(struct serverContext *ctx) {
     return result;
 }
 
+safuResultE_t _createRunDirectory(struct serverContext *ctx) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    const char *runDir = elosConfigGetElosdRunDir(ctx->config);
+    int status = mkdir(runDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (status == -1) {
+        switch (errno) {
+            case EEXIST:
+                break;
+            default:
+                safuLogErrErrnoValue("Could not create elos runtime directory", status);
+                result = SAFU_RESULT_FAILED;
+        }
+    }
+
+    return result;
+}
+
 int main(int argc, char **argv) {
     int retval;
     struct serverContext context = {0};
@@ -165,6 +185,13 @@ int main(int argc, char **argv) {
     safuLogInfoF("Setup:\n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s", safuGetHardwareId(),
                  safuLogLevelToString(safuLogGetStreamLevel()), elosConfigGetElosdLogFilter(context.config),
                  elosConfigGetElosdScannerPath(context.config));
+
+    result = _createRunDirectory(&context);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("Failed to setup run directory");
+        elosServerShutdown(&context);
+        return EXIT_FAILURE;
+    }
 
     safuLogDebug("Initialize EventProcessor");
     elosEventProcessorParam_t const epParam = {.config = context.config};
