@@ -207,18 +207,18 @@ static safuResultE_t _pluginInit(elosPlugin_t *plugin) {
             result = SAFU_RESULT_FAILED;
         }
     }
+
     if (result == SAFU_RESULT_OK) {
         plugin->data = context;
-    }
-    if (result == SAFU_RESULT_OK) {
         result = _openKmsgFile(plugin);
     }
-    if (result != SAFU_RESULT_OK) {
+
+    if (result == SAFU_RESULT_OK) {
+        result = elosPluginCreatePublisher(plugin, &context->publisher);
+    } else {
         free(context);
         plugin->data = NULL;
     }
-
-    elosPluginCreatePublisher(plugin, &context->publisher);
 
     return result;
 }
