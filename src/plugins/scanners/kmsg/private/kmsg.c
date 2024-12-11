@@ -32,9 +32,9 @@
 #define SCANNER_CMD_STOP          1
 #define SCANNER_KMSG_FILE_CREATED 1
 
-typedef uint64_t scanner_command_t;
+typedef uint64_t elosScannerCommand_t;
 
-struct kmsg_context {
+struct elosKmsgContext {
     uint32_t kmsgEventId;
     char *kmsgFile;
     int kmsgPollFd;
@@ -47,7 +47,7 @@ struct kmsg_context {
 
 static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
-    struct kmsg_context *context = plugin->data;
+    struct elosKmsgContext *context = plugin->data;
     struct stat stbuf = {0};
     int retval;
 
@@ -90,7 +90,7 @@ static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
 }
 
 static safuResultE_t _publishMessage(elosPlugin_t *plugin) {
-    struct kmsg_context *context = plugin->data;
+    struct elosKmsgContext *context = plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
     char *readBuffer;
     int readBytes;
@@ -146,7 +146,7 @@ static safuResultE_t _publishMessage(elosPlugin_t *plugin) {
 }
 
 static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
-    struct kmsg_context *context = plugin->data;
+    struct elosKmsgContext *context = plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
     if (context != NULL) {
         close(context->kmsgPollFd);
@@ -183,10 +183,10 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
 }
 
 static safuResultE_t _pluginInit(elosPlugin_t *plugin) {
-    struct kmsg_context *context = NULL;
+    struct elosKmsgContext *context = NULL;
     safuResultE_t result = SAFU_RESULT_OK;
 
-    context = (struct kmsg_context *)calloc(1, sizeof(struct kmsg_context));
+    context = (struct elosKmsgContext *)calloc(1, sizeof(struct elosKmsgContext));
     if (context == NULL) {
         result = SAFU_RESULT_FAILED;
     } else {
@@ -243,7 +243,7 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
 
 static safuResultE_t _pluginRunLoop(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
-    struct kmsg_context *context = plugin->data;
+    struct elosKmsgContext *context = plugin->data;
     struct pollfd fds[] = {
         {.fd = context->cmdPollFd, .events = POLLIN},
         {.fd = context->kmsgPollFd, .events = POLLIN},
@@ -318,12 +318,12 @@ static safuResultE_t _pluginStart(elosPlugin_t *plugin) {
 }
 
 static safuResultE_t _pluginStopLoop(elosPlugin_t *plugin) {
-    struct kmsg_context *context = plugin->data;
-    const scanner_command_t command = SCANNER_CMD_STOP;
+    struct elosKmsgContext *context = plugin->data;
+    const elosScannerCommand_t command = SCANNER_CMD_STOP;
     safuResultE_t result = SAFU_RESULT_OK;
     ssize_t retval = 0;
 
-    retval = write(context->cmdPollFd, &command, sizeof(scanner_command_t));
+    retval = write(context->cmdPollFd, &command, sizeof(elosScannerCommand_t));
     if (retval == -1) {
         safuLogErrErrno("failed to send command event");
         result = SAFU_RESULT_FAILED;
