@@ -3,11 +3,12 @@
 
 #include <netinet/in.h>
 
-#include "connectionmanager/clientauthorization_types.h"
+#include "tcp_clientauthorization/clientauthorization_types.h"
 
 __BEGIN_DECLS
 
-bool elosClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *clientAuth, struct sockaddr_in const *addr);
+bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth,
+                                                   struct sockaddr const *const addr);
 safuResultE_t elosClientAuthorizationInitialize(elosClientAuthorization_t *clientAuth);
 safuResultE_t elosClientAuthorizationDelete(elosClientAuthorization_t *clientAuth);
 

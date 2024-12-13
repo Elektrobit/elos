@@ -1,56 +1,12 @@
 # SPDX-License-Identifier: MIT
 find_package(safu 0.56.2 REQUIRED)
 find_package(samconf 0.56.3 REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBMNL REQUIRED libmnl)
+
+add_subdirectory(tcp_clientauthorization)
 
 add_compile_definitions(ELOSD_PORT=${ELOSD_PORT})
 add_compile_definitions(ELOSD_INTERFACE="${ELOSD_INTERFACE}")
 add_compile_definitions(ELOSD_CONNECTION_LIMIT=${ELOSD_CONNECTION_LIMIT})
-
-add_library(
-  connectionmanager_static
-  STATIC
-    private/connectionmanager/clientauthorization.c
-    private/connectionmanager/clientauthorizedprocesses.c
-    private/connectionmanager/clientblacklist.c
-    private/connectionmanager/clientconnection_worker.c
-    private/connectionmanager/clientconnection.c
-    private/connectionmanager/connectionmanager_listen.c
-    private/connectionmanager/connectionmanager_start.c
-    private/connectionmanager/connectionmanager_stop.c
-    private/connectionmanager/connectionmanager.c
-)
-set_property(TARGET connectionmanager_static PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(
-  connectionmanager_static
-  PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/public
-    ${CMAKE_CURRENT_SOURCE_DIR}/private
-    ${CMAKE_CURRENT_SOURCE_DIR}/interface
-)
-target_link_libraries(
-  connectionmanager_static
-  PRIVATE
-    processfilter_static
-    eventbuffer_static
-    elos_common_interface
-    messagehandler_static
-  PUBLIC
-    libelosplugin
-    processfilter_interface
-    elos_common_interface
-    eventbuffer_interface
-    rpnfilter_interface
-    ${LIBMNL_LIBRARIES}
-)
-create_weak_library(
-  FROM
-    connectionmanager_static
-  WEAKEN_DEPENDENCIES
-    eventbuffer_static
-    processfilter_static
-)
 
 add_library(
   messagehandler_static
@@ -69,7 +25,6 @@ target_include_directories(
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/public
     ${CMAKE_CURRENT_SOURCE_DIR}/private
-    ${CMAKE_CURRENT_SOURCE_DIR}/interface
 )
 target_link_libraries(
     messagehandler_static
@@ -78,6 +33,7 @@ target_link_libraries(
       eventbuffer_static
       eventfilter_static
     PUBLIC
+      connectionmanager_interface
       libelosplugin
       safu::safu_interface
       elos_common_interface

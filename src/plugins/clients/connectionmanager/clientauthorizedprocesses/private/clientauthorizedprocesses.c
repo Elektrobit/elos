@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-#include "connectionmanager/clientauthorizedprocesses.h"
+#include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 
 #include <elos/processfilter/processfilter.h>
 #include <safu/log.h>

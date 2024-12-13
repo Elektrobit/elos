@@ -5,8 +5,6 @@
 #include <safu/mutex.h>
 #include <unistd.h>
 
-#include "connectionmanager/clientauthorization.h"
-#include "connectionmanager/clientauthorizedprocesses.h"
 #include "connectionmanager/clientblacklist.h"
 #include "connectionmanager/clientconnection.h"
 #include "connectionmanager/connectionmanager.h"

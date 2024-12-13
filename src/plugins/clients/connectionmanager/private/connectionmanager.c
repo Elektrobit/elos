@@ -9,12 +9,17 @@
 #include <stdlib.h>
 #include <sys/eventfd.h>
 
-#include "connectionmanager/clientauthorization.h"
-#include "connectionmanager/clientauthorizedprocesses.h"
+#include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 #include "connectionmanager/clientblacklist.h"
 #include "connectionmanager/clientconnection.h"
 #include "connectionmanager_private.h"
-#include "tcpConfig.h"
+#include "tcp_clientauthorization/clientauthorization.h"
+#include "tcp_config/config.h"
+
+
+static inline safuResultE_t elosUnixConfigGetSocketAddress(UNUSED elosPlugin_t const *plugin, UNUSED struct sockaddr *addr) {
+    return SAFU_RESULT_FAILED;
+}
 
 static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;

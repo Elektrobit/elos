@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <tcp_clientauthorization/clientauthorization_types.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <safu/flags.h>
 #include <samconf/samconf_types.h>
 
-#include "connectionmanager/clientauthorization_types.h"
-#include "connectionmanager/clientconnection_types.h"
+#include "clientconnection_types.h"
 
 #define ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT    200
 #define ELOS_CONNECTIONMANAGER_LISTEN_QUEUE_LENGTH 200

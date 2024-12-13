@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-#include "connectionmanager/clientauthorization.h"
+#include "tcp_clientauthorization/clientauthorization.h"
 
 #include <arpa/inet.h>
 #include <asm/types.h>
@@ -30,8 +30,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "connectionmanager/clientauthorizedprocesses.h"
-#include "connectionmanager/types.h"
+#include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 
 #define LIBMNL_OK    0
 #define LIBMNL_ERROR 1
@@ -371,8 +370,8 @@ safuResultE_t elosClientAuthorizationInitialize(elosClientAuthorization_t *const
     return result;
 }
 
-bool elosClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth,
-                                                struct sockaddr_in const *const addr) {
+bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth,
+                                                   struct sockaddr const *const addr) {
     int numbytes = 0;
     uint8_t recvBuffer[MNL_SOCKET_BUFFER_SIZE];
     struct mnl_socket *mlSock = clientAuth->mlSocket;

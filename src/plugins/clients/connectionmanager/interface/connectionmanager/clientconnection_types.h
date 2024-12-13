@@ -9,7 +9,7 @@
 #include <samconf/samconf_types.h>
 #include <semaphore.h>
 
-#include "connectionmanager/clientconnection_defines.h"
+#include "clientconnection_defines.h"
 
 typedef safuVec_t elosEventFilterNodeIdVector_t;
 typedef safuVec_t elosEventQueueIdVector_t;
