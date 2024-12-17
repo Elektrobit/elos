@@ -377,10 +377,11 @@ bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *co
     struct mnl_socket *mlSock = clientAuth->mlSocket;
     safuResultE_t result = SAFU_RESULT_OK;
     bool isClientAuthorized = false;
+    struct sockaddr_in *addrIp = (struct sockaddr_in *)addr;
 
     safuLogDebug("Check for trusted connection");
 
-    if (_requestSocketInfo(mlSock, ntohs(addr->sin_port)) < 0) {
+    if (_requestSocketInfo(mlSock, ntohs(addrIp->sin_port)) < 0) {
         safuLogErrErrno("Failed to retrieve socket information");
         result = SAFU_RESULT_FAILED;
     }

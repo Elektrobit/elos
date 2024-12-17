@@ -14,5 +14,5 @@
 
 MOCK_FUNC_PROTOTYPE(elosClientAuthorizationInitialize, safuResultE_t, elosClientAuthorization_t *clientAuth)
 MOCK_FUNC_PROTOTYPE(elosClientAuthorizationDelete, safuResultE_t, elosClientAuthorization_t *clientAuth)
-MOCK_FUNC_PROTOTYPE(elosClientAuthorizationIsTrustedConnection, bool, elosClientAuthorization_t *clientAuth,
-                    struct sockaddr_in const *addr)
+MOCK_FUNC_PROTOTYPE(elosTcpClientAuthorizationIsTrustedConnection, bool, elosClientAuthorization_t *clientAuth,
+                    struct sockaddr const *addr)

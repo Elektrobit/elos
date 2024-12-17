@@ -6,10 +6,10 @@
 #include <sys/eventfd.h>
 #include <sys/time.h>
 
-#include "tcp_clientauthorization/clientauthorization.h"
 #include "connectionmanager/clientconnection.h"
 #include "connectionmanager/connectionmanager.h"
 #include "connectionmanager_private.h"
+#include "tcp_clientauthorization/clientauthorization.h"
 
 #define CONNECTION_SEMAPHORE_TIMEOUT_SEC  0
 #define CONNECTION_SEMAPHORE_TIMEOUT_NSEC (100 * 1000 * 1000)
@@ -127,7 +127,20 @@ safuResultE_t elosConnectionManagerThreadWaitForIncomingConnection(elosConnectio
         }
 
         safuLogDebug("Accepted new connection");
-        conn->isTrusted = elosClientAuthorizationIsTrustedConnection(&connectionManager->clientAuth, &conn->addr);
+
+        switch (connectionManager->saFamily) {
+            case AF_INET:
+                conn->isTrusted = elosTcpClientAuthorizationIsTrustedConnection(&connectionManager->clientAuth,
+                                                                                (struct sockaddr *)&conn->addr);
+                break;
+            case AF_UNIX:
+                conn->isTrusted = elosUnixClientAuthorizationIsTrustedConnection(&connectionManager->clientAuth,
+                                                                                 (struct sockaddr *)&conn->addr);
+                break;
+            default:
+                break;
+        }
+
         if (conn->isTrusted) {
             safuLogDebug("connection is trusted");
         } else {
@@ -195,6 +208,14 @@ void *elosConnectionManagerThreadListen(void *ptr) {
             safuLogWarnErrnoValue("Closing listenFd failed (possible memory leak)", retVal);
         }
         connectionManager->fd = -1;
+
+        if (connectionManager->saFamily == AF_UNIX) {
+            struct sockaddr_un *addr = (struct sockaddr_un *)&connectionManager->addr;
+            retVal = unlink(addr->sun_path);
+            if (retVal != 0 && errno != ENOENT) {
+                safuLogWarnErrnoValue("unlink socket path failed", retVal);
+            }
+        }
     }
 
     atomic_fetch_and(&connectionManager->flags, ~ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE);

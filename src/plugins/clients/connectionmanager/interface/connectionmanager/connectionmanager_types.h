@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <tcp_clientauthorization/clientauthorization_types.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <safu/flags.h>
 #include <samconf/samconf_types.h>
+#include <sys/un.h>
+#include <tcp_clientauthorization/clientauthorization_types.h>
 
 #include "clientconnection_types.h"
 
@@ -41,7 +42,11 @@ typedef struct elosConnectionManager {
     safuFlags_t flags;
     int fd;
     int syncFd;
-    struct sockaddr_in addr;
+    sa_family_t saFamily;
+    union {
+        struct sockaddr_in tcpAddr;
+        struct sockaddr_un unixAddr;
+    } addr;
     elosClientConnection_t connection[ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT];
     pthread_t listenThread;
     elosClientConnectionSharedData_t sharedData;

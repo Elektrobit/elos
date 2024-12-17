@@ -22,7 +22,7 @@ target_link_options(
     -Wl,--wrap=elosConnectionManagerThreadWaitForIncomingConnection
     -Wl,--wrap=elosClientAuthorizationInitialize
     -Wl,--wrap=elosClientAuthorizationDelete
-    -Wl,--wrap=elosClientAuthorizationIsTrustedConnection
+    -Wl,--wrap=elosTcpClientAuthorizationIsTrustedConnection
     -Wl,--wrap=elosAuthorizedProcessInitialize
     -Wl,--wrap=elosAuthorizedProcessDelete
     -Wl,--wrap=elosAuthorizedProcessCheck

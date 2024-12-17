@@ -8,6 +8,7 @@
 #include <safu/vector.h>
 #include <samconf/samconf_types.h>
 #include <semaphore.h>
+#include <sys/un.h>
 
 #include "clientconnection_defines.h"
 
@@ -58,7 +59,10 @@ typedef struct elosClientConnection {
     int fd;
     int syncFd;
     int triggerFd;
-    struct sockaddr_in addr;
+    union {
+        struct sockaddr_in tcpAddr;
+        struct sockaddr_un unixAddr;
+    } addr;
     pthread_t thread;
     elosClientConnectionSharedData_t *sharedData;
     elosClientConnectionData_t data;

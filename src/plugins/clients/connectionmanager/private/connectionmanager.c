@@ -16,7 +16,8 @@
 #include "tcp_clientauthorization/clientauthorization.h"
 #include "tcp_config/config.h"
 
-static inline safuResultE_t elosUnixConfigGetSocketAddress(UNUSED elosPlugin_t const *plugin, UNUSED struct sockaddr *addr) {
+static inline safuResultE_t elosUnixConfigGetSocketAddress(UNUSED elosPlugin_t const *plugin,
+                                                           UNUSED struct sockaddr *addr) {
     return SAFU_RESULT_FAILED;
 }
 
@@ -38,36 +39,68 @@ static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionMa
 
 static safuResultE_t _initializeListener(elosConnectionManager_t *connectionManager, elosPlugin_t const *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    struct sockaddr_in *addr = &connectionManager->addr;
+    struct sockaddr *addr = (struct sockaddr *)&connectionManager->addr;
+    socklen_t addrLen = 0;
+    int retVal = 0;
+    sa_family_t saFamily = connectionManager->saFamily;
     char const *interface = elosTcpConfigGetInterface(plugin);
     int const port = elosTcpConfigGetPort(plugin);
-    int retVal;
 
-    addr->sin_family = AF_INET;
-    addr->sin_port = htons(port);
+    switch (saFamily) {
+        case AF_INET:
+            result = elosTcpConfigGetSocketAddress(plugin, addr);
+            addrLen = sizeof(struct sockaddr_in);
+            break;
+        case AF_UNIX:
+            result = elosUnixConfigGetSocketAddress(plugin, addr);
+            addrLen = sizeof(struct sockaddr_un);
+            break;
+        default:
+            result = SAFU_RESULT_FAILED;
+            break;
+    }
 
-    retVal = inet_pton(AF_INET, interface, &addr->sin_addr);
-    if (retVal != 1) {
-        safuLogErrErrnoValue("inet_pton failed", retVal);
-    } else {
-        connectionManager->fd = socket(addr->sin_family, SOCK_STREAM, 0);
+    if (result == SAFU_RESULT_OK) {
+        connectionManager->fd = socket(saFamily, SOCK_STREAM, 0);
         if (connectionManager->fd == -1) {
-            safuLogErrErrnoValue("socket failed", connectionManager->fd);
+            safuLogErrErrnoValue("Socket creation failed", errno);
+            result = SAFU_RESULT_FAILED;
         } else {
-            retVal = setsockopt(connectionManager->fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
+            int reuse = 1;
+            retVal = setsockopt(connectionManager->fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
             if (retVal != 0) {
-                safuLogErrErrnoValue("setsocketopt SO_REUSEADDR failed", retVal);
+                safuLogErrErrnoValue("setsockopt SO_REUSEADDR failed", errno);
+                result = SAFU_RESULT_FAILED;
             } else {
-                retVal = bind(connectionManager->fd, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
+                retVal = bind(connectionManager->fd, addr, addrLen);
                 if (retVal != 0) {
-                    safuLogDebugF("tried to listen on: %s:%d", interface, port);
-                    safuLogErrErrnoValue("bind failed", retVal);
-                } else {
-                    result = SAFU_RESULT_OK;
-                    safuLogDebugF("listen on: %s:%d", interface, port);
+                    safuLogErrErrnoValue("Bind failed", errno);
+                    result = SAFU_RESULT_FAILED;
                 }
             }
         }
+    }
+
+    switch (saFamily) {
+        case AF_INET:
+            if (result == SAFU_RESULT_OK) {
+                safuLogDebugF("listen on: %s:%d", interface, port);
+            } else {
+                safuLogErrF("Failed to listening on %s:%d", interface, port);
+            }
+            break;
+        case AF_UNIX:
+            if (result == SAFU_RESULT_OK) {
+                struct sockaddr_un *unixAddr = (struct sockaddr_un *)addr;
+                safuLogDebugF("listen on UNIX socket: %s", unixAddr->sun_path);
+            } else {
+                struct sockaddr_un *unixAddr = (struct sockaddr_un *)addr;
+                safuLogErrF("Failed to listening on UNIX socket: %s", unixAddr->sun_path);
+            }
+
+            break;
+        default:
+            break;
     }
 
     return result;
@@ -108,7 +141,26 @@ static safuResultE_t _initializeAuthorization(elosConnectionManager_t *connectio
     return result;
 }
 
-safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin) {
+static safuResultE_t _initializeAddressFamily(elosConnectionManager_t *connectionManager, sa_family_t saFamily) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    switch (saFamily) {
+        case AF_INET:
+        case AF_UNIX:
+            connectionManager->saFamily = saFamily;
+            result = SAFU_RESULT_OK;
+            break;
+        default:
+            safuLogErr("Unsupported address family");
+            result = SAFU_RESULT_FAILED;
+            break;
+    }
+
+    return result;
+}
+
+safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin,
+                                              sa_family_t saFamily) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     if ((connectionManager == NULL) || (plugin == NULL)) {
@@ -120,19 +172,22 @@ safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectio
     } else {
         memset(connectionManager, 0, sizeof(elosConnectionManager_t));
 
-        result = _initializeSharedData(connectionManager, plugin);
+        result = _initializeAddressFamily(connectionManager, saFamily);
         if (result == SAFU_RESULT_OK) {
-            result = _initializeListener(connectionManager, plugin);
+            result = _initializeSharedData(connectionManager, plugin);
             if (result == SAFU_RESULT_OK) {
-                result = _initializeConnections(connectionManager);
+                result = _initializeListener(connectionManager, plugin);
                 if (result == SAFU_RESULT_OK) {
-                    connectionManager->syncFd = eventfd(0, 0);
-                    if (connectionManager->syncFd == -1) {
-                        safuLogErrErrnoValue("Creating eventfd failed", connectionManager->syncFd);
-                    } else {
-                        _initializeAuthorization(connectionManager, plugin->config);
+                    result = _initializeConnections(connectionManager);
+                    if (result == SAFU_RESULT_OK) {
+                        connectionManager->syncFd = eventfd(0, 0);
+                        if (connectionManager->syncFd == -1) {
+                            safuLogErrErrnoValue("Creating eventfd failed", connectionManager->syncFd);
+                        } else {
+                            _initializeAuthorization(connectionManager, plugin->config);
 
-                        atomic_store(&connectionManager->flags, SAFU_FLAG_INITIALIZED_BIT);
+                            atomic_store(&connectionManager->flags, SAFU_FLAG_INITIALIZED_BIT);
+                        }
                     }
                 }
             }
@@ -186,6 +241,15 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
                 retVal = close(connectionManager->syncFd);
                 if (retVal != 0) {
                     safuLogWarnErrnoValue("Closing eventfd failed (possible memory leak)", retVal);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+
+            if (connectionManager->saFamily == AF_UNIX) {
+                struct sockaddr_un *addr = (struct sockaddr_un *)&connectionManager->addr;
+                retVal = unlink(addr->sun_path);
+                if (retVal != 0 && errno != ENOENT) {
+                    safuLogErrErrnoValue("unlink socket path failed", retVal);
                     result = SAFU_RESULT_FAILED;
                 }
             }

@@ -12,11 +12,13 @@ __BEGIN_DECLS
  * Parameters:
  *      connectionManager: ConnectionManager structure that will be initialized
  *      plugin: plugin reference to interact with elos.
+ *      saFamily: address family of connection
  * Returns:
  *      - SAFU_RESULT_FAILED on error
  *      - SAFU_RESULT_OK on success
  ******************************************************************/
-safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin);
+safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin,
+                                              sa_family_t saFamily);
 
 /*******************************************************************
  * Frees member resources used by the given ConnectionManager data structure.
