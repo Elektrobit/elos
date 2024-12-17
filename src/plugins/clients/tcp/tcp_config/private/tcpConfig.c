@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "tcpConfig.h"
+#include "tcp_config/config.h"
 
 #include <elos/libelosplugin/libelosPluginConfig.h>
 #include <elos/libelosplugin/libelosplugin.h>

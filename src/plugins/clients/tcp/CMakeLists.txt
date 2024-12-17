@@ -3,10 +3,7 @@ find_package(safu 0.56.2 REQUIRED)
 find_package(samconf 0.56.3 REQUIRED)
 
 add_subdirectory(tcp_clientauthorization)
-
-add_compile_definitions(ELOSD_PORT=${ELOSD_PORT})
-add_compile_definitions(ELOSD_INTERFACE="${ELOSD_INTERFACE}")
-add_compile_definitions(ELOSD_CONNECTION_LIMIT=${ELOSD_CONNECTION_LIMIT})
+add_subdirectory(tcp_config)
 
 add_library(
   messagehandler_static
@@ -51,9 +48,7 @@ add_library(
     client_tcp
   SHARED
     private/tcp.c
-    private/tcpConfig.c
 )
-
 create_interface_library(
   FROM
     client_tcp
@@ -61,28 +56,21 @@ create_interface_library(
     safu::safu_interface
     samconf::samconf_interface
 )
-
 set_target_properties(client_tcp PROPERTIES PREFIX "")
-
 target_link_libraries(
   client_tcp
   PUBLIC
     messagehandler_static
     connectionmanager_static
+    tcp_config_static
     client_tcp_interface
     libelosplugin
     samconf::samconf
 )
-
 target_include_directories(
   client_tcp
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/public
     ${CMAKE_CURRENT_SOURCE_DIR}/private
-    ${CMAKE_CURRENT_SOURCE_DIR}/interface
 )
-
-target_compile_definitions(client_tcp PUBLIC ELOSD_PORT=${ELOSD_PORT})
-target_compile_definitions(client_tcp PUBLIC ELOSD_INTERFACE="${ELOSD_INTERFACE}")
-
 install(TARGETS client_tcp DESTINATION ${ELOSD_CLIENT_PATH})

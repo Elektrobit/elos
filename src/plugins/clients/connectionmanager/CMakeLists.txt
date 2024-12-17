@@ -38,6 +38,7 @@ target_link_libraries(
   PUBLIC
     clientauthorizedprocesses_static
     tcp_clientauthorization_static
+    tcp_config_static
     messagehandler_static
     libelosplugin
     elos_common_interface
