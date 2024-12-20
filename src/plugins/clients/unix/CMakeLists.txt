@@ -4,6 +4,8 @@ find_package(samconf 0.56.3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBMNL REQUIRED libmnl)
 
+add_subdirectory(unix_config)
+
 add_library(
   unix_connectionmanager_static
   STATIC
@@ -62,6 +64,7 @@ target_link_libraries(
   client_unix
   PUBLIC
     unix_connectionmanager_static
+    unix_config_static
     client_unix_interface
     libelosplugin
     samconf::samconf
