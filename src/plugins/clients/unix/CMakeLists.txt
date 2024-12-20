@@ -4,6 +4,7 @@ find_package(samconf 0.56.3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBMNL REQUIRED libmnl)
 
+add_subdirectory(unix_clientauthorization)
 add_subdirectory(unix_config)
 
 add_library(

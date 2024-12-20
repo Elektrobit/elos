@@ -10,17 +10,13 @@
 #include "connectionmanager/connectionmanager.h"
 #include "connectionmanager_private.h"
 #include "tcp_clientauthorization/clientauthorization.h"
+#include "unix_clientauthorization/clientauthorization.h"
 
 #define CONNECTION_SEMAPHORE_TIMEOUT_SEC  0
 #define CONNECTION_SEMAPHORE_TIMEOUT_NSEC (100 * 1000 * 1000)
 #define CONNECTION_PSELECT_TIMEOUT_SEC    0
 #define CONNECTION_PSELECT_TIMEOUT_NSEC   (100 * 1000 * 1000)
 #define TIMESPEC_1SEC_IN_NSEC             1000000000L
-
-inline bool elosUnixClientAuthorizationIsTrustedConnection(UNUSED elosClientAuthorization_t *const clientAuth,
-                                                           UNUSED struct sockaddr const *const addr) {
-    return false;
-}
 
 static inline void _calculateTvSeconds(struct timespec *ts) {
     struct timespec connSemTimeOut = {.tv_sec = CONNECTION_SEMAPHORE_TIMEOUT_SEC,
@@ -134,6 +130,7 @@ safuResultE_t elosConnectionManagerThreadWaitForIncomingConnection(elosConnectio
                                                                                 (struct sockaddr *)&conn->addr);
                 break;
             case AF_UNIX:
+                connectionManager->clientAuth.clientFd = *socketFd;
                 conn->isTrusted = elosUnixClientAuthorizationIsTrustedConnection(&connectionManager->clientAuth,
                                                                                  (struct sockaddr *)&conn->addr);
                 break;

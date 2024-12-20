@@ -9,7 +9,7 @@ __BEGIN_DECLS
 
 bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth,
                                                    struct sockaddr const *const addr);
-safuResultE_t elosClientAuthorizationInitialize(elosClientAuthorization_t *clientAuth);
-safuResultE_t elosClientAuthorizationDelete(elosClientAuthorization_t *clientAuth);
+safuResultE_t elosTcpClientAuthorizationInitialize(elosClientAuthorization_t *clientAuth);
+safuResultE_t elosTcpClientAuthorizationDelete(elosClientAuthorization_t *clientAuth);
 
 __END_DECLS
