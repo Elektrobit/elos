@@ -1,10 +1,114 @@
 import time
 import json
+import uuid
 import re
 import robot.utils.asserts
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
 from robot.api.deco import keyword
+
+
+def string_start_with(string, pattern):
+    match = re.match(pattern, string)
+    if match:
+        return True
+    else:
+        return False
+
+
+class ElosSubscription(object):
+    """
+    Manage subscription process though ssh and elosc. Each instance starts a
+    single elosc process subscribing to a given filter in the background.
+    """
+
+    def __init__(self, filter):
+        self.ssh = BuiltIn().get_library_instance('SSHLibrary')
+        self.subID = uuid.uuid1()
+        self.connectionAlias = f"Subscription{self.subID}"
+        self.subscription_out = f"/tmp/subscription{self.subID}.stdout"
+        self.subscription_err = f"/tmp/subscription{self.subID}.stderr"
+        self.subscription_pid = f"/tmp/subscription{self.subID}.pid"
+
+        connectionToRestore = self.ssh.get_connection().index
+        host = BuiltIn().get_variable_value('${TARGET_IP}')
+        port = 22
+        user = BuiltIn().get_variable_value('${TARGET_USER}')
+        password = BuiltIn().get_variable_value('${TARGET_PASSWORD}')
+        self.connectionId = self.ssh.open_connection(
+            host, self.connectionAlias, port)
+        self.ssh.login(user, password)
+
+        self.ssh.start_command(
+            f"elosc -s \"{filter}\" > {self.subscription_out} 2> {self.subscription_err} & echo $! > {self.subscription_pid}")
+
+        self.ssh.switch_connection(connectionToRestore)
+
+    def getEvents(self):
+        """
+        Read and parse the elosc output and return all events received
+        by this subscription.
+        """
+        connectionToRestore = self.ssh.switch_connection(self.connectionAlias)
+        stdout, stderr, rc = self.ssh.execute_command(
+            f"cat {self.subscription_out}",
+            return_stdout=True,
+            return_stderr=True,
+            return_rc=True
+        )
+        self.ssh.switch_connection(connectionToRestore)
+
+        if rc != 0 or stderr:
+            logger.error(f"Failed to fetch subscriptions ({rc}): {stderr}")
+            events = []
+        else:
+            logger.info(f"Contents of stdout: {stdout}")
+            events = self._parse_elosc_result(stdout)
+            logger.info(f"parsed {len(events)} events from {events}")
+
+        return events
+
+    def _parse_elosc_result(self, stdout):
+        """
+        Parse elosc console output for subscriptions
+        """
+        lines = stdout.splitlines()
+        events = []
+        for i, line in enumerate(lines):
+            pattern = r'^new data \[(\d+),(\d+)\]:$'
+            if string_start_with(line.strip(), pattern) and len(lines) > i+1:
+                events.append(json.loads(lines[i + 1].strip()))
+        return events
+
+    def unsubscribe(self):
+        """
+        Kill and cleanup elosc subscribe process owned by this instance.
+        """
+        connectionToRestore = self.ssh.switch_connection(self.connectionAlias)
+        stdout, stderr = self.ssh.execute_command(
+            f"kill $(cat {self.subscription_pid})",
+            return_stdout=True,
+            return_stderr=True,
+        )
+        if stdout:
+            logger.info(f"Unsubscribe contents of stdout: {stdout}")
+        if stderr:
+            logger.error(f"Unsubscribe contents of stderr: {stderr}")
+
+        stdout, stderr = self.ssh.execute_command(
+            (
+                f"rm {self.subscription_pid}"
+                f" {self.subscription_out}"
+                f" {self.subscription_err}"
+            ),
+            return_stdout=True,
+            return_stderr=True,
+        )
+        if stdout:
+            logger.info(f"Unsubscribe contents of stdout: {stdout}")
+        if stderr:
+            logger.error(f"Unsubscribe contents of stderr: {stderr}")
+        self.ssh.switch_connection(connectionToRestore)
 
 
 class ElosKeywords(object):
@@ -99,7 +203,8 @@ class ElosKeywords(object):
 
     def set_event_publish_time(self, event):
         self._set_publish_time()
-        new_event = re.sub(re.escape("ptime"), str(self.publish_time), event, count=1)
+        new_event = re.sub(re.escape("ptime"), str(
+            self.publish_time), event, count=1)
         logger.info(f"event with pub time : {new_event}")
 
         return new_event
@@ -109,7 +214,8 @@ class ElosKeywords(object):
         publish an event on target
         """
 
-        stdout, stderr, rc = self._exec_on_target(f"elosc -P '{port}' -p '{event}'")
+        stdout, stderr, rc = self._exec_on_target(
+            f"elosc -P '{port}' -p '{event}'")
 
         return rc == 0
 
@@ -247,17 +353,18 @@ class ElosKeywords(object):
         find an event published on target
         """
 
-        stdout, stderr, rc = self._exec_on_target(f"elosc -P '{port}' -f '{filter}'")
+        stdout, stderr, rc = self._exec_on_target(
+            f"elosc -P '{port}' -f '{filter}'")
         logger.info(f"filter run : {stdout}")
         if rc != 0:
-                robot.utils.asserts.fail()
+            robot.utils.asserts.fail()
 
         events = self._parse_elosc_result(stdout)
 
         return events
 
     def _matching_events_are_current(self, filter):
-        matched_event_count = 0;
+        matched_event_count = 0
         matched_events = self.find_events_matching(filter)
         if matched_events:
             for event in matched_events:
@@ -289,3 +396,72 @@ class ElosKeywords(object):
         stdout, stderr, rc = self._exec_on_target(f"test -f {path}")
         if rc != 0:
             robot.utils.asserts.fail(f"File {path} does not exist")
+
+    @keyword("'${plugin}' Plugin Is Loaded")
+    def plugin_is_loaded(self, plugin):
+        """
+        Verify that a plugin with given name is reported as loaded by elos.
+        """
+        stdout, stderr, rc = self._exec_on_target(
+            f"grep -i \"'{plugin}' has been loaded\" /tmp/elosd.log")
+        if rc != 0:
+            robot.utils.asserts.fail(f"Plugin {plugin} not loaded")
+
+    @keyword("Write '${message}' To '${file}'")
+    def write_to_file(self, message, file):
+        """
+        Append a given string to given file on the target.
+        """
+        stdout, stderr, rc = self._exec_on_target(
+            f"sh -c 'echo \"{message}\" >> \"{file}\"'")
+        if rc != 0:
+            robot.utils.asserts.fail(f"Could not write to {file}")
+
+    @keyword("Subscribe To '${filter}'")
+    def subscribe_to_event(self, filter):
+        """
+        Create a subscription for a given event filter
+        """
+        logger.info(f"subscribe to {filter}")
+        subscription = ElosSubscription(filter)
+        BuiltIn().set_test_variable('${SUBSCRIPTION}', subscription)
+        return subscription
+
+    @keyword("Unsubscribe from ${subscription}")
+    def unsubscribe_from(self, subscription):
+        """
+        Cancel a subscription client and clean everything up
+        """
+        if not subscription:
+            robot.utils.asserts.fail("No active subscription to unsubscribe")
+        else:
+            subscription.unsubscribe()
+
+    @keyword("Unsubscribe All")
+    def unsubscribe_all(self):
+        """
+        Cancel all active subscriptions
+        """
+        subscription = BuiltIn().get_variable_value("${SUBSCRIPTION}")
+        self.unsubscribe_from(subscription)
+
+    @keyword("An Event Was Published")
+    def an_event_was_published(self, timeout=5):
+        """
+        Check last subscription has any published events
+        """
+        subscription = BuiltIn().get_variable_value("${SUBSCRIPTION}")
+        logger.info(f"subID: {subscription.subID}")
+        start_time = time.time()
+        retry_count = 0
+        while True:
+            events = subscription.getEvents()
+            if len(events) > 0:
+                logger.info(f"{events}")
+                break
+            elif time.time() - start_time > timeout:
+                robot.utils.asserts.fail("Fail because of timeout")
+            else:
+                retry_count += 1
+                logger.info(f"{retry_count}. Retry as no events found")
+                time.sleep(0.2)
