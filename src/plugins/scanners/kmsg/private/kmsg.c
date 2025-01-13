@@ -198,7 +198,7 @@ static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
     return result;
 }
 
-static safuResultE_t _publishMessage(elosPlugin_t *plugin) {
+static void _publishMessage(elosPlugin_t *plugin) {
     struct elosKmsgContext *context = plugin->data;
     safuResultE_t result = SAFU_RESULT_OK;
     char *readBuffer;
@@ -222,36 +222,33 @@ static safuResultE_t _publishMessage(elosPlugin_t *plugin) {
     }
 
     if (result == SAFU_RESULT_OK) {
-        safuResultE_t resVal;
-
-        elosEventSource_t eventSource = {.fileName = context->kmsgFile};
         elosEvent_t event = {
-            .source = eventSource,
+            .source =
+                {
+                    .fileName = context->kmsgFile,
+                },
         };
 
-        resVal = elosKmsgMapperDoMapping(&context->mapper, &event, readBuffer);
-        if (resVal != SAFU_RESULT_OK) {
+        result = elosKmsgMapperDoMapping(&context->mapper, &event, readBuffer);
+        if (result != SAFU_RESULT_OK) {
             event.date.tv_sec = time(NULL);
             event.date.tv_nsec = 0;
             event.messageCode = ELOS_MSG_CODE_MESSAGE_NOT_UNDERSTOOD;
             event.payload = readBuffer;
         }
 
-        resVal = elosPluginPublish(plugin, context->publisher, &event);
-        if (resVal != SAFU_RESULT_OK) {
+        result = elosPluginPublish(plugin, context->publisher, &event);
+        if (result != SAFU_RESULT_OK) {
             safuLogErr("eventPublish failed");
-            result = SAFU_RESULT_FAILED;
         }
 
-        resVal = elosPluginStore(plugin, &event);
-        if (resVal != SAFU_RESULT_OK) {
+        result = elosPluginStore(plugin, &event);
+        if (result != SAFU_RESULT_OK) {
             safuLogErr("eventLog failed");
-            result = SAFU_RESULT_FAILED;
         }
     }
 
     free(readBuffer);
-    return result;
 }
 
 static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
@@ -380,12 +377,7 @@ static safuResultE_t _pluginRunLoop(elosPlugin_t *plugin) {
                 }
             }
             if (fds[1].revents & POLLIN) {
-                retval = _publishMessage(plugin);
-                if (retval < 0) {
-                    safuLogErr("failed to publish message");
-                    context->running = false;
-                    result = SAFU_RESULT_FAILED;
-                }
+                _publishMessage(plugin);
             }
         } else if (errno == EINTR) {
             continue;
