@@ -39,7 +39,13 @@ autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 2
 
 templates_path = ['doc/_templates']
-exclude_patterns = ['build/deps/**', 'build/*/cmake/_deps/*', 'README.md', '.venv']
+exclude_patterns = [
+    'build/deps/**',
+    'build/*/cmake/_deps/*',
+    'README.md',
+    '.venv',
+    'debian/**',
+]
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
