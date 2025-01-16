@@ -124,7 +124,7 @@ jobs:
           -cvf "$RUNNER_TEMP/artifact.tar" \
           .
       - name: save documentation
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: github-pages
           path: ${{ runner.temp }}/artifact.tar
