@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include <connectionmanager/clientauthorizedprocesses.h>
+#include <clientauthorizedprocesses/clientauthorizedprocesses.h>
 #include <safu/result.h>
 #include <samconf/test_utils.h>
 #include <string.h>

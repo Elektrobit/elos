@@ -118,7 +118,6 @@ if (ELOS_DEMOS)
     demo_eloslog
     PRIVATE
       libelos_common
-      eventprocessor_static
       eloslog_static
       libelos
       version

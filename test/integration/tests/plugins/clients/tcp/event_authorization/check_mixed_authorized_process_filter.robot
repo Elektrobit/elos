@@ -28,7 +28,6 @@ ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
     [Documentation]    A process should match at least one filter to
     ...    be a authorized process
 
-    Skip    Is currently broken need to be analyzed and fixed #23440
     Given Valid And Invalid Authorized Process Filters Are Set
     When Client Tries To Publish A Blacklisted Event
     Then Blacklisted Event Is Published
@@ -47,6 +46,7 @@ Valid And Invalid Authorized Process Filters Are Set
     ...          ${Config}    $..LocalTcpClient.Config.authorizedProcesses
     ...          ${AUTHORIZED_PROCESS_FILTERS}
     Set Config From Template    &{Config}
+    Ensure Elosd Is Started
 
 Client Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails

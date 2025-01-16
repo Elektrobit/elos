@@ -4,4 +4,5 @@
 --configure 0503:max_calls:20
 --configure 0528:ignore_templated:true
 --configure 0508:line_length:100
+--configure 0302:pattern:'.*'
 --threshold W

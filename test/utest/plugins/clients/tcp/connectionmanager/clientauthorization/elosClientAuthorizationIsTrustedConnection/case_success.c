@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <cmocka_mocks/mock_libmnl.h>
-#include <connectionmanager/clientauthorization.h>
+#include <tcp_clientauthorization/clientauthorization.h>
 
 #include "elosClientAuthorizationIsTrustedConnection_utest.h"
 
@@ -25,7 +25,7 @@ void elosTestElosClientAuthorizationIsTrustedConnectionSuccess(UNUSED void **sta
 
     struct mnl_socket *expectedNlSocket = (struct mnl_socket *)0xDEADBEEF;
     elosClientAuthorization_t clientAuth = {.mlSocket = expectedNlSocket};
-    struct sockaddr_in addr = {0};
+    struct sockaddr addr = {0};
 
     MOCK_FUNC_AFTER_CALL(mnl_socket_sendto, 0);
     expect_value(__wrap_mnl_socket_sendto, nl, expectedNlSocket);
@@ -43,6 +43,6 @@ void elosTestElosClientAuthorizationIsTrustedConnectionSuccess(UNUSED void **sta
     expect_any(__wrap_mnl_socket_recvfrom, siz);
     will_return(__wrap_mnl_socket_recvfrom, 0);
 
-    result = elosClientAuthorizationIsTrustedConnection(&clientAuth, &addr);
+    result = elosTcpClientAuthorizationIsTrustedConnection(&clientAuth, &addr);
     assert_true(result);
 }

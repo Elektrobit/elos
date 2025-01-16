@@ -2,7 +2,7 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_mocks/mock_libmnl.h>
-#include <connectionmanager/clientauthorization.h>
+#include <tcp_clientauthorization/clientauthorization.h>
 
 #include "elosClientAuthorizationInitialize_utest.h"
 

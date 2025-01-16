@@ -29,6 +29,7 @@ TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrReadPayloadF
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrInvalidMessageId)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrMessageFunctionReturnFailure)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageSuccess)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosMessageHandlerHandleMessageErrLengthZero)
 
 #define _RECV_MOCK(__testState)                                                                \
     MOCK_FUNC_ALWAYS(safuRecvExactly);                                                         \

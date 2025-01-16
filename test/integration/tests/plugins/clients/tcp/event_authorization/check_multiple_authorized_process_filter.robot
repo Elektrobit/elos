@@ -31,6 +31,7 @@ ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
         When Client Tries To Publish A Blacklisted Event
         Then Blacklisted Event Is Published
     END
+    [Teardown]    Reset Elosd Config
 
 02_Test_Multiple_Filters    # robocop: disable=not-capitalized-test-case-title
     [Documentation]    Any authorized process can publish a normal event
@@ -40,6 +41,7 @@ ${BLACKLIST_FILTER}                 .event.messageCode 2010 EQ
         When Client Tries To Publish A Normal Event
         Then Event Is Published
     END
+    [Teardown]    Reset Elosd Config
 
 
 *** Keywords ***

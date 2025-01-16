@@ -30,7 +30,7 @@ Test Elos Configuration not set
     [Teardown]
     ...    Run Keywords    Ensure Elosd Is Stopped
     ...    AND    Reset Config File
-    ...    AND    Start Elosd
+    ...    AND    Ensure Elosd Is Started
 
 
 *** Keywords ***

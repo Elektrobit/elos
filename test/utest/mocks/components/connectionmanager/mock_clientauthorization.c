@@ -20,12 +20,12 @@ MOCK_FUNC_BODY(elosClientAuthorizationDelete, safuResultE_t, elosClientAuthoriza
     return MOCK_FUNC_REAL(elosClientAuthorizationDelete)(clientAuth);
 }
 
-MOCK_FUNC_BODY(elosClientAuthorizationIsTrustedConnection, bool, elosClientAuthorization_t *clientAuth,
-               struct sockaddr_in const *addr) {
-    if (MOCK_IS_ACTIVE(elosClientAuthorizationIsTrustedConnection)) {
+MOCK_FUNC_BODY(elosTcpClientAuthorizationIsTrustedConnection, bool, elosClientAuthorization_t *clientAuth,
+               struct sockaddr const *addr) {
+    if (MOCK_IS_ACTIVE(elosTcpClientAuthorizationIsTrustedConnection)) {
         check_expected_ptr(clientAuth);
         check_expected_ptr(addr);
         return mock_type(bool);
     }
-    return MOCK_FUNC_REAL(elosClientAuthorizationIsTrustedConnection)(clientAuth, addr);
+    return MOCK_FUNC_REAL(elosTcpClientAuthorizationIsTrustedConnection)(clientAuth, addr);
 }

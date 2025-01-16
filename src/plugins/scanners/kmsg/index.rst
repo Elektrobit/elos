@@ -2,10 +2,13 @@ Kmsg - Scanner
 ==============
 
 Reads the kernel log ring buffer from /dev/kmsg and publishes depending
-on pattern matching ([WIP] currently each line) as a “KMSG” event. The
-scanner tries to open the configured file for reading, if it is not
-found at the specified location it will try to create a FIFO node using
-``mkfifo()``. Multiline kernel messages are not handled right now.
+on pattern matching each line as a “KMSG” event. The Kernel Ringbuffer is only
+read once per boot, to avoid dublicated kernel message events each time elos
+gets started.
+
+The scanner tries to open the configured file for reading, if it is not found
+at the specified location it will try to create a FIFO node using ``mkfifo()``.
+Multiline kernel messages are not handled right now.
 
 Published events
 ----------------
@@ -45,8 +48,10 @@ Compile time:
 Environment:
 ~~~~~~~~~~~~
 
--  ``ELOS_KMSG_FILE`` –> the path where to open expect a character
-   device or FIFO file node, default is ``ELOSD_SYSLOG_PATH``
+- ``ELOS_KMSG_FILE`` –> the path where to open expect a character
+  device or FIFO file node, default is ``ELOSD_SYSLOG_PATH``
+- ``ELOS_KMSG_STATEFILE`` -> the path where to store the kmsg state file, the
+  path must exist.
 
 Json
 ~~~~
@@ -59,10 +64,13 @@ Under `root/elos/Scanner/Plugins` add:
       "File": "scanner_kmsg.so",
       "Run": "always",
       "Config": {
-         "KmsgFile": "/dev/kmsg"
+         "KmsgFile": "/dev/kmsg",
+         "KmsgStateFile": "/run/elosd/kmsg.state"
       }
    }
 
+- ``KmsgStateFile``: The path to store the kms state file. Make sure the path
+  exists and is writeabel or the plugin initalization will fail.
 
 Configuration structure
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,5 +81,6 @@ Configuration structure
    ├── File
    ├── Run
    └── Config
-       └── KmsgFile
+       ├── KmsgFile
+       └── KmsgStateFile
 
