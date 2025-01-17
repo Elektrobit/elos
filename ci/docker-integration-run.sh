@@ -12,7 +12,7 @@ echo "==> create docker image"
 cd $BASE_DIR/ci
 docker build \
     --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
-    --tag ${IMAGE_NAME} -f Dockerfile.robot .
+    --tag ${IMAGE_NAME} -f Dockerfile .
 
 echo "==> run $PROJECT robot container"
 
