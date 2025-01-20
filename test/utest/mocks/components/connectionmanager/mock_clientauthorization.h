@@ -12,7 +12,7 @@
 
 #include "tcp_clientauthorization/clientauthorization.h"
 
-MOCK_FUNC_PROTOTYPE(elosClientAuthorizationInitialize, safuResultE_t, elosClientAuthorization_t *clientAuth)
-MOCK_FUNC_PROTOTYPE(elosClientAuthorizationDelete, safuResultE_t, elosClientAuthorization_t *clientAuth)
+MOCK_FUNC_PROTOTYPE(elosTcpClientAuthorizationInitialize, safuResultE_t, elosClientAuthorization_t *clientAuth)
+MOCK_FUNC_PROTOTYPE(elosTcpClientAuthorizationDelete, safuResultE_t, elosClientAuthorization_t *clientAuth)
 MOCK_FUNC_PROTOTYPE(elosTcpClientAuthorizationIsTrustedConnection, bool, elosClientAuthorization_t *clientAuth,
                     struct sockaddr const *addr)

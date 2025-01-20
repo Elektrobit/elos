@@ -17,9 +17,9 @@ int elosTestElosClientAuthorizationInitializeErrParamTeardown(UNUSED void **stat
 void elosTestElosClientAuthorizationInitializeErrParam(UNUSED void **state) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    TEST("elosClientAuthorizationInitialize");
+    TEST("elosTcpClientAuthorizationInitialize");
     SHOULD("%s", "return SAFU_RESULT_FAILED if parameter is NULL");
 
-    result = elosClientAuthorizationInitialize(NULL);
+    result = elosTcpClientAuthorizationInitialize(NULL);
     assert_int_equal(result, SAFU_RESULT_FAILED);
 }

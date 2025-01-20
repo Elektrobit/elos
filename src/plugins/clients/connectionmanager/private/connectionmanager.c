@@ -15,11 +15,8 @@
 #include "connectionmanager_private.h"
 #include "tcp_clientauthorization/clientauthorization.h"
 #include "tcp_config/config.h"
-
-static inline safuResultE_t elosUnixConfigGetSocketAddress(UNUSED elosPlugin_t const *plugin,
-                                                           UNUSED struct sockaddr *addr) {
-    return SAFU_RESULT_FAILED;
-}
+#include "unix_clientauthorization/clientauthorization.h"
+#include "unix_config/config.h"
 
 static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -126,9 +123,23 @@ static safuResultE_t _initializeAuthorization(elosConnectionManager_t *connectio
                                               samconfConfig_t const *config) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    result = elosClientAuthorizationInitialize(&connectionManager->clientAuth);
-    if (result != SAFU_RESULT_OK) {
-        safuLogWarn("elosClientAuthorizationInitialize failed");
+    switch (connectionManager->saFamily) {
+        case AF_INET:
+            result = elosTcpClientAuthorizationInitialize(&connectionManager->clientAuth);
+            if (result != SAFU_RESULT_OK) {
+                safuLogWarn("elosTcpClientAuthorizationInitialize failed");
+            }
+            break;
+        case AF_UNIX:
+            result = elosUnixClientAuthorizationInitialize(&connectionManager->clientAuth);
+            if (result != SAFU_RESULT_OK) {
+                safuLogWarn("elosUnixClientAuthorizationInitialize failed");
+            }
+            break;
+        default:
+            safuLogErr("address family not initialized");
+            result = SAFU_RESULT_FAILED;
+            break;
     }
 
     result = elosAuthorizedProcessInitialize(&connectionManager->clientAuth.authorizedProcessFilters, config);
@@ -227,8 +238,6 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
                 result = SAFU_RESULT_FAILED;
             }
 
-            elosClientAuthorizationDelete(&connectionManager->clientAuth);
-
             if (connectionManager->fd != -1) {
                 retVal = close(connectionManager->fd);
                 if (retVal != 0) {
@@ -245,13 +254,21 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
                 }
             }
 
-            if (connectionManager->saFamily == AF_UNIX) {
-                struct sockaddr_un *addr = (struct sockaddr_un *)&connectionManager->addr;
-                retVal = unlink(addr->sun_path);
-                if (retVal != 0 && errno != ENOENT) {
-                    safuLogErrErrnoValue("unlink socket path failed", retVal);
-                    result = SAFU_RESULT_FAILED;
-                }
+            switch (connectionManager->saFamily) {
+                case AF_INET:
+                    elosTcpClientAuthorizationDelete(&connectionManager->clientAuth);
+                    break;
+                case AF_UNIX:
+                    elosUnixClientAuthorizationDelete(&connectionManager->clientAuth);
+                    struct sockaddr_un *addr = (struct sockaddr_un *)&connectionManager->addr;
+                    retVal = unlink(addr->sun_path);
+                    if (retVal != 0 && errno != ENOENT) {
+                        safuLogErrErrnoValue("unlink socket path failed", retVal);
+                        result = SAFU_RESULT_FAILED;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
     }

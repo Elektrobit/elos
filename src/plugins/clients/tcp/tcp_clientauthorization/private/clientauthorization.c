@@ -342,7 +342,7 @@ static safuResultE_t _processBuffer(uint8_t const *const recvBuffer, ssize_t siz
     return result;
 }
 
-safuResultE_t elosClientAuthorizationInitialize(elosClientAuthorization_t *const clientAuth) {
+safuResultE_t elosTcpClientAuthorizationInitialize(elosClientAuthorization_t *const clientAuth) {
     safuResultE_t result = SAFU_RESULT_OK;
     struct mnl_socket *mlSock = NULL;
 
@@ -421,7 +421,7 @@ bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *co
     return isClientAuthorized;
 }
 
-safuResultE_t elosClientAuthorizationDelete(elosClientAuthorization_t *const clientAuth) {
+safuResultE_t elosTcpClientAuthorizationDelete(elosClientAuthorization_t *const clientAuth) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (clientAuth == NULL) {

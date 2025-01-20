@@ -20,8 +20,8 @@ target_link_options(
     -Wl,--wrap=elosConnectionManagerGetStatus
     -Wl,--wrap=elosConnectionManagerThreadGetFreeConnectionSlot
     -Wl,--wrap=elosConnectionManagerThreadWaitForIncomingConnection
-    -Wl,--wrap=elosClientAuthorizationInitialize
-    -Wl,--wrap=elosClientAuthorizationDelete
+    -Wl,--wrap=elosTcpClientAuthorizationInitialize
+    -Wl,--wrap=elosTcpClientAuthorizationDelete
     -Wl,--wrap=elosTcpClientAuthorizationIsTrustedConnection
     -Wl,--wrap=elosAuthorizedProcessInitialize
     -Wl,--wrap=elosAuthorizedProcessDelete

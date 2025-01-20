@@ -41,4 +41,5 @@ typedef enum elosTcpStatusE {
 typedef struct elosClientAuthorization {
     struct mnl_socket *mlSocket;
     safuVec_t authorizedProcessFilters;
+    int clientFd;
 } elosClientAuthorization_t;
