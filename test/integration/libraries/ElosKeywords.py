@@ -277,3 +277,15 @@ class ElosKeywords(object):
     def latest_events_matching_are_not_found(self, filter):
         status = self._matching_events_are_current(filter)
         robot.utils.asserts.assert_false(status)
+
+    @keyword("Directory '${path}' Should Exist On Target")
+    def directory_exists_on_target(self, path):
+        stdout, stderr, rc = self._exec_on_target(f"test -d {path}")
+        if rc != 0:
+            robot.utils.asserts.fail(f"Directory {path} does not exist")
+
+    @keyword("File '${path}' Should Exist On Target")
+    def file_exists_on_target(self, path):
+        stdout, stderr, rc = self._exec_on_target(f"test -f {path}")
+        if rc != 0:
+            robot.utils.asserts.fail(f"File {path} does not exist")

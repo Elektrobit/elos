@@ -47,4 +47,5 @@ List of ADRs
    ./communication_protocol
    ./libelos_logger_concept
    ./libelos-cpp_api_concept
+   ./unix_client_authorization
 

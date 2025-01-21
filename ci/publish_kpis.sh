@@ -29,7 +29,7 @@ function push_all_kpis {
 
 function collect_kpis_from_csv {
     local CSV_FILE=$1
-    local MEASURMENT="elos_tools.elos.message_runtime"
+    local MEASURMENT="elos.message_runtime"
 
     echo "collect KPIS from $CSV_FILE"
 
@@ -86,7 +86,7 @@ function collect_coverage_kpis {
 
     echo "tested coverage: $TESTED_COVERAGE"
     echo "total coverage: $TOTAL_COVERAGE"
-    add_kpi "elos_tools.elos.coverage" "build/Release/result" "public_functions=$PUBLIC_FUNCTION_COUNT,tested_public_functions=$TESTED_PUBLIC_FUNCTION_COUNT,local_functions=$LOCAL_FUNCTION_COUNT,average_coverage=$TOTAL_COVERAGE,average_tested_coverage=$TESTED_COVERAGE"
+    add_kpi "elos.coverage" "build/Release/result" "public_functions=$PUBLIC_FUNCTION_COUNT,tested_public_functions=$TESTED_PUBLIC_FUNCTION_COUNT,local_functions=$LOCAL_FUNCTION_COUNT,average_coverage=$TOTAL_COVERAGE,average_tested_coverage=$TESTED_COVERAGE"
 
     rm /tmp/symbols.log
 }

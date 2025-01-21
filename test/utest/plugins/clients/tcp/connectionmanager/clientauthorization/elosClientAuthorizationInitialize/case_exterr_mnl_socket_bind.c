@@ -2,7 +2,7 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_mocks/mock_libmnl.h>
-#include <connectionmanager/clientauthorization.h>
+#include <tcp_clientauthorization/clientauthorization.h>
 
 #include "elosClientAuthorizationInitialize_utest.h"
 
@@ -33,7 +33,7 @@ void elosTestElosClientAuthorizationInitializeExterrMnlSocketBind(UNUSED void **
     expect_value(__wrap_mnl_socket_bind, pid, MNL_SOCKET_AUTOPID);
     will_return(__wrap_mnl_socket_bind, LIBMNL_ERROR);
 
-    result = elosClientAuthorizationInitialize(&clientAuth);
+    result = elosTcpClientAuthorizationInitialize(&clientAuth);
     assert_int_equal(result, SAFU_RESULT_FAILED);
     assert_ptr_equal(clientAuth.mlSocket, NULL);
 }

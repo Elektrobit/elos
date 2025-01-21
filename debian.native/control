@@ -35,6 +35,7 @@ Depends:
 Recommends:
  elos-coredump (= ${binary:Version}),
  elos-plugin-client-tcp (= ${binary:Version}),
+ elos-plugin-client-unix (= ${binary:Version}),
  elos-plugin-backend-fetchapi (= ${binary:Version}),
  elos-plugin-backend-json (= ${binary:Version}),
  elos-plugin-backend-sql (= ${binary:Version}),
@@ -169,6 +170,19 @@ Description: Event logging and management with normalized output-format (TCP cli
  while providing easy access to the collected data.
  .
  A plugin to communicate with elos via TCP connections. It supports client authorization
+ for local connections.
+
+Package: elos-plugin-client-unix
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (Unix client plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ A plugin to communicate with elos via unix connections. It supports client authorization
  for local connections.
 
 Package: elos-plugin-scanner-dummy

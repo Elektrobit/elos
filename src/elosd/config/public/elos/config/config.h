@@ -21,6 +21,18 @@ const char *elosConfigGetElosdScannerKmsgFile(const samconfConfig_t *config);
 const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config);
 
 /************************************************************************************
+ * Returns the path to the elos run directory, where elos related runtime files like
+ * socket, pid-files, lock files etc. located.
+ *
+ * Parameters:
+ *   config: root config containing the optional `root.elos.RunDir` option
+ *
+ * Return: A string in any case, on any error the compile default as fallback is used.
+ *         The returned string must not be freed.
+ ***********************************************************************************/
+const char *elosConfigGetElosdRunDir(const samconfConfig_t *config);
+
+/************************************************************************************
  * Determine if configuration options from environment shall be evaluated or ignored.
  *
  * Parameters:

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-#include <connectionmanager/clientauthorizedprocesses.h>
+#include <clientauthorizedprocesses/clientauthorizedprocesses.h>
 #include <samconf/test_utils.h>
 #include <string.h>
 #include <sys/types.h>

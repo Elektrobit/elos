@@ -9,6 +9,7 @@ create_unit_test(
     case_err_connection.c
     case_exterr_first_allocMem.c
     case_err_read_header_failed.c
+    case_err_length_zero.c
     case_exterr_second_allocMem.c
     case_err_read_payload_failed.c
     case_err_invalid_message_id.c

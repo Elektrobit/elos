@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <cmocka_mocks/mock_libmnl.h>
-#include <connectionmanager/clientauthorization.h>
+#include <tcp_clientauthorization/clientauthorization.h>
 
 #include "elosClientAuthorizationDelete_utest.h"
 
@@ -16,12 +16,12 @@ int elosTestElosClientAuthorizationDeleteSuccessSocketIsNullTeardown(UNUSED void
 void elosTestElosClientAuthorizationDeleteSuccessSocketIsNull(UNUSED void **state) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    TEST("elosClientAuthorizationDelete");
+    TEST("elosTcpClientAuthorizationDelete");
     SHOULD("%s", "tread clientAuth->mnl_socket set to NULL as already closed and report success");
 
     elosClientAuthorization_t clientAuth = {.mlSocket = NULL};
 
-    result = elosClientAuthorizationDelete(&clientAuth);
+    result = elosTcpClientAuthorizationDelete(&clientAuth);
     assert_int_equal(result, SAFU_RESULT_OK);
     assert_null(clientAuth.mlSocket);
 }

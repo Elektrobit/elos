@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <cmocka_mocks/mock_libmnl.h>
-#include <connectionmanager/clientauthorization.h>
+#include <tcp_clientauthorization/clientauthorization.h>
 
 #include "elosClientAuthorizationDelete_utest.h"
 
@@ -26,7 +26,7 @@ void elosTestElosClientAuthorizationDeleteSuccess(UNUSED void **state) {
     expect_value(__wrap_mnl_socket_close, nl, expectedNlSocket);
     will_return(__wrap_mnl_socket_close, LIBMNL_OK);
 
-    result = elosClientAuthorizationDelete(&clientAuth);
+    result = elosTcpClientAuthorizationDelete(&clientAuth);
     assert_int_equal(result, SAFU_RESULT_OK);
     assert_null(clientAuth.mlSocket);
 }
