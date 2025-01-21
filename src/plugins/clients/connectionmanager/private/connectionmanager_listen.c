@@ -53,7 +53,7 @@ safuResultE_t elosConnectionManagerThreadGetFreeConnectionSlot(elosConnectionMan
                 raise(SIGTERM);
             }
         } else {
-            for (int i = 0; i < ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT; i += 1) {
+            for (int i = 0; i < connectionManager->connectionLimit; i += 1) {
                 elosClientConnection_t *connection = &connectionManager->connection[i];
                 bool active = false;
 

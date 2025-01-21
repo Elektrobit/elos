@@ -20,6 +20,10 @@ const char *elosUnixConfigGetPath(elosPlugin_t const *plugin) {
     return elosPluginConfigGetString(plugin, "/Config/path", "ELOSD_SOCKET_PATH", ELOSD_SOCKET_PATH);
 }
 
+int elosUnixConfigGetConnectionLimit(elosPlugin_t const *plugin) {
+    return elosPluginConfigGetInt(plugin, "/Config/ConnectionLimit", "ELOSD_CONNECTION_LIMIT", ELOSD_CONNECTION_LIMIT);
+}
+
 static inline safuResultE_t _mkdir(const char *path, mode_t mode) {
     safuResultE_t result = SAFU_RESULT_OK;
     int retVal = 0;

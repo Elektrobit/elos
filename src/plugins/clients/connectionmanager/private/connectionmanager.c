@@ -23,7 +23,7 @@ static safuResultE_t _initializeSharedData(elosConnectionManager_t *connectionMa
     elosClientConnectionSharedData_t *sharedData = &connectionManager->sharedData;
     int retVal;
 
-    retVal = sem_init(&sharedData->connectionSemaphore, 0, ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT);
+    retVal = sem_init(&sharedData->connectionSemaphore, 0, connectionManager->connectionLimit);
     if (retVal != 0) {
         safuLogErrErrnoValue("sem_init failed!", retVal);
     } else {
@@ -106,7 +106,7 @@ static safuResultE_t _initializeListener(elosConnectionManager_t *connectionMana
 static safuResultE_t _initializeConnections(elosConnectionManager_t *connectionManager) {
     safuResultE_t result = SAFU_RESULT_OK;
 
-    for (int i = 0; i < ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT; i += 1) {
+    for (int i = 0; i < connectionManager->connectionLimit; i += 1) {
         elosClientConnection_t *connection = &connectionManager->connection[i];
 
         result = elosClientConnectionInitialize(connection, &connectionManager->sharedData);
@@ -170,6 +170,32 @@ static safuResultE_t _initializeAddressFamily(elosConnectionManager_t *connectio
     return result;
 }
 
+static safuResultE_t __initializeConnectionLimit(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+
+    switch (connectionManager->saFamily) {
+        case AF_INET:
+            connectionManager->connectionLimit = elosTcpConfigGetConnectionLimit(plugin);
+            result = SAFU_RESULT_OK;
+            break;
+        case AF_UNIX:
+            connectionManager->connectionLimit = elosUnixConfigGetConnectionLimit(plugin);
+            result = SAFU_RESULT_OK;
+            break;
+        default:
+            result = SAFU_RESULT_FAILED;
+            break;
+    }
+
+    if ((unsigned)connectionManager->connectionLimit > ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT) {
+        safuLogErrF("Number of connections exceed limits, applying limit of %i",
+                    ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT);
+        connectionManager->connectionLimit = ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT;
+    }
+
+    return result;
+}
+
 safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectionManager, elosPlugin_t *plugin,
                                               sa_family_t saFamily) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -185,19 +211,22 @@ safuResultE_t elosConnectionManagerInitialize(elosConnectionManager_t *connectio
 
         result = _initializeAddressFamily(connectionManager, saFamily);
         if (result == SAFU_RESULT_OK) {
-            result = _initializeSharedData(connectionManager, plugin);
+            result = __initializeConnectionLimit(connectionManager, plugin);
             if (result == SAFU_RESULT_OK) {
-                result = _initializeListener(connectionManager, plugin);
+                result = _initializeSharedData(connectionManager, plugin);
                 if (result == SAFU_RESULT_OK) {
-                    result = _initializeConnections(connectionManager);
+                    result = _initializeListener(connectionManager, plugin);
                     if (result == SAFU_RESULT_OK) {
-                        connectionManager->syncFd = eventfd(0, 0);
-                        if (connectionManager->syncFd == -1) {
-                            safuLogErrErrnoValue("Creating eventfd failed", connectionManager->syncFd);
-                        } else {
-                            _initializeAuthorization(connectionManager, plugin->config);
+                        result = _initializeConnections(connectionManager);
+                        if (result == SAFU_RESULT_OK) {
+                            connectionManager->syncFd = eventfd(0, 0);
+                            if (connectionManager->syncFd == -1) {
+                                safuLogErrErrnoValue("Creating eventfd failed", connectionManager->syncFd);
+                            } else {
+                                _initializeAuthorization(connectionManager, plugin->config);
 
-                            atomic_store(&connectionManager->flags, SAFU_FLAG_INITIALIZED_BIT);
+                                atomic_store(&connectionManager->flags, SAFU_FLAG_INITIALIZED_BIT);
+                            }
                         }
                     }
                 }

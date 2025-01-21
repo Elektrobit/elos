@@ -31,3 +31,14 @@ const char *elosUnixConfigGetPath(elosPlugin_t const *plugin);
  *      - SAFU_RESULT_OK on success
  **************************************************************************/
 safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr *addr);
+
+/********************************************************************
+ * Get the connection limit for this plugin instance.
+ *
+ * Parameters:
+ *      plugin : plugin instance
+ * Returns:
+ *      - in any case a number of max parallel client connections
+ *      - compile definition ELOSD_CONNECTION_LIMIT (200) on failure
+ ********************************************************************/
+int elosUnixConfigGetConnectionLimit(elosPlugin_t const *plugin);
