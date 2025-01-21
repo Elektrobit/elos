@@ -63,6 +63,7 @@ typedef struct elosCoredumpConfig {
     unsigned long maxCoredumpFileSize;
     int32_t coredumpFileCount;
     int32_t coredumpProcFileCount;
+    char *networkAddress;
 } elosCoredumpConfig_t;
 
 static char elosOldestFile[PATH_MAX + 1] = {0};
@@ -181,9 +182,10 @@ safuResultE_t elosCoredumpConfigInit(elosCoredumpConfig_t *coredumpConfig) {
     samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
     int ret = 0;
 
-    fprintf(stdout, "loading coredump configuration\n");
-
     location = safuGetEnvOr("ELOS_COREDUMP_CONFIG_FILE", ELOS_COREDUMP_CONFIG_FILE);
+
+    fprintf(stdout, "loading coredump configuration at location %s\n", location);
+
     status = samconfLoad(location, false, &config);
 
     if (status != SAMCONF_CONFIG_OK) {
@@ -287,21 +289,59 @@ safuResultE_t elosCoredumpConfigInit(elosCoredumpConfig_t *coredumpConfig) {
         }
     }
 
+    if (result == SAFU_RESULT_OK) {
+        const char *address = NULL;
+        status = samconfConfigGetString(config, ELOS_COREDUMP_CONFIG_ROOT "networkAddress/", &address);
+
+        if (address != NULL && status == SAMCONF_CONFIG_OK) {
+            coredumpConfig->networkAddress = strdup(address);
+        } else {
+            fprintf(stderr, "network address not found in config");
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
     samconfConfigDelete(config);
     return result;
 }
 
 void elosCoredumpConfigDelete(elosCoredumpConfig_t *coredumpConfig) {
+    free(coredumpConfig->networkAddress);
     free(coredumpConfig->path);
 }
 
-safuResultE_t elosCoredumpPublishEvent(elosEvent_t *elosCoredumpEvent) {
+safuResultE_t elosCoredumpConnect(char *address, elosSession_t **session) {
+    safuResultE_t result = SAFU_RESULT_OK;
+    char interface[256];
+    char portStr[6];
+
+    if (address == NULL || *address == '\0') {
+        fprintf(stderr, "Illegal network address format");
+        result = SAFU_RESULT_FAILED;
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        int itemsScanned = sscanf(address, "%255[^:]:%5s", interface, portStr);
+
+        if (itemsScanned == 2) {
+            int port = strtol(portStr, NULL, 10);
+            result = elosConnectTcpip(interface, port, session);
+        } else {
+            fprintf(stderr, "Illegal network address format");
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
+    return result;
+}
+
+safuResultE_t elosCoredumpPublishEvent(elosEvent_t *elosCoredumpEvent, char *address) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosSession_t *session;
 
     fprintf(stdout, "connecting coredump to event log scanner...\n");
 
-    result = elosConnectTcpip("127.0.0.1", 54323, &session);
+    result = elosCoredumpConnect(address, &session);
     if (result == SAFU_RESULT_OK) {
         fprintf(stdout, "send coredump event to log scanner...\n");
         result = elosEventPublish(session, elosCoredumpEvent);
@@ -548,7 +588,7 @@ int main(int argc, char *argv[]) {
                 } else {
                     event.payload = payloadEvent;
                 }
-                result = elosCoredumpPublishEvent(&event);
+                result = elosCoredumpPublishEvent(&event, coredumpConfig.networkAddress);
                 if (result != SAFU_RESULT_OK) {
                     fprintf(stderr, "coredump event publish failed\n");
                     ret = -1;
@@ -573,7 +613,7 @@ int main(int argc, char *argv[]) {
                     } else {
                         event.payload = payloadEvent;
                     }
-                    result = elosCoredumpPublishEvent(&event);
+                    result = elosCoredumpPublishEvent(&event, coredumpConfig.networkAddress);
                     if (result != SAFU_RESULT_OK) {
                         fprintf(stderr, "coredump event publish failed\n");
                     }
@@ -591,7 +631,7 @@ int main(int argc, char *argv[]) {
                 } else {
                     event.payload = payloadEvent;
                 }
-                result = elosCoredumpPublishEvent(&event);
+                result = elosCoredumpPublishEvent(&event, coredumpConfig.networkAddress);
                 if (result != SAFU_RESULT_OK) {
                     fprintf(stderr, "coredump event publish failed\n");
                     ret = -1;

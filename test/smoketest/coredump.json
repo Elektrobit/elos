@@ -9,7 +9,7 @@
                 "maxcoredump_cnt": 12,
                 "coredumppath": "/tmp/coredumps",
                 "coredump_per_exe": 7,
-                "networkAddress": "127.0.0.1:54321"
+                "networkAddress": "127.0.0.1:54323"
             }
         }
     }

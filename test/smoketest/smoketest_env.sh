@@ -69,7 +69,7 @@ export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
 export LOG4C_RCPATH="${SYSCONF_DIR}/elos/elos_log4c_demo"
 
 # Overwrite the coredump config file path.
-export ELOS_COREDUMP_CONFIG_FILE=${ELOS_COREDUMP_CONFIG_FILE:-"${SYSCONF_DIR}/elos/coredump.json"}
+export ELOS_COREDUMP_CONFIG_FILE=${ELOS_COREDUMP_CONFIG_FILE:-"${SMOKETEST_DIR}/coredump.json"}
 
 # Overwrite the TCP port to be used for the smoketest
 export ELOSD_PORT=${ELOSD_PORT-54323}
