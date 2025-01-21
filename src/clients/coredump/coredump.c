@@ -327,8 +327,12 @@ safuResultE_t elosCoredumpConnect(char *address, elosSession_t **session) {
             int port = strtol(portStr, NULL, 10);
             result = elosConnectTcpip(interface, port, session);
         } else {
-            fprintf(stderr, "Illegal network address format");
-            result = SAFU_RESULT_FAILED;
+            if (strchr(address, '/') != NULL) {
+                result = elosConnectUnix(address, session);
+            } else {
+                fprintf(stderr, "Illegal network address format");
+                result = SAFU_RESULT_FAILED;
+            }
         }
     }
 
