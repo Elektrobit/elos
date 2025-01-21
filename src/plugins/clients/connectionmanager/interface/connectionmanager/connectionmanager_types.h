@@ -10,7 +10,7 @@
 
 #include "clientconnection_types.h"
 
-#define ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT    100
+#define ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT    200
 #define ELOS_CONNECTIONMANAGER_LISTEN_QUEUE_LENGTH 200
 
 #define ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE     (SAFU_FLAG_CUSTOM_START_BIT << 0)
@@ -47,6 +47,7 @@ typedef struct elosConnectionManager {
         struct sockaddr_in tcpAddr;
         struct sockaddr_un unixAddr;
     } addr;
+    int connectionLimit;
     elosClientConnection_t connection[ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT];
     pthread_t listenThread;
     elosClientConnectionSharedData_t sharedData;
