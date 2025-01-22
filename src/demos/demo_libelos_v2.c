@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
     result = elosConnectTcpip(ip, port, &session);
     if (result != SAFU_RESULT_OK) {
         fprintf(stderr, "ERROR: connect to %s:%lu failed!\n", ip, port);
+        exit(1);
     }
-    catch_errors(result);
 
     printf("get event logging and management system version...\n");
     result = elosGetVersion(session, &version);
