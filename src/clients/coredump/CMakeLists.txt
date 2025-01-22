@@ -9,7 +9,7 @@ add_executable(
 
 set(ELOS_COREDUMP_CONFIG_FILE "${CMAKE_INSTALL_FULL_SYSCONFDIR}/elos/coredump.json")
 add_compile_definitions(ELOS_COREDUMP_CONFIG_FILE="${ELOS_COREDUMP_CONFIG_FILE}")
-add_compile_definitions(SAFU_LOG="LOG")
+add_compile_definitions(SAFU_LOG=1)
 
 target_link_libraries(
   elos-coredump

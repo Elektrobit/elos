@@ -4,6 +4,8 @@ find_package(Threads REQUIRED)
 find_package(safu 0.56.2 REQUIRED)
 find_package(samconf 0.56.3 REQUIRED)
 
+add_compile_definitions(SAFU_LOG=1)
+
 add_executable(
   elosd
   main.c
@@ -26,7 +28,6 @@ add_compile_definitions(ELOSD_CONFIG_FILE="${ELOSD_CONFIG_FILE}")
 add_compile_definitions(ELOSD_SCANNER_PATH="${ELOSD_SCANNER_PATH}")
 add_compile_definitions(ELOSD_BACKEND_PATH="${ELOSD_BACKEND_PATH}")
 add_compile_definitions(ELOSD_LOG_PREFIX="${ELOSD_LOG_PREFIX}")
-add_compile_definitions(SAFU_LOG="LOG")
 
 target_link_libraries(
   elosd

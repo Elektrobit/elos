@@ -50,9 +50,3 @@ create_weak_library(
     elos_event_static
     eventfilter_static
 )
-
-target_compile_definitions(
-  eventprocessor_static
-  PRIVATE
-  SAFU_LOG="LOG_SO_UTESTS_FUNCTION"
-)

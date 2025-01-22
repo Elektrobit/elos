@@ -2,7 +2,7 @@
 find_package(safu 0.56.2 REQUIRED)
 find_package(samconf 0.56.3 REQUIRED)
 
-add_compile_definitions(SAFU_LOG="LOG")
+add_compile_definitions(SAFU_LOG=1)
 
 add_library(
   eloslog_static
