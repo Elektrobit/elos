@@ -8,13 +8,12 @@
 #include <safu/log.h>
 #include <stdlib.h>
 
-static safuResultE_t elosStrdup(char **to, const char *from, const char *errPrompt) {
+static safuResultE_t elosStrdup(char **to, const char *from) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (from != NULL) {
         char *str = strdup(from);
         if (str == NULL) {
-            safuLogErr(errPrompt);
             result = SAFU_RESULT_FAILED;
         } else {
             *to = str;
@@ -64,11 +63,17 @@ safuResultE_t elosEventDeepCopy(elosEvent_t *to, const elosEvent_t *from) {
     }
 
     if (result == SAFU_RESULT_OK) {
-        result = elosStrdup(&to->hardwareid, from->hardwareid, "strdup(from->hardwareId) failed!");
+        result = elosStrdup(&to->hardwareid, from->hardwareid);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("strdup(from->hardwareId) failed!");
+        }
     }
 
     if (result == SAFU_RESULT_OK) {
-        result = elosStrdup(&to->payload, from->payload, "strdup(from->payload) failed!");
+        result = elosStrdup(&to->payload, from->payload);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErr("strdup(from->payload) failed!");
+        }
     }
 
     if (result == SAFU_RESULT_OK) {

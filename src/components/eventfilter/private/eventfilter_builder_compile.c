@@ -91,8 +91,8 @@ static elosRpnFilterResultE_t _compileEventLocation(elosRpnFilterBuilderTokenEnt
         // Try to give a more meaningful error message with certain elements
         resVal = _searchMemberMap(unsupportedMemberMap, ARRAY_SIZE(unsupportedMemberMap), token, &idx);
         if (resVal == RPNFILTER_RESULT_OK) {
-            char const *errStr = "Direct access of struct .event.%.*s is not supported, use the structs members.";
-            safuLogErrF(errStr, (int)token->length, token->string);
+            safuLogErrF("Direct access of struct .event.%.*s is not supported, use the structs members.",
+                        (int)token->length, token->string);
         } else {
             safuLogErrF("Invalid member .event.%.*s", (int)token->length, token->string);
         }

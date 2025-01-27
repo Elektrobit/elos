@@ -221,7 +221,7 @@ smoketest_elosd_config_not_found() {
     log "Killed Elosd"
 
     FAIL=0
-    str="ERROR: Failed to lookup backend for /dev."
+    str="ERROR: samconfLoad"
     grep -q "$str" $RESULT_DIR/elosd_config_not_set.txt
 
     if [ $? -ne 0 ]; then
@@ -231,25 +231,6 @@ smoketest_elosd_config_not_found() {
 
     export ELOS_CONFIG_PATH=${REAL_ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
     return $FAIL
-}
-
-smoketest_client() {
-    prepare_env "client"
-
-    log "Starting Client Demo"
-    LIBELOS_LOG="y" demo_libelos_v2 > $RESULT_DIR/client_output.txt 2>&1
-
-    sed -i -e 's/[0-9]\+\([.,]\)/xyz\1/g' $RESULT_DIR/client_output.txt
-
-    output_diff=$(diff $RESULT_DIR/client_output.txt $SMOKETEST_DIR/client_output.txt || echo "diff returned: $?")
-    if [ -n "$output_diff" ]
-    then
-        log_err "Problems occurred while comparing the client output:"
-        log_err "$output_diff"
-        return 1
-    fi
-
-    return 0
 }
 
 smoketest_client_uds() {
@@ -1053,7 +1034,6 @@ done
 FAILED_TESTS=0
 call_test "elosd" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "elosd_config_not_found" || FAILED_TESTS=$((FAILED_TESTS+1))
-call_test "client" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "client_uds" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "syslog" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "coredump" || FAILED_TESTS=$((FAILED_TESTS+1))

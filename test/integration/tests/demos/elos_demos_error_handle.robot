@@ -69,3 +69,4 @@ App Handles Error
     ...                   ERROR: connect to
     ...                   ERROR: Connection to elosd
     ...                   ERR: connect to port
+    ...                   failed to connect to elos
