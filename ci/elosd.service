@@ -1,9 +1,25 @@
-#!/bin/bash
+#!/bin/sh
+SCRIPT_NAME=${0##*/}
 ELOSD_LOG_FILE="/tmp/elosd.log"
 ELOSD_PID_FILE="/run/elosd.pid"
 
-start() {
+check_for_elos() {
+    ELOS_PID="-1"
     if [ -e "${ELOSD_PID_FILE}" ]
+    then
+        ELOS_PID=$(cat "${ELOSD_PID_FILE}")
+    fi
+
+    if [ -d "/proc/${ELOS_PID}" ]
+    then
+        return 0
+    else
+        return 1
+    fi
+}
+
+start() {
+    if check_for_elos
     then
         echo "elos already running"
         exit 1
@@ -12,39 +28,51 @@ start() {
     touch "${ELOSD_LOG_FILE}"
     chmod 666 "${ELOSD_LOG_FILE}"
 
-    export ELOS_STORAGE_BACKEND_JSON_FILE="/tmp/elosd_event.log"
     stdbuf -o 0 -e 0 /usr/local/bin/elosd > "${ELOSD_LOG_FILE}" 2>&1 &
     ELOS_PID=$!
 
     sleep 0.2s
 
-    if [ -d /proc/$ELOS_PID ]
+    if [ -d "/proc/$ELOS_PID" ]
     then
+        if [ -e "${ELOSD_PID_FILE}" ]
+        then
+            rm -f "${ELOSD_PID_FILE}"
+        fi
         echo $ELOS_PID > "${ELOSD_PID_FILE}"
     fi
 }
 
 stop() {
-    ELOSD_PID=$(cat "${ELOSD_PID_FILE}")
-    kill ${ELOSD_PID} >> "${ELOSD_LOG_FILE}" 2>&1
-    NUMBER_RETRIES=10
-    while [ -d /proc/$(cat "${ELOSD_PID_FILE}") ]; do
-        sleep 0.2
-        if [ ${NUMBER_RETRIES} -gt 0 ]; then
-            ((NUMBER_RETRIES--))
-        else
-            echo "timeout to stop elsod, kill it now" | tee "${ELOSD_LOG_FILE}" 2>&1
-            kill -9 ${ELOSD_PID} >> "${ELOSD_LOG_FILE}" 2>&1
-            break;
-        fi
-    done
-    rm -f "${ELOSD_PID_FILE}"
+    if check_for_elos
+    then
+        ELOSD_PID=$(cat "${ELOSD_PID_FILE}")
+        kill "${ELOSD_PID}" >> "${ELOSD_LOG_FILE}" 2>&1
+        NUMBER_RETRIES=10
+        while [ -d "/proc/${ELOSD_PID}" ]
+        do
+            sleep 0.2
+            if [ ${NUMBER_RETRIES} -gt 0 ]
+            then
+                NUMBER_RETRIES=$((NUMBER_RETRIES-1))
+            else
+                echo "timeout to stop elosd, kill it now" | tee "${ELOSD_LOG_FILE}" 2>&1
+                echo "kill ${ELOSD_PID}"
+                kill -9 ${ELOSD_PID} >> "${ELOSD_LOG_FILE}" 2>&1
+                break;
+            fi
+        done
+        rm -f "${ELOSD_PID_FILE}"
+    else
+        echo "elos already stopped"
+        exit 1
+    fi
 }
 
 status() {
-    if [ -e "${ELOSD_PID_FILE}" ] && [ -d /proc/$(cat "${ELOSD_PID_FILE}") ]
+    if check_for_elos
     then
-       echo "Status : Running"
+        echo "Status : Running"
     else
        echo "Status : Stopped"
     fi
@@ -65,7 +93,7 @@ case "$1" in
         start
         ;;
   *)
-        echo $"Usage: $0 {start|stop|restart|status}"
+        echo "Usage: ${SCRIPT_NAME} {start|stop|restart|status}"
         exit 1
 esac
 

@@ -20,6 +20,7 @@ run_all()
   TEST_NAME="elos_integration_tests"
   echo "\nStarting all elos integration tests"
   robot \
+      --listener libraries.TestListener \
       --listener RetryFailed:1 \
       --randomize all \
       --variablefile="$VARIABLE_FILE" \
@@ -36,6 +37,7 @@ run_suite()
   TEST_NAME="$(echo "${TEST_SUITE}" | sed -e "s/ /_/g" -e "s/\./-/g" -e "s/\(.*\)/\L\1/g")"
   printf '\nStart test suite %-s\n' "${TEST_SUITE}"
   robot \
+      --listener libraries.TestListener \
       --variablefile="$VARIABLE_FILE" \
       --pythonpath="$INTEGRATION_DIR" \
       --outputdir="$TEST_OUTPUT"/elos_test_suite \
@@ -51,6 +53,7 @@ run_module()
       TEST_NAME=$(basename "${1}")
       printf '\nStart tests module %-s\n' "${1}"
       robot \
+          --listener libraries.TestListener \
           --variablefile="$VARIABLE_FILE" \
           --pythonpath="$INTEGRATION_DIR" \
           --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \
@@ -68,6 +71,7 @@ run_case()
 
   printf '\nStart test case %-s\n' "${TEST_NAME}"
   robot \
+      --listener libraries.TestListener \
       --variablefile="$VARIABLE_FILE" \
       --pythonpath="$INTEGRATION_DIR" \
       --outputdir="$TEST_OUTPUT"/"$TEST_NAME" \

@@ -20,6 +20,10 @@ const char *elosUnixConfigGetPath(elosPlugin_t const *plugin) {
     return elosPluginConfigGetString(plugin, "/Config/path", "ELOSD_SOCKET_PATH", ELOSD_SOCKET_PATH);
 }
 
+int elosUnixConfigGetConnectionLimit(elosPlugin_t const *plugin) {
+    return elosPluginConfigGetInt(plugin, "/Config/ConnectionLimit", "ELOSD_CONNECTION_LIMIT", ELOSD_CONNECTION_LIMIT);
+}
+
 static inline safuResultE_t _mkdir(const char *path, mode_t mode) {
     safuResultE_t result = SAFU_RESULT_OK;
     int retVal = 0;
@@ -61,12 +65,24 @@ safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct 
     const char *path = elosUnixConfigGetPath(plugin);
     safuResultE_t result = SAFU_RESULT_OK;
 
-    result = _mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    if (result == SAFU_RESULT_FAILED) {
-        safuLogErr("Create directory for socket path failed");
+    if (access(path, F_OK) == 0) {
+        safuLogWarn("Given socket Path exists, unlinking");
+        int retVal = unlink(path);
+        if (retVal != 0) {
+            safuLogErrErrnoValue("unlink socket path failed", retVal);
+            result = SAFU_RESULT_FAILED;
+        }
+    } else if (errno == ENOENT) {
+        result = _mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        if (result == SAFU_RESULT_FAILED) {
+            safuLogErr("Create directory for socket path failed");
+        } else {
+            strncpy(addrUnix->sun_path, path, sizeof(addrUnix->sun_path) - 1);
+            addrUnix->sun_family = AF_UNIX;
+        }
     } else {
-        strncpy(addrUnix->sun_path, path, sizeof(addrUnix->sun_path) - 1);
-        addrUnix->sun_family = AF_UNIX;
+        safuLogErrErrnoValue("access check failed", errno);
+        result = SAFU_RESULT_FAILED;
     }
 
     return result;

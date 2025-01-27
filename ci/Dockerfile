@@ -27,6 +27,7 @@ RUN apt-get update \
     git \
     git-buildpackage \
     gnuplot \
+    iputils-ping \
     jq \
     libcmocka-dev \
     libcsv-dev \
@@ -115,8 +116,14 @@ ENV LOG4C_RCPATH="/base/src/demos/elos_log4c_demo"
 ENV PATH=/home/$USER/.local/bin:$PATH
 
 WORKDIR /home/$USER
+
+RUN pip install robotframework==7.2
+RUN pip install robotframework-sshlibrary==3.8.1rc1
+RUN pip install robotframework-datadriver==1.11.2
+RUN pip install robotframework-jsonlibrary==0.5
 RUN pip install robotframework-robocop==5.5.0
-RUN pip install robotframework-tidy==4.14.0
+RUN pip install robotframework-tidy==4.16.0
+RUN pip install robotframework-retryfailed
 
 WORKDIR /base
 
