@@ -18,7 +18,7 @@ Suite Teardown      Close All Connections
 
 
 *** Variables ***
-${FILTERSTRING}     ".event.messageCode 1400 EQ"
+${FILTERSTRING}     .event.messageCode 1400 EQ
 @{MESSAGES}         {"messageCode": 1004,"payload":"testEventFiltering"}
 ...                 {"messageCode": 1040,"payload":"testEventFiltering"}
 ...                 {"messageCode": 1400,"payload":"testEventFiltering"}
@@ -41,17 +41,16 @@ An Event Is Published
     [Documentation]    Publish Created Messages
 
     FOR    ${message}    IN    @{MESSAGES}
-        ${publish_output}=    Execute Command    elosc -p '${message}'
+        ${publish_output}=    Publish '${message}'
         Append To List    ${PUBLISH_LOG}    ${publish_output}
     END
     Log List    ${PUBLISH_LOG}
     Sleep    1s
 
 Client Retrieves It Successfully
-    [Documentation]    Client searches and retrieves event with given filter string
+    [Documentation]    Latest events matching filter string are found by the client
 
-    ${search_output}    ${rc}=    Execute Command
-    ...    elosc -f ${FILTERSTRING} 2>&1 | grep ${SEARCH_STRING}
-    ...    return_rc=True
-    Log    ${search_output}
-    Should Not Be Empty    ${search_output}
+    ${output}    ${error}    ${rc}=    Find Events Matching '${FILTERSTRING}'
+
+    Should Be Equal As Integers    ${rc}    0
+    Should Contain    ${output}    ${SEARCH_STRING}
