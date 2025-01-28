@@ -138,13 +138,12 @@ safuResultE_t _createRunDirectory(struct serverContext *ctx) {
 int main(int argc, char **argv) {
     int retval;
     struct serverContext context = {0};
+    const char *verstr = elosGetVersionString();
 
     setlocale(LC_ALL, "C");
     safuLogSetPrefix(ELOSD_LOG_PREFIX);
 
     if (elosIsVersionRequested((const char **)argv, argc)) {
-        const char *verstr;
-        verstr = elosGetVersionString();
         safuLogInfoF("elosd-%s", verstr);
         return EXIT_SUCCESS;
     }
@@ -182,9 +181,10 @@ int main(int argc, char **argv) {
         safuLogWarn("setting log filter failed!");
     }
 
-    safuLogInfoF("Setup:\n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s", safuGetHardwareId(),
-                 safuLogLevelToString(safuLogGetStreamLevel()), elosConfigGetElosdLogFilter(context.config),
-                 elosConfigGetElosdScannerPath(context.config));
+    safuLogInfoF(
+        "Setup:\n\tversion: elosd-%s \n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s", verstr,
+        safuGetHardwareId(), safuLogLevelToString(safuLogGetStreamLevel()), elosConfigGetElosdLogFilter(context.config),
+        elosConfigGetElosdScannerPath(context.config));
 
     result = _createRunDirectory(&context);
     if (result != SAFU_RESULT_OK) {
