@@ -27,6 +27,8 @@ void testElosEventDispatcherBufferRemoveErrParam(void **state) {
     elosEventBuffer_t unknownEventBuffer = {0};
     safuResultE_t result;
 
+    test->eventBuffer[0].permitRemoval = true;
+
     TEST("elosEventDispatcherBufferRemove");
     SHOULD("%s", "test behaviour with invalid parameters");
 

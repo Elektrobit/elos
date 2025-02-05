@@ -29,6 +29,10 @@ safuResultE_t elosEventDispatcherInitialize(elosEventDispatcher_t *eventDispatch
         safuLogErr("The given eventDispatcher is already initialized");
     } else {
         SAFU_PTHREAD_MUTEX_INIT_WITH_RESULT(&eventDispatcher->lock, NULL, result);
+        if (result == SAFU_RESULT_OK) {
+            SAFU_PTHREAD_COND_INIT_WITH_RESULT(&eventDispatcher->eventBufferRemoveCondition, NULL, result);
+            SAFU_PTHREAD_COND_INIT_WITH_RESULT(&eventDispatcher->eventVectorRemoveCondition, NULL, result);
+        }
         SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT_IF_OK(&eventDispatcher->lock, result);
         if (result == SAFU_RESULT_OK) {
             int eventFdWorkerTrigger;
@@ -71,7 +75,6 @@ safuResultE_t elosEventDispatcherInitialize(elosEventDispatcher_t *eventDispatch
                     }
                 }
             }
-
             SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
         }
     }
@@ -120,9 +123,22 @@ safuResultE_t elosEventDispatcherDeleteMembers(elosEventDispatcher_t *eventDispa
 
             SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
             if (result == SAFU_RESULT_OK) {
-                int retVal;
+                struct timespec ts;
+                clock_gettime(CLOCK_REALTIME, &ts);
+                ts.tv_sec += 1;
+                while (safuVecElements(&eventDispatcher->eventBufferPtrVector) != 0) {
+                    int rc = pthread_cond_timedwait(&eventDispatcher->eventVectorRemoveCondition,
+                                                    &eventDispatcher->lock, &ts);
+                    if (rc == ETIMEDOUT) {
+                        break;
+                    }
+                }
+                u_int32_t elements = safuVecElements(&eventDispatcher->eventBufferPtrVector);
+                if (elements != 0) {
+                    safuLogErrF("eventBufferPtrVector still has %d elements before removal", elements);
+                }
 
-                retVal = close(eventDispatcher->worker.trigger);
+                int retVal = close(eventDispatcher->worker.trigger);
                 if (retVal < 0) {
                     safuLogErrErrno("close failed");
                     result = SAFU_RESULT_FAILED;
@@ -141,7 +157,8 @@ safuResultE_t elosEventDispatcherDeleteMembers(elosEventDispatcher_t *eventDispa
                 }
 
                 atomic_fetch_and(&eventDispatcher->flags, ~SAFU_FLAG_INITIALIZED_BIT);
-
+                SAFU_PTHREAD_COND_DESTROY(&eventDispatcher->eventBufferRemoveCondition);
+                SAFU_PTHREAD_COND_DESTROY(&eventDispatcher->eventVectorRemoveCondition);
                 SAFU_PTHREAD_MUTEX_DESTROY(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
             }
         }
@@ -258,29 +275,24 @@ safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatche
     } else {
         SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
         if (result == SAFU_RESULT_OK) {
-            if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
-                safuLogErr("The given eventDispatcher is not initialized");
-                result = SAFU_RESULT_FAILED;
+            result = elosEventBufferSetWriteTrigger(eventBuffer, eventDispatcher->worker.trigger);
+            if (result != SAFU_RESULT_OK) {
+                safuLogErr("Setting the EventBuffer trigger failed");
             } else {
-                int retVal;
+                eventBuffer->requestRemoval = false;
+                eventBuffer->permitRemoval = false;
 
-                result = elosEventBufferSetWriteTrigger(eventBuffer, eventDispatcher->worker.trigger);
-                if (result != SAFU_RESULT_OK) {
-                    safuLogErr("Setting the EventBuffer trigger failed");
-                } else {
-                    retVal = safuVecPush(&eventDispatcher->eventBufferPtrVector, &eventBuffer);
-                    if (retVal < 0) {
-                        safuLogErr("Adding the EventBuffer failed");
-                        result = elosEventBufferSetWriteTrigger(eventBuffer, ELOS_EVENTBUFFER_NO_TRIGGER);
-                        if (result != SAFU_RESULT_OK) {
-                            safuLogErr("Disabling the EventBuffer trigger failed");
-                        } else {
-                            result = SAFU_RESULT_FAILED;
-                        }
+                int retVal = safuVecPush(&eventDispatcher->eventBufferPtrVector, &eventBuffer);
+                if (retVal < 0) {
+                    safuLogErr("Adding the EventBuffer failed");
+                    result = elosEventBufferSetWriteTrigger(eventBuffer, ELOS_EVENTBUFFER_NO_TRIGGER);
+                    if (result != SAFU_RESULT_OK) {
+                        safuLogErr("Disabling the EventBuffer trigger failed");
+                    } else {
+                        result = SAFU_RESULT_FAILED;
                     }
                 }
             }
-
             SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
         }
     }
@@ -309,27 +321,27 @@ safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispat
     } else {
         SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
         if (result == SAFU_RESULT_OK) {
-            if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
-                safuLogErr("The given eventDispatcher is not initialized");
-                result = SAFU_RESULT_FAILED;
-            } else {
-                int retVal;
-
-                retVal = safuVecFindRemove(&eventDispatcher->eventBufferPtrVector, _matchByPointer, eventBuffer);
-                if (retVal < 0) {
-                    safuLogErr("Removing the EventBuffer failed");
-                    result = SAFU_RESULT_FAILED;
-                } else if (retVal == 0) {
-                    safuLogErr("Could not find the given EventBuffer");
-                    result = SAFU_RESULT_FAILED;
-                } else {
-                    result = elosEventBufferSetWriteTrigger(eventBuffer, ELOS_EVENTBUFFER_NO_TRIGGER);
-                    if (result != SAFU_RESULT_OK) {
-                        safuLogErr("Disabling the EventBuffer trigger failed");
-                    }
-                }
+            eventBuffer->requestRemoval = true;
+            while (safuVecElements(&eventDispatcher->eventBufferPtrVector) != 0 &&
+                   eventBuffer->permitRemoval == false) {
+                pthread_cond_wait(&eventDispatcher->eventBufferRemoveCondition, &eventDispatcher->lock);
             }
 
+            int retVal = safuVecFindRemove(&eventDispatcher->eventBufferPtrVector, _matchByPointer, eventBuffer);
+
+            if (retVal < 0) {
+                safuLogErr("Removing the EventBuffer failed");
+                result = SAFU_RESULT_FAILED;
+            } else if (retVal == 0) {
+                safuLogErr("Could not find the given EventBuffer");
+                result = SAFU_RESULT_FAILED;
+            } else {
+                result = elosEventBufferSetWriteTrigger(eventBuffer, ELOS_EVENTBUFFER_NO_TRIGGER);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErr("Disabling the EventBuffer trigger failed");
+                }
+            }
+            pthread_cond_signal(&eventDispatcher->eventVectorRemoveCondition);
             SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
         }
     }

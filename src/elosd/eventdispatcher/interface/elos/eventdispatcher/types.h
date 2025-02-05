@@ -58,6 +58,8 @@ typedef struct elosEventDispatcherWorker {
 typedef struct elosEventDispatcher {
     safuFlags_t flags;
     pthread_mutex_t lock;
+    pthread_cond_t eventBufferRemoveCondition;
+    pthread_cond_t eventVectorRemoveCondition;
     int sync;
     elosEventDispatcherWorker_t worker;
     elosEventBufferPtrVector_t eventBufferPtrVector;

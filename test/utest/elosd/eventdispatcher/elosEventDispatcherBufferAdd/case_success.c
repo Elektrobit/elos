@@ -18,6 +18,10 @@ int testElosEventDispatcherBufferAddSuccessSetup(void **state) {
 int testElosEventDispatcherBufferAddSuccessTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
 
+    test->eventBuffer[0].permitRemoval = true;
+    test->eventBuffer[1].permitRemoval = true;
+    elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[0]);
+    elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[1]);
     elosEventDispatcherDeleteMembers(&test->eventDispatcher);
 
     return 0;

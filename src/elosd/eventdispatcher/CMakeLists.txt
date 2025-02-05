@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-find_package(safu 0.56.2 REQUIRED)
+find_package(safu 0.60.0 REQUIRED)
 
 create_interface_library(
   FROM

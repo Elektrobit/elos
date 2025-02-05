@@ -48,6 +48,8 @@ typedef struct elosEventBufferRing {
 typedef struct elosEventBuffer {
     safuFlags_t flags;
     atomic_int writeTrigger;
+    bool requestRemoval;
+    bool permitRemoval;
     elosEventBufferRing_t *ring;
     size_t ringCount;
 } elosEventBuffer_t;

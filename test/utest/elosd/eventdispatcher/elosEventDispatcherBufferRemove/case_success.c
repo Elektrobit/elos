@@ -28,6 +28,7 @@ int testElosEventDispatcherBufferRemoveSuccessSetup(void **state) {
     for (size_t i = 0; i < _EVENTBUFFER_ENTRIES; i += 1) {
         result = elosEventDispatcherBufferAdd(&test->eventDispatcher, &test->eventBuffer[i]);
         assert_int_equal(result, SAFU_RESULT_OK);
+        test->eventBuffer[i].permitRemoval = true;
     }
 
     return 0;
