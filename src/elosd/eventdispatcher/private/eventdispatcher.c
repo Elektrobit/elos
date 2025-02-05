@@ -45,7 +45,8 @@ safuResultE_t elosEventDispatcherInitialize(elosEventDispatcher_t *eventDispatch
                     uint32_t const vectorSize = ELOS_EVENTDISPATCHER_DEFAULT_VECTOR_SIZE;
                     int retVal;
 
-                    retVal = safuVecCreate(&eventDispatcher->eventBufferPtrVector, vectorSize, sizeof(void *));
+                    retVal =
+                        safuVecCreate(&eventDispatcher->eventBufferPtrVector, vectorSize, sizeof(elosEventBuffer_t *));
                     if (retVal < 0) {
                         safuLogErr("safuVecCreate failed");
                         result = SAFU_RESULT_FAILED;
