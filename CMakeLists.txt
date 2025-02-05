@@ -62,6 +62,12 @@ option(ELOSD_EVENTLOGGING_BACKEND_INFLUXDB "Build InfluxDB backend plugin" OFF)
 option(ELOSD_EVENTLOGGING_BACKEND_DLT "Build DLT backend plugin" ${ELOS_BUILD_DEFAULTS})
 option(ELOSD_LIBDLT "Build libelosdlt, a dlt protocol implementation." ${ELOSD_EVENTLOGGING_BACKEND_DLT})
 
+option(ENABLE_LOGGING "Enables the safuLog functions" OFF)
+
+if(ENABLE_LOGGING)
+  add_compile_definitions(SAFU_LOG=1)
+endif(ENABLE_LOGGING)
+
 add_subdirectory(src)
 if(UNIT_TESTS)
   enable_testing()

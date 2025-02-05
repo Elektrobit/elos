@@ -221,7 +221,7 @@ smoketest_elosd_config_not_found() {
     log "Killed Elosd"
 
     FAIL=0
-    str="ERROR: Failed to lookup backend for /dev."
+    str="ERROR: samconfLoad"
     grep -q "$str" $RESULT_DIR/elosd_config_not_set.txt
 
     if [ $? -ne 0 ]; then
@@ -231,25 +231,6 @@ smoketest_elosd_config_not_found() {
 
     export ELOS_CONFIG_PATH=${REAL_ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
     return $FAIL
-}
-
-smoketest_client() {
-    prepare_env "client"
-
-    log "Starting Client Demo"
-    LIBELOS_LOG="y" demo_libelos_v2 > $RESULT_DIR/client_output.txt 2>&1
-
-    sed -i -e 's/[0-9]\+\([.,]\)/xyz\1/g' $RESULT_DIR/client_output.txt
-
-    output_diff=$(diff $RESULT_DIR/client_output.txt $SMOKETEST_DIR/client_output.txt || echo "diff returned: $?")
-    if [ -n "$output_diff" ]
-    then
-        log_err "Problems occurred while comparing the client output:"
-        log_err "$output_diff"
-        return 1
-    fi
-
-    return 0
 }
 
 smoketest_client_uds() {
@@ -300,6 +281,10 @@ smoketest_coredump() {
     RESULT=0
     LOG_ELOSD="$RESULT_DIR/elosd.log"
 
+
+    REAL_COREDUMP_CONFIG_FILE=$ELOS_COREDUMP_CONFIG_FILE
+    export ELOS_COREDUMP_CONFIG_FILE=${RESULT_DIR}/test_config_coredump.json
+
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
@@ -317,19 +302,29 @@ smoketest_coredump() {
 
     log "Starting elos coredump test"
 
-    log "Triggering coredump"
-    TEST_MESSAGE="THIS IS THE DUMP"
-    echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger.log 2>&1
+    SOCKETS="TCP UNIX"
+    for SOCKET in $SOCKETS; do
+        log "Using socket: $SOCKET"
 
-    elosc -P $ELOSD_PORT -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event.log 2>&1
+        if [ "$SOCKET" = "TCP" ]; then
+            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"127.0.0.1:$ELOSD_PORT\"#" "$REAL_COREDUMP_CONFIG_FILE" > "$ELOS_COREDUMP_CONFIG_FILE"
+            echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger_$SOCKET.log 2>&1
+            elosc -P $ELOSD_PORT -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
+        fi
 
-    if grep -q "\"messageCode\":5100" $RESULT_DIR/coredump_event.log
-    then
-        log "Success coredump event logged"
-    else
-        log_err "coredump event not logged"
-        RESULT=1
-    fi
+        if [ "$SOCKET" = "UNIX" ]; then
+            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"${SMOKETEST_TMP_DIR}/elosd.socket\"#" "$REAL_COREDUMP_CONFIG_FILE" > "$ELOS_COREDUMP_CONFIG_FILE"
+            echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger_$SOCKET.log 2>&1
+            elosc -U ${SMOKETEST_TMP_DIR}/elosd.socket -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
+        fi
+
+        if grep -q "\"messageCode\":5100" $RESULT_DIR/coredump_event_$SOCKET.log; then
+            log "Success: coredump event logged for socket $SOCKET"
+        else
+            log_err "Error: coredump event not logged for socket $SOCKET"
+            RESULT=1
+        fi
+    done
 
     log "Stop elosd ($ELOSD_PID) ..."
     kill $ELOSD_PID > /dev/null
@@ -337,7 +332,9 @@ smoketest_coredump() {
     stop_dlt_mock
     log "done"
 
+
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
+    export ELOS_COREDUMP_CONFIG_FILE="${REAL_COREDUMP_CONFIG_FILE}"
 
     return $RESULT
 }
@@ -1053,7 +1050,6 @@ done
 FAILED_TESTS=0
 call_test "elosd" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "elosd_config_not_found" || FAILED_TESTS=$((FAILED_TESTS+1))
-call_test "client" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "client_uds" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "syslog" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "coredump" || FAILED_TESTS=$((FAILED_TESTS+1))

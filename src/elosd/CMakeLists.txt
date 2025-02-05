@@ -4,6 +4,8 @@ find_package(Threads REQUIRED)
 find_package(safu 0.56.2 REQUIRED)
 find_package(samconf 0.56.3 REQUIRED)
 
+add_compile_definitions(SAFU_LOG=1)
+
 add_executable(
   elosd
   main.c

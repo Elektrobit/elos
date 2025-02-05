@@ -29,3 +29,4 @@ target_include_directories(
 
 target_compile_definitions(tcp_config_static PUBLIC ELOSD_PORT=${ELOSD_PORT})
 target_compile_definitions(tcp_config_static PUBLIC ELOSD_INTERFACE="${ELOSD_INTERFACE}")
+target_compile_definitions(tcp_config_static PUBLIC ELOSD_CONNECTION_LIMIT=${ELOSD_CONNECTION_LIMIT})
