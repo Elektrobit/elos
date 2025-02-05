@@ -16,6 +16,10 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#ifdef ELOSD_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+
 #include "elos/event/event.h"
 #include "elos/event/event_source.h"
 #include "logline_mapper.h"
@@ -41,6 +45,9 @@ struct syslog_context {
     elosLoglineMapper_t mapper;
     const samconfConfig_t *config;
     struct elosPublisher *publisher;
+#ifdef ELOSD_SYSTEMD
+    bool startedViaSocketActivation;
+#endif
 };
 
 static safuResultE_t _setupSocket(elosPlugin_t *plugin);
@@ -205,13 +212,20 @@ static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
             result = SAFU_RESULT_FAILED;
         }
     }
-    // TODO decide how to handle environment variables in pluggins
-    // and move the call to getEnv to be handled by samconf in a merge strategy
-    const char *defaultSyslogPath = samconfConfigGetStringOr(plugin->config, "Config/SyslogPath", ELOSD_SYSLOG_PATH);
-    const char *syslogPath = safuGetEnvOr("ELOS_SYSLOG_PATH", defaultSyslogPath);
-    if (unlink(syslogPath) != 0) {
-        safuLogErrErrno("Failed to unlink syslog socket");
-        result = SAFU_RESULT_FAILED;
+#ifdef ELOSD_SYSTEMD
+    if (!context->startedViaSocketActivation) {
+#else
+    {
+#endif
+        // TODO decide how to handle environment variables in pluggins
+        // and move the call to getEnv to be handled by samconf in a merge strategy
+        const char *defaultSyslogPath =
+            samconfConfigGetStringOr(plugin->config, "Config/SyslogPath", ELOSD_SYSLOG_PATH);
+        const char *syslogPath = safuGetEnvOr("ELOS_SYSLOG_PATH", defaultSyslogPath);
+        if (unlink(syslogPath) != 0) {
+            safuLogErrErrno("Failed to unlink syslog socket");
+            result = SAFU_RESULT_FAILED;
+        }
     }
 
     if (elosPluginDeletePublisher(plugin, context->publisher) != SAFU_RESULT_OK) {
@@ -235,10 +249,54 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
 
     return result;
 }
+
+static bool _socketActivationRequested(elosPlugin_t *plugin) {
+    const char *env = safuGetEnvOr("ELOS_SYSLOG_USE_SYSTEMD_SOCKET", NULL);
+    bool result = false;
+    if (env == NULL) {
+        bool useSystemdSocket = samconfConfigGetBoolOr(plugin->config, "Config/UseSystemdSocket", false);
+        result = useSystemdSocket;
+    } else if (strcmp(env, "1") == 0) {
+        result = true;
+    }
+    return result;
+}
+
+#ifdef ELOSD_SYSTEMD
+static safuResultE_t _setupSocketFromSystemdListenFds(elosPlugin_t *plugin) {
+    struct syslog_context *context = plugin->data;
+    int nSockets = sd_listen_fds(0);
+    safuResultE_t result;
+    if (nSockets == 1) {
+        safuLogDebug("Started via systemd socket activation! Using passed socket.");
+        context->socket = SD_LISTEN_FDS_START;
+        context->startedViaSocketActivation = true;
+        result = SAFU_RESULT_OK;
+    } else if (nSockets > 1) {
+        safuLogErr("Received too many sockets from systemd!");
+        result = SAFU_RESULT_FAILED;
+    } else {
+        safuLogErr("Socket activation requested, but no socket received.");
+        result = SAFU_RESULT_FAILED;
+    }
+    return result;
+}
+#endif
+
 static safuResultE_t _setupSocket(elosPlugin_t *plugin) {
     struct syslog_context *context = plugin->data;
     struct sockaddr_un name = {.sun_family = AF_UNIX};
 
+#ifdef ELOSD_SYSTEMD
+    if (_socketActivationRequested(plugin)) {
+        return _setupSocketFromSystemdListenFds(plugin);
+    }
+    context->startedViaSocketActivation = false;
+#else
+    if (_socketActivationRequested(plugin)) {
+        safuLogWarn("Socket activation requested, but systemd support is disabled in this build. Ignoring.");
+    }
+#endif
     // TODO: move handlying of getEnv into samconf with an apropriate merge strategy
     const char *defaultSyslogPath = samconfConfigGetStringOr(plugin->config, "Config/SyslogPath", ELOSD_SYSLOG_PATH);
     const char *syslogPath = safuGetEnvOr("ELOS_SYSLOG_PATH", defaultSyslogPath);
