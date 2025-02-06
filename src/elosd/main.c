@@ -93,6 +93,9 @@ int elosServerShutdown(struct serverContext *ctx) {
         safuLogErr("Deleting scanner manager failed!");
         result = EXIT_FAILURE;
     }
+
+    elosEventDispatcherBufferRemove(&ctx->eventDispatcher, ctx->logger->logEventBuffer);
+
     if (elosEventDispatcherDeleteMembers(&ctx->eventDispatcher) != SAFU_RESULT_OK) {
         safuLogErr("Deleting event dispatcher members failed!");
         result = EXIT_FAILURE;

@@ -123,19 +123,8 @@ safuResultE_t elosEventDispatcherDeleteMembers(elosEventDispatcher_t *eventDispa
 
             SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
             if (result == SAFU_RESULT_OK) {
-                struct timespec ts;
-                clock_gettime(CLOCK_REALTIME, &ts);
-                ts.tv_sec += 1;
                 while (safuVecElements(&eventDispatcher->eventBufferPtrVector) != 0) {
-                    int rc = pthread_cond_timedwait(&eventDispatcher->eventVectorRemoveCondition,
-                                                    &eventDispatcher->lock, &ts);
-                    if (rc == ETIMEDOUT) {
-                        break;
-                    }
-                }
-                u_int32_t elements = safuVecElements(&eventDispatcher->eventBufferPtrVector);
-                if (elements != 0) {
-                    safuLogErrF("eventBufferPtrVector still has %d elements before removal", elements);
+                    pthread_cond_wait(&eventDispatcher->eventVectorRemoveCondition, &eventDispatcher->lock);
                 }
 
                 int retVal = close(eventDispatcher->worker.trigger);
