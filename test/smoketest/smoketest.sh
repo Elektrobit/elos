@@ -276,7 +276,7 @@ smoketest_client_uds() {
 }
 
 smoketest_coredump() {
-    prepare_env "elos-coredump"
+    prepare_env "coredump"
 
     RESULT=0
     LOG_ELOSD="$RESULT_DIR/elosd.log"
@@ -833,7 +833,7 @@ smoketest_compile_program_using_libelos() {
 }
 
 smoketest_compile_program_using_libeloscpp() {
-    prepare_env "compile_program_using_libelos-cpp"
+    prepare_env "compile_program_using_libeloscpp"
     TEST_RESULT=0
 
     EXTRA_FLAGS=""
