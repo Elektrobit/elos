@@ -583,7 +583,7 @@ class ElosKeywords(object):
         Create a subscription for a given event filter using
         default connection string
         """
-        self.subscribe_to_event_via(filter, "tcp://127.0.0.1:54321")
+        return self.subscribe_to_event_via(filter, "tcp://127.0.0.1:54321")
 
     @keyword("Subscribe To '${filter}' Via '${uri}'")
     def subscribe_to_event_via(self, filter, uri):
@@ -644,6 +644,26 @@ class ElosKeywords(object):
         Check last subscription has received events subscribed to
         """
         subscription = BuiltIn().get_variable_value("${SUBSCRIPTION}")
+        logger.info(f"subID: {subscription.subID}")
+        start_time = time.time()
+        retry_count = 0
+        while True:
+            events = subscription.get_events()
+            if len(events) > 0:
+                logger.info(f"{events}")
+                break
+            elif time.time() - start_time > timeout:
+                robot.utils.asserts.fail("Fail because of timeout")
+            else:
+                retry_count += 1
+                logger.info(f"{retry_count}. Retry as no events found")
+                time.sleep(0.2)
+
+    @keyword("Client With '${subscription}' Receives Event")
+    def client_with_subscription_receives_event(self, subscription, timeout=5):
+        """
+        Check event with given subscription has received events subscribed to
+        """
         logger.info(f"subID: {subscription.subID}")
         start_time = time.time()
         retry_count = 0
