@@ -46,7 +46,7 @@ An Invalid Blacklist Filter Is Set
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
 
-    ${rc}    Execute And Log    elosc -p '{"messageCode": 2010}'    ${RETURN_RC}
+    ${output}    ${error}    ${rc}    Publish '{"messageCode": 2010}'
     Executable Returns An Error    ${rc}
 
 A Blacklist Failed Event Is Published
@@ -54,9 +54,6 @@ A Blacklist Failed Event Is Published
     ...                fails will lead to a blacklist failed (501) event if
     ...                client is unauthorized.
 
-    ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 501 EQ"
-    ...    ${RETURN_STDOUT}
-    ...    ${RETURN_RC}
+    ${stdout}    ${error}    ${rc}    Find Events Matching '.event.messageCode 501 EQ'
     Should Contain    ${stdout}    2010
     Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter

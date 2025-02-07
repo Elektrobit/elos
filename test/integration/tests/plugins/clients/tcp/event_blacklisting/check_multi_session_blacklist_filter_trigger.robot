@@ -44,10 +44,10 @@ A Simple Blacklist Filter Is Set
     [Documentation]    Set a simple blacklist filter in config
 
     Ensure Elosd Is Stopped
-    ${Config}=    Default Config Core
-    ${Config}=    Update Value To Json
+    ${Config}    Default Config Core
+    ${Config}    Update Value To Json
     ...           ${Config}    $..LocalTcpClient.Config.EventBlacklist    ${BLACKLIST_FILTER}
-    ${Config}=    Update Value To Json
+    ${Config}    Update Value To Json
     ...           ${Config}    $..LocalTcpClient.Config.authorizedProcesses    ${PROCESS_FILTER}
     Set Config From Template    &{Config}
     Ensure Elosd Is Started
@@ -57,13 +57,13 @@ New Session Is Started
 
     Run Keyword    Restart Elosd
     Wait Till Elosd Is Listening On
-    ${SESSION_ID}=    Evaluate    ${SESSION_ID} + 1
+    ${SESSION_ID}    Evaluate    ${SESSION_ID} + 1
     Set Test Variable    ${SESSION_ID}
 
 Multiple Unauthorized Processes Try To Publish A Blacklisted Event
     [Documentation]    run multiple client to publish blacklisted filters
 
-    ${PUBLISH_TIME}=    Get Elos Event Publish Time Threshold
+    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
 
     Set Test Variable    ${PUBLISH_TIME}
 
@@ -74,12 +74,11 @@ Multiple Unauthorized Processes Try To Publish A Blacklisted Event
 Unauthorized Process Tries To Publish A Blacklisted Event
     [Documentation]    An elos client tries to publish a black listed event and fails
 
-    ${SESSION_TOKEN}=    Set Variable
+    ${SESSION_TOKEN}    Set Variable
     ...                  01_Test_Trigger_Blacklist_Filter_Multiple_Sessions${SESSION_ID}
     Set Test Variable    ${SESSION_TOKEN}
-    ${rc}=    Execute And Log
-    ...       elosc -p '{"messageCode": 2010, "payload":"${SESSION_TOKEN}"}'
-    ...       ${RETURN_RC}
+    ${output}    ${error}    ${rc}
+    ...                      Publish '{"messageCode": 2010, "payload":"${SESSION_TOKEN}"}'
     Executable Returns An Error    ${rc}
 
 A Security Event Is Published

@@ -2,6 +2,7 @@
 import socket
 import struct
 
+
 class ElosdLibrary(object):
     """ElosdLibrary provides a set of keywords for direct interaction
     with target elosd.

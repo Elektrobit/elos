@@ -23,7 +23,7 @@ New message in '/dev/kmsg'
     And 'KmsgScanner' Plugin Is Loaded
     And Subscribe To '.e.source.fileName \'/dev/kmsg\' STRCMP'
     When A Kernel Message Appears
-    Then An Event Was Published
+    Then Client Receives Event Subscribed To
 
     [Teardown]    Unsubscribe All
 
