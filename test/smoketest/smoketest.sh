@@ -996,9 +996,11 @@ call_test() {
     test_name=$1
     test_method=${2-"test_expect_success"}
 
+
     local result=1
     local skipped="false"
 
+    start_time=$(date +%s)
     echo -n "${test_name} ... "
 
     if [ "$ENABLED_TESTS" = "" ]; then
@@ -1019,16 +1021,19 @@ call_test() {
         fi
     fi
 
+    test_status="FAILED"
     if [ "${skipped}" = "true" ]; then
-        echo "SKIPPED"
-	result=0
+        test_status="SKIPPED"
+        result=0
     else
         if [ ${result} -eq 0 ]; then
-            echo "OK"
-        else
-            echo "FAILED"
+            test_status="OK"
         fi
     fi
+
+    echo "${test_status}"
+    end_time=$(date +%s)
+    printf '%s %s %s' "${test_name}" "$((end_time - start_time))" "${test_status}" > "${RESULT_DIR}/smoketest.result" 
 
     return ${result}
 }
@@ -1066,5 +1071,7 @@ if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
     call_test "compile_program_with_cpp" || FAILED_TESTS=$((FAILED_TESTS+1))
     call_test "compile_program_using_pkgconfig" || FAILED_TESTS=$((FAILED_TESTS+1))
 fi
+
+create_junit_report "${SMOKETEST_RESULT_DIR}"
 
 exit ${FAILED_TESTS}
