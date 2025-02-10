@@ -88,8 +88,3 @@ if (ELOS_DAEMON)
 endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-if(PACKAGING)
-  include(cmake/Packing.cmake)
-endif(PACKAGING)
-
