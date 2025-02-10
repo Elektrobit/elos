@@ -206,7 +206,7 @@ static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
             result = SAFU_RESULT_FAILED;
         }
     }
-    if (context->socket > -1) {
+    if (context->cmd > -1) {
         if (close(context->cmd) != 0) {
             safuLogErrErrno("Failed to close syslog cmd socket");
             result = SAFU_RESULT_FAILED;
