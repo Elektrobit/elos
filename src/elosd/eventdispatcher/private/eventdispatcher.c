@@ -283,6 +283,8 @@ safuResultE_t elosEventDispatcherBufferAdd(elosEventDispatcher_t *eventDispatche
                 eventBuffer->permitRemoval = false;
 
                 int retVal = safuVecPush(&eventDispatcher->eventBufferPtrVector, &eventBuffer);
+                ADDITIONAL_DISPATCHER_DEBUGS("Add eventbuffer %p to vector. Current elements of vector: %d",
+                                             (void *)eventBuffer, eventDispatcher->eventBufferPtrVector.elementCount);
                 if (retVal < 0) {
                     safuLogErr("Adding the EventBuffer failed");
                     result = elosEventBufferSetWriteTrigger(eventBuffer, ELOS_EVENTBUFFER_NO_TRIGGER);
@@ -326,6 +328,8 @@ safuResultE_t elosEventDispatcherBufferRemove(elosEventDispatcher_t *eventDispat
                    eventBuffer->permitRemoval == false) {
                 pthread_cond_wait(&eventDispatcher->eventBufferRemoveCondition, &eventDispatcher->lock);
             }
+            ADDITIONAL_DISPATCHER_DEBUGS("Remove eventbuffer %p from vector. Current elements of vector: %d",
+                                         (void *)eventBuffer, eventDispatcher->eventBufferPtrVector.elementCount);
 
             int retVal = safuVecFindRemove(&eventDispatcher->eventBufferPtrVector, _matchByPointer, eventBuffer);
 

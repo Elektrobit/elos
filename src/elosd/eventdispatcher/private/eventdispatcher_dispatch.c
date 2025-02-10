@@ -8,6 +8,7 @@
 #include "elos/eventbuffer/eventbuffer.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventprocessor/eventprocessor.h"
+#include "eventdispatcher_private.h"
 
 static safuResultE_t _eventPtrVectorDeleteMembers(elosEventPtrVector_t *eventPtrVector) {
     uint32_t const elements = safuVecElements(eventPtrVector);
@@ -51,6 +52,7 @@ static safuResultE_t _publishEventVector(elosEventDispatcher_t *eventDispatcher,
             safuLogErrF("safuVecGet for event[%d] failed", i);
             result = SAFU_RESULT_FAILED;
         } else {
+            ADDITIONAL_DISPATCHER_DEBUGS("%s: publish event %p", __func__, (void *)*eventPtr);
             iterResult = elosEventProcessorPublish(eventDispatcher->eventProcessor, *eventPtr);
             if (iterResult != SAFU_RESULT_OK) {
                 safuLogErrF("Publishing event[%d] failed", i);
@@ -69,6 +71,8 @@ static safuResultE_t _publishEventBuffer(elosEventDispatcher_t *eventDispatcher,
     size_t elementsWritten = 0;
 
     result = elosEventBufferRead(eventBufferPtr, priority, &eventPtrVector, &elementsWritten);
+    ADDITIONAL_DISPATCHER_DEBUGS("%s: %zu elements written from eventbuffer %p to vector", __func__, elementsWritten,
+                                 (void *)eventBufferPtr);
     if (result != SAFU_RESULT_OK) {
         safuLogErrF("elosEventBufferRead with priority:%d failed", priority);
     } else if (elementsWritten > 0) {
