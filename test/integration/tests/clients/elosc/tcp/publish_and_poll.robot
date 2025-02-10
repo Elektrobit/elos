@@ -23,6 +23,7 @@ ${MESSAGE_COUNT}                10
 ${CLIENT_COUNT}                 2
 @{EVENTS}                       @{EMPTY}
 @{PUBLISH_LOG}                  @{EMPTY}
+@{SUBSCRIPTIONS}                @{EMPTY}
 
 
 *** Test Cases ***
@@ -30,9 +31,9 @@ Client Logs Published Message
     [Documentation]    If published message matches a filter subscribed to by client
     ...    then it is logged by the client
 
-    Given Elos Client Subscription Started
-    When A Subscribed Event Is Published
-    Then Client Receives Event Subscribed To
+    Given '${CLIENT_COUNT}' Elos Clients Subscribe To '${FILTER}'
+    When An Event Matching The Filter Is Published
+    Then All Clients Receive The Events Subscribed To
 
 
 *** Keywords ***
@@ -49,14 +50,16 @@ Create Messages
     END
     Log List    ${EVENTS}
 
-Elos Client Subscription Started
-    [Documentation]    Start given number of elos clients
-    FOR    ${count}    IN RANGE    ${CLIENT_COUNT}
-        ${output}=    Subscribe To '${FILTER}'
-        Log    Started client ${count}
+'${N}' Elos Clients Subscribe To '${filter}'
+    [Documentation]    Start 'N' number of elos clients which subscribe to
+    ...                events matching given filter
+    FOR    ${i}    IN RANGE    ${N}
+        ${subscription}=    Subscribe To '${filter}'
+        Append To List    ${SUBSCRIPTIONS}    ${subscription}
+        Log    Started client ${i}
     END
 
-A Subscribed Event Is Published
+An Event Matching The Filter Is Published
     [Documentation]    Publish Created Messages matching a RPN-filter
     Run Keyword    Create Messages
     FOR    ${event}    IN    @{EVENTS}
@@ -64,4 +67,9 @@ A Subscribed Event Is Published
         Append To List    ${PUBLISH_LOG}    ${publish_output}
     END
     Log List    ${PUBLISH_LOG}
-    Sleep    1s
+
+All Clients Receive The Events Subscribed To
+    [Documentation]    All clients find all the events they have subscribed to
+    FOR    ${subscription}    IN    @{SUBSCRIPTIONS}
+        Client With '${subscription}' Receives Event
+    END
