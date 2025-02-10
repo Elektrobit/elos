@@ -28,6 +28,8 @@ void testElosEventDispatcherBufferRemoveErrMutex(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     safuResultE_t result;
 
+    test->eventBuffer[0].permitRemoval = true;
+
     TEST("elosEventDispatcherBufferRemove");
     SHOULD("%s", "test behaviour with failed mutex operations");
 

@@ -39,23 +39,22 @@ static safuResultE_t _workerDataInitialize(elosClientConnection_t *clientConnect
 
 safuResultE_t _workerDataDeleteMembers(elosClientConnection_t *clientConnection) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    int retVal = 0;
 
     result = elosPluginUnsubscribeAll(clientConnection->sharedData->plugin, clientConnection->data.subscriber);
     if (result != SAFU_RESULT_OK) {
         safuLogErr("cleanup subscriptions failed");
     }
 
-    result = elosPluginDeletePublisher(clientConnection->sharedData->plugin, clientConnection->data.publisher);
-    result = elosPluginDeleteSubscriber(clientConnection->sharedData->plugin, clientConnection->data.subscriber);
-
     if (clientConnection->fd != -1) {
-        retVal = close(clientConnection->fd);
+        int retVal = close(clientConnection->fd);
         if (retVal != 0) {
             safuLogWarnErrnoValue("Closing socketFd failed", retVal);
             result = SAFU_RESULT_FAILED;
         }
     }
+
+    result = elosPluginDeletePublisher(clientConnection->sharedData->plugin, clientConnection->data.publisher);
+    result = elosPluginDeleteSubscriber(clientConnection->sharedData->plugin, clientConnection->data.subscriber);
 
     return result;
 }

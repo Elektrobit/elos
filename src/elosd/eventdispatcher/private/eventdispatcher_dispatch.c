@@ -8,6 +8,7 @@
 #include "elos/eventbuffer/eventbuffer.h"
 #include "elos/eventdispatcher/eventdispatcher.h"
 #include "elos/eventprocessor/eventprocessor.h"
+#include "eventdispatcher_private.h"
 
 static safuResultE_t _eventPtrVectorDeleteMembers(elosEventPtrVector_t *eventPtrVector) {
     uint32_t const elements = safuVecElements(eventPtrVector);
@@ -51,6 +52,7 @@ static safuResultE_t _publishEventVector(elosEventDispatcher_t *eventDispatcher,
             safuLogErrF("safuVecGet for event[%d] failed", i);
             result = SAFU_RESULT_FAILED;
         } else {
+            ADDITIONAL_DISPATCHER_DEBUGS("%s: publish event %p", __func__, (void *)*eventPtr);
             iterResult = elosEventProcessorPublish(eventDispatcher->eventProcessor, *eventPtr);
             if (iterResult != SAFU_RESULT_OK) {
                 safuLogErrF("Publishing event[%d] failed", i);
@@ -62,27 +64,23 @@ static safuResultE_t _publishEventVector(elosEventDispatcher_t *eventDispatcher,
     return result;
 }
 
-static safuResultE_t _publishEventBuffer(elosEventDispatcher_t *eventDispatcher, uint32_t idx, int32_t priority) {
+static safuResultE_t _publishEventBuffer(elosEventDispatcher_t *eventDispatcher, elosEventBuffer_t *eventBufferPtr,
+                                         int32_t priority) {
     safuResultE_t result = SAFU_RESULT_FAILED;
-    elosEventBuffer_t **eventBufferPtr;
+    elosEventPtrVector_t eventPtrVector = {0};
+    size_t elementsWritten = 0;
 
-    eventBufferPtr = safuVecGet(&eventDispatcher->eventBufferPtrVector, idx);
-    if ((eventBufferPtr == NULL) || (*eventBufferPtr == NULL)) {
-        safuLogErr("safuVecGet failed");
-    } else {
-        elosEventPtrVector_t eventPtrVector = {0};
-        size_t elementsWritten = 0;
-
-        result = elosEventBufferRead(*eventBufferPtr, priority, &eventPtrVector, &elementsWritten);
-        if (result != SAFU_RESULT_OK) {
-            safuLogErrF("elosEventBufferRead with priority:%d failed", priority);
-        } else if (elementsWritten > 0) {
-            eventDispatcher->worker.eventsPublished += elementsWritten;
-            result = _publishEventVector(eventDispatcher, &eventPtrVector);
-        }
-
-        _eventPtrVectorDeleteMembers(&eventPtrVector);
+    result = elosEventBufferRead(eventBufferPtr, priority, &eventPtrVector, &elementsWritten);
+    ADDITIONAL_DISPATCHER_DEBUGS("%s: %zu elements written from eventbuffer %p to vector", __func__, elementsWritten,
+                                 (void *)eventBufferPtr);
+    if (result != SAFU_RESULT_OK) {
+        safuLogErrF("elosEventBufferRead with priority:%d failed", priority);
+    } else if (elementsWritten > 0) {
+        eventDispatcher->worker.eventsPublished += elementsWritten;
+        result = _publishEventVector(eventDispatcher, &eventPtrVector);
     }
+
+    _eventPtrVectorDeleteMembers(&eventPtrVector);
 
     return result;
 }
@@ -97,18 +95,22 @@ safuResultE_t elosEventDispatcherDispatch(elosEventDispatcher_t *eventDispatcher
     } else {
         SAFU_PTHREAD_MUTEX_LOCK_WITH_RESULT(&eventDispatcher->lock, result);
         if (result == SAFU_RESULT_OK) {
-            if (SAFU_FLAG_HAS_INITIALIZED_BIT(&eventDispatcher->flags) == false) {
-                safuLogErr("The given eventDispatcher is not initialized");
-                result = SAFU_RESULT_FAILED;
-            } else {
-                uint32_t const elements = safuVecElements(&eventDispatcher->eventBufferPtrVector);
-                int32_t const priorityStart = ELOS_EVENTBUFFER_PRIORITY_COUNT - 1;
+            uint32_t const elements = safuVecElements(&eventDispatcher->eventBufferPtrVector);
+            int32_t const priorityStart = ELOS_EVENTBUFFER_PRIORITY_COUNT - 1;
 
-                for (int32_t priority = priorityStart; priority >= 0; priority -= 1) {
-                    for (uint32_t i = 0; i < elements; i += 1) {
-                        safuResultE_t iterResult;
-
-                        iterResult = _publishEventBuffer(eventDispatcher, i, priority);
+            for (int32_t priority = priorityStart; priority >= 0; priority -= 1) {
+                for (uint32_t i = 0; i < elements; i += 1) {
+                    safuResultE_t iterResult;
+                    elosEventBuffer_t **eventBufferPtr;
+                    eventBufferPtr = safuVecGet(&eventDispatcher->eventBufferPtrVector, i);
+                    if (eventBufferPtr == NULL || *eventBufferPtr == NULL) {
+                        safuLogErr("safuVecGet failed");
+                        result = SAFU_RESULT_FAILED;
+                    } else {
+                        if ((*eventBufferPtr)->requestRemoval == true) {
+                            (*eventBufferPtr)->permitRemoval = true;
+                        }
+                        iterResult = _publishEventBuffer(eventDispatcher, *eventBufferPtr, priority);
                         if (iterResult != SAFU_RESULT_OK) {
                             safuLogErrF("Dispatching eventBuffer[%d] failed (Events are probably lost)", i);
                             result = SAFU_RESULT_FAILED;
@@ -118,6 +120,7 @@ safuResultE_t elosEventDispatcherDispatch(elosEventDispatcher_t *eventDispatcher
             }
 
             SAFU_PTHREAD_MUTEX_UNLOCK(&eventDispatcher->lock, result = SAFU_RESULT_FAILED);
+            pthread_cond_broadcast(&eventDispatcher->eventBufferRemoveCondition);
         }
     }
 

@@ -56,6 +56,10 @@ int testElosEventDispatcherWorkerSuccessSetup(void **state) {
 int testElosEventDispatcherWorkerSuccessTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
 
+    for (size_t i = 0; i < _EVENTBUFFER_ENTRIES; i += 1) {
+        test->eventBuffer[i].permitRemoval = true;
+        elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[i]);
+    }
     elosEventDispatcherDeleteMembers(&test->eventDispatcher);
 
     return 0;

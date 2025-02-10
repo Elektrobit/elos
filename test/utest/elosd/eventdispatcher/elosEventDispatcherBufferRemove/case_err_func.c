@@ -29,6 +29,8 @@ void testElosEventDispatcherBufferRemoveErrFunc(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     safuResultE_t result;
 
+    test->eventBuffer[0].permitRemoval = true;
+
     TEST("elosEventDispatcherBufferRemove");
     SHOULD("test behaviour when internal functions fail");
 
