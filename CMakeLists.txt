@@ -10,14 +10,6 @@ project(
     LANGUAGES C
 )
 
-project_set_environment()
-project_set_version_variables()
-project_add_documentation_target(
-  TITLE
-    "BaseOS ElosD Documentation"
-  MARKDOWN
-    ${CMAKE_SOURCE_DIR}/documentation/documentation.md
-)
 
 option(ELOS_BUILD_DEFAULTS "enable all default builds" ON)
 
@@ -63,6 +55,15 @@ option(ELOSD_EVENTLOGGING_BACKEND_DLT "Build DLT backend plugin" ${ELOS_BUILD_DE
 option(ELOSD_LIBDLT "Build libelosdlt, a dlt protocol implementation." ${ELOSD_EVENTLOGGING_BACKEND_DLT})
 
 option(ENABLE_LOGGING "Enables the safuLog functions" OFF)
+
+project_set_environment()
+project_set_version_variables()
+project_add_documentation_target(
+  TITLE
+    "BaseOS ElosD Documentation"
+  MARKDOWN
+    ${CMAKE_SOURCE_DIR}/documentation/documentation.md
+)
 
 if(ENABLE_LOGGING)
   add_compile_definitions(SAFU_LOG=1)
