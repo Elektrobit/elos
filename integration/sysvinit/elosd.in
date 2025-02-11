@@ -28,7 +28,7 @@ start() {
     touch "${ELOSD_LOG_FILE}"
     chmod 666 "${ELOSD_LOG_FILE}"
 
-    stdbuf -o 0 -e 0 /usr/local/bin/elosd > "${ELOSD_LOG_FILE}" 2>&1 &
+    stdbuf -o 0 -e 0 @CMAKE_INSTALL_FULL_BINDIR@/elosd > "${ELOSD_LOG_FILE}" 2>&1 &
     ELOS_PID=$!
 
     sleep 0.2s

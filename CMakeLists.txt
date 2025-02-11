@@ -79,6 +79,14 @@ endif(UNIT_TESTS)
 add_subdirectory(test/utest)
 add_subdirectory(test/smoketest)
 
+if (ELOS_DAEMON)
+  option(INSTALL_ELOSD_SYSTEMD_UNIT "install the elosd.service unit" ${ELOSD_SYSTEMD})
+  option(INSTALL_ELOSD_SYSVINIT_SCRIPT "install the elosd init script" OFF)
+  set(INSTALL_ELOSD_SYSTEMD_UNIT_DIR "${CMAKE_INSTALL_LIBDIR}/systemd/system" CACHE STRING "destination directory for the service unit")
+  set(INSTALL_ELOSD_SYSVINIT_SCRIPT_DIR "${CMAKE_INSTALL_SYSCONFDIR}/init.d" CACHE STRING "destination directory for the elosd init script")
+  add_subdirectory(integration)
+endif()
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if(PACKAGING)

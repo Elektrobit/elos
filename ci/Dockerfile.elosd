@@ -47,12 +47,11 @@ RUN cmake -B /tmp/elos/build . \
     -DCMAKE_BUILD_TYPE=Release \
     -DUNIT_TESTS=off \
     -DSMOKE_TESTS=on \
-    -DINSTALL_SMOKE_TESTS=on
+    -DINSTALL_SMOKE_TESTS=on \
+    -DINSTALL_ELOSD_SYSVINIT_SCRIPT=on \
+    -DINSTALL_ELOSD_SYSVINIT_SCRIPT_DIR=/etc/init.d
 RUN ninja -C /tmp/elos/build all
 RUN sudo ninja -C /tmp/elos/build install
-
-COPY ./ci/elosd.service /etc/init.d/elosd
-RUN chmod a+x /etc/init.d/elosd
 
 RUN sudo ldconfig
 RUN sudo rm -rf /home/elos

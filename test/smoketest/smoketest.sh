@@ -379,7 +379,7 @@ smoketest_syslog() {
 elosd_built_with_libsystemd() {
     # Check if elosd is linked against libsystemd. In minimal systems, the ldd command may not be available, so fall
     # back to simply checking whether this library is mentioned in the binary.
-    if which ldd 2>&1 > /dev/null; then
+    if which ldd > /dev/null 2>&1; then
         ldd "$(which elosd)" | grep -q libsystemd.so
         return $?
     else
@@ -405,38 +405,40 @@ smoketest_syslog_systemd() {
     # all elos-related env and the LD_LIBRARY_PATH.
     # If elosd did not correctly use the socket passed by systemd-socket-activate and re-opened the socket path on its own instead,
     # the test might wrongly succeed. So explicitly set the ELOS_SYSLOG_PATH to a different (invalid) path to prevent this.
-    systemd-socket-activate -d -l $ELOS_SYSLOG_PATH -E ELOS_SYSLOG_USE_SYSTEMD_SOCKET=1 -E LD_LIBRARY_PATH $(env | grep ^ELOS | awk '{ print "-E "; print $1 }') \
+
+    # word splitting of the env command is intentional, each env entry is intended to be passed as a separate argument, with the leading "-E" also being a separate arg.
+    # shellcheck disable=SC2046
+    systemd-socket-activate -d -l "$ELOS_SYSLOG_PATH" -E ELOS_SYSLOG_USE_SYSTEMD_SOCKET=1 -E LD_LIBRARY_PATH $(env | grep ^ELOS | awk '{ print "-E"; print $1 }') \
         -E ELOS_SYSLOG_PATH=/invalid/path \
-        elosd > $LOG_ELOSD 2>&1 &
+        elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
     log "Starting syslog socket activation test"
 
-    wait_for_file $ELOS_SYSLOG_PATH
+    wait_for_file "$ELOS_SYSLOG_PATH"
     # let systemd-socket-activate start elosd by writing to the syslog socket
-    logger -u $ELOS_SYSLOG_PATH "hello!"
+    logger -u "$ELOS_SYSLOG_PATH" "hello!"
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
-    syslog_example -m "$TEST_MESSAGE" -P $ELOSD_PORT > $RESULT_DIR/syslog_example.log 2>&1 &
+    syslog_example -m "$TEST_MESSAGE" -P "$ELOSD_PORT" > "$RESULT_DIR/syslog_example.log" 2>&1 &
     SYSLOG_EXAMPLE_PID=$!
 
     log "wait for syslog_example to finish ..."
-    wait $SYSLOG_EXAMPLE_PID
+    wait "$SYSLOG_EXAMPLE_PID"
     log "done"
 
     log "Stop elosd ($ELOSD_PID) ..."
-    kill $ELOSD_PID > /dev/null
-    wait $ELOSD_PID > /dev/null
+    kill "$ELOSD_PID" > /dev/null
+    wait "$ELOSD_PID" > /dev/null
     log "done"
 
     TEST_RESULT=0
-    grep "\[receive message\] " $RESULT_DIR/syslog_example.log | grep -q "$TEST_MESSAGE"
-    if [ $? -ne 0 ]; then
+    if ! grep "\[receive message\] " "$RESULT_DIR/syslog_example.log" | grep -q "$TEST_MESSAGE"; then
         log_err "missing message: '$TEST_MESSAGE'"
         TEST_RESULT=1
     fi
 
-    return $TEST_RESULT
+    return "$TEST_RESULT"
 }
 
 smoketest_kmsg() {
