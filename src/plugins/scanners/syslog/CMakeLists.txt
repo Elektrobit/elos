@@ -1,4 +1,8 @@
 # SPDX-License-Identifier: MIT
+if (ELOSD_SYSTEMD)
+  pkg_check_modules(libsystemd REQUIRED libsystemd)
+endif()
+
 add_library(
   scanner_syslog SHARED
   private/syslog.c
@@ -34,6 +38,20 @@ target_include_directories(
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
+if (ELOSD_SYSTEMD)
+  target_compile_definitions(scanner_syslog PRIVATE ELOSD_SYSTEMD)
+  target_link_libraries(
+    scanner_syslog
+    PUBLIC
+      ${libsystemd_LIBRARIES}
+  )
+
+  target_include_directories(
+    scanner_syslog
+    PUBLIC
+      ${libsystemd_INCLUDE_DIRS}
+  )
+endif()
 
 if (INSTALL_ELOS_PLUGINS)
   install(TARGETS scanner_syslog DESTINATION ${ELOSD_SCANNER_PATH})

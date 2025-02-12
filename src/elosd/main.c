@@ -24,6 +24,10 @@
 #include "samconf/samconf.h"
 #include "version.h"
 
+#ifdef ELOSD_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+
 #define MAIN_SLEEP_TIME_USEC (100 * 1000)
 
 struct serverContext {
@@ -301,11 +305,18 @@ int main(int argc, char **argv) {
     safuLogInfo("Running...");
     fflush(stdout);
     fflush(stderr);
+#ifdef ELOSD_SYSTEMD
+    sd_notify(0, "READY=1");
+#endif
 
     while (elosActive) {
         // Temporary solution to allow graceful program termination with raise() from threads
         usleep(MAIN_SLEEP_TIME_USEC);
     }
+
+#ifdef ELOSD_SYSTEMD
+    sd_notify(0, "STOPPING=1");
+#endif
 
     retval = elosServerShutdown(&context);
 
