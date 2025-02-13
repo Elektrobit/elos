@@ -276,7 +276,7 @@ smoketest_client_uds() {
 }
 
 smoketest_coredump() {
-    prepare_env "elos-coredump"
+    prepare_env "coredump"
 
     RESULT=0
     LOG_ELOSD="$RESULT_DIR/elosd.log"
@@ -374,6 +374,71 @@ smoketest_syslog() {
     fi
 
     return $TEST_RESULT
+}
+
+elosd_built_with_libsystemd() {
+    # Check if elosd is linked against libsystemd. In minimal systems, the ldd command may not be available, so fall
+    # back to simply checking whether this library is mentioned in the binary.
+    if which ldd > /dev/null 2>&1; then
+        ldd "$(which elosd)" | grep -q libsystemd.so
+        return $?
+    else
+        strings "$(which elosd)" | grep -q libsystemd.so
+        return $?
+    fi
+}
+
+smoketest_syslog_systemd() {
+    prepare_env "syslog_systemd"
+
+    TEST_MESSAGE="an arbitrary syslog message"
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
+
+    if ! elosd_built_with_libsystemd; then
+        log "elosd built with systemd support disabled, skipping test."
+        return 0
+    fi
+
+    log "Starting elosd"
+    # Open the syslog socket; when the first client sends data, start elosd.
+    # systemd-socket-activate does not pass through most environment variables, so explicitly instruct it to pass
+    # all elos-related env and the LD_LIBRARY_PATH.
+    # If elosd did not correctly use the socket passed by systemd-socket-activate and re-opened the socket path on its own instead,
+    # the test might wrongly succeed. So explicitly set the ELOS_SYSLOG_PATH to a different (invalid) path to prevent this.
+
+    # word splitting of the env command is intentional, each env entry is intended to be passed as a separate argument, with the leading "-E" also being a separate arg.
+    # shellcheck disable=SC2046
+    systemd-socket-activate -d -l "$ELOS_SYSLOG_PATH" -E ELOS_SYSLOG_USE_SYSTEMD_SOCKET=1 -E LD_LIBRARY_PATH $(env | grep ^ELOS | awk '{ print "-E"; print $1 }') \
+        -E ELOS_SYSLOG_PATH=/invalid/path \
+        elosd > "$LOG_ELOSD" 2>&1 &
+    ELOSD_PID=$!
+    log "Starting syslog socket activation test"
+
+    wait_for_file "$ELOS_SYSLOG_PATH"
+    # let systemd-socket-activate start elosd by writing to the syslog socket
+    logger -u "$ELOS_SYSLOG_PATH" "hello!"
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+
+    syslog_example -m "$TEST_MESSAGE" -P "$ELOSD_PORT" > "$RESULT_DIR/syslog_example.log" 2>&1 &
+    SYSLOG_EXAMPLE_PID=$!
+
+    log "wait for syslog_example to finish ..."
+    wait "$SYSLOG_EXAMPLE_PID"
+    log "done"
+
+    log "Stop elosd ($ELOSD_PID) ..."
+    kill "$ELOSD_PID" > /dev/null
+    wait "$ELOSD_PID" > /dev/null
+    log "done"
+
+    TEST_RESULT=0
+    if ! grep "\[receive message\] " "$RESULT_DIR/syslog_example.log" | grep -q "$TEST_MESSAGE"; then
+        log_err "missing message: '$TEST_MESSAGE'"
+        TEST_RESULT=1
+    fi
+
+    return "$TEST_RESULT"
 }
 
 smoketest_kmsg() {
@@ -833,7 +898,7 @@ smoketest_compile_program_using_libelos() {
 }
 
 smoketest_compile_program_using_libeloscpp() {
-    prepare_env "compile_program_using_libelos-cpp"
+    prepare_env "compile_program_using_libeloscpp"
     TEST_RESULT=0
 
     EXTRA_FLAGS=""
@@ -996,9 +1061,11 @@ call_test() {
     test_name=$1
     test_method=${2-"test_expect_success"}
 
+
     local result=1
     local skipped="false"
 
+    start_time=$(date +%s)
     echo -n "${test_name} ... "
 
     if [ "$ENABLED_TESTS" = "" ]; then
@@ -1019,16 +1086,19 @@ call_test() {
         fi
     fi
 
+    test_status="FAILED"
     if [ "${skipped}" = "true" ]; then
-        echo "SKIPPED"
-	result=0
+        test_status="SKIPPED"
+        result=0
     else
         if [ ${result} -eq 0 ]; then
-            echo "OK"
-        else
-            echo "FAILED"
+            test_status="OK"
         fi
     fi
+
+    echo "${test_status}"
+    end_time=$(date +%s)
+    printf '%s %s %s' "${test_name}" "$((end_time - start_time))" "${test_status}" > "${RESULT_DIR}/smoketest.result" 
 
     return ${result}
 }
@@ -1052,6 +1122,7 @@ call_test "elosd" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "elosd_config_not_found" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "client_uds" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "syslog" || FAILED_TESTS=$((FAILED_TESTS+1))
+call_test "syslog_systemd" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "coredump" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "kmsg" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "publish_poll" || FAILED_TESTS=$((FAILED_TESTS+1))
@@ -1066,5 +1137,7 @@ if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
     call_test "compile_program_with_cpp" || FAILED_TESTS=$((FAILED_TESTS+1))
     call_test "compile_program_using_pkgconfig" || FAILED_TESTS=$((FAILED_TESTS+1))
 fi
+
+create_junit_report "${SMOKETEST_RESULT_DIR}"
 
 exit ${FAILED_TESTS}

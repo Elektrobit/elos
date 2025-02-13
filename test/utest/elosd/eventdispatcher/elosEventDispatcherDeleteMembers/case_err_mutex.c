@@ -56,8 +56,10 @@ void testElosEventDispatcherDeleteMembersErrMutex(void **state) {
 
     result = elosEventDispatcherDeleteMembers(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_FAILED);
+
     pthread_mutex_unlock(&test->eventDispatcher.lock);
     pthread_mutex_destroy(&test->eventDispatcher.lock);
+    pthread_cond_destroy(&test->eventDispatcher.eventBufferRemoveCondition);
 
     PARAM("%s", "pthread_mutex_destroy fails");
 
@@ -72,4 +74,5 @@ void testElosEventDispatcherDeleteMembersErrMutex(void **state) {
     result = elosEventDispatcherDeleteMembers(&test->eventDispatcher);
     assert_int_equal(result, SAFU_RESULT_FAILED);
     pthread_mutex_destroy(&test->eventDispatcher.lock);
+    pthread_cond_destroy(&test->eventDispatcher.eventBufferRemoveCondition);
 }

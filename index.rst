@@ -33,6 +33,7 @@ Welcome to elos's documentation!
    Build Configurations <ci/index>
    Cmake options <cmake/index>
    Debian Packaging Scripts <debian.native/README.md>
+   Init system integration <integration/README.md>
 
 
 Indices and tables

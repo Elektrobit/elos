@@ -148,7 +148,7 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
     config->eventRate = 0;
     config->commandArgs = NULL;
     config->command = UNKNOWN;
-    config->unixSocket = strdup("/run/elosd/elsod.socket");
+    config->unixSocket = strdup("/run/elosd/elosd.socket");
     config->host = strdup("127.0.0.1");
     config->port = 54321;
 

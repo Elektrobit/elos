@@ -10,6 +10,7 @@ add_library(
   STATIC
     private/unixConfig.c
 )
+set_target_properties(unix_config_static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(unix_config_static PROPERTIES PREFIX "")
 target_link_libraries(
   unix_config_static

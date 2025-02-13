@@ -1,0 +1,17 @@
+[Unit]
+Description=Elos System Logging Service
+Requires=syslog.socket local-fs.target
+Before=systemd-journald.service
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=notify
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/elosd
+StandardOutput=null
+Sockets=syslog.socket
+Environment="ELOS_SYSLOG_USE_SYSTEMD_SOCKET=1"
+
+[Install]
+WantedBy=systemd-journald.service
+Alias=syslog.service

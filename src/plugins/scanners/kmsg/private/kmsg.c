@@ -85,10 +85,10 @@ static const char *_getElosRunDir(const samconfConfig_t *pluginConfig) {
 static char *_getDefaultKmsgStateFile(const samconfConfig_t *pluginConfig) {
     const char *runDir = _getElosRunDir(pluginConfig);
 
-    ssize_t length = snprintf(NULL, 0, "%s/kmsg.state", runDir);
+    ssize_t length = snprintf(NULL, 0, "%s/kmsg.state", runDir) + sizeof('\0');
     char *defaultKmsgStateFile = safuAllocMem(NULL, length);
     if (defaultKmsgStateFile != NULL) {
-        sprintf(defaultKmsgStateFile, "%s/kmsg.state", runDir);
+        snprintf(defaultKmsgStateFile, length, "%s/kmsg.state", runDir);
     }
 
     return defaultKmsgStateFile;

@@ -35,6 +35,10 @@ Environment:
 
 -  ``ELOS_SYSLOG_PATH`` –> the path where to create a unix UDP socket to
    listen on, default is ``ELOSD_SYSLOG_PATH``
+-  ``ELOS_SYSLOG_USE_SYSTEMD_SOCKET`` –> if set to ``1``, the scanner will
+   check whether elosd was started using systemd socket activation and,
+   if so, use the passed socket instead of creating one at the configured
+   syslog path. *(Only available if the elos is built using systemd support.)*
 
 Configuration structure
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,6 +54,7 @@ notation. So the syslog scanner expect the following config structure:
    ├── Run
    └── Config
        ├── SyslogPath
+       ├── UseSystemdSocket
        ├── MappingRules
        │   ├── MessageCode
        │   │   ├── 4000

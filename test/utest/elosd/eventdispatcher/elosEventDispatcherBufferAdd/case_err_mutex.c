@@ -19,6 +19,8 @@ int testElosEventDispatcherBufferAddErrMutexSetup(void **state) {
 int testElosEventDispatcherBufferAddErrMutexTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
 
+    test->eventBuffer[0].permitRemoval = true;
+    elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[0]);
     elosEventDispatcherDeleteMembers(&test->eventDispatcher);
 
     return 0;

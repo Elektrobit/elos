@@ -31,7 +31,10 @@ int testElosEventDispatcherDispatchErrFuncSetup(void **state) {
 
 int testElosEventDispatcherDispatchErrFuncTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
+    size_t idx = 0;
 
+    test->eventBuffer[idx].permitRemoval = true;
+    elosEventDispatcherBufferRemove(&test->eventDispatcher, &test->eventBuffer[idx]);
     elosEventDispatcherDeleteMembers(&test->eventDispatcher);
 
     return 0;

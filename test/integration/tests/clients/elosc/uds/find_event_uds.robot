@@ -3,8 +3,8 @@
 
 
 *** Settings ***
-Documentation       A test suite to check if all published events are
-...                 stored and specific events can be retrieved by elos client.
+Documentation       A test suite to check if elosc is able to find events matching
+...                 given filter via unix sockets, when they are published.
 
 Library             String
 Library             SSHLibrary
@@ -18,7 +18,8 @@ Suite Teardown      Close All Connections
 
 
 *** Variables ***
-${FILTERSTRING}     ".event.messageCode 1400 EQ"
+${CONNECTION_URI}    unix:///tmp/elosd/elosd.socket
+${FILTERSTRING}     .event.messageCode 1400 EQ
 @{MESSAGES}         {"messageCode": 1004,"payload":"testEventFiltering"}
 ...                 {"messageCode": 1040,"payload":"testEventFiltering"}
 ...                 {"messageCode": 1400,"payload":"testEventFiltering"}
@@ -27,13 +28,13 @@ ${SEARCH_STRING}    testEventFiltering
 
 
 *** Test Cases ***
-Published Events Are Stored And Retrieved
-    [Documentation]    Any published message can be retrieved using a given
-    ...    filter string
+Client Finds Events Matching Given Filter
+    [Documentation]    Client finds events matching given filter once the
+    ...                events are published.
 
     Given Elosd Is Running
     When An Event Is Published
-    Then Client Retrieves It Successfully
+    Then Client Finds Matching Events
 
 
 *** Keywords ***
@@ -41,17 +42,17 @@ An Event Is Published
     [Documentation]    Publish Created Messages
 
     FOR    ${message}    IN    @{MESSAGES}
-        ${publish_output}=    Execute Command    elosc -p '${message}'
+        ${publish_output}=    Publish '${message}' Via '${CONNECTION_URI}'
         Append To List    ${PUBLISH_LOG}    ${publish_output}
     END
     Log List    ${PUBLISH_LOG}
     Sleep    1s
 
-Client Retrieves It Successfully
-    [Documentation]    Client searches and retrieves event with given filter string
+Client Finds Matching Events
+    [Documentation]    Events matching filter string are found by the client
 
-    ${search_output}    ${rc}=    Execute Command
-    ...    elosc -f ${FILTERSTRING} 2>&1 | grep ${SEARCH_STRING}
-    ...    return_rc=True
-    Log    ${search_output}
-    Should Not Be Empty    ${search_output}
+    ${output}    ${error}    ${rc}=
+    ...          Find Events Matching '${FILTERSTRING}' Via '${CONNECTION_URI}'
+
+    Should Be Equal As Integers    ${rc}    0
+    Should Contain    ${output}    ${SEARCH_STRING}
