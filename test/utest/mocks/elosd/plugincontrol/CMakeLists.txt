@@ -7,7 +7,8 @@ create_mock_lib(
     mock_plugincontrol.c
     mock_plugincontrol_vector.c
   INCLUDES
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include/>
   LIBRARIES
     plugincontrol_static_weak
     cmocka_extensions::cmocka_extensions
@@ -29,4 +30,6 @@ create_mock_lib(
     elosPluginControlPtrVectorGetById
     elosPluginControlPtrVectorRemoveById
     elosPluginControlPtrVectorDeleteMembers
+    elosPluginControlCreatePublisher
+    elosPluginControlDeletePublisher
 )

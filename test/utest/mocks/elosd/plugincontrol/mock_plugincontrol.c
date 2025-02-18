@@ -79,3 +79,24 @@ MOCK_FUNC_BODY(elosPluginControlGetName, safuResultE_t, const elosPluginControl_
     }
     return MOCK_FUNC_REAL(elosPluginControlGetName)(control, name);
 }
+
+MOCK_FUNC_BODY(elosPluginControlCreatePublisher, safuResultE_t, struct elosPluginControl *pluginControl,
+               struct elosPublisher **publisher) {
+    if (MOCK_IS_ACTIVE(elosPluginControlCreatePublisher)) {
+        check_expected_ptr(pluginControl);
+        check_expected_ptr(publisher);
+        *publisher = mock_type(struct elosPublisher *);
+        return mock_type(safuResultE_t);
+    }
+    return MOCK_FUNC_REAL(elosPluginControlCreatePublisher)(pluginControl, publisher);
+}
+
+MOCK_FUNC_BODY(elosPluginControlDeletePublisher, safuResultE_t, struct elosPluginControl *pluginControl,
+               struct elosPublisher *publisher) {
+    if (MOCK_IS_ACTIVE(elosPluginControlDeletePublisher)) {
+        check_expected_ptr(pluginControl);
+        check_expected_ptr(publisher);
+        return mock_type(safuResultE_t);
+    }
+    return MOCK_FUNC_REAL(elosPluginControlDeletePublisher)(pluginControl, publisher);
+}
