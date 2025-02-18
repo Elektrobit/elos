@@ -32,23 +32,11 @@
 #define ELOS_RUNDIR "/run/elosd"
 #endif
 
-#define MAX_LOG_ENTRY_SIZE        4096
-#define SCANNER_NAME              "kmsg"
-#define SCANNER_CMD_STOP          1
-#define SCANNER_KMSG_FILE_CREATED 1
+#define MAX_LOG_ENTRY_SIZE 4096
+#define SCANNER_NAME       "kmsg"
+#define SCANNER_CMD_STOP   1
 
 typedef uint64_t elosScannerCommand_t;
-
-struct elosKmsgContext {
-    uint32_t kmsgEventId;
-    char *kmsgFile;
-    int kmsgPollFd;
-    int cmdPollFd;
-    bool running;
-    int flags;
-    elosKmsgMapper_t mapper;
-    struct elosPublisher *publisher;
-};
 
 static const samconfConfig_t *_getElosRootConfig(const samconfConfig_t *pluginConfig) {
     bool isElosRootConfig = false;

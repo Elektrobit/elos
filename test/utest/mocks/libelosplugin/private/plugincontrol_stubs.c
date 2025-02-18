@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 #include "plugincontrol_stubs.h"
 
