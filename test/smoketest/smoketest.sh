@@ -802,7 +802,13 @@ smoketest_plugins() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    PLUGINS="Dummy ScannerDummy DLT"
+    PLUGINS="Dummy ScannerDummy"
+    if [ -n "$(find "$ELOS_BACKEND_PATH" -name backend_dlt_logger.so)" ]; then
+        PLUGINS="$PLUGINS DLT"
+    else
+        log "DLT plugin not installed, not checking for it."
+    fi
+
     for plugin in ${PLUGINS}; do
         TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
         TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
