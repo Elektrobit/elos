@@ -416,7 +416,7 @@ smoketest_syslog_systemd() {
 
     wait_for_file "$ELOS_SYSLOG_PATH"
     # let systemd-socket-activate start elosd by writing to the syslog socket
-    logger -u "$ELOS_SYSLOG_PATH" "hello!"
+    echo "" | socat "unix-sendto:${ELOS_SYSLOG_PATH}" -
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
