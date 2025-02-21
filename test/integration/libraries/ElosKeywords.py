@@ -49,6 +49,46 @@ class ElosSubscription(object):
 
         self.ssh.switch_connection(connectionToRestore)
 
+    def wait_till_listening(self, timeout=2):
+        """
+        Read the elosc stdout and wait to confirm subscription
+        """
+
+        start_time = time.time()
+        retry_count = 0
+        while True:
+            status = self._is_confirmed()
+            if status:
+                logger.info("subscription is confirmed")
+                break
+            elif time.time() - start_time > timeout:
+                robot.utils.asserts.fail(
+                    f"Fail because of timeout ({timeout}s)")
+            else:
+                retry_count += 1
+                logger.info(
+                    f"{retry_count}. Retry as subscription is not confirmed")
+                time.sleep(0.2)
+
+    def _is_confirmed(self):
+        connectionToRestore = self.ssh.switch_connection(self.connectionAlias)
+        stdout, stderr, rc = self.ssh.execute_command(
+            f"cat {self.subscription_out}",
+            return_stdout=True,
+            return_stderr=True,
+            return_rc=True)
+        self.ssh.switch_connection(connectionToRestore)
+
+        status = False
+        if rc != 0 or stderr:
+            logger.error(f"Failed to determine subscription status ({rc}):\n"
+                         f"{stderr}")
+        else:
+            logger.info(f"Contents of stdout: {stdout}")
+            status = 'successfully subscribed to event queue' in stdout
+
+        return status
+
     def get_errors(self):
         """
         Read and parse the elosc errorsi buufer and return all errors occured
@@ -584,6 +624,17 @@ class ElosKeywords(object):
         default connection string
         """
         return self.subscribe_to_event_via(filter, "tcp://127.0.0.1:54321")
+
+    @keyword("Subscribe To '${filter}' Succeed")
+    def subscribe_to_event_succeed(self, filter):
+        """
+        Create a subscription for a given event filter using
+        default connection string and wait for confirmation.
+        """
+        subscription = self.subscribe_to_event_via(
+            filter, "tcp://127.0.0.1:54321")
+        subscription.wait_till_listening()
+        return subscription
 
     @keyword("Subscribe To '${filter}' Via '${uri}'")
     def subscribe_to_event_via(self, filter, uri):
