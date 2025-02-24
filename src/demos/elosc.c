@@ -32,7 +32,9 @@ typedef enum {
 typedef struct {
     char *host;
     int port;
+    bool tcpRequested;
     char *unixSocket;
+    bool unixSocketRequested;
     elosCommand_t command;
     char *commandArgs;
     size_t eventCount;
@@ -94,16 +96,26 @@ int main(int argc, char *argv[]) {
     } else {
         elosSession_t *session = NULL;
         const char *version = NULL;
+        // try each of the connection options if it was either explicitly requested
+        // or implicitly because none of the two options was passed
+        bool tryUnix = config.unixSocketRequested || !config.tcpRequested;
+        bool tryTcp = config.tcpRequested || !config.unixSocketRequested;
 
         printf("Connecting to elosd...\n");
-        resVal = elosConnectUnix(config.unixSocket, &session);
-        if (resVal != SAFU_RESULT_OK) {
-            printf("Cannot connect via unix socket, try with other available interface\n");
-            resVal = elosConnectTcpip(config.host, config.port, &session);
-            if (resVal != SAFU_RESULT_OK) {
-                fprintf(stderr, "ERROR: Connection to elosd failed!\n");
-                result = EXIT_FAILURE;
+
+        resVal = SAFU_RESULT_FAILED;
+        if (tryUnix) {
+            resVal = elosConnectUnix(config.unixSocket, &session);
+        }
+        if (resVal != SAFU_RESULT_OK && tryTcp) {
+            if (tryUnix) {
+                printf("Cannot connect via unix socket, try with other available interface\n");
             }
+            resVal = elosConnectTcpip(config.host, config.port, &session);
+        }
+        if (resVal != SAFU_RESULT_OK) {
+            fprintf(stderr, "ERROR: Connection to elosd failed!\n");
+            result = EXIT_FAILURE;
         }
 
         if (resVal == SAFU_RESULT_OK) {
@@ -149,8 +161,10 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
     config->commandArgs = NULL;
     config->command = UNKNOWN;
     config->unixSocket = strdup("/run/elosd/elosd.socket");
+    config->unixSocketRequested = false;
     config->host = strdup("127.0.0.1");
     config->port = 54321;
+    config->tcpRequested = false;
 
     while (result == SAFU_RESULT_OK) {
         c = getopt(argc, argv, "s:u:p:f:c:r:H:P:U:vh");
@@ -192,13 +206,16 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
             case 'H':
                 free(config->host);
                 config->host = strdup(optarg);
+                config->tcpRequested = true;
                 break;
             case 'P':
                 config->port = strtol(optarg, NULL, 10);
+                config->tcpRequested = true;
                 break;
             case 'U':
                 free(config->unixSocket);
                 config->unixSocket = strdup(optarg);
+                config->unixSocketRequested = true;
                 break;
             case 'v':
                 config->command = GET_VERSION;

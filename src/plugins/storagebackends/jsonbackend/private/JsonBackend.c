@@ -152,7 +152,7 @@ static inline safuResultE_t _jsonBackendOpen(elosStorageBackend_t *backend) {
         jsonBackend->storageFileWrite = fd;
         safuLogDebugF("stored backend file under fd %d (writeable)", fd);
 
-        fd = open(jsonBackend->filePath, O_RDONLY | O_CLOEXEC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        fd = open(jsonBackend->filePath, O_RDONLY | O_CLOEXEC);
         if (fd < 0) {
             safuLogErrF("Failed to open log file %s for read: %s", jsonBackend->filePath, strerror(errno));
         } else {
