@@ -20,8 +20,7 @@ target_link_libraries(
     eventbuffer_static
     elos_common_interface
   PUBLIC
-    tcp_clientauthorization_interface
-    clientauthorizedprocesses_static
+    libelosplugin_interface
     libelosplugin
     elos_common_interface
     eventbuffer_interface

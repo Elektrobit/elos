@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <elos/common/process.h>
+#include <elos/libelosplugin/clientauthorizedprocesses.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <libmnl/libmnl.h>
@@ -29,8 +30,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-
-#include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 
 #define LIBMNL_OK    0
 #define LIBMNL_ERROR 1

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <elos/libelosplugin/clientauthorization_types.h>
 #include <netinet/in.h>
-
-#include "tcp_clientauthorization/clientauthorization_types.h"
+#include <stdbool.h>
 
 __BEGIN_DECLS
 

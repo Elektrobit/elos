@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 #include "unix_clientauthorization/clientauthorization.h"
 
+#include <elos/libelosplugin/clientauthorizedprocesses.h>
 #include <limits.h>
 #include <safu/log.h>
 #include <stdio.h>
@@ -11,8 +12,6 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
-
-#include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 
 safuResultE_t elosUnixClientAuthorizationInitialize(elosClientAuthorization_t *const clientAuth) {
     safuResultE_t result = SAFU_RESULT_OK;

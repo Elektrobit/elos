@@ -1,11 +1,67 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/connectionmanager.h>
 #include <elos/libelosplugin/libelosplugin.h>
 #include <safu/common.h>
 #include <safu/log.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
-#include "connectionmanager/connectionmanager.h"
+#include "unix_clientauthorization/clientauthorization.h"
+#include "unix_config/config.h"
+
+safuResultE_t _initializeListener(elosConnectionManager_t *connectionManager, elosPlugin_t const *plugin) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    struct sockaddr *addr = (struct sockaddr *)&connectionManager->addr;
+    struct sockaddr_un *unixAddr = (struct sockaddr_un *)addr;
+    socklen_t addrLen = sizeof(struct sockaddr_un);
+    int retVal = 0;
+
+    result = elosUnixConfigGetSocketAddress(plugin, addr);
+
+    if (result == SAFU_RESULT_OK) {
+        connectionManager->fd = socket(AF_UNIX, SOCK_STREAM, 0);
+        if (connectionManager->fd == -1) {
+            safuLogErrErrnoValue("Socket creation failed", errno);
+            result = SAFU_RESULT_FAILED;
+        } else {
+            int reuse = 1;
+            retVal = setsockopt(connectionManager->fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+            if (retVal != 0) {
+                safuLogErrErrnoValue("setsockopt SO_REUSEADDR failed", errno);
+                result = SAFU_RESULT_FAILED;
+            } else {
+                retVal = bind(connectionManager->fd, addr, addrLen);
+                if (retVal != 0) {
+                    safuLogErrErrnoValue("Bind failed", errno);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+        }
+    }
+
+    retVal = chmod(unixAddr->sun_path, S_IRWXU | S_IRWXG | S_IRWXO);
+    if (retVal != 0) {
+        safuLogErrErrnoValue("chmod failed", errno);
+        result = SAFU_RESULT_FAILED;
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        safuLogDebugF("listen on UNIX socket: %s", unixAddr->sun_path);
+    } else {
+        safuLogErrF("Failed to listening on UNIX socket: %s", unixAddr->sun_path);
+    }
+
+    return result;
+}
+
+static void _initConnectionManagerHelperApi(elosConnectionManager_t *connectionManager) {
+    connectionManager->initializeListener = _initializeListener;
+    connectionManager->getConnectionLimit = elosUnixConfigGetConnectionLimit;
+    connectionManager->authorizationInitialize = elosUnixClientAuthorizationInitialize;
+    connectionManager->authorizationIsValid = elosUnixClientAuthorizationIsTrustedConnection;
+    connectionManager->authorizationDelete = elosUnixClientAuthorizationDelete;
+}
 
 static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -17,13 +73,15 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
             safuLogErr("Given configuration is NULL or has .key set to NULL");
         } else {
             elosConnectionManager_t *connectionManager = safuAllocMem(NULL, sizeof(elosConnectionManager_t));
+            memset(connectionManager, 0 , sizeof(elosConnectionManager_t));
             if (connectionManager == NULL) {
                 safuLogErr("Failed to allocate memory");
             } else {
                 safuLogDebug("Start client manager");
-                result = elosConnectionManagerInitialize(connectionManager, plugin, AF_UNIX);
+                _initConnectionManagerHelperApi(connectionManager);
+                result = elosConnectionManagerInitialize(connectionManager, plugin);
                 if (result != SAFU_RESULT_OK) {
-                    safuLogErr("elosConnectionManagerInitialize");
+                    safuLogErr("elosConnectionManagerInitialize failed");
                 } else {
                     plugin->data = connectionManager;
                     safuLogDebugF("Plugin '%s' has been loaded", plugin->config->key);

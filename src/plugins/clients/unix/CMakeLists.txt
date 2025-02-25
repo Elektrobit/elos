@@ -21,9 +21,10 @@ set_target_properties(client_unix PROPERTIES PREFIX "")
 target_link_libraries(
   client_unix
   PUBLIC
-    connectionmanager_static
-    messagehandler_static
+    unix_clientauthorization_static
+    unix_config_static
     libelosplugin
+    libelosplugin_interface
     samconf::samconf
 )
 target_include_directories(
