@@ -20,7 +20,7 @@ void elosTestElosClientAuthorizationInitializeSuccess(UNUSED void **state) {
     SHOULD("%s", "successfully initialize a netlink inet_diag connection");
 
     struct mnl_socket *expectedNlSocket = (struct mnl_socket *)0xDEADBEEF;
-    elosClientAuthorization_t clientAuth = {.mlSocket = NULL};
+    elosClientAuthorization_t clientAuth = {.socketData = NULL};
 
     MOCK_FUNC_AFTER_CALL(mnl_socket_open, 0);
     expect_value(__wrap_mnl_socket_open, bus, NETLINK_INET_DIAG);
@@ -34,5 +34,5 @@ void elosTestElosClientAuthorizationInitializeSuccess(UNUSED void **state) {
 
     result = elosTcpClientAuthorizationInitialize(&clientAuth);
     assert_int_equal(result, SAFU_RESULT_OK);
-    assert_ptr_equal(clientAuth.mlSocket, expectedNlSocket);
+    assert_ptr_equal(clientAuth.socketData, expectedNlSocket);
 }

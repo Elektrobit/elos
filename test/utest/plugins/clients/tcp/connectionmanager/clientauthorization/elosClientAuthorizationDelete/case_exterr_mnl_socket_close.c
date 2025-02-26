@@ -21,13 +21,13 @@ void elosTestElosClientAuthorizationDeleteExterrMnlSocketClose(UNUSED void **sta
     SHOULD("%s", "return SAFU_RESULT_FAILED and let clientAuth.mlSock unchanged if mnl_socket_close failed");
 
     struct mnl_socket *expectedNlSocket = (struct mnl_socket *)0xDEADBEEF;
-    elosClientAuthorization_t clientAuth = {.mlSocket = expectedNlSocket};
+    elosClientAuthorization_t clientAuth = {.socketData = (void *)expectedNlSocket};
 
     MOCK_FUNC_AFTER_CALL(mnl_socket_close, 0);
-    expect_value(__wrap_mnl_socket_close, nl, clientAuth.mlSocket);
+    expect_value(__wrap_mnl_socket_close, nl, expectedNlSocket);
     will_return(__wrap_mnl_socket_close, LIBMNL_ERROR);
 
     result = elosTcpClientAuthorizationDelete(&clientAuth);
     assert_int_equal(result, SAFU_RESULT_FAILED);
-    assert_ptr_equal(clientAuth.mlSocket, expectedNlSocket);
+    assert_ptr_equal(clientAuth.socketData, expectedNlSocket);
 }

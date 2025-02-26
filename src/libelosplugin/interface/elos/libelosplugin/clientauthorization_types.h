@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <libmnl/libmnl.h>
 #include <safu/common.h>
 #include <safu/vector.h>
 
@@ -23,7 +22,7 @@
 #define SOCKET_LINK_NAME_SIZE   (PRG_SOCKET_PFXl + DECIMAL_DIGITS_BOUND(ino_t) + 1)
 
 typedef struct elosClientAuthorization {
-    struct mnl_socket *mlSocket;
+    void *socketData;
     safuVec_t authorizedProcessFilters;
     int clientFd;
 } elosClientAuthorization_t;

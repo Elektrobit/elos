@@ -24,7 +24,7 @@ void elosTestElosClientAuthorizationIsTrustedConnectionSuccess(UNUSED void **sta
         "refactoring to get useful tests. See for details #18047");
 
     struct mnl_socket *expectedNlSocket = (struct mnl_socket *)0xDEADBEEF;
-    elosClientAuthorization_t clientAuth = {.mlSocket = expectedNlSocket};
+    elosClientAuthorization_t clientAuth = {.socketData = (void *)expectedNlSocket};
     struct sockaddr addr = {0};
 
     MOCK_FUNC_AFTER_CALL(mnl_socket_sendto, 0);
