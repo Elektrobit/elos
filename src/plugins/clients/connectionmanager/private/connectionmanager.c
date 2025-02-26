@@ -8,6 +8,7 @@
 #include <samconf/samconf.h>
 #include <stdlib.h>
 #include <sys/eventfd.h>
+#include <sys/stat.h>
 
 #include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 #include "connectionmanager/clientblacklist.h"
@@ -40,6 +41,7 @@ static safuResultE_t _initializeListener(elosConnectionManager_t *connectionMana
     socklen_t addrLen = 0;
     int retVal = 0;
     sa_family_t saFamily = connectionManager->saFamily;
+    struct sockaddr_un *unixAddr = NULL;
     char const *interface = elosTcpConfigGetInterface(plugin);
     int const port = elosTcpConfigGetPort(plugin);
 
@@ -50,6 +52,7 @@ static safuResultE_t _initializeListener(elosConnectionManager_t *connectionMana
             break;
         case AF_UNIX:
             result = elosUnixConfigGetSocketAddress(plugin, addr);
+            unixAddr = (struct sockaddr_un *)addr;
             addrLen = sizeof(struct sockaddr_un);
             break;
         default:
@@ -78,6 +81,14 @@ static safuResultE_t _initializeListener(elosConnectionManager_t *connectionMana
         }
     }
 
+    if (saFamily == AF_UNIX) {
+        retVal = chmod(unixAddr->sun_path, S_IRWXU | S_IRWXG | S_IRWXO);
+        if (retVal != 0) {
+            safuLogErrErrnoValue("chmod failed", errno);
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+
     switch (saFamily) {
         case AF_INET:
             if (result == SAFU_RESULT_OK) {
@@ -88,10 +99,8 @@ static safuResultE_t _initializeListener(elosConnectionManager_t *connectionMana
             break;
         case AF_UNIX:
             if (result == SAFU_RESULT_OK) {
-                struct sockaddr_un *unixAddr = (struct sockaddr_un *)addr;
                 safuLogDebugF("listen on UNIX socket: %s", unixAddr->sun_path);
             } else {
-                struct sockaddr_un *unixAddr = (struct sockaddr_un *)addr;
                 safuLogErrF("Failed to listening on UNIX socket: %s", unixAddr->sun_path);
             }
 

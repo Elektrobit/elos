@@ -217,7 +217,7 @@ class ElosKeywords(object):
         stdout, stderr, rc = self._exec_on_target("date +%s")
         robot.utils.asserts.assert_true(rc == 0)
         return stdout
-        
+
     def _set_publish_time(self, event):
         eventd = json.loads(event)
         if eventd.get("date") is None or eventd["date"][0] == 0:
@@ -678,3 +678,15 @@ class ElosKeywords(object):
                 retry_count += 1
                 logger.info(f"{retry_count}. Retry as no events found")
                 time.sleep(0.2)
+
+    @keyword("Read '${socket}' Permissions")
+    def read_socket_permissions(self, socket):
+        """
+        read permissions of the given socket
+        """
+        stdout, stderr, rc = self._exec_on_target(f"stat -c \'%a\' '{socket}'")
+
+        if rc != 0:
+            robot.utils.asserts.fail(f"Getting Socket Permissions Failed ({rc}): {stderr}")
+
+        return stdout

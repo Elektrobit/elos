@@ -143,7 +143,7 @@ def collect_sources_diff(base_dir, target_branch):
     output = sp.run(command, stdout=sp.PIPE, check=True)
     git_dir = output.stdout.decode("utf-8").strip()
     os.chdir(git_dir)
-    command = ["git", "diff", "--name-status", target_branch]
+    command = ["git", "diff", "--name-status", f"refs/heads/{target_branch}"]
     output = sp.run(command, stdout=sp.PIPE, check=True)
     if len(output.stdout) == 0:
         return source_set

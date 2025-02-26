@@ -5,19 +5,19 @@ is_listening_on() {
     PORT_AS_HEX="$(printf '%X' "${2}")"
     if [ ! -d "/proc/${PID}/fd" ] || [ ! -e "/proc/${PID}/net/tcp" ]; then
         echo "/proc/${PID} missing entries"
-        return 0;
+        return 1;
     fi
 
     INODES="$(grep ":${PORT_AS_HEX} " "/proc/${PID}/net/tcp" | tr -s ' ' | cut -d ' ' -f 11 | tr '\n' ' ')"
     for INODE in $INODES; do
         if [ "${INODE}" -ne 0 ]; then
-            if find  "/proc/${PID}/fd/" -exec readlink {} \; | grep "socket:\[${INODE}\]" ; then
-                return 1;
-            fi 
+            if readlink -f /proc/${PID}/fd/* | grep -q "socket:\[${INODE}\]" ; then
+                return 0;
+            fi
         fi
     done
 
-    return 0;
+    return 1;
 }
 
 get_parent_pid() {

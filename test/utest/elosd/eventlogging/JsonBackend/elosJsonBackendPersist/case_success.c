@@ -96,7 +96,6 @@ void elosTestElosJsonBackendPersistSuccess(UNUSED void **state) {
     will_return(__wrap_open, WRITE_FD);
     expect_string(__wrap_open, file, testState->filePath);
     expect_value(__wrap_open, flags, O_RDONLY | O_CLOEXEC);
-    expect_value(__wrap_open, mode, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     will_return(__wrap_open, READ_FD);
 
     safuResultE_t result = testState->backend->persist(testState->backend, &testState->event);

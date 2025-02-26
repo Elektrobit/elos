@@ -416,7 +416,7 @@ smoketest_syslog_systemd() {
 
     wait_for_file "$ELOS_SYSLOG_PATH"
     # let systemd-socket-activate start elosd by writing to the syslog socket
-    logger -u "$ELOS_SYSLOG_PATH" "hello!"
+    echo "" | socat "unix-sendto:${ELOS_SYSLOG_PATH}" -
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
@@ -802,7 +802,13 @@ smoketest_plugins() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    PLUGINS="Dummy ScannerDummy DLT"
+    PLUGINS="Dummy ScannerDummy"
+    if [ -n "$(find "$ELOS_BACKEND_PATH" -name backend_dlt_logger.so)" ]; then
+        PLUGINS="$PLUGINS DLT"
+    else
+        log "DLT plugin not installed, not checking for it."
+    fi
+
     for plugin in ${PLUGINS}; do
         TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
         TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
