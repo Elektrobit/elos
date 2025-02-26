@@ -16,7 +16,7 @@ create_unit_test(
     elosBlacklistInitialize_utest.c
   LIBRARIES
     cmocka_mocks::mock_libc
-    connectionmanager_static_weak
+    libelosplugin_interface
     mock_connectionmanager_static
     mock_eventfilter_static
     safu::mock_safu

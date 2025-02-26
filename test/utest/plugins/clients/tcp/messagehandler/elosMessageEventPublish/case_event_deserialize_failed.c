@@ -3,8 +3,8 @@
 #include <safu/common.h>
 #include <safu/mock_log.h>
 
+#include "elos/libelosplugin/message_handler.h"
 #include "elosMessageEventPublish_utest.h"
-#include "messagehandler/message_handler.h"
 #include "mock_event.h"
 #include "mock_message_handler.h"
 

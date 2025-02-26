@@ -11,7 +11,7 @@ create_unit_test(
     case_err_bytes_lt_msgLen.c
     elosMessageHandlerSend_utest.c
   LIBRARIES
-    messagehandler_static
+    libelosplugin_static
     elos_event_static_weak
     safu::mock_safu
 )

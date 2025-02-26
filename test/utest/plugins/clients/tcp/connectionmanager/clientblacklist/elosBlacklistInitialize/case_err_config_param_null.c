@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include <connectionmanager/clientblacklist.h>
+#include <elos/libelosplugin/clientblacklist.h>
 #include <safu/result.h>
 
 #include "elosBlacklistInitialize_utest.h"

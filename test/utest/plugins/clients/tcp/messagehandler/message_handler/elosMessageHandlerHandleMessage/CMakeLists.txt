@@ -17,8 +17,8 @@ create_unit_test(
     case_success.c
     elosMessageHandlerHandleMessage_utest.c
   LIBRARIES
-    messagehandler_static_weak
     logger_static_weak
+    eventfilter_interface
     mock_message_handler_static
     cmocka_mocks::mock_libc
     safu::mock_safu

@@ -12,10 +12,10 @@
 #include <cmocka_extensions/mock_func_weak.h>
 #endif
 
-#include "connectionmanager/clientblacklist.h"
-#include "connectionmanager/connectionmanager.h"
+#include <elos/libelosplugin/clientblacklist.h>
 
-MOCK_FUNC_PROTOTYPE(elosConnectionManagerGetStatus, safuResultE_t, elosConnectionManager_t *context, uint32_t *status)
+#include "elos/libelosplugin/connectionmanager.h"
+
 MOCK_FUNC_PROTOTYPE(elosConnectionManagerThreadGetFreeConnectionSlot, safuResultE_t, elosConnectionManager_t *ctx,
                     int *slot)
 MOCK_FUNC_PROTOTYPE(elosConnectionManagerThreadWaitForIncomingConnection, safuResultE_t, elosConnectionManager_t *ctx,

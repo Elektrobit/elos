@@ -16,11 +16,11 @@ create_unit_test(
     case_publish_failed.c
     elosMessageEventPublish_utest.c
   LIBRARIES
-    connectionmanager_static
     cmocka_mocks::mock_libc
     cmocka_mocks::mock_jsonc
     elos_event_static_weak
     json-c
+    libelosplugin_interface
     mock_elos_event_static
     eventbuffer_static_weak
     mock_eventbuffer_static

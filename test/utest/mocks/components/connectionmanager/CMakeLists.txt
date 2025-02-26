@@ -9,15 +9,16 @@ create_mock_lib(
     mock_clientauthorizedprocesses.c
   INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}
+    $<TARGET_PROPERTY:libelosplugin_static,INCLUDE_DIRECTORIES>
   LIBRARIES
-    connectionmanager_static_weak
+    client_tcp
+    libelosplugin_static_weak
     cmocka_extensions::cmocka_extensions
 )
 target_compile_definitions(mock_connectionmanager PUBLIC MOCK_ELOS_CONNECTION_MANAGER_FUNC_LINKER_WRAPPING)
 target_link_options(
   mock_connectionmanager
   PUBLIC
-    -Wl,--wrap=elosConnectionManagerGetStatus
     -Wl,--wrap=elosConnectionManagerThreadGetFreeConnectionSlot
     -Wl,--wrap=elosConnectionManagerThreadWaitForIncomingConnection
     -Wl,--wrap=elosTcpClientAuthorizationInitialize

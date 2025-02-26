@@ -13,7 +13,7 @@ create_unit_test(
     case_exterr_config_get.c
     elosAuthorizedProcessInitialize_utest.c
   LIBRARIES
-    connectionmanager_static_weak
+    libelosplugin_static_weak
     safu::mock_safu
     samconf::mock_samconf
     samconf::samconf_test_utils

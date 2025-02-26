@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #include "elos/common/message.h"
-#include "messagehandler/message_handler.h"
+#include "elos/libelosplugin/message_handler.h"
 #include "mock_message_handler.h"
 
 typedef struct {
