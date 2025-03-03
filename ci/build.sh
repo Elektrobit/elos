@@ -10,13 +10,11 @@ PARAM=""
 OPTION_CI=0
 OPTION_CLEAN=0
 OPTION_VERBOSE=0
-OPTION_PACKAGE=0
 while [ $# -gt 0 ]; do
     case ${1} in
         --ci)          OPTION_CI=1 ;;
         --clean|-c)    OPTION_CLEAN=1 ;;
         --verbose|-v)  OPTION_VERBOSE=1 ;;
-        --package)     OPTION_PACKAGE=1 ;;
         -D)            CMAKE_PARAM="${CMAKE_PARAM} -D ${2}"
                        shift ;;
         -D*)           CMAKE_PARAM="${CMAKE_PARAM} ${1}" ;;
@@ -44,12 +42,6 @@ BUILD_TYPE="${1:-Debug}"
 
 # enable plugins to build
 CMAKE_PARAM="${CMAKE_PARAM} -DELOSD_EVENTLOGGING_BACKEND_INFLUXDB=ON -DELOSD_EVENTLOGGING_BACKEND_NOSQL=ON"
-
-if [ $OPTION_PACKAGE -eq 1 ]; then
-    CMAKE_PARAM="${CMAKE_PARAM} -D PACKAGING=true"
-    BUILD_TYPE=Release
-    OPTION_CLEAN=1
-fi
 
 . "$BASE_DIR/ci/common_names.sh"
 
