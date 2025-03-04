@@ -9,6 +9,7 @@ add_library(
     client_unix
   SHARED
     private/unix.c
+    private/unix_connectionmanager.c
 )
 create_interface_library(
   FROM
