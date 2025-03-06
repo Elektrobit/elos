@@ -44,12 +44,11 @@ safuResultE_t _workerDataDeleteMembers(elosClientConnection_t *clientConnection)
         safuLogErr("cleanup subscriptions failed");
     }
 
-    if (clientConnection->fd != -1) {
-        int retVal = close(clientConnection->fd);
-        if (retVal != 0) {
-            safuLogWarnErrnoValue("Closing socketFd failed", retVal);
-            result = SAFU_RESULT_FAILED;
-        }
+    if (clientConnection->closeConnection != NULL) {
+        result = clientConnection->closeConnection(clientConnection);
+    }
+    if (result != SAFU_RESULT_OK) {
+        safuLogErr("Closing connection failed");
     }
 
     result = elosPluginDeletePublisher(clientConnection->sharedData->plugin, clientConnection->data.publisher);

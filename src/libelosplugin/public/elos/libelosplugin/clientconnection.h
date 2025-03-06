@@ -25,12 +25,11 @@ safuResultE_t elosClientConnectionInitialize(elosClientConnection_t *clientConne
  *
  * Parameters:
  *      clientConnection: The ClientConnection to be started
- *      socketFd: The socketFd that shall be used for communication
  * Returns:
  *      - SAFU_RESULT_FAILED on error
  *      - SAFU_RESULT_OK on success
  ******************************************************************/
-safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection, int socketFd);
+safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection);
 
 /*******************************************************************
  * Stops the currently active worker thread.

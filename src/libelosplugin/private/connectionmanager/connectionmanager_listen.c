@@ -53,7 +53,7 @@ safuResultE_t elosConnectionManagerThreadGetFreeConnectionSlot(elosConnectionMan
             }
         } else {
             for (int i = 0; i < connectionManager->connectionLimit; i += 1) {
-                elosClientConnection_t *connection = &connectionManager->connection[i];
+                elosClientConnection_t *connection = &connectionManager->connections[i];
                 bool active = false;
 
                 result = elosClientConnectionIsActive(connection, &active);
@@ -71,11 +71,11 @@ safuResultE_t elosConnectionManagerThreadGetFreeConnectionSlot(elosConnectionMan
     return result;
 }
 
-safuResultE_t elosConnectionManagerThreadWaitForIncomingConnection(elosConnectionManager_t *connectionManager, int slot,
-                                                                   int *socketFd) {
-    elosClientConnection_t *conn = &connectionManager->connection[slot];
+safuResultE_t elosConnectionManagerThreadWaitForIncomingConnection(elosConnectionManager_t *connectionManager,
+                                                                   int slot) {
     struct timespec timeOut = {.tv_sec = CONNECTION_PSELECT_TIMEOUT_SEC, .tv_nsec = CONNECTION_PSELECT_TIMEOUT_NSEC};
     safuResultE_t result = SAFU_RESULT_FAILED;
+    elosClientConnection_t *connection = &connectionManager->connections[slot];
 
     for (;;) {
         int retval;
@@ -105,36 +105,21 @@ safuResultE_t elosConnectionManagerThreadWaitForIncomingConnection(elosConnectio
         } else {
             continue;
         }
-        socklen_t addrLen = sizeof(conn->addr);
-        *socketFd = accept(connectionManager->fd, (struct sockaddr *)&conn->addr, &addrLen);
-        if (*socketFd == -1) {
-            if (errno == EINTR) {
-                continue;
+
+        result = connectionManager->accept(connectionManager, connection);
+
+        if (result == SAFU_RESULT_OK) {
+            safuLogDebug("Accepted new connection");
+
+            result = connectionManager->authorize(connectionManager, connection);
+            if (connection->isTrusted) {
+                safuLogDebug("connection is trusted");
             } else {
-                safuLogErrErrno("accept failed!");
-                result = SAFU_RESULT_FAILED;
-                break;
+                safuLogDebug("connection is not trusted");
             }
-        } else {
-            result = SAFU_RESULT_OK;
-        }
 
-        safuLogDebug("Accepted new connection");
-        connectionManager->clientAuth.clientFd = *socketFd;
-
-        if (connectionManager->authorizationIsValid) {
-            conn->isTrusted =
-                connectionManager->authorizationIsValid(&connectionManager->clientAuth, (struct sockaddr *)&conn->addr);
-        } else {
-            conn->isTrusted = false;
+            break;
         }
-
-        if (conn->isTrusted) {
-            safuLogDebug("connection is trusted");
-        } else {
-            safuLogDebug("connection is not trusted");
-        }
-        break;
     }
 
     return result;
@@ -149,19 +134,13 @@ void *elosConnectionManagerThreadListen(void *ptr) {
     if (retVal < 0) {
         safuLogErrErrnoValue("eventfd_write failed", retVal);
     } else {
-        retVal = listen(connectionManager->fd, ELOS_CONNECTIONMANAGER_LISTEN_QUEUE_LENGTH);
-        if (retVal != 0) {
-            safuLogErrErrnoValue("listen failed", retVal);
-        } else {
-            atomic_fetch_or(&connectionManager->flags, ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE);
-            active = true;
-        }
+        atomic_fetch_or(&connectionManager->flags, ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE);
+        active = true;
     }
 
     while (active == true) {
         elosClientConnection_t *connection = NULL;
         safuResultE_t result = SAFU_RESULT_FAILED;
-        int socketFd = -1;
         int slot = -1;
 
         // wait until we have a free connection slot available
@@ -171,13 +150,13 @@ void *elosConnectionManagerThreadListen(void *ptr) {
         } else if (slot < 0) {
             continue;
         } else {
-            connection = &connectionManager->connection[slot];
+            connection = &connectionManager->connections[slot];
 
-            result = elosConnectionManagerThreadWaitForIncomingConnection(connectionManager, slot, &socketFd);
+            result = elosConnectionManagerThreadWaitForIncomingConnection(connectionManager, slot);
             if (result != SAFU_RESULT_OK) {
                 SAFU_SEM_UNLOCK(&connectionManager->sharedData.connectionSemaphore, break);
             } else {
-                result = elosClientConnectionStart(connection, socketFd);
+                result = elosClientConnectionStart(connection);
                 if (result != SAFU_RESULT_OK) {
                     safuLogErr("Starting client connection failed");
                     continue;
@@ -188,14 +167,6 @@ void *elosConnectionManagerThreadListen(void *ptr) {
         if (!(atomic_load(&connectionManager->flags) & ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE)) {
             active = false;
         }
-    }
-
-    if (connectionManager->fd != -1) {
-        retVal = close(connectionManager->fd);
-        if (retVal != 0) {
-            safuLogWarnErrnoValue("Closing listenFd failed (possible memory leak)", retVal);
-        }
-        connectionManager->fd = -1;
     }
 
     atomic_fetch_and(&connectionManager->flags, ~ELOS_CONNECTIONMANAGER_LISTEN_ACTIVE);

@@ -21,8 +21,14 @@
 #define DECIMAL_DIGITS_BOUND(t) (241 * sizeof(t) / 100 + 2)
 #define SOCKET_LINK_NAME_SIZE   (PRG_SOCKET_PFXl + DECIMAL_DIGITS_BOUND(ino_t) + 1)
 
+/*******************************************************************
+ * Data structure of a ClientAuthorization
+
+ * Members:
+ *   socketData: Pointer to data structure that holds plugin specific data
+ *   authorizedProcessFilters: vector of RpnFilter
+ ******************************************************************/
 typedef struct elosClientAuthorization {
     void *socketData;
     safuVec_t authorizedProcessFilters;
-    int clientFd;
 } elosClientAuthorization_t;

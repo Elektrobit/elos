@@ -10,6 +10,7 @@ add_library(
   SHARED
     private/unix.c
     private/unix_connectionmanager.c
+    private/unix_clientconnection.c
 )
 create_interface_library(
   FROM

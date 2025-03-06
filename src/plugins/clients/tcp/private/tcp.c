@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+#include <stdlib.h>
+
 #include "tcp_connectionmanager_private.h"
 
 static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
@@ -84,10 +86,9 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
         safuLogErr("Null parameter given");
     } else {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);
-        if (elosConnectionManagerDeleteMembers(connectionManager) != SAFU_RESULT_OK) {
+        if (elosTcpConnectionManagerDelete(connectionManager, plugin) != SAFU_RESULT_OK) {
             safuLogErr("Deleting connection manager failed!");
         }
-        free(plugin->data);
         result = SAFU_RESULT_OK;
     }
 

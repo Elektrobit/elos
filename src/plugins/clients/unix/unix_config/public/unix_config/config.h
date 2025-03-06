@@ -3,6 +3,7 @@
 #pragma once
 
 #include <samconf/samconf.h>
+#include <sys/un.h>
 
 #include "elos/libelosplugin/types.h"
 
@@ -23,14 +24,12 @@ const char *elosUnixConfigGetPath(elosPlugin_t const *plugin);
  *
  * Parameters:
  *      plugin : plugin instance
- *      addr   : pointer to a structure capable of holding either:
- *                 - struct sockaddr_in
- *                 - struct sockaddr_un
+ *      addr   : pointer to a sockaddr_un struct
  * Returns:
  *      - SAFU_RESULT_FAILED on error
  *      - SAFU_RESULT_OK on success
  **************************************************************************/
-safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr *addr);
+safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr_un *addr);
 
 /********************************************************************
  * Get the connection limit for this plugin instance.

@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <netinet/in.h>
 #include <pthread.h>
 #include <safu/flags.h>
 #include <samconf/samconf_types.h>
-#include <sys/un.h>
 
 #include "clientauthorization_types.h"
 #include "clientconnection_types.h"
@@ -27,13 +25,20 @@
 
 typedef struct elosConnectionManager elosConnectionManager_t;
 
-typedef safuResultE_t (*elosInitializeListener_t)(elosConnectionManager_t *connectionManager,
-                                                  elosPlugin_t const *plugin);
-typedef int (*elosGetConnectionLimit_t)(elosPlugin_t const *plugin);
+typedef safuResultE_t (*elosConnectionManagerInitializeListener_t)(elosConnectionManager_t *connectionManager,
+                                                                   elosPlugin_t const *plugin);
+typedef safuResultE_t (*elosConnectionManagerListenerAcceptConnection_t)(elosConnectionManager_t *connectionManager,
+                                                                         elosClientConnection_t *connection);
+typedef safuResultE_t (*elosConnectionManagerCloseListener_t)(elosConnectionManager_t *connectionManager);
+typedef safuResultE_t (*elosConnectionManagerDeleteListener_t)(elosConnectionManager_t *connectionManager);
+
 typedef safuResultE_t (*elosClientAuthorizationInitialize_t)(elosClientAuthorization_t *const clientAuth);
 typedef safuResultE_t (*elosClientAuthorizationDelete_t)(elosClientAuthorization_t *const clientAuth);
-typedef bool (*elosClientAuthorizationIsValid_t)(elosClientAuthorization_t *const clientAuth,
-                                                 struct sockaddr const *const addr);
+typedef safuResultE_t (*elosClientAuthorizationIsValid_t)(elosConnectionManager_t *connectionManager,
+                                                          elosClientConnection_t *connection);
+
+typedef safuResultE_t (*elosConnectionManagerSetClientConnectionHandlers_t)(elosClientConnection_t *connection);
+typedef int (*elosGetConnectionLimit_t)(elosPlugin_t const *plugin);
 
 /*******************************************************************
  * Data structure of a ConnectionManager
@@ -41,34 +46,39 @@ typedef bool (*elosClientAuthorizationIsValid_t)(elosClientAuthorization_t *cons
  * Members:
  *   flags: State bits of the component (e.g. initialized, active, e.t.c.)
  *   fd: listener socket used for waiting for new connections
- *   syncFd: eventfd used for synchronization with the worker thread
- *   addr: Address information of the listener socket
- *   connection: Array of ClientConnections
+ *   syncFd: eventfd used for synchronization with the worker thread *
+ *   connections: Array of ClientConnections
  *   listenThread: worker thread used by pthread_* functions
  *   sharedData: Data shared between all ClientConnections
  *   clientAuth: Client authorization functionality
- *   initializeListener: Pointer to a function that is setting up the listener socket
- *   getConnectionLimit: Pointer to a function that is getting the maximum of client connection from config
- *   authorizationInitialize: Pointer to a function that is initializing data structures for the client authorization
- *   authorizationDelete: Pointer to a function that is deleting data structures for the client authorization
- *   authorizationIsValid: Pointer to a function that is checking if a client has authorization
+ *   setConnectionHandlers: Pointer to a function that sets connection specific function handlers
+ *   connectionManagerContext: Pointer to data structure that holds plugin specific data
+ *   initializeListener: Pointer to a function that sets up the listener socket
+ *   accept: A pointer to a function that accepts incoming connections on the listener socket
+ *   closeListener: A pointer to a function that closes the listener socket
+ *   deleteListener: A pointer to a function that deletes allocated structures
+ *   authorizationInitialize: Pointer to a function that initializes data structures for the client authorization
+ *   authorizationDelete: Pointer to a function that deletes data structures for the client authorization
+ *   authorize: Pointer to a function that checks whether a client is authorized
+ *   getConnectionLimit: Pointer to a function that gets the maximum number of client connections from config
  ******************************************************************/
 typedef struct elosConnectionManager {
     safuFlags_t flags;
     int fd;
     int syncFd;
-    union {
-        struct sockaddr_in tcpAddr;
-        struct sockaddr_un unixAddr;
-    } addr;
     int connectionLimit;
-    elosClientConnection_t connection[ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT];
+    elosClientConnection_t connections[ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT];
     pthread_t listenThread;
     elosClientConnectionSharedData_t sharedData;
     elosClientAuthorization_t clientAuth;
-    elosInitializeListener_t initializeListener;
-    elosGetConnectionLimit_t getConnectionLimit;
+    void *connectionManagerContext;
+    elosConnectionManagerSetClientConnectionHandlers_t setConnectionHandlers;
+    elosConnectionManagerInitializeListener_t initializeListener;
+    elosConnectionManagerListenerAcceptConnection_t accept;
+    elosConnectionManagerCloseListener_t closeListener;
+    elosConnectionManagerDeleteListener_t deleteListener;
     elosClientAuthorizationInitialize_t authorizationInitialize;
     elosClientAuthorizationDelete_t authorizationDelete;
-    elosClientAuthorizationIsValid_t authorizationIsValid;
+    elosClientAuthorizationIsValid_t authorize;
+    elosGetConnectionLimit_t getConnectionLimit;
 } elosConnectionManager_t;

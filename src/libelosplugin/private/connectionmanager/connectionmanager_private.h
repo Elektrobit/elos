@@ -5,8 +5,8 @@
 #include <safu/result.h>
 
 safuResultE_t elosConnectionManagerThreadGetFreeConnectionSlot(elosConnectionManager_t *connectionManager, int *slot);
-safuResultE_t elosConnectionManagerThreadWaitForIncomingConnection(elosConnectionManager_t *connectionManager, int slot,
-                                                                   int *socketFd);
+safuResultE_t elosConnectionManagerThreadWaitForIncomingConnection(elosConnectionManager_t *connectionManager,
+                                                                   int slot);
 
 void *elosConnectionManagerThreadListen(void *ptr);
 

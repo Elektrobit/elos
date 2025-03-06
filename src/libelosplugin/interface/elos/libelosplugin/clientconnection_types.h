@@ -2,14 +2,11 @@
 #pragma once
 
 #include <elos/eventfilter/eventfilter_types.h>
-#include <netinet/in.h>
 #include <safu/flags.h>
 #include <safu/vector.h>
 #include <samconf/samconf_types.h>
 #include <semaphore.h>
-#include <sys/un.h>
 
-#include "clientconnection_defines.h"
 #include "types.h"
 
 typedef safuVec_t elosEventFilterNodeIdVector_t;
@@ -39,6 +36,12 @@ typedef struct elosClientConnectionSharedData {
     elosPlugin_t *plugin;
 } elosClientConnectionSharedData_t;
 
+typedef struct elosClientConnection elosClientConnection_t;
+
+typedef safuResultE_t (*elosClientConnectionInitializeConnection_t)(elosClientConnection_t *connection);
+typedef safuResultE_t (*elosClientConnectionCloseConnection_t)(elosClientConnection_t *connection);
+typedef safuResultE_t (*elosClientConnectionDeleteConnection_t)(elosClientConnection_t *connection);
+
 /*******************************************************************
  * Data structure of a ClientConnection
  *
@@ -47,25 +50,28 @@ typedef struct elosClientConnectionSharedData {
  *   fd: The socket used for communication
  *   syncFd: eventfd used for synchronization with the worker thread
  *   triggerFd: eventfd used for waking the worker thread (e.g. for a controlled shutdown)
- *   addr: Address information of the currently used socketFd
+ *   clientConnectionContext: Pointer to data structure that holds plugin specific data
  *   thread: Worker thread used by pthread_* functions
  *   sharedData: See struct defintion of elosClientConnectionSharedData_t
  *   data: worker thread local data
  *   isTrusted: 'true' if the connection is trusted
  *   blacklist: blacklist filters
+ *   initializeConnection: A pointer to a function that allocates plugin specific data structures
+ *   closeConnection: A pointer to a function that closes the client connection
+ *   deleteConnection: A pointer to a function that deletes allocated structures
  ******************************************************************/
 typedef struct elosClientConnection {
     safuFlags_t flags;
     int fd;
     int syncFd;
     int triggerFd;
-    union {
-        struct sockaddr_in tcpAddr;
-        struct sockaddr_un unixAddr;
-    } addr;
+    void *clientConnectionContext;
     pthread_t thread;
     elosClientConnectionSharedData_t *sharedData;
     elosClientConnectionData_t data;
     bool isTrusted;
     elosEventFilter_t blacklist;
+    elosClientConnectionInitializeConnection_t initializeConnection;
+    elosClientConnectionCloseConnection_t closeConnection;
+    elosClientConnectionDeleteConnection_t deleteConnection;
 } elosClientConnection_t;

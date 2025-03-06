@@ -102,10 +102,10 @@ safuResultE_t elosClientConnectionDeleteMembers(elosClientConnection_t *clientCo
     return result;
 }
 
-safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection, int socketFd) {
+safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection) {
     safuResultE_t result = SAFU_RESULT_FAILED;
 
-    if ((clientConnection == NULL) || (socketFd == -1)) {
+    if ((clientConnection == NULL) || (clientConnection->fd == -1)) {
         safuLogErr("Invalid parameter");
     } else if (SAFU_FLAG_HAS_INITIALIZED_BIT(&clientConnection->flags) == false) {
         safuLogErr("The given ClientConnection is not initialized");
@@ -120,8 +120,6 @@ safuResultE_t elosClientConnectionStart(elosClientConnection_t *clientConnection
                 safuLogWarn("Resetting already used connection failed");
             }
         }
-
-        clientConnection->fd = socketFd;
 
         retVal = pthread_create(&clientConnection->thread, 0, elosClientConnectionWorker, (void *)clientConnection);
         if (retVal != 0) {

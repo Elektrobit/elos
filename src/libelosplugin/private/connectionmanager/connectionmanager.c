@@ -48,12 +48,26 @@ static safuResultE_t _initializeConnections(elosConnectionManager_t *connectionM
     safuResultE_t result = SAFU_RESULT_FAILED;
 
     for (int i = 0; i < connectionManager->connectionLimit; i += 1) {
-        elosClientConnection_t *connection = &connectionManager->connection[i];
+        elosClientConnection_t *connection = &connectionManager->connections[i];
 
         result = elosClientConnectionInitialize(connection, &connectionManager->sharedData);
         if (result != SAFU_RESULT_OK) {
             safuLogErrF("Initialization of connection data structure [%d] failed", i);
             break;
+        }
+        if (connectionManager->setConnectionHandlers != NULL) {
+            result = connectionManager->setConnectionHandlers(connection);
+            if (result != SAFU_RESULT_OK) {
+                safuLogErrF("Setting handlers for connection [%d] failed", i);
+                break;
+            }
+        }
+        if (connection->initializeConnection != NULL) {
+            result = connection->initializeConnection(connection);
+            if (result != SAFU_RESULT_OK) {
+                safuLogErrF("Initialization of connection [%d] failed", i);
+                break;
+            }
         }
     }
 
@@ -154,11 +168,17 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
             }
 
             for (int i = 0; i < ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT; i += 1) {
-                elosClientConnection_t *connection = &connectionManager->connection[i];
+                elosClientConnection_t *connection = &connectionManager->connections[i];
 
                 iterResult = elosClientConnectionDeleteMembers(connection);
                 if (iterResult != SAFU_RESULT_OK) {
                     result = SAFU_RESULT_FAILED;
+                }
+                if (connection->deleteConnection != NULL) {
+                    result = connection->deleteConnection(connection);
+                    if (iterResult != SAFU_RESULT_OK) {
+                        result = SAFU_RESULT_FAILED;
+                    }
                 }
             }
 
@@ -168,20 +188,21 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
                 result = SAFU_RESULT_FAILED;
             }
 
-            if (connectionManager->fd != -1) {
-                retVal = close(connectionManager->fd);
-                if (retVal != 0) {
-                    safuLogWarnErrnoValue("Closing listenFd failed (possible memory leak)", retVal);
-                    result = SAFU_RESULT_FAILED;
-                }
-            }
-
             if (connectionManager->syncFd != -1) {
                 retVal = close(connectionManager->syncFd);
                 if (retVal != 0) {
                     safuLogWarnErrnoValue("Closing eventfd failed (possible memory leak)", retVal);
                     result = SAFU_RESULT_FAILED;
                 }
+            }
+
+            if (connectionManager->closeListener != NULL) {
+                result = connectionManager->closeListener(connectionManager);
+            } else {
+                result = SAFU_RESULT_FAILED;
+            }
+            if (result != SAFU_RESULT_OK) {
+                safuLogWarn("Closing of connection failed");
             }
 
             if (connectionManager->authorizationDelete != NULL) {
@@ -193,13 +214,13 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
                 safuLogWarn("Deletion of client authorization failed");
             }
 
-            struct sockaddr_un *addr = (struct sockaddr_un *)&connectionManager->addr;
-            if (addr->sun_family == AF_UNIX) {
-                retVal = unlink(addr->sun_path);
-                if (retVal != 0 && errno != ENOENT) {
-                    safuLogErrErrnoValue("unlink socket path failed", retVal);
-                    result = SAFU_RESULT_FAILED;
-                }
+            if (connectionManager->deleteListener != NULL) {
+                result = connectionManager->deleteListener(connectionManager);
+            } else {
+                result = SAFU_RESULT_FAILED;
+            }
+            if (result != SAFU_RESULT_OK) {
+                safuLogWarn("Deletion of connection failed");
             }
         }
     }

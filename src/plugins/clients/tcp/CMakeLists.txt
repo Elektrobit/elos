@@ -10,6 +10,7 @@ add_library(
   SHARED
     private/tcp.c
     private/tcp_connectionmanager.c
+    private/tcp_clientconnection.c
 )
 create_interface_library(
   FROM
