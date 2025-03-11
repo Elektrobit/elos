@@ -16,6 +16,7 @@ target_link_libraries(
   unix_config_static
   PUBLIC
     libelosplugin
+    libelosplugin_interface
     samconf::samconf
 )
 target_include_directories(

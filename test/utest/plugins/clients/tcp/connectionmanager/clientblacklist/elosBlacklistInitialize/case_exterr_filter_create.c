@@ -2,7 +2,7 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_extensions/mock_extensions.h>
-#include <connectionmanager/clientblacklist.h>
+#include <elos/libelosplugin/clientblacklist.h>
 #include <elos/rpnfilter/rpnfilter_types.h>
 #include <safu/result.h>
 #include <samconf/test_utils.h>

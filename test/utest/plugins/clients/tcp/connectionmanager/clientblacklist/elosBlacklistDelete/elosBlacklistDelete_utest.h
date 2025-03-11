@@ -5,8 +5,7 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <cmocka_extensions/mock_extensions.h>
 #include <cmocka_mocks/mock_libc.h>
-
-#include "connectionmanager/clientblacklist.h"
+#include <elos/libelosplugin/clientblacklist.h>
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosBlacklistDeleteSuccess)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosBlacklistDeleteErrBlacklistParameterNull)

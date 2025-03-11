@@ -18,6 +18,7 @@ set_target_properties(tcp_config_static PROPERTIES PREFIX "")
 target_link_libraries(
   tcp_config_static
   PUBLIC
+    libelosplugin_interface
     libelosplugin
     samconf::samconf
 )

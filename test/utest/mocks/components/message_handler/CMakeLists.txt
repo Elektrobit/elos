@@ -8,8 +8,9 @@ create_mock_lib(
     mock_message_handler.c
   INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}
+    $<TARGET_PROPERTY:libelosplugin_static,INCLUDE_DIRECTORIES>
   LIBRARIES
-    messagehandler_static_weak
+    libelosplugin_static_weak
     cmocka_extensions::cmocka_extensions
     json-c
   WRAP_FLAG

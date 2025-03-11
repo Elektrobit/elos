@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <netinet/in.h>
 #include <samconf/samconf.h>
 
 #include "elos/libelosplugin/types.h"
@@ -46,11 +47,9 @@ const char *elosTcpConfigGetInterface(elosPlugin_t const *plugin);
  *
  * Parameters:
  *      plugin : plugin instance
- *      addr   : pointer to a structure capable of holding either:
- *                 - struct sockaddr_in
- *                 - struct sockaddr_un
+ *      addr   : pointer to a struct sockaddr_in
  * Returns:
  *      - SAFU_RESULT_FAILED on error
  *      - SAFU_RESULT_OK on success
  **************************************************************************/
-safuResultE_t elosTcpConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr *addr);
+safuResultE_t elosTcpConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr_in *addr);

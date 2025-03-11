@@ -60,8 +60,7 @@ static inline safuResultE_t _mkdir(const char *path, mode_t mode) {
     return result;
 }
 
-safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr *addr) {
-    struct sockaddr_un *addrUnix = (struct sockaddr_un *)addr;
+safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr_un *addr) {
     const char *path = elosUnixConfigGetPath(plugin);
     safuResultE_t result = SAFU_RESULT_OK;
 
@@ -77,8 +76,8 @@ safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct 
         if (result == SAFU_RESULT_FAILED) {
             safuLogErr("Create directory for socket path failed");
         } else {
-            strncpy(addrUnix->sun_path, path, sizeof(addrUnix->sun_path) - 1);
-            addrUnix->sun_family = AF_UNIX;
+            strncpy(addr->sun_path, path, sizeof(addr->sun_path) - 1);
+            addr->sun_family = AF_UNIX;
         }
     } else {
         safuLogErrErrnoValue("access check failed", errno);

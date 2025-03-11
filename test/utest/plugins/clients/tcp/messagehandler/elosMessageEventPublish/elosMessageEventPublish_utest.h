@@ -5,8 +5,8 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <json-c/json.h>
 
-#include "connectionmanager/clientconnection_types.h"
 #include "elos/common/message.h"
+#include "elos/libelosplugin/clientconnection_types.h"
 
 typedef struct elosUtestState {
     elosClientConnection_t *conn;

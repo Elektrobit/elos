@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+#include <elos/libelosplugin/connectionmanager_types.h>
 #include <safu/common.h>
 #include <safu/result.h>
 #include <samconf/samconf_types.h>
 
-#include "connectionmanager/connectionmanager_types.h"
 #include "pluginUnload_utest.h"
 
 int elosTestPluginUnloadSuccessSetup(UNUSED void **state) {

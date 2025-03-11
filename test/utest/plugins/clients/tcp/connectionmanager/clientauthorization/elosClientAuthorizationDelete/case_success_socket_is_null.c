@@ -19,9 +19,9 @@ void elosTestElosClientAuthorizationDeleteSuccessSocketIsNull(UNUSED void **stat
     TEST("elosTcpClientAuthorizationDelete");
     SHOULD("%s", "tread clientAuth->mnl_socket set to NULL as already closed and report success");
 
-    elosClientAuthorization_t clientAuth = {.mlSocket = NULL};
+    elosClientAuthorization_t clientAuth = {.socketData = NULL};
 
     result = elosTcpClientAuthorizationDelete(&clientAuth);
     assert_int_equal(result, SAFU_RESULT_OK);
-    assert_null(clientAuth.mlSocket);
+    assert_null(clientAuth.socketData);
 }

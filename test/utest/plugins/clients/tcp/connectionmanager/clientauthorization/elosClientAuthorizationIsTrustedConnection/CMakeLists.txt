@@ -10,6 +10,7 @@ create_unit_test(
     case_success.c
     elosClientAuthorizationIsTrustedConnection_utest.c
   LIBRARIES
-    connectionmanager_static_weak
+  tcp_clientauthorization_static
+    libelosplugin_static_weak
     cmocka_mocks::mock_libmnl
 )

@@ -20,7 +20,7 @@ void elosTestElosClientAuthorizationDeleteSuccess(UNUSED void **state) {
     SHOULD("%s", "successfully close a netlink inet_diag connection");
 
     struct mnl_socket *expectedNlSocket = (struct mnl_socket *)0xDEADBEEF;
-    elosClientAuthorization_t clientAuth = {.mlSocket = expectedNlSocket};
+    elosClientAuthorization_t clientAuth = {.socketData = (void *)expectedNlSocket};
 
     MOCK_FUNC_AFTER_CALL(mnl_socket_close, 0);
     expect_value(__wrap_mnl_socket_close, nl, expectedNlSocket);
@@ -28,5 +28,5 @@ void elosTestElosClientAuthorizationDeleteSuccess(UNUSED void **state) {
 
     result = elosTcpClientAuthorizationDelete(&clientAuth);
     assert_int_equal(result, SAFU_RESULT_OK);
-    assert_null(clientAuth.mlSocket);
+    assert_null(clientAuth.socketData);
 }

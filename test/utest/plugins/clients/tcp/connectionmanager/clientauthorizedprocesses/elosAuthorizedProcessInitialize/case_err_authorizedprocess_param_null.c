@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include <clientauthorizedprocesses/clientauthorizedprocesses.h>
+#include <elos/libelosplugin/clientauthorizedprocesses.h>
 
 #include "elosAuthorizedProcessInitialize_utest.h"
 

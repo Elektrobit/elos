@@ -4,16 +4,6 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
-MOCK_FUNC_BODY(elosConnectionManagerGetStatus, safuResultE_t, elosConnectionManager_t *context, uint32_t *status) {
-    if (MOCK_IS_ACTIVE(elosConnectionManagerGetStatus)) {
-        check_expected_ptr(context);
-        check_expected_ptr(status);
-        *status = mock_type(uint32_t);
-        return mock_type(safuResultE_t);
-    }
-    return MOCK_FUNC_REAL(elosConnectionManagerGetStatus)(context, status);
-}
-
 MOCK_FUNC_BODY(elosConnectionManagerThreadGetFreeConnectionSlot, safuResultE_t, elosConnectionManager_t *ctx,
                int *slot) {
     if (MOCK_IS_ACTIVE(elosConnectionManagerThreadGetFreeConnectionSlot)) {

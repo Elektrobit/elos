@@ -5,8 +5,8 @@
 #include <safu/common.h>
 
 #include "elos/event/event.h"
+#include "elos/libelosplugin/message_handler.h"
 #include "elosMessageEventPublish_utest.h"
-#include "messagehandler/message_handler.h"
 #include "mock_eventbuffer.h"
 #include "mock_message_handler.h"
 

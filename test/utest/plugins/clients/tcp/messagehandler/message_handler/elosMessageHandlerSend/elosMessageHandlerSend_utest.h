@@ -5,7 +5,7 @@
 #include <cmocka_extensions/cmocka_extensions.h>
 #include <elos/common/message.h>
 
-#include "messagehandler/message_handler.h"
+#include "elos/libelosplugin/message_handler.h"
 
 void elosTestElosMessageHandlerSendSuccess(void **state);
 void elosTestElosMessageHandlerSendExterrAllocMem(void **state);

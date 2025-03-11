@@ -13,7 +13,7 @@ create_unit_test(
     case_success_no_match.c
     elosAuthorizedProcessCheck_utest.c
   LIBRARIES
-    connectionmanager_static_weak
+    libelosplugin_static_weak
     safu::mock_safu
     samconf::mock_samconf
     samconf::samconf_test_utils

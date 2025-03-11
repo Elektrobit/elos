@@ -11,8 +11,8 @@ create_unit_test(
     case_exterr_send.c
     elosMessageHandlerSendJson_utest.c
   LIBRARIES
-    messagehandler_static_weak
     mock_message_handler_static
+    libelosplugin_static_weak
     elos_event_static_weak
     cmocka_mocks::mock_jsonc
     safu::mock_safu
