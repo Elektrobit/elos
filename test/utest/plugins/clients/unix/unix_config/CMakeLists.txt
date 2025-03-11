@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosUnixConfigGetElosdConnectionLimit)
+add_subdirectory(elosUnixConfigGetSocketAddress)
+add_subdirectory(elosUnixConfigGetPath)

@@ -5,9 +5,9 @@
 #include <safu/mock_safu.h>
 #include <samconf/mock_samconf.h>
 
-#include "tcp_config/config.h"
+#include "unix_config/config.h"
 
 samconfConfig_t elosGetMockConfig();
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortSuccessFromEnv)
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortSuccessFromDefault)
+TEST_CASE_FUNC_PROTOTYPES(elosTestelosUnixConfigGetPathSuccessFromEnv)
+TEST_CASE_FUNC_PROTOTYPES(elosTestelosUnixConfigGetPathSuccessFromDefault)
