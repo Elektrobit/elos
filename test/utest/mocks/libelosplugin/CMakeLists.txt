@@ -2,18 +2,17 @@
 
 create_mock_lib(
   NAME
-    mock_plugincontrol
+    mock_libelosplugin
   SOURCES
     mock_plugincontrol.c
-    mock_plugincontrol_vector.c
+    private/plugincontrol_stubs.c
   INCLUDES
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:include/>
+    ${CMAKE_CURRENT_SOURCE_DIR}
   LIBRARIES
-    plugincontrol_static_weak
+    libelosplugin_static_weak
     cmocka_extensions::cmocka_extensions
-  WRAP_FLAG
-    MOCK_PLUGIN_CONTROL_FUNC_LINKER_WRAPPING
+    WRAP_FLAG
+    MOCK_ELOS_LIBELOSPLUGIN_FUNC_LINKER_WRAPPING
   WRAPS
     elosPluginControlInitialize
     elosPluginControlNew

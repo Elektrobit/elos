@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-#include "mock_plugincontrol.h"
+#include <cmocka_extensions/cmocka_extensions.h>
+
+#include "mock_libelosplugin.h"
+#include "plugincontrol_stubs.h"
 
 MOCK_FUNC_BODY(elosPluginControlInitialize, safuResultE_t, elosPluginControl_t *control,
                elosPluginControlParam_t const *param) {
@@ -16,7 +19,7 @@ MOCK_FUNC_BODY(elosPluginControlInitialize, safuResultE_t, elosPluginControl_t *
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlInitialize)(control, param);
+            result = elosPluginControlInitialize(control, param);
             break;
     }
 
@@ -37,7 +40,7 @@ MOCK_FUNC_BODY(elosPluginControlNew, safuResultE_t, elosPluginControl_t **contro
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlNew)(control, param);
+            result = elosPluginControlNew(control, param);
             break;
     }
 
@@ -56,7 +59,7 @@ MOCK_FUNC_BODY(elosPluginControlLoad, safuResultE_t, elosPluginControl_t *contro
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlLoad)(control);
+            result = elosPluginControlLoad(control);
             break;
     }
 
@@ -75,7 +78,7 @@ MOCK_FUNC_BODY(elosPluginControlUnload, safuResultE_t, elosPluginControl_t *cont
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlUnload)(control);
+            result = elosPluginControlUnload(control);
             break;
     }
 
@@ -94,7 +97,7 @@ MOCK_FUNC_BODY(elosPluginControlStart, safuResultE_t, elosPluginControl_t *contr
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlStart)(control);
+            result = elosPluginControlStart(control);
             break;
     }
 
@@ -113,7 +116,7 @@ MOCK_FUNC_BODY(elosPluginControlStop, safuResultE_t, elosPluginControl_t *contro
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlStop)(control);
+            result = elosPluginControlStop(control);
             break;
     }
 
@@ -132,7 +135,7 @@ MOCK_FUNC_BODY(elosPluginControlDeleteMembers, safuResultE_t, elosPluginControl_
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlDeleteMembers)(control);
+            result = elosPluginControlDeleteMembers(control);
             break;
     }
 
@@ -151,7 +154,7 @@ MOCK_FUNC_BODY(elosPluginControlDelete, safuResultE_t, elosPluginControl_t **con
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlDelete)(control);
+            result = elosPluginControlDelete(control);
             break;
     }
 
@@ -171,7 +174,7 @@ MOCK_FUNC_BODY(elosPluginControlGetName, safuResultE_t, const elosPluginControl_
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlGetName)(control, name);
+            result = elosPluginControlGetName(control, name);
             break;
     }
 
@@ -189,11 +192,13 @@ MOCK_FUNC_BODY(elosPluginControlCreatePublisher, safuResultE_t, struct elosPlugi
         case CMOCKA_MOCK_ENABLED:
             check_expected_ptr(pluginControl);
             check_expected_ptr(publisher);
-            *publisher = mock_type(struct elosPublisher *);
+            if (publisher != NULL) {
+                *publisher = mock_type(struct elosPublisher *);
+            }
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlCreatePublisher)(pluginControl, publisher);
+            result = elosPluginControlCreatePublisher(pluginControl, publisher);
             break;
     }
 
@@ -214,7 +219,7 @@ MOCK_FUNC_BODY(elosPluginControlDeletePublisher, safuResultE_t, struct elosPlugi
             result = mock_type(safuResultE_t);
             break;
         default:
-            result = MOCK_FUNC_REAL(elosPluginControlDeletePublisher)(pluginControl, publisher);
+            result = elosPluginControlDeletePublisher(pluginControl, publisher);
             break;
     }
 

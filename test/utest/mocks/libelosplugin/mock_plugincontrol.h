@@ -1,16 +1,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <cmocka_extensions/cmocka_extensions.h>
-#include <cmocka_extensions/mock_extensions.h>
-
-#ifdef MOCK_PLUGIN_CONTROL_FUNC_LINKER_WRAPPING
-#include <cmocka_extensions/mock_func_wrap.h>
-#else
-#include <cmocka_extensions/mock_func_weak.h>
-#endif
-
-#include "elos/plugincontrol/plugincontrol.h"
+#include "mock_libelosplugin.h"
+#include "plugincontrol_stubs.h"
 
 MOCK_FUNC_PROTOTYPE(elosPluginControlInitialize, safuResultE_t, elosPluginControl_t *control,
                     elosPluginControlParam_t const *param)
