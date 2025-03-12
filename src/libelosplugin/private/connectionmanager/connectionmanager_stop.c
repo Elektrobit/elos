@@ -29,6 +29,14 @@ safuResultE_t elosConnectionManagerStop(elosConnectionManager_t *connectionManag
             } else {
                 result = SAFU_RESULT_OK;
             }
+            if (connectionManager->closeListener != NULL) {
+                result = connectionManager->closeListener(connectionManager);
+            } else {
+                result = SAFU_RESULT_FAILED;
+            }
+            if (result != SAFU_RESULT_OK) {
+                safuLogWarn("Closing of connection failed");
+            }
             atomic_fetch_and(&connectionManager->flags, ~ELOS_CONNECTIONMANAGER_THREAD_NOT_JOINED);
         }
 
