@@ -45,7 +45,7 @@ def run_cmd(cmd):
 
 def checkout(dependencies, args):
     for dep, conf in dependencies.items():
-        if dep in TEST_DEPS and args.no_tests:
+        if dep in TEST_DEPS and args.no_tests and args.no_mocks:
             continue
         repo_path = path.join(CHECKOUT_PATH, dep)
         print(f"## {dep}")
@@ -122,7 +122,7 @@ def single_install(dependency, config, args):
 
 
 def build_and_install(dependencies, args):
-    deps = [] if args.no_tests else TEST_DEPS
+    deps = [] if args.no_tests and args.no_mocks else TEST_DEPS
     deps.extend(["safu", "samconf"])
     for dependency in deps:
         if not single_install(dependency, dependencies[dependency], args):
