@@ -90,8 +90,20 @@ void elosTestPluginLoadSuccess(UNUSED void **state) {
     expect_any(__wrap_open, mode);
     will_return(__wrap_open, 0);
 
-    MOCK_FUNC_AFTER_CALL(free, 0);
-    expect_value(__wrap_free, ptr, ELOS_KMSGSTATEFILE_MOCK);
+    MOCK_FUNC_AFTER_CALL(ftruncate, 0);
+    expect_any(__wrap_ftruncate, fd);
+    expect_value(__wrap_ftruncate, length, 4096);
+    will_return(__wrap_ftruncate, 0);
+
+    char *mappedStateFile[4096];
+    MOCK_FUNC_AFTER_CALL(mmap, 0);
+    expect_any(__wrap_mmap, addr);
+    expect_any(__wrap_mmap, length);
+    expect_any(__wrap_mmap, prot);
+    expect_any(__wrap_mmap, flags);
+    expect_any(__wrap_mmap, fd);
+    expect_any(__wrap_mmap, offset);
+    will_return(__wrap_mmap, &mappedStateFile);
 
     MOCK_FUNC_AFTER_CALL(elosPluginControlCreatePublisher, 0);
     expect_any(elosPluginControlCreatePublisher, pluginControl);
