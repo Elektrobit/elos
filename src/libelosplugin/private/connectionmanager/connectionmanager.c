@@ -196,15 +196,6 @@ safuResultE_t elosConnectionManagerDeleteMembers(elosConnectionManager_t *connec
                 }
             }
 
-            if (connectionManager->closeListener != NULL) {
-                result = connectionManager->closeListener(connectionManager);
-            } else {
-                result = SAFU_RESULT_FAILED;
-            }
-            if (result != SAFU_RESULT_OK) {
-                safuLogWarn("Closing of connection failed");
-            }
-
             if (connectionManager->authorizationDelete != NULL) {
                 result = connectionManager->authorizationDelete(&connectionManager->clientAuth);
             } else {
