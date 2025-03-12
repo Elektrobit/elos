@@ -1,0 +1,124 @@
+@startuml
+title "The ClientManager Framework"
+
+package libelosplugin <<Frame>> {
+    abstract class ConnectionManager {
+        safuFlags_t flags;
+        int fd;
+        int syncFd;
+        int connectionLimit;
+        elosClientConnection_t connections[ELOS_CONNECTIONMANAGER_CONNECTION_LIMIT];
+        pthread_t listenThread;
+        elosClientConnectionSharedData_t sharedData;
+        elosClientAuthorization_t clientAuth;
+        void *connectionManagerContext;
+
+        safuResultE_t (*elosConnectionManagerSetClientConnectionHandlers_t)(elosClientConnection_t *connection);
+        safuResultE_t (*elosConnectionManagerInitializeListener_t)(elosConnectionManager_t *connectionManager,
+                                                                   elosPlugin_t const *plugin);
+        safuResultE_t (*elosConnectionManagerListenerAcceptConnection_t)(elosConnectionManager_t *connectionManager,
+                                                                         elosClientConnection_t *connection);
+        safuResultE_t (*elosConnectionManagerCloseListener_t)(elosConnectionManager_t *connectionManager);
+        safuResultE_t (*elosConnectionManagerDeleteListener_t)(elosConnectionManager_t *connectionManager);
+
+        safuResultE_t (*elosClientAuthorizationInitialize_t)(elosClientAuthorization_t *const clientAuth);
+        safuResultE_t (*elosClientAuthorizationDelete_t)(elosClientAuthorization_t *const clientAuth);
+        safuResultE_t (*elosClientAuthorizationIsValid_t)(elosConnectionManager_t *connectionManager,
+                                                          elosClientConnection_t *connection);
+
+        int (*elosGetConnectionLimit_t)(elosPlugin_t const *plugin);
+    }
+
+    abstract class ClientConnection {
+        safuFlags_t flags;
+        int fd;
+        int syncFd;
+        int triggerFd;
+        void *clientConnectionContext;
+        pthread_t thread;
+        elosClientConnectionSharedData_t *sharedData;
+        elosClientConnectionData_t data;
+        bool isTrusted;
+        elosEventFilter_t blacklist;
+
+        safuResultE_t (*elosClientConnectionInitializeConnection_t)(elosClientConnection_t *connection);
+        safuResultE_t (*elosClientConnectionCloseConnection_t)(elosClientConnection_t *connection);
+        safuResultE_t (*elosClientConnectionDeleteConnection_t)(elosClientConnection_t *connection);
+    }
+
+    interface Protocol {
+        safuResultE_t (*) (ClientConnection*):handleMessage
+    }
+
+    class MessageHandler <<Protocol>> {
+        handleMessage(ClientConnection*)
+    }
+
+    MessageHandler -up-> Protocol
+    ClientConnection *-- MessageHandler
+
+    abstract ClientAuthorization {
+        void *socketData;
+        safuVec_t authorizedProcessFilters;
+    }
+    ConnectionManager *-- ClientConnection
+    ConnectionManager *-- ClientAuthorization
+
+}
+
+package TcpPlugin <<Frame>> {
+    class TcpConnectionManager <<ConnectionManager>> {
+        safuResultE_t elosTcpConnectionManagerNew(elosConnectionManager_t **connectionManager, elosPlugin_t *plugin);
+      
+    }
+    TcpConnectionManager -up-|> ConnectionManager
+
+
+    class TcpClientAuthorization <<ClientAuthorization>> {
+        bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth, struct sockaddr const *const addr);
+        safuResultE_t elosTcpClientAuthorizationInitialize(elosClientAuthorization_t *clientAuth);
+        safuResultE_t elosTcpClientAuthorizationDelete(elosClientAuthorization_t *clientAuth);
+    }
+    TcpClientAuthorization -up-|> ClientAuthorization
+
+    class TcpConnection <<ClientConnection>> {
+        safuResultE_t elosTcpClientConnectionInitialize(elosClientConnection_t *connection);
+        safuResultE_t elosTcpClientConnectionDelete(elosClientConnection_t *connection);
+        safuResultE_t elosTcpClientConnectionClose(elosClientConnection_t *connection);
+    }
+    TcpConnection -up-|> ClientConnection
+    TcpConnectionManager *-- TcpConnection
+    TcpConnectionManager *-- TcpClientAuthorization
+
+}
+
+
+package UnixPlugin <<Frame>> {
+    class UnixClientAuthorization <<ClientAuthorization>> {
+        bool elosUnixClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth, int fd);
+        safuResultE_t elosUnixClientAuthorizationInitialize(elosClientAuthorization_t *clientAuth);
+        safuResultE_t elosUnixClientAuthorizationDelete(elosClientAuthorization_t *clientAuth);
+    }
+    UnixClientAuthorization -up-|> ClientAuthorization
+
+
+
+    class UnixConnection <<ClientConnection>> {
+        safuResultE_t elosUnixClientConnectionInitialize(elosClientConnection_t *connection);
+        safuResultE_t elosUnixClientConnectionDelete(elosClientConnection_t *connection);
+        safuResultE_t elosUnixClientConnectionClose(elosClientConnection_t *connection);
+    }
+
+    class UnixConnectionManager <<ConnectionManager>> {
+        safuResultE_t elosUnixConnectionManagerNew(elosConnectionManager_t **connectionManager, elosPlugin_t *plugin);
+    }
+    UnixConnectionManager -up-|> ConnectionManager
+    UnixConnection -up-|> ClientConnection
+    UnixConnectionManager *-- UnixConnection
+    UnixConnectionManager *-- UnixClientAuthorization
+}
+
+UnixPlugin -[hidden]up-> libelosplugin
+TcpPlugin -[hidden]up-> libelosplugin
+UnixPlugin -[hidden]right-> TcpPlugin
+@enduml
