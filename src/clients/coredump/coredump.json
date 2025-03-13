@@ -8,7 +8,8 @@
                 "maxcoredump_size_rel": 10,
                 "maxcoredump_cnt": 12,
                 "coredumppath": "/tmp/coredumps",
-                "coredump_per_exe": 7
+                "coredump_per_exe": 7,
+                "networkAddress": "127.0.0.1:54321"
             }
         }
     }

@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <elos/common/process.h>
+#include <elos/libelosplugin/clientauthorizedprocesses.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <libmnl/libmnl.h>
@@ -29,8 +30,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-
-#include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 
 #define LIBMNL_OK    0
 #define LIBMNL_ERROR 1
@@ -342,7 +341,7 @@ static safuResultE_t _processBuffer(uint8_t const *const recvBuffer, ssize_t siz
     return result;
 }
 
-safuResultE_t elosClientAuthorizationInitialize(elosClientAuthorization_t *const clientAuth) {
+safuResultE_t elosTcpClientAuthorizationInitialize(elosClientAuthorization_t *const clientAuth) {
     safuResultE_t result = SAFU_RESULT_OK;
     struct mnl_socket *mlSock = NULL;
 
@@ -359,7 +358,7 @@ safuResultE_t elosClientAuthorizationInitialize(elosClientAuthorization_t *const
         } else {
             int ret = mnl_socket_bind(mlSock, 0, MNL_SOCKET_AUTOPID);
             if (ret == LIBMNL_OK) {
-                clientAuth->mlSocket = mlSock;
+                clientAuth->socketData = (void *)mlSock;
             } else {
                 safuLogErrErrno("Netlink bind socket failed");
                 result = SAFU_RESULT_FAILED;
@@ -374,7 +373,7 @@ bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *co
                                                    struct sockaddr const *const addr) {
     int numbytes = 0;
     uint8_t recvBuffer[MNL_SOCKET_BUFFER_SIZE];
-    struct mnl_socket *mlSock = clientAuth->mlSocket;
+    struct mnl_socket *mlSock = (struct mnl_socket *)clientAuth->socketData;
     safuResultE_t result = SAFU_RESULT_OK;
     bool isClientAuthorized = false;
     struct sockaddr_in *addrIp = (struct sockaddr_in *)addr;
@@ -421,7 +420,7 @@ bool elosTcpClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *co
     return isClientAuthorized;
 }
 
-safuResultE_t elosClientAuthorizationDelete(elosClientAuthorization_t *const clientAuth) {
+safuResultE_t elosTcpClientAuthorizationDelete(elosClientAuthorization_t *const clientAuth) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     if (clientAuth == NULL) {
@@ -429,12 +428,13 @@ safuResultE_t elosClientAuthorizationDelete(elosClientAuthorization_t *const cli
         result = SAFU_RESULT_FAILED;
     } else {
         safuLogDebug("close netlink socket");
-        if (clientAuth->mlSocket != NULL) {
-            int ret = mnl_socket_close(clientAuth->mlSocket);
+        struct mnl_socket *mlSock = (struct mnl_socket *)clientAuth->socketData;
+        if (mlSock != NULL) {
+            int ret = mnl_socket_close(mlSock);
             if (ret != LIBMNL_OK) {
                 result = SAFU_RESULT_FAILED;
             } else {
-                clientAuth->mlSocket = NULL;
+                clientAuth->socketData = NULL;
             }
         }
 

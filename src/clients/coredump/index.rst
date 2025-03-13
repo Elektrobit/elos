@@ -17,6 +17,7 @@ The configuration consists of the following parameters:
 -  `maxcoredump_cnt` - The maximum number of coredumps allowed.
 -  `coredumppath` - Path were the coredumps files shall be stored.
 -  `coredump_per_exe` - The maximum number of coredumps that can be attributed to a single process.
+-  `networkAddress` - Specifies the address used for communication. This can be either a TCP/IP address with a port (IP:Port) or a UNIX socket path (/path/to/socket).
 
 The configuration file will be installed at the `etc` directory during build. When the build is successful, the client can be used as given below.
 

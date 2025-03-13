@@ -48,4 +48,6 @@ List of ADRs
    ./libelos_logger_concept
    ./libelos-cpp_api_concept
    ./unix_client_authorization
+   ./systemd-journald_integration
+   ./kmsg-scanner-boot
 

@@ -13,10 +13,12 @@ add_library(
   STATIC
     private/tcpConfig.c
 )
+set_target_properties(tcp_config_static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(tcp_config_static PROPERTIES PREFIX "")
 target_link_libraries(
   tcp_config_static
   PUBLIC
+    libelosplugin_interface
     libelosplugin
     samconf::samconf
 )
@@ -29,3 +31,4 @@ target_include_directories(
 
 target_compile_definitions(tcp_config_static PUBLIC ELOSD_PORT=${ELOSD_PORT})
 target_compile_definitions(tcp_config_static PUBLIC ELOSD_INTERFACE="${ELOSD_INTERFACE}")
+target_compile_definitions(tcp_config_static PUBLIC ELOSD_CONNECTION_LIMIT=${ELOSD_CONNECTION_LIMIT})

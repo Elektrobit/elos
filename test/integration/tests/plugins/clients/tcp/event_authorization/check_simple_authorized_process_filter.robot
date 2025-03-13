@@ -92,13 +92,7 @@ A Filter To Authorize Non Root Processes Is Set
 Root Process Tries To Publish A Blacklisted Event
     [Documentation]    A root process tries to publish a blacklisted event
 
-    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
-
-    Set Test Variable    ${PUBLISH_TIME}
-
-    ${rc}    Execute And Log Based On User Permissions
-    ...    elosc -p '{"messageCode": 2010}'
-    ...    ${RETURN_RC}
+    ${output}    ${error}     ${rc}    Publish '{"messageCode": 2010}'
 
     IF    ${AUTHORIZE_ROOT}
         Executable Returns No Errors
@@ -111,42 +105,21 @@ Root Process Tries To Publish A Blacklisted Event
 Root Process Tries To Publish A Normal Event
     [Documentation]    A root process tries to publish a normal event
 
-    ${PUBLISH_TIME}    Get Elos Event Publish Time Threshold
-
-    Set Test Variable    ${PUBLISH_TIME}
-
-    ${rc}    Execute And Log Based On User Permissions
-    ...    elosc -p '{"messageCode": 150}'
-    ...    ${RETURN_RC}
+    ${output}    ${error}    ${rc}    Publish '{"messageCode": 150}'
     Executable Returns No Errors    ${rc}    Client unable to publish normal event
 
 Blacklisted Event Is Published
     [Documentation]    Blacklisted event will be published from authorized clients
 
-    ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 2010 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"
-    ...    ${RETURN_STDOUT}
-    ...    ${RETURN_RC}
-    Should Contain    ${stdout}    2010
-    Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
+    Latest Events Matching '.event.messageCode 2010 EQ' Found
 
 Event Is Published
     [Documentation]    Event not blacklisted will be published from authorized clients.
 
-    ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 150 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"
-    ...    ${RETURN_STDOUT}
-    ...    ${RETURN_RC}
-    Should Contain    ${stdout}    150
-    Executable Returns No Errors    ${rc}    Event not filtered out by blacklist filter
+    Latest Events Matching '.event.messageCode 150 EQ' Found
 
 A Security Event Is Published
     [Documentation]    Security event will be published if an unauthorized client tries to publish
     ...    a blacklisted event.
 
-    ${stdout}    ${rc}    Execute And Log
-    ...    elosc -f ".event.messageCode 8007 EQ .event.date.tv_sec ${PUBLISH_TIME} GE AND"
-    ...    ${RETURN_STDOUT}
-    ...    ${RETURN_RC}
-    Should Contain    ${stdout}    2010
-    Executable Returns No Errors    ${rc}    Blacklisted event not filtered out by blacklist filter
+    Latest Events Matching '.event.messageCode 8007 EQ' Found

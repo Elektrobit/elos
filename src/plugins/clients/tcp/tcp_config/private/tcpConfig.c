@@ -19,21 +19,20 @@ const char *elosTcpConfigGetInterface(elosPlugin_t const *plugin) {
     return elosPluginConfigGetString(plugin, "/Config/Interface", "ELOSD_INTERFACE", ELOSD_INTERFACE);
 }
 
-safuResultE_t elosTcpConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr *addr) {
+safuResultE_t elosTcpConfigGetSocketAddress(elosPlugin_t const *plugin, struct sockaddr_in *addr) {
     safuResultE_t result = SAFU_RESULT_OK;
-    struct sockaddr_in *addrIp = (struct sockaddr_in *)addr;
     char const *interface = elosTcpConfigGetInterface(plugin);
     int const port = elosTcpConfigGetPort(plugin);
 
     memset(addr, 0, sizeof(struct sockaddr_in));
 
-    int retVal = inet_pton(AF_INET, interface, &addrIp->sin_addr);
+    int retVal = inet_pton(AF_INET, interface, &addr->sin_addr);
     if (retVal != 1) {
         safuLogErrErrnoValue("inet_pton failed", retVal);
         result = SAFU_RESULT_FAILED;
     } else {
-        addrIp->sin_family = AF_INET;
-        addrIp->sin_port = htons(port);
+        addr->sin_family = AF_INET;
+        addr->sin_port = htons(port);
     }
 
     return result;

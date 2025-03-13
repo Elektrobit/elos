@@ -31,6 +31,9 @@ export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"$(mktemp -d /tmp/elos_smoketest_X
 # Overwrite the path to the elos runtime directory.
 export ELOS_RUNDIR=${ELOS_RUNDIR-"${SMOKETEST_TMP_DIR}/"}
 
+# Overwrite the path to the elos unix socket to be used for the unix plugin.
+export ELOSD_SOCKET_PATH=${ELOSD_SOCKET_PATH-"${SMOKETEST_TMP_DIR}/elosd.socket"}
+
 # Overwrite the path to the syslog socket to be used for the syslog scanner.
 export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"${SMOKETEST_TMP_DIR}/elosd.syslog.socket"}
 
@@ -66,7 +69,7 @@ export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
 export LOG4C_RCPATH="${SYSCONF_DIR}/elos/elos_log4c_demo"
 
 # Overwrite the coredump config file path.
-export ELOS_COREDUMP_CONFIG_FILE=${ELOS_COREDUMP_CONFIG_FILE:-"${SYSCONF_DIR}/elos/coredump.json"}
+export ELOS_COREDUMP_CONFIG_FILE=${ELOS_COREDUMP_CONFIG_FILE:-"${SMOKETEST_DIR}/coredump.json"}
 
 # Overwrite the TCP port to be used for the smoketest
 export ELOSD_PORT=${ELOSD_PORT-54323}

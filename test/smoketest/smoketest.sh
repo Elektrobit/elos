@@ -221,7 +221,7 @@ smoketest_elosd_config_not_found() {
     log "Killed Elosd"
 
     FAIL=0
-    str="ERROR: Failed to lookup backend for /dev."
+    str="ERROR: samconfLoad"
     grep -q "$str" $RESULT_DIR/elosd_config_not_set.txt
 
     if [ $? -ne 0 ]; then
@@ -233,30 +233,57 @@ smoketest_elosd_config_not_found() {
     return $FAIL
 }
 
-smoketest_client() {
-    prepare_env "client"
+smoketest_client_uds() {
+    prepare_env "client_uds"
 
-    log "Starting Client Demo"
-    LIBELOS_LOG="y" demo_libelos_v2 > $RESULT_DIR/client_output.txt 2>&1
-
-    sed -i -e 's/[0-9]\+\([.,]\)/xyz\1/g' $RESULT_DIR/client_output.txt
-
-    output_diff=$(diff $RESULT_DIR/client_output.txt $SMOKETEST_DIR/client_output.txt || echo "diff returned: $?")
-    if [ -n "$output_diff" ]
-    then
-        log_err "Problems occurred while comparing the client output:"
-        log_err "$output_diff"
-        return 1
-    fi
-
-    return 0
-}
-
-smoketest_coredump() {
-    prepare_env "elos-coredump"
+    MESSAGE="{\"messageCode\": 1001, \"severity\": 4, \"payload\": \"a custom event with severity INFO (4)\"}"
 
     RESULT=0
     LOG_ELOSD="$RESULT_DIR/elosd.log"
+    REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
+    export ELOS_CONFIG_PATH="${RESULT_DIR}/test_config.json"
+    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+
+    log "Starting elosd"
+    elosd > "$LOG_ELOSD" 2>&1 &
+    ELOSD_PID=$!
+
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+
+    log "Publish Message via unix socket"
+    elosc -U "$ELOSD_SOCKET_PATH" -p "$MESSAGE" >> "$RESULT_DIR/elosc_unix_publish.txt" 2>&1
+
+    log "Find message published via unix socket"
+    elosc -U "$ELOSD_SOCKET_PATH" -f ".event.messageCode 1001 EQ" > "$RESULT_DIR/elosc_unix_publish_event.log" 2>&1
+
+    if grep -q "\"messageCode\":1001" "$RESULT_DIR/elosc_unix_publish_event.log"; then
+        log "Connection established, message logged as expected"
+    else
+        log_err "Message not published via unix socket"
+        RESULT=1
+    fi
+    
+    log "Stop elosd ($ELOSD_PID) ..."
+    kill "$ELOSD_PID" > /dev/null
+    wait "$ELOSD_PID" > /dev/null
+    log "done"
+
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
+
+    return "$RESULT"
+
+}
+
+smoketest_coredump() {
+    prepare_env "coredump"
+
+    RESULT=0
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
+
+
+    REAL_COREDUMP_CONFIG_FILE=$ELOS_COREDUMP_CONFIG_FILE
+    export ELOS_COREDUMP_CONFIG_FILE=${RESULT_DIR}/test_config_coredump.json
 
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
@@ -275,19 +302,29 @@ smoketest_coredump() {
 
     log "Starting elos coredump test"
 
-    log "Triggering coredump"
-    TEST_MESSAGE="THIS IS THE DUMP"
-    echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger.log 2>&1
+    SOCKETS="TCP UNIX"
+    for SOCKET in $SOCKETS; do
+        log "Using socket: $SOCKET"
 
-    elosc -P $ELOSD_PORT -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event.log 2>&1
+        if [ "$SOCKET" = "TCP" ]; then
+            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"127.0.0.1:$ELOSD_PORT\"#" "$REAL_COREDUMP_CONFIG_FILE" > "$ELOS_COREDUMP_CONFIG_FILE"
+            echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger_$SOCKET.log 2>&1
+            elosc -P $ELOSD_PORT -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
+        fi
 
-    if grep -q "\"messageCode\":5100" $RESULT_DIR/coredump_event.log
-    then
-        log "Success coredump event logged"
-    else
-        log_err "coredump event not logged"
-        RESULT=1
-    fi
+        if [ "$SOCKET" = "UNIX" ]; then
+            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"${SMOKETEST_TMP_DIR}/elosd.socket\"#" "$REAL_COREDUMP_CONFIG_FILE" > "$ELOS_COREDUMP_CONFIG_FILE"
+            echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger_$SOCKET.log 2>&1
+            elosc -U ${SMOKETEST_TMP_DIR}/elosd.socket -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
+        fi
+
+        if grep -q "\"messageCode\":5100" $RESULT_DIR/coredump_event_$SOCKET.log; then
+            log "Success: coredump event logged for socket $SOCKET"
+        else
+            log_err "Error: coredump event not logged for socket $SOCKET"
+            RESULT=1
+        fi
+    done
 
     log "Stop elosd ($ELOSD_PID) ..."
     kill $ELOSD_PID > /dev/null
@@ -295,7 +332,9 @@ smoketest_coredump() {
     stop_dlt_mock
     log "done"
 
+
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
+    export ELOS_COREDUMP_CONFIG_FILE="${REAL_COREDUMP_CONFIG_FILE}"
 
     return $RESULT
 }
@@ -335,6 +374,71 @@ smoketest_syslog() {
     fi
 
     return $TEST_RESULT
+}
+
+elosd_built_with_libsystemd() {
+    # Check if elosd is linked against libsystemd. In minimal systems, the ldd command may not be available, so fall
+    # back to simply checking whether this library is mentioned in the binary.
+    if which ldd > /dev/null 2>&1; then
+        ldd "$(which elosd)" | grep -q libsystemd.so
+        return $?
+    else
+        strings "$(which elosd)" | grep -q libsystemd.so
+        return $?
+    fi
+}
+
+smoketest_syslog_systemd() {
+    prepare_env "syslog_systemd"
+
+    TEST_MESSAGE="an arbitrary syslog message"
+    LOG_ELOSD="$RESULT_DIR/elosd.log"
+
+    if ! elosd_built_with_libsystemd; then
+        log "elosd built with systemd support disabled, skipping test."
+        return 0
+    fi
+
+    log "Starting elosd"
+    # Open the syslog socket; when the first client sends data, start elosd.
+    # systemd-socket-activate does not pass through most environment variables, so explicitly instruct it to pass
+    # all elos-related env and the LD_LIBRARY_PATH.
+    # If elosd did not correctly use the socket passed by systemd-socket-activate and re-opened the socket path on its own instead,
+    # the test might wrongly succeed. So explicitly set the ELOS_SYSLOG_PATH to a different (invalid) path to prevent this.
+
+    # word splitting of the env command is intentional, each env entry is intended to be passed as a separate argument, with the leading "-E" also being a separate arg.
+    # shellcheck disable=SC2046
+    systemd-socket-activate -d -l "$ELOS_SYSLOG_PATH" -E ELOS_SYSLOG_USE_SYSTEMD_SOCKET=1 -E LD_LIBRARY_PATH $(env | grep ^ELOS | awk '{ print "-E"; print $1 }') \
+        -E ELOS_SYSLOG_PATH=/invalid/path \
+        elosd > "$LOG_ELOSD" 2>&1 &
+    ELOSD_PID=$!
+    log "Starting syslog socket activation test"
+
+    wait_for_file "$ELOS_SYSLOG_PATH"
+    # let systemd-socket-activate start elosd by writing to the syslog socket
+    echo "" | socat "unix-sendto:${ELOS_SYSLOG_PATH}" -
+    wait_for_elosd_socket "${ELOSD_PID}"
+    wait_for_elosd_claims_running "${LOG_ELOSD}"
+
+    syslog_example -m "$TEST_MESSAGE" -P "$ELOSD_PORT" > "$RESULT_DIR/syslog_example.log" 2>&1 &
+    SYSLOG_EXAMPLE_PID=$!
+
+    log "wait for syslog_example to finish ..."
+    wait "$SYSLOG_EXAMPLE_PID"
+    log "done"
+
+    log "Stop elosd ($ELOSD_PID) ..."
+    kill "$ELOSD_PID" > /dev/null
+    wait "$ELOSD_PID" > /dev/null
+    log "done"
+
+    TEST_RESULT=0
+    if ! grep "\[receive message\] " "$RESULT_DIR/syslog_example.log" | grep -q "$TEST_MESSAGE"; then
+        log_err "missing message: '$TEST_MESSAGE'"
+        TEST_RESULT=1
+    fi
+
+    return "$TEST_RESULT"
 }
 
 smoketest_kmsg() {
@@ -482,7 +586,7 @@ smoketest_locale() {
 
     LOG_ELOSD="$RESULT_DIR/elosd.log"
 
-    #start elos and client
+#start elos and client
 
     log "Starting elosd"
     elosd > "${LOG_ELOSD}" 2>&1 &
@@ -698,7 +802,13 @@ smoketest_plugins() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    PLUGINS="Dummy ScannerDummy DLT"
+    PLUGINS="Dummy ScannerDummy"
+    if [ -n "$(find "$ELOS_BACKEND_PATH" -name backend_dlt_logger.so)" ]; then
+        PLUGINS="$PLUGINS DLT"
+    else
+        log "DLT plugin not installed, not checking for it."
+    fi
+
     for plugin in ${PLUGINS}; do
         TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
         TEST_COUNT=$(sed -n -e "$TEST_MATCH" "$LOG_ELOSD" | wc -l)
@@ -794,7 +904,7 @@ smoketest_compile_program_using_libelos() {
 }
 
 smoketest_compile_program_using_libeloscpp() {
-    prepare_env "compile_program_using_libelos-cpp"
+    prepare_env "compile_program_using_libeloscpp"
     TEST_RESULT=0
 
     EXTRA_FLAGS=""
@@ -957,9 +1067,11 @@ call_test() {
     test_name=$1
     test_method=${2-"test_expect_success"}
 
+
     local result=1
     local skipped="false"
 
+    start_time=$(date +%s)
     echo -n "${test_name} ... "
 
     if [ "$ENABLED_TESTS" = "" ]; then
@@ -980,16 +1092,19 @@ call_test() {
         fi
     fi
 
+    test_status="FAILED"
     if [ "${skipped}" = "true" ]; then
-        echo "SKIPPED"
-	result=0
+        test_status="SKIPPED"
+        result=0
     else
         if [ ${result} -eq 0 ]; then
-            echo "OK"
-        else
-            echo "FAILED"
+            test_status="OK"
         fi
     fi
+
+    echo "${test_status}"
+    end_time=$(date +%s)
+    printf '%s %s %s' "${test_name}" "$((end_time - start_time))" "${test_status}" > "${RESULT_DIR}/smoketest.result" 
 
     return ${result}
 }
@@ -1011,8 +1126,9 @@ done
 FAILED_TESTS=0
 call_test "elosd" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "elosd_config_not_found" || FAILED_TESTS=$((FAILED_TESTS+1))
-call_test "client" || FAILED_TESTS=$((FAILED_TESTS+1))
+call_test "client_uds" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "syslog" || FAILED_TESTS=$((FAILED_TESTS+1))
+call_test "syslog_systemd" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "coredump" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "kmsg" || FAILED_TESTS=$((FAILED_TESTS+1))
 call_test "publish_poll" || FAILED_TESTS=$((FAILED_TESTS+1))
@@ -1027,5 +1143,7 @@ if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
     call_test "compile_program_with_cpp" || FAILED_TESTS=$((FAILED_TESTS+1))
     call_test "compile_program_using_pkgconfig" || FAILED_TESTS=$((FAILED_TESTS+1))
 fi
+
+create_junit_report "${SMOKETEST_RESULT_DIR}"
 
 exit ${FAILED_TESTS}

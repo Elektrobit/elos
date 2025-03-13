@@ -10,7 +10,7 @@
                         "File": "client_tcp.so",
                         "Run": "always",
                         "Config": {
-                            "ConnectionLimit": 200,
+                            "ConnectionLimit": 100,
                             "Port": 54321,
                             "Interface": "127.0.0.1",
                             "EventBlacklist": ".event.messageCode 1000 LE",
@@ -25,10 +25,25 @@
                         "File": "client_tcp.so",
                         "Run": "always",
                         "Config": {
+                            "ConnectionLimit": 100,
                             "Port": 54322,
                             "Interface": "0.0.0.0",
                             "EventBlacklist": "1 1 EQ",
                             "authorizedProcesses": []
+                        }
+                    },
+                    "unixClient": {
+                        "File": "client_unix.so",
+                        "Run": "always",
+                        "Config": {
+                            "ConnectionLimit": 100,
+                            "path": "/tmp/elosd/elosd.socket",
+                            "EventBlacklist": ".event.messageCode 1000 LE",
+                            "authorizedProcesses": [
+                                ".process.uid 0 EQ .process.gid 0 EQ AND .process.exec '/usr/bin/elosc' STRCMP AND",
+                                ".process.gid 200 EQ .process.exec '/usr/bin/elosc' STRCMP AND",
+                                ".process.pid 1 EQ"
+                            ]
                         }
                     }
                 }

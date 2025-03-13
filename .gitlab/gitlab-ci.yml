@@ -159,6 +159,8 @@ smoke-test-release:
     when: always
     paths:
       - build/Release/result/smoketest/
+    reports:
+      junit: build/Release/result/smoketest/junit.xml
 
 smoke-test-debug:
   stage: test
@@ -172,6 +174,8 @@ smoke-test-debug:
     when: always
     paths:
       - build/Debug/result/smoketest/
+    reports:
+      junit: build/Debug/result/smoketest/junit.xml
 
 smoke-test-installed:
   stage: test
@@ -196,6 +200,8 @@ smoke-test-installed:
     when: always
     paths:
       - build/Docker/result/smoketest/
+    reports:
+      junit: build/Docker/result/smoketest/junit.xml
 
 
 code-lint:

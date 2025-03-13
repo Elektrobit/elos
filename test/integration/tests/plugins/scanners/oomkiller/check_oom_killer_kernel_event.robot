@@ -9,6 +9,7 @@ Documentation       A test suite to check if an event is published
 Library             String
 Library             SSHLibrary
 Library             libraries/ElosKeywords.py
+Library             libraries/ElosEventKeywords.py
 Resource            resources/elosd-keywords.resource
 Resource            resources/keywords.resource
 
@@ -19,17 +20,11 @@ Suite Teardown      Close All Connections
 
 *** Variables ***
 ${OOM_EVENT_FILTER}         .event.messageCode 5020 EQ
-${KERNEL_OOM_MESSAGE}
-...                         {
-...                         "date":[ptime,0],
-...                         "source":{
-...                         "fileName":"\/dev\/kmsg"
-...                         },
-...                         "severity":3,
-...                         "classification":1,
-...                         "messageCode":1111,
-...                         "payload":"3,270,497530363,-;Out of memory: Killed process 115 (tail)"
-...                         }
+${FILENAME}                 \/dev\/kmsg
+${SEVERITY}                 3
+${CLASSIFICATION}           1
+${MESSAGE_CODE}             1111
+${PAYLOAD}                  3,270,497530363,-;Out of memory: Killed process 115 (tail)
 
 
 *** Test Cases ***
@@ -49,11 +44,17 @@ An OOM Killer Is Invoked
     ...    unsafe, so a similar kernel log event is
     ...    simulated via an elosc client
 
-    ${KERNEL_OOM_MESSAGE}=    Set Event Publish Time    ${KERNEL_OOM_MESSAGE}
+    ${OOM_EVENT}=    Get Default Event
+    ${OOM_EVENT}=    Set '${FILENAME}' As '${OOM_EVENT}' File Name
+    ${OOM_EVENT}=    Set '${SEVERITY}' As '${OOM_EVENT}' Severity
+    ${OOM_EVENT}=    Set '${CLASSIFICATION}' As '${OOM_EVENT}' Classification
+    ${OOM_EVENT}=    Set '${MESSAGE_CODE}' As '${OOM_EVENT}' Message Code
+    ${OOM_EVENT}=    Set '${PAYLOAD}' As '${OOM_EVENT}' Payload
 
-    Publish Event    ${KERNEL_OOM_MESSAGE}
+    ${OOM_EVENT_JSON}=   Get '${OOM_EVENT}' As Json String
+    Publish '${OOM_EVENT_JSON}'
 
 An OOM Event Is Published
     [Documentation]    OOM killer invoked event is published.
 
-    Latest Events Matching ${OOM_EVENT_FILTER} Found
+    Latest Events Matching '${OOM_EVENT_FILTER}' Found

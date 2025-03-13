@@ -24,6 +24,10 @@
 #include "samconf/samconf.h"
 #include "version.h"
 
+#ifdef ELOSD_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+
 #define MAIN_SLEEP_TIME_USEC (100 * 1000)
 
 struct serverContext {
@@ -93,6 +97,9 @@ int elosServerShutdown(struct serverContext *ctx) {
         safuLogErr("Deleting scanner manager failed!");
         result = EXIT_FAILURE;
     }
+
+    elosEventDispatcherBufferRemove(&ctx->eventDispatcher, ctx->logger->logEventBuffer);
+
     if (elosEventDispatcherDeleteMembers(&ctx->eventDispatcher) != SAFU_RESULT_OK) {
         safuLogErr("Deleting event dispatcher members failed!");
         result = EXIT_FAILURE;
@@ -138,13 +145,12 @@ safuResultE_t _createRunDirectory(struct serverContext *ctx) {
 int main(int argc, char **argv) {
     int retval;
     struct serverContext context = {0};
+    const char *verstr = elosGetVersionString();
 
     setlocale(LC_ALL, "C");
     safuLogSetPrefix(ELOSD_LOG_PREFIX);
 
     if (elosIsVersionRequested((const char **)argv, argc)) {
-        const char *verstr;
-        verstr = elosGetVersionString();
         safuLogInfoF("elosd-%s", verstr);
         return EXIT_SUCCESS;
     }
@@ -182,9 +188,10 @@ int main(int argc, char **argv) {
         safuLogWarn("setting log filter failed!");
     }
 
-    safuLogInfoF("Setup:\n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s", safuGetHardwareId(),
-                 safuLogLevelToString(safuLogGetStreamLevel()), elosConfigGetElosdLogFilter(context.config),
-                 elosConfigGetElosdScannerPath(context.config));
+    safuLogInfoF(
+        "Setup:\n\tversion: elosd-%s \n\thardwareid: %s\n\tlog level: %s\n\tlog filter: %s\n\tscanner path: %s", verstr,
+        safuGetHardwareId(), safuLogLevelToString(safuLogGetStreamLevel()), elosConfigGetElosdLogFilter(context.config),
+        elosConfigGetElosdScannerPath(context.config));
 
     result = _createRunDirectory(&context);
     if (result != SAFU_RESULT_OK) {
@@ -298,11 +305,18 @@ int main(int argc, char **argv) {
     safuLogInfo("Running...");
     fflush(stdout);
     fflush(stderr);
+#ifdef ELOSD_SYSTEMD
+    sd_notify(0, "READY=1");
+#endif
 
     while (elosActive) {
         // Temporary solution to allow graceful program termination with raise() from threads
         usleep(MAIN_SLEEP_TIME_USEC);
     }
+
+#ifdef ELOSD_SYSTEMD
+    sd_notify(0, "STOPPING=1");
+#endif
 
     retval = elosServerShutdown(&context);
 

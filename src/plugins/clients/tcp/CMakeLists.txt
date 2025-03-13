@@ -9,6 +9,8 @@ add_library(
     client_tcp
   SHARED
     private/tcp.c
+    private/tcp_connectionmanager.c
+    private/tcp_clientconnection.c
 )
 create_interface_library(
   FROM
@@ -21,8 +23,7 @@ set_target_properties(client_tcp PROPERTIES PREFIX "")
 target_link_libraries(
   client_tcp
   PUBLIC
-    messagehandler_static
-    connectionmanager_static
+    tcp_clientauthorization_static
     tcp_config_static
     client_tcp_interface
     libelosplugin

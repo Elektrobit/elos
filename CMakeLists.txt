@@ -10,14 +10,6 @@ project(
     LANGUAGES C
 )
 
-project_set_environment()
-project_set_version_variables()
-project_add_documentation_target(
-  TITLE
-    "BaseOS ElosD Documentation"
-  MARKDOWN
-    ${CMAKE_SOURCE_DIR}/documentation/documentation.md
-)
 
 option(ELOS_BUILD_DEFAULTS "enable all default builds" ON)
 
@@ -56,11 +48,28 @@ option(INSTALL_ELOS_MOCK_LIBRARY "Install the mock libraries" ON)
 option(ELOS_PLUGINS "Build the elos plugins" ${ELOS_BUILD_DEFAULTS})
 option(INSTALL_ELOS_PLUGINS "install the elos plugins" ON)
 
+option(ELOSD_SYSTEMD "Enable systemd features (startup notification and socket-based activation for the syslog scanner)" OFF)
+
 option(ELOSD_EVENTLOGGING_BACKEND_SQL "Build sqlite3 bakend plugin" ${ELOS_BUILD_DEFAULTS})
 option(ELOSD_EVENTLOGGING_BACKEND_NOSQL "Build NoSQL backend plugin" OFF)
 option(ELOSD_EVENTLOGGING_BACKEND_INFLUXDB "Build InfluxDB backend plugin" OFF)
 option(ELOSD_EVENTLOGGING_BACKEND_DLT "Build DLT backend plugin" ${ELOS_BUILD_DEFAULTS})
 option(ELOSD_LIBDLT "Build libelosdlt, a dlt protocol implementation." ${ELOSD_EVENTLOGGING_BACKEND_DLT})
+
+option(ENABLE_LOGGING "Enables the safuLog functions" OFF)
+
+project_set_environment()
+project_set_version_variables()
+project_add_documentation_target(
+  TITLE
+    "BaseOS ElosD Documentation"
+  MARKDOWN
+    ${CMAKE_SOURCE_DIR}/documentation/documentation.md
+)
+
+if(ENABLE_LOGGING)
+  add_compile_definitions(SAFU_LOG=1)
+endif(ENABLE_LOGGING)
 
 add_subdirectory(src)
 if(UNIT_TESTS)
@@ -70,9 +79,12 @@ endif(UNIT_TESTS)
 add_subdirectory(test/utest)
 add_subdirectory(test/smoketest)
 
+if (ELOS_DAEMON)
+  option(INSTALL_ELOSD_SYSTEMD_UNIT "install the elosd.service unit" ${ELOSD_SYSTEMD})
+  option(INSTALL_ELOSD_SYSVINIT_SCRIPT "install the elosd init script" OFF)
+  set(INSTALL_ELOSD_SYSTEMD_UNIT_DIR "${CMAKE_INSTALL_LIBDIR}/systemd/system" CACHE STRING "destination directory for the service unit")
+  set(INSTALL_ELOSD_SYSVINIT_SCRIPT_DIR "${CMAKE_INSTALL_SYSCONFDIR}/init.d" CACHE STRING "destination directory for the elosd init script")
+  add_subdirectory(integration)
+endif()
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-if(PACKAGING)
-  include(cmake/Packing.cmake)
-endif(PACKAGING)
-

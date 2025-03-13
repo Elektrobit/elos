@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include <bits/types/struct_timeval.h>
+#include <safu/result.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -31,6 +32,9 @@ typedef enum {
 typedef struct {
     char *host;
     int port;
+    bool tcpRequested;
+    char *unixSocket;
+    bool unixSocketRequested;
     elosCommand_t command;
     char *commandArgs;
     size_t eventCount;
@@ -61,6 +65,7 @@ void _printUsage(FILE *stream, const char *const elosProgramName) {
             "  -r <events/sec>  set event rate\n"
             "  -H <Host-Ip>     set host ip address\n"
             "  -P <Port>        set host port\n"
+            "  -U <unix socket> set inix socket file name\n"
             "  -h               print this help\n"
             "  -v               get version\n\n"
             "<filter>: event filter in RPN notation\n"
@@ -91,13 +96,29 @@ int main(int argc, char *argv[]) {
     } else {
         elosSession_t *session = NULL;
         const char *version = NULL;
+        // try each of the connection options if it was either explicitly requested
+        // or implicitly because none of the two options was passed
+        bool tryUnix = config.unixSocketRequested || !config.tcpRequested;
+        bool tryTcp = config.tcpRequested || !config.unixSocketRequested;
 
         printf("Connecting to elosd...\n");
-        resVal = elosConnectTcpip(config.host, config.port, &session);
+
+        resVal = SAFU_RESULT_FAILED;
+        if (tryUnix) {
+            resVal = elosConnectUnix(config.unixSocket, &session);
+        }
+        if (resVal != SAFU_RESULT_OK && tryTcp) {
+            if (tryUnix) {
+                printf("Cannot connect via unix socket, try with other available interface\n");
+            }
+            resVal = elosConnectTcpip(config.host, config.port, &session);
+        }
         if (resVal != SAFU_RESULT_OK) {
             fprintf(stderr, "ERROR: Connection to elosd failed!\n");
             result = EXIT_FAILURE;
-        } else {
+        }
+
+        if (resVal == SAFU_RESULT_OK) {
             printf("Get elosd version...\n");
             resVal = elosGetVersion(session, &version);
             if (resVal != SAFU_RESULT_OK) {
@@ -139,11 +160,14 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
     config->eventRate = 0;
     config->commandArgs = NULL;
     config->command = UNKNOWN;
+    config->unixSocket = strdup("/run/elosd/elosd.socket");
+    config->unixSocketRequested = false;
     config->host = strdup("127.0.0.1");
     config->port = 54321;
+    config->tcpRequested = false;
 
     while (result == SAFU_RESULT_OK) {
-        c = getopt(argc, argv, "s:u:p:f:c:r:H:P:vh");
+        c = getopt(argc, argv, "s:u:p:f:c:r:H:P:U:vh");
         if (c == -1) {
             break;
         }
@@ -182,9 +206,16 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
             case 'H':
                 free(config->host);
                 config->host = strdup(optarg);
+                config->tcpRequested = true;
                 break;
             case 'P':
                 config->port = strtol(optarg, NULL, 10);
+                config->tcpRequested = true;
+                break;
+            case 'U':
+                free(config->unixSocket);
+                config->unixSocket = strdup(optarg);
+                config->unixSocketRequested = true;
                 break;
             case 'v':
                 config->command = GET_VERSION;
@@ -217,6 +248,7 @@ safuResultE_t elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
 void elosDeleteConfig(elosConfig_t *config) {
     free(config->commandArgs);
     free(config->host);
+    free(config->unixSocket);
 }
 
 static inline safuResultE_t _commandEventSubscribeHelperPrintVector(elosEventVector_t *eventVector) {

@@ -1,0 +1,77 @@
+@startuml
+title "The ClientManager Framework controlflow"
+
+
+
+group create ConnectionManager
+    ClientPlugin -> TcpConnectionManager : new()
+    TcpConnectionManager -> ConnectionManager : initialize()
+    TcpConnectionManager <- ConnectionManager : getConnectionLimit()
+    TcpConnectionManager <- ConnectionManager  : initializeListener()
+    loop foreach connection in connectionManager->connections
+        TcpClientConnection <- ConnectionManager  : setConnectionHandlers()
+        TcpClientConnection <- ConnectionManager  : initializeConnection()
+    end
+    TcpConnectionManager <- ConnectionManager  : authorizationInitialize()
+    ConnectionManager -> AuthorizedProcess  : initialize()
+end
+
+group start ConnectionManager
+    ClientPlugin -> ConnectionManager : start()
+    ConnectionManager -> ConnectionManager: threadListen()
+    group ListenerThread
+        ConnectionManager -> :listen()
+        loop while active
+            ConnectionManager -> ConnectionManager : getFreeConnectionSlot()
+            ConnectionManager -> ConnectionManager : waitForIncomingConnection(slot)
+            loop while successfull connected
+                ConnectionManager -> TcpConnectionManager : accept(connection)
+                ConnectionManager -> TcpConnectionManager : authorize(connection)
+            end
+            ConnectionManager -> ClientConnection : start()
+            ClientConnection -> ClientConnection : pthread_create(ClientConnectionWorker)
+            group ClientConnectionWorker
+                loop while active
+                    ClientConnection -> MessageHandler : handleMessage()
+                    ClientConnection <-- MessageHandler : handleMessage()
+                end
+
+                group workerDataDeleteMembers()
+                    ClientConnection -> TcpClientConnection : closeConnection(connection)
+                    ClientConnection -> ClientConnection : unsubscribe
+                    ClientConnection -> ClientConnection : deletePublisher
+                    ClientConnection -> ClientConnection : deleteSubsciber
+                end
+                ClientConnection -> ClientConnection : release()
+                note right of ClientConnection: connection marked as free and returned to pool
+            end
+            ConnectionManager <-- ClientConnection : start()
+            note right of ConnectionManager: listen for next incoming connection
+        end
+    end
+    ClientPlugin <-- ConnectionManager : start()
+    note right of ClientPlugin: ConnectionManager started return control to plugin
+end
+
+group stop ConnectionManager
+    ClientPlugin -> ConnectionManager : stop()
+    ConnectionManager -> TcpConnectionManager : closeListener()
+    ConnectionManager -> ConnectionManager : remove LISTEN_ACTIVE flag
+    ConnectionManager -> ConnectionManager : pthread_join(listenThread)
+    ClientPlugin <-- ConnectionManager : stop()
+end
+
+group destroy ConnectionManager
+    ClientPlugin -> TcpConnectionManager : delete()
+    TcpConnectionManager -> ConnectionManager : deleteMembers()
+    loop foreach connection in connectionManager->connections
+        ConnectionManager -> ClientConnection : deleteMembers()
+        note over ClientConnection: if not already stopped
+        ClientConnection -> ClientConnection : stop()
+        ConnectionManager -> TcpClientConnection  : deleteConnection()
+    end
+    ConnectionManager -> TcpConnectionManager : authorizationDelete()
+    ConnectionManager -> TcpConnectionManager : deleteListener()
+end
+
+@enduml

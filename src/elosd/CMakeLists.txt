@@ -4,6 +4,13 @@ find_package(Threads REQUIRED)
 find_package(safu 0.56.2 REQUIRED)
 find_package(samconf 0.56.3 REQUIRED)
 
+if (ELOSD_SYSTEMD)
+  pkg_check_modules(libsystemd REQUIRED libsystemd)
+endif()
+
+
+add_compile_definitions(SAFU_LOG=1)
+
 add_executable(
   elosd
   main.c
@@ -46,6 +53,21 @@ target_link_libraries(
     safu::safu
     samconf::samconf
 )
+
+if (ELOSD_SYSTEMD)
+  target_compile_definitions(elosd PRIVATE ELOSD_SYSTEMD)
+  target_link_libraries(
+    elosd
+    PUBLIC
+      ${libsystemd_LIBRARIES}
+  )
+
+  target_include_directories(
+    elosd
+    PUBLIC
+      ${libsystemd_INCLUDE_DIRS}
+  )
+endif()
 
 if (INSTALL_ELOS_DAEMON)
   install(TARGETS elosd DESTINATION ${CMAKE_INSTALL_BINDIR})

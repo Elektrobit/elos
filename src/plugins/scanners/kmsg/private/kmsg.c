@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/eventfd.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
@@ -32,23 +33,11 @@
 #define ELOS_RUNDIR "/run/elosd"
 #endif
 
-#define MAX_LOG_ENTRY_SIZE        4096
-#define SCANNER_NAME              "kmsg"
-#define SCANNER_CMD_STOP          1
-#define SCANNER_KMSG_FILE_CREATED 1
+#define MAX_LOG_ENTRY_SIZE 4096
+#define SCANNER_NAME       "kmsg"
+#define SCANNER_CMD_STOP   1
 
 typedef uint64_t elosScannerCommand_t;
-
-struct elosKmsgContext {
-    uint32_t kmsgEventId;
-    char *kmsgFile;
-    int kmsgPollFd;
-    int cmdPollFd;
-    bool running;
-    int flags;
-    elosKmsgMapper_t mapper;
-    struct elosPublisher *publisher;
-};
 
 static const samconfConfig_t *_getElosRootConfig(const samconfConfig_t *pluginConfig) {
     bool isElosRootConfig = false;
@@ -85,10 +74,10 @@ static const char *_getElosRunDir(const samconfConfig_t *pluginConfig) {
 static char *_getDefaultKmsgStateFile(const samconfConfig_t *pluginConfig) {
     const char *runDir = _getElosRunDir(pluginConfig);
 
-    ssize_t length = snprintf(NULL, 0, "%s/kmsg.state", runDir);
+    ssize_t length = snprintf(NULL, 0, "%s/kmsg.state", runDir) + sizeof('\0');
     char *defaultKmsgStateFile = safuAllocMem(NULL, length);
     if (defaultKmsgStateFile != NULL) {
-        sprintf(defaultKmsgStateFile, "%s/kmsg.state", runDir);
+        snprintf(defaultKmsgStateFile, length, "%s/kmsg.state", runDir);
     }
 
     return defaultKmsgStateFile;
@@ -112,18 +101,70 @@ static char *_getKmsgStateFile(const samconfConfig_t *pluginConfig) {
     return kmsgStateFile;
 }
 
-static safuResultE_t _touchFile(const char *file) {
-    safuResultE_t result = SAFU_RESULT_FAILED;
+static safuResultE_t _openStateMmap(elosPlugin_t *plugin) {
+    struct elosKmsgContext *context = plugin->data;
+    safuResultE_t result = SAFU_RESULT_OK;
+    int stateFd = open(context->kmsgStateFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (stateFd < 0) {
+        safuLogErrF("open kmsg statefile '%s' failed (%s)", context->kmsgStateFile, strerror(errno));
+        result = SAFU_RESULT_FAILED;
+    }
+    if (result == SAFU_RESULT_OK) {
+        int res = ftruncate(stateFd, MAX_LOG_ENTRY_SIZE);
+        if (res != 0) {
+            safuLogErr("Failed resizing of state file");
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+    if (result == SAFU_RESULT_OK) {
+        context->kmsgStateBuffer = mmap(NULL, MAX_LOG_ENTRY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, stateFd, 0);
+        if (context->kmsgStateBuffer == MAP_FAILED) {
+            safuLogErr("Failed memory mapping for state file");
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+    close(stateFd);
+    return result;
+}
 
-    int stateFd = open(file, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
-    if (stateFd == -1) {
-        safuLogErrErrnoValue("Failed to create kmsg state file", stateFd);
-    } else {
-        close(stateFd);
-        result = SAFU_RESULT_OK;
+static void _scannToLastPosition(elosPlugin_t *plugin) {
+    struct elosKmsgContext *context = plugin->data;
+    safuResultE_t result = SAFU_RESULT_OK;
+    char *readBuffer = NULL;
+    int readBytes = 0;
+
+    readBuffer = calloc(MAX_LOG_ENTRY_SIZE, sizeof(char));
+    if (readBuffer == NULL) {
+        result = SAFU_RESULT_FAILED;
     }
 
-    return result;
+    while (result == SAFU_RESULT_OK) {
+        struct pollfd fds = {.fd = context->kmsgPollFd, .events = POLLIN};
+        int retval = poll(&fds, 1, 0);
+        if (retval == 0) {
+            lseek(context->kmsgPollFd, 0, SEEK_SET);
+            break;
+        } else if (retval < 0) {
+            safuLogErrErrno("checking kmmsg file failed");
+            result = SAFU_RESULT_FAILED;
+            break;
+        }
+        readBytes = read(context->kmsgPollFd, readBuffer, MAX_LOG_ENTRY_SIZE);
+        if (readBytes < 0) {
+            safuLogErrErrno("read message");
+            result = SAFU_RESULT_FAILED;
+            break;
+        } else if ((readBytes > 0) && (readBuffer[readBytes - 1] == '\n')) {
+            readBuffer[readBytes - 1] = '\0';
+        } else {
+            readBuffer[readBytes] = '\0';
+        }
+        int cmp = strcmp(context->kmsgStateBuffer, readBuffer);
+        if (cmp == 0) {
+            break;
+        }
+    }
+    free(readBuffer);
 }
 
 static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
@@ -132,11 +173,11 @@ static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
     struct stat stbuf = {0};
     int retval;
 
-    char *kmsgStateFile = _getKmsgStateFile(plugin->config);
-    if (kmsgStateFile == NULL) {
+    context->kmsgStateFile = _getKmsgStateFile(plugin->config);
+    if (context->kmsgStateFile == NULL) {
         safuLogErr("Failed to setup kmsg state file.");
     } else {
-        safuLogDebugF("Save kmsg-State in %s", kmsgStateFile);
+        safuLogDebugF("Save kmsg-State in %s", context->kmsgStateFile);
 
         const char *defaultKmsgFile = samconfConfigGetStringOr(plugin->config, "Config/KmsgFile", ELOS_KMSG_FILE);
         const char *kmsgFile = safuGetEnvOr("ELOS_KMSG_FILE", defaultKmsgFile);
@@ -167,34 +208,22 @@ static safuResultE_t _openKmsgFile(elosPlugin_t *plugin) {
             if (context->kmsgPollFd < 0) {
                 safuLogErrF("open '%s' failed (%s)", kmsgFile, strerror(errno));
                 result = SAFU_RESULT_FAILED;
-            } else {
-                bool skipBuffer = false;
-
-                int fileExists = access(kmsgStateFile, F_OK);
+            }
+        }
+        if (result == SAFU_RESULT_OK) {
+            int fileExists = access(context->kmsgStateFile, F_OK);
+            int err = errno;
+            result = _openStateMmap(plugin);
+            if (result == SAFU_RESULT_OK) {
                 if (fileExists == 0) {
-                    skipBuffer = true;
-                } else {
-                    switch (errno) {
-                        case ENOENT:
-                            result = _touchFile(kmsgStateFile);
-                            if (result != SAFU_RESULT_OK) {
-                                skipBuffer = true;
-                            }
-                            break;
-                        default:
-                            safuLogErrErrno("Failed to check kmsg.state file, skip kmsg buffer content.");
-                            skipBuffer = true;
-                    }
-                }
-
-                if (skipBuffer == true && (context->flags & SCANNER_KMSG_FILE_CREATED) == 0) {
-                    lseek(context->kmsgPollFd, 0, SEEK_END);
+                    _scannToLastPosition(plugin);
+                } else if (err != ENOENT) {
+                    safuLogErrErrno("Failed to check kmsg.state file, read kmsg buffer from start.");
                 }
             }
         }
     }
 
-    free(kmsgStateFile);
     return result;
 }
 
@@ -246,6 +275,7 @@ static void _publishMessage(elosPlugin_t *plugin) {
         if (result != SAFU_RESULT_OK) {
             safuLogErr("eventLog failed");
         }
+        memcpy(context->kmsgStateBuffer, readBuffer, readBytes + 1);
     }
 
     free(readBuffer);
@@ -257,6 +287,17 @@ static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
     if (context != NULL) {
         close(context->kmsgPollFd);
         close(context->cmdPollFd);
+        if (context->kmsgStateFile != NULL) {
+            int stateFd = open(context->kmsgStateFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            size_t len = strlen(context->kmsgStateBuffer);
+            safuLogDebugF("last Log line: %s |(%ld)|", context->kmsgStateBuffer, len);
+            int res = ftruncate(stateFd, strlen(context->kmsgStateBuffer));
+            if (res < 0) {
+                safuLogErrF("Failed to shrink statefile to message size (%s)", strerror(errno));
+            }
+            close(stateFd);
+        }
+        munmap(context->kmsgStateBuffer, MAX_LOG_ENTRY_SIZE);
 
         if (context->kmsgFile != NULL) {
             if (context->flags & SCANNER_KMSG_FILE_CREATED) {
@@ -264,6 +305,7 @@ static safuResultE_t _freePluginResources(elosPlugin_t *plugin) {
             }
             free(context->kmsgFile);
         }
+        free(context->kmsgStateFile);
 
         if (elosPluginDeletePublisher(plugin, context->publisher) != SAFU_RESULT_OK) {
             result = SAFU_RESULT_FAILED;
