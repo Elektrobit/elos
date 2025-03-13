@@ -28,3 +28,8 @@ target_include_directories(
 
 target_compile_definitions(unix_config_static PUBLIC ELOSD_SOCKET_PATH="${ELOSD_SOCKET_PATH}")
 target_compile_definitions(unix_config_static PUBLIC ELOSD_CONNECTION_LIMIT=${ELOSD_CONNECTION_LIMIT})
+
+create_weak_library(
+  FROM
+    unix_config_static
+)

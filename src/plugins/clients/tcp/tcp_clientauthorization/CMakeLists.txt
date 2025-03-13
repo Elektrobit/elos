@@ -35,3 +35,8 @@ target_link_libraries(
     rpnfilter_interface
     ${LIBMNL_LIBRARIES}
 )
+
+create_weak_library(
+  FROM
+    tcp_clientauthorization_static
+)

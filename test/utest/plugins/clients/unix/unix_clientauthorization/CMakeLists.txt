@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+add_subdirectory(elosUnixClientAuthorizationDelete)
+add_subdirectory(elosUnixClientAuthorizationInitialize)
+add_subdirectory(elosUnixClientAuthorizationIsTrustedConnection)
