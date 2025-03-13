@@ -8,6 +8,8 @@ gets started.
 
 The scanner tries to open the configured file for reading, if it is not found
 at the specified location it will try to create a FIFO node using ``mkfifo()``.
+If elosd gets shutdown and restarted it seeks to find the last log line it published
+to continue publishing from that point on.
 Multiline kernel messages are not handled right now.
 
 Published events
@@ -71,6 +73,8 @@ Under `root/elos/Scanner/Plugins` add:
 
 - ``KmsgStateFile``: The path to store the kms state file. Make sure the path
   exists and is writeabel or the plugin initalization will fail.
+  The last kernel log line that was published is also saved here
+  so that the scanner can resume from that point after a restart
 
 Configuration structure
 ~~~~~~~~~~~~~~~~~~~~~~~

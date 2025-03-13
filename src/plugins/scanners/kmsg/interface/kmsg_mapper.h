@@ -16,6 +16,8 @@ struct elosKmsgContext {
     uint32_t kmsgEventId;
     char *kmsgFile;
     int kmsgPollFd;
+    char *kmsgStateFile;
+    char *kmsgStateBuffer;
     int cmdPollFd;
     bool running;
     int flags;
