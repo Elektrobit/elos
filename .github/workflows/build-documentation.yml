@@ -132,7 +132,7 @@ jobs:
 
   publish-gh-pages:
     runs-on: ubuntu-latest
-    if: ${{ github.ref_name == 'main' }}
+    if: ${{ github.ref_name == 'test_pages' }}
     needs: documentation
     steps:
       - name: Deploy to GitHub Pages
