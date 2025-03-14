@@ -1,0 +1,43 @@
+@startuml
+title "Usage of client managers in a elosd instance"
+
+
+node "elosd" {
+    [elosd-core]
+
+    package "libelosplugin" {
+      [PluginAPI]
+      [ClientManager]
+      [ClientConnection]
+      [MessageHandler] <<Protocol>>
+
+      [ClientManager] --> [ClientConnection] : create
+      [ClientManager] -left[hidden]- [ClientConnection]
+    }
+
+    component A-Client-Plugin {
+      [A-ConnectionManager] <<ConnectionManager>>
+      [A-ClientConnection]  <<ClientConnection>>
+    }
+    component B-Client-Plugin {
+      [B-ConnectionManager] <<ConnectionManager>>
+      [B-ClientConnection]  <<ClientConnection>>
+    }
+
+    [A-ConnectionManager] .up.> ClientManager : implement
+    [B-ConnectionManager] .up.> ClientManager : implement
+
+    [A-ClientConnection] .up.> ClientConnection : implement
+    [B-ClientConnection] .up.> ClientConnection : implement
+
+
+    [ClientConnection] -up-> MessageHandler : use
+    [MessageHandler] -up-> [PluginAPI] : use
+
+    [elosd-core] <-left-> [PluginAPI] : publish / subscribe / fetch
+}
+
+[A-Client] .up. [A-ConnectionManager] : connect/disconnect
+[B-Client] .up. [B-ConnectionManager] : connect/disconnect
+
+@enduml

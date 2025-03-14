@@ -2,17 +2,13 @@
 #define _GNU_SOURCE
 #include "unix_clientauthorization/clientauthorization.h"
 
+#include <elos/libelosplugin/clientauthorizedprocesses.h>
 #include <limits.h>
 #include <safu/log.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/un.h>
-#include <unistd.h>
-
-#include "clientauthorizedprocesses/clientauthorizedprocesses.h"
 
 safuResultE_t elosUnixClientAuthorizationInitialize(elosClientAuthorization_t *const clientAuth) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -44,8 +40,7 @@ static inline safuResultE_t _getExecPath(char const *const line, char **execPath
     return result;
 }
 
-bool elosUnixClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth,
-                                                    UNUSED struct sockaddr const *const addr) {
+bool elosUnixClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *const clientAuth, int fd) {
     struct ucred clientCredentials;
     socklen_t length = sizeof(clientCredentials);
     bool isClientAuthorized = false;
@@ -54,7 +49,7 @@ bool elosUnixClientAuthorizationIsTrustedConnection(elosClientAuthorization_t *c
 
     safuLogDebug("Check for trusted connection");
 
-    int retVal = getsockopt(clientAuth->clientFd, SOL_SOCKET, SO_PEERCRED, &clientCredentials, &length);
+    int retVal = getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &clientCredentials, &length);
     if (retVal == -1) {
         safuLogErrErrnoValue("Get socket options failed", retVal);
     } else {

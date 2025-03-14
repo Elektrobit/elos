@@ -18,6 +18,21 @@ add_library(
   SHARED
     private/libelosplugin.c
     private/libelosPluginConfig.c
+    private/connectionmanager/clientblacklist.c
+    private/connectionmanager/clientconnection_worker.c
+    private/connectionmanager/clientconnection.c
+    private/connectionmanager/connectionmanager_listen.c
+    private/connectionmanager/connectionmanager_start.c
+    private/connectionmanager/connectionmanager_stop.c
+    private/connectionmanager/connectionmanager.c
+    private/connectionmanager/clientauthorizedprocesses.c
+    private/messagehandler/message_handler.c
+    private/messagehandler/message_get_version.c
+    private/messagehandler/message_event_publish.c
+    private/messagehandler/message_event_subscribe.c
+    private/messagehandler/message_event_unsubscribe.c
+    private/messagehandler/message_log_find_event.c
+    private/messagehandler/message_eventqueue_read.c
 )
 
 target_include_directories(
@@ -32,15 +47,23 @@ target_include_directories(
 target_link_libraries(
   libelosplugin
   PRIVATE
+    version
+    eventbuffer_static
     elos_event_static
     eventfilter_static
+    eventbuffer_interface
+    rpnfilter_interface
+    processfilter_static
   PUBLIC
     libelos_common
     libelosplugin_interface
     samconf::samconf
     safu::safu
+    safu::safu_interface
+    elos_common_interface
 )
 
+target_compile_definitions(libelosplugin PRIVATE SAFU_LOG=1)
 set_target_properties(libelosplugin PROPERTIES PREFIX "")  # Prevent creation of "liblibelos.so"
 set_target_properties(
   libelosplugin

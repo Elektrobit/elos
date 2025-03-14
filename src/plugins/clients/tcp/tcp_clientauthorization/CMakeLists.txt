@@ -22,18 +22,21 @@ target_include_directories(
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/public
     ${CMAKE_CURRENT_SOURCE_DIR}/private
-    ${CMAKE_CURRENT_SOURCE_DIR}/interface
 )
 target_link_libraries(
   tcp_clientauthorization_static
   PRIVATE
     eventbuffer_static
-    elos_common_interface
-  PUBLIC
-    clientauthorizedprocesses_static
     libelosplugin
+  PUBLIC
+    libelosplugin_interface
     elos_common_interface
     eventbuffer_interface
     rpnfilter_interface
     ${LIBMNL_LIBRARIES}
+)
+
+create_weak_library(
+  FROM
+    tcp_clientauthorization_static
 )

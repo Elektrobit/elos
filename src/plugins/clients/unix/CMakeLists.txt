@@ -9,6 +9,8 @@ add_library(
     client_unix
   SHARED
     private/unix.c
+    private/unix_connectionmanager.c
+    private/unix_clientconnection.c
 )
 create_interface_library(
   FROM
@@ -21,9 +23,10 @@ set_target_properties(client_unix PROPERTIES PREFIX "")
 target_link_libraries(
   client_unix
   PUBLIC
-    connectionmanager_static
-    messagehandler_static
+    unix_clientauthorization_static
+    unix_config_static
     libelosplugin
+    libelosplugin_interface
     samconf::samconf
 )
 target_include_directories(

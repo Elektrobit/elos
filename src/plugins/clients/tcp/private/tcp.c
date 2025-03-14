@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-#include <elos/libelosplugin/libelosplugin.h>
-#include <safu/common.h>
-#include <safu/log.h>
 #include <stdlib.h>
 
-#include "connectionmanager/connectionmanager.h"
+#include "tcp_connectionmanager_private.h"
 
 static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -16,19 +13,14 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
         if ((plugin->config == NULL) || (plugin->config->key == NULL)) {
             safuLogErr("Given configuration is NULL or has .key set to NULL");
         } else {
-            elosConnectionManager_t *connectionManager = safuAllocMem(NULL, sizeof(elosConnectionManager_t));
-            if (connectionManager == NULL) {
-                safuLogErr("Failed to allocate memory");
+            elosConnectionManager_t *connectionManager = NULL;
+            result = elosTcpConnectionManagerNew(&connectionManager, plugin);
+            if (result != SAFU_RESULT_OK) {
+                safuLogErr("elosConnectionManagerInitialize");
             } else {
-                safuLogDebug("Start client manager");
-                result = elosConnectionManagerInitialize(connectionManager, plugin, AF_INET);
-                if (result != SAFU_RESULT_OK) {
-                    safuLogErr("elosConnectionManagerInitialize");
-                } else {
-                    plugin->data = connectionManager;
-                    safuLogDebugF("Plugin '%s' has been loaded", plugin->config->key);
-                    result = SAFU_RESULT_OK;
-                }
+                plugin->data = connectionManager;
+                safuLogDebugF("Plugin '%s' has been loaded", plugin->config->key);
+                result = SAFU_RESULT_OK;
             }
         }
     }
@@ -94,10 +86,9 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
         safuLogErr("Null parameter given");
     } else {
         safuLogDebugF("Unloading Plugin '%s'", plugin->config->key);
-        if (elosConnectionManagerDeleteMembers(connectionManager) != SAFU_RESULT_OK) {
+        if (elosTcpConnectionManagerDelete(connectionManager, plugin) != SAFU_RESULT_OK) {
             safuLogErr("Deleting connection manager failed!");
         }
-        free(plugin->data);
         result = SAFU_RESULT_OK;
     }
 
