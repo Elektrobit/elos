@@ -600,12 +600,19 @@ class ElosKeywords(object):
     @keyword("'${plugin}' Plugin Is Loaded")
     def plugin_is_loaded(self, plugin):
         """
-        Verify that a plugin with given name is reported as loaded by elos.
+        Verify that a plugin with the given name is loaded by checking the
+        thread names of elos. The plugin threads are named after there
+        configuration key.
         """
+
         stdout, stderr, rc = self._exec_on_target(
-            f"grep -i \"'{plugin}' has been loaded\" /tmp/elosd.log")
+            f"cat /proc/{self._get_elosd_pid()}/task/*/comm")
         if rc != 0:
-            robot.utils.asserts.fail(f"Plugin {plugin} not loaded")
+            robot.utils.asserts.fail(
+                f"Failed to look for plugin names: {stderr}")
+        else:
+            robot.utils.asserts.assert_true(
+                plugin in stdout, f"{plugin} is not loaded")
 
     @keyword("Write '${message}' To '${file}'")
     def write_to_file(self, message, file):
