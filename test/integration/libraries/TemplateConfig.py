@@ -13,6 +13,7 @@ def _str_to_bool(x):
     else:
         return False
 
+
 class TemplateConfig(object):
     LOCAL_TMP_CONF = "/tmp/elosd-config.json"
     LOCAL_TMP_DEFAULT = "/tmp/elosd-default.json"
@@ -37,8 +38,10 @@ class TemplateConfig(object):
 
     def __init__(self):
         self.tmp_config_path = "/tmp/elosd-config.json"
-        self.config_path = BuiltIn().get_variable_value("${ELOS_DEFAULT_CONFIG_FILE}")
-        self.root = _str_to_bool(BuiltIn().get_variable_value("${USER_IS_ROOT}"))
+        self.config_path = BuiltIn().get_variable_value(
+            "${ELOS_DEFAULT_CONFIG_FILE}")
+        self.root = _str_to_bool(
+            BuiltIn().get_variable_value("${USER_IS_ROOT}"))
         password = BuiltIn().get_variable_value("${PASSWORD}")
         self.password = "" if password is None else password
 

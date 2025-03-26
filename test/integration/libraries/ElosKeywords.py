@@ -91,7 +91,7 @@ class ElosSubscription(object):
 
     def get_errors(self):
         """
-        Read and parse the elosc errorsi buufer and return all errors occured
+        Read and parse the elosc errors buffer and return all errors occurred
         in this subscription.
         """
         connectionToRestore = self.ssh.switch_connection(self.connectionAlias)
@@ -740,11 +740,12 @@ class ElosKeywords(object):
     @keyword("Read '${socket}' Permissions")
     def read_socket_permissions(self, socket):
         """
-        read permissions of the given socket
+        Read permissions of the given unix socket
         """
         stdout, stderr, rc = self._exec_on_target(f"stat -c \'%a\' '{socket}'")
 
         if rc != 0:
-            robot.utils.asserts.fail(f"Getting Socket Permissions Failed ({rc}): {stderr}")
+            robot.utils.asserts.fail(
+                f"Getting socket permissions failed ({rc}): {stderr}")
 
         return stdout
