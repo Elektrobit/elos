@@ -9,10 +9,12 @@ Documentation       A test suite to check if elosc is able to find events matchi
 Library             String
 Library             SSHLibrary
 Library             libraries/ElosKeywords.py
+Library             libraries/TemplateConfig.py
 Resource            resources/elosd-keywords.resource
 Resource            resources/keywords.resource
 
 Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Initialize Variables
 ...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
@@ -38,6 +40,13 @@ Client Finds Events Matching Given Filter
 
 
 *** Keywords ***
+Initialize Variables
+     [Documentation]    Initialize variables of the test suite.
+
+     ${socket_path}=
+     ...    Get Option '$.root.elos.ClientInputs.Plugins.unixClient.Config.path' From Target Config
+     Set Suite Variable    ${CONNECTION_URI}    unix://${socket_path}
+
 An Event Is Published
     [Documentation]    Publish Created Messages
 

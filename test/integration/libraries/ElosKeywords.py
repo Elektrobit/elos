@@ -49,9 +49,49 @@ class ElosSubscription(object):
 
         self.ssh.switch_connection(connectionToRestore)
 
+    def wait_till_listening(self, timeout=2):
+        """
+        Read the elosc stdout and wait to confirm subscription
+        """
+
+        start_time = time.time()
+        retry_count = 0
+        while True:
+            status = self._is_confirmed()
+            if status:
+                logger.info("subscription is confirmed")
+                break
+            elif time.time() - start_time > timeout:
+                robot.utils.asserts.fail(
+                    f"Fail because of timeout ({timeout}s)")
+            else:
+                retry_count += 1
+                logger.info(
+                    f"{retry_count}. Retry as subscription is not confirmed")
+                time.sleep(0.2)
+
+    def _is_confirmed(self):
+        connectionToRestore = self.ssh.switch_connection(self.connectionAlias)
+        stdout, stderr, rc = self.ssh.execute_command(
+            f"cat {self.subscription_out}",
+            return_stdout=True,
+            return_stderr=True,
+            return_rc=True)
+        self.ssh.switch_connection(connectionToRestore)
+
+        status = False
+        if rc != 0 or stderr:
+            logger.error(f"Failed to determine subscription status ({rc}):\n"
+                         f"{stderr}")
+        else:
+            logger.info(f"Contents of stdout: {stdout}")
+            status = 'successfully subscribed to event queue' in stdout
+
+        return status
+
     def get_errors(self):
         """
-        Read and parse the elosc errorsi buufer and return all errors occured
+        Read and parse the elosc errors buffer and return all errors occurred
         in this subscription.
         """
         connectionToRestore = self.ssh.switch_connection(self.connectionAlias)
@@ -560,12 +600,19 @@ class ElosKeywords(object):
     @keyword("'${plugin}' Plugin Is Loaded")
     def plugin_is_loaded(self, plugin):
         """
-        Verify that a plugin with given name is reported as loaded by elos.
+        Verify that a plugin with the given name is loaded by checking the
+        thread names of elos. The plugin threads are named after there
+        configuration key.
         """
+
         stdout, stderr, rc = self._exec_on_target(
-            f"grep -i \"'{plugin}' has been loaded\" /tmp/elosd.log")
+            f"cat /proc/{self._get_elosd_pid()}/task/*/comm")
         if rc != 0:
-            robot.utils.asserts.fail(f"Plugin {plugin} not loaded")
+            robot.utils.asserts.fail(
+                f"Failed to look for plugin names: {stderr}")
+        else:
+            robot.utils.asserts.assert_true(
+                plugin in stdout, f"{plugin} is not loaded")
 
     @keyword("Write '${message}' To '${file}'")
     def write_to_file(self, message, file):
@@ -584,6 +631,17 @@ class ElosKeywords(object):
         default connection string
         """
         return self.subscribe_to_event_via(filter, "tcp://127.0.0.1:54321")
+
+    @keyword("Subscribe To '${filter}' Succeed")
+    def subscribe_to_event_succeed(self, filter):
+        """
+        Create a subscription for a given event filter using
+        default connection string and wait for confirmation.
+        """
+        subscription = self.subscribe_to_event_via(
+            filter, "tcp://127.0.0.1:54321")
+        subscription.wait_till_listening()
+        return subscription
 
     @keyword("Subscribe To '${filter}' Via '${uri}'")
     def subscribe_to_event_via(self, filter, uri):
@@ -682,11 +740,12 @@ class ElosKeywords(object):
     @keyword("Read '${socket}' Permissions")
     def read_socket_permissions(self, socket):
         """
-        read permissions of the given socket
+        Read permissions of the given unix socket
         """
         stdout, stderr, rc = self._exec_on_target(f"stat -c \'%a\' '{socket}'")
 
         if rc != 0:
-            robot.utils.asserts.fail(f"Getting Socket Permissions Failed ({rc}): {stderr}")
+            robot.utils.asserts.fail(
+                f"Getting socket permissions failed ({rc}): {stderr}")
 
         return stdout

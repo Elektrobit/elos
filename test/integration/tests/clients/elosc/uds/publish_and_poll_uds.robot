@@ -11,8 +11,10 @@ Library             SSHLibrary
 Resource            resources/keywords.resource
 Library             libraries/ElosKeywords.py
 Library             libraries/ElosEventKeywords.py
+Library             libraries/TemplateConfig.py
 
 Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Initialize Variables
 ...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
@@ -38,6 +40,13 @@ Client Logs Published Message
 
 
 *** Keywords ***
+Initialize Variables
+     [Documentation]    Initialize variables of the test suite.
+
+     ${socket_path}=
+     ...    Get Option '$.root.elos.ClientInputs.Plugins.unixClient.Config.path' From Target Config
+     Set Suite Variable    ${CONNECTION_URI}    unix://${socket_path}
+
 Create Messages
     [Documentation]    Create multiple messages with message template
     FOR    ${i}    IN RANGE    1001    1001+${MESSAGE_COUNT}

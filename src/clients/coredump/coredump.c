@@ -343,15 +343,20 @@ safuResultE_t elosCoredumpPublishEvent(elosEvent_t *elosCoredumpEvent, char *add
     safuResultE_t result = SAFU_RESULT_OK;
     elosSession_t *session;
 
-    fprintf(stdout, "connecting coredump to event log scanner...\n");
+    int ret = strcmp(elosCoredumpEvent->source.appName, "elosd");
+    if (ret == 0) {
+        fprintf(stdout, "Looks like elosd coredumped, do not send coredump event.\n");
+    } else {
+        fprintf(stdout, "connecting coredump to event log scanner...\n");
 
-    result = elosCoredumpConnect(address, &session);
-    if (result == SAFU_RESULT_OK) {
-        fprintf(stdout, "send coredump event to log scanner...\n");
-        result = elosEventPublish(session, elosCoredumpEvent);
+        result = elosCoredumpConnect(address, &session);
         if (result == SAFU_RESULT_OK) {
-            fprintf(stdout, "disconnecting coredump from event log scanner...\n");
-            result = elosDisconnect(session);
+            fprintf(stdout, "send coredump event to log scanner...\n");
+            result = elosEventPublish(session, elosCoredumpEvent);
+            if (result == SAFU_RESULT_OK) {
+                fprintf(stdout, "disconnecting coredump from event log scanner...\n");
+                result = elosDisconnect(session);
+            }
         }
     }
 
@@ -480,6 +485,18 @@ static int _writeCoredump(const char *coredumpFile, unsigned long maxFileSize) {
     return ret;
 }
 
+const char *_parseAppNameFromPath(const char *appPath) {
+    const char *appName = strrchr(appPath, '/');
+
+    if (appName != NULL && appName[1] != '\0') {
+        appName = &appName[1];
+    } else {
+        appName = appPath;
+    }
+
+    return appName;
+}
+
 int main(int argc, char *argv[]) {
     char *tmpPtr = NULL;
     char coredumpTargetFile[PATH_MAX] = {0};
@@ -579,7 +596,7 @@ int main(int argc, char *argv[]) {
 
         if (ret == 0) {
             _replaceCharsInString(applicationPath, PATH_MAX, '_', '/');
-            event.source.appName = applicationPath;
+            event.source.appName = (char *)_parseAppNameFromPath(applicationPath);
             event.source.fileName = applicationPath;
 
             ret = _checkAndPrepareCoredump(&coredumpConfig, coredumpAppDir);
