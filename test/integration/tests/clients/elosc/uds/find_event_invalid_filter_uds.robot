@@ -11,8 +11,10 @@ Resource            resources/keywords.resource
 Library             String
 Library             SSHLibrary
 Library             libraries/ElosKeywords.py
+Library             libraries/TemplateConfig.py
 
 Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Initialize Variables
 ...                 AND             Ensure Elosd Is Started
 Suite Teardown      Close All Connections
 
@@ -42,6 +44,13 @@ Finding Matching Events With Invalid Filter Fails
 
 
 *** Keywords ***
+Initialize Variables
+     [Documentation]    Initialize variables of the test suite.
+
+     ${socket_path}=
+     ...    Get Option '$.root.elos.ClientInputs.Plugins.unixClient.Config.path' From Target Config
+     Set Suite Variable    ${CONNECTION_URI}    unix://${socket_path}
+
 Invalid Filter Test
     [Documentation]    test template to check if finding matching events with
     ...                given invalid filters fail.

@@ -21,7 +21,7 @@ New message in '/dev/kmsg'
 
     Given Ensure Elosd Is Started
     And 'KmsgScanner' Plugin Is Loaded
-    And Subscribe To '.e.source.fileName \'/dev/kmsg\' STRCMP'
+    And Subscribe To '.e.source.fileName \'/dev/kmsg\' STRCMP' Succeed
     When A Kernel Message Appears
     Then Client Receives Event Subscribed To
 
