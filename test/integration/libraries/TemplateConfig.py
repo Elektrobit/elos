@@ -2,6 +2,8 @@
 
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
+from robot.api.deco import keyword
+from jsonpath_ng import parse
 import json
 
 
@@ -10,6 +12,7 @@ def _str_to_bool(x):
         return x.lower() == "true"
     else:
         return False
+
 
 class TemplateConfig(object):
     LOCAL_TMP_CONF = "/tmp/elosd-config.json"
@@ -35,13 +38,20 @@ class TemplateConfig(object):
 
     def __init__(self):
         self.tmp_config_path = "/tmp/elosd-config.json"
-        self.config_path = BuiltIn().get_variable_value("${ELOS_DEFAULT_CONFIG_FILE}")
-        self.root = _str_to_bool(BuiltIn().get_variable_value("${USER_IS_ROOT}"))
+        self.config_path = BuiltIn().get_variable_value(
+            "${ELOS_DEFAULT_CONFIG_FILE}")
+        self.root = _str_to_bool(
+            BuiltIn().get_variable_value("${USER_IS_ROOT}"))
         password = BuiltIn().get_variable_value("${PASSWORD}")
         self.password = "" if password is None else password
 
     def default_config(self):
         """Get the default configuration from the Target."""
+        return self.target_config()
+
+    @keyword("Get Target Config")
+    def target_config(self):
+        """Get the current configuration from the Target."""
         ssh = BuiltIn().get_library_instance('SSHLibrary')
 
         ssh.get_file(self.config_path, self.LOCAL_TMP_DEFAULT, scp="ALL")
@@ -123,3 +133,23 @@ class TemplateConfig(object):
         if res[-1] != 0:
             raise Exception("removing temporary config failed "
                             + json.dumps(res, indent=4))
+
+    @keyword("Get Option '${option_path}' From Target Config")
+    def get_option_from_target(self, option_path):
+        """
+        Fetch the value of a given option by JSON path syntax from the target
+        config. Returns `None` if no value found and only the first match.
+        """
+
+        jpath = parse(option_path)
+        result = jpath.find(self.target_config())
+        logger.info(f"##### {result}")
+        if len(result) > 0:
+            match = result[0]
+            logger.info(f"value for {option_path} : {match.value}")
+            value = match.value
+        else:
+            logger.info(f"No value for {option_path} found")
+            value = None
+
+        return value

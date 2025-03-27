@@ -43,6 +43,7 @@ Test New Elosd Configuration Missing Plugin Filter
     ...    of elosd
 
     ${Config}=    Default Config Core
+    ${Config}=    Update Value To Json    ${Config}    $.LogLevel    "WARNING"
     ${Config}=    Delete Object From Json    ${Config}    $..JsonBackend.Filter
 
     Restart Elosd With Config From Template    &{Config}

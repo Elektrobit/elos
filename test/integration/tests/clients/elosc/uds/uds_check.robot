@@ -9,11 +9,14 @@ Documentation       A test suite to check if existing elosd unix socket is
 Library             String
 Library             SSHLibrary
 Library             libraries/ElosKeywords.py
+Library             libraries/TemplateConfig.py
 Resource            resources/elosd-keywords.resource
 Resource            resources/keywords.resource
 
 Suite Setup         Run Keywords    Connect To Target And Log In
+...                 AND             Initialize Variables
 ...                 AND             Ensure Elosd Is Started
+
 Suite Teardown      Close All Connections
 
 
@@ -33,6 +36,13 @@ Unix Socket Accessible By All Users
 
 
 *** Keywords ***
+Initialize Variables
+     [Documentation]    Initialize variables of the test suite.
+
+     ${socket_path}=
+     ...    Get Option '$.root.elos.ClientInputs.Plugins.unixClient.Config.path' From Target Config
+     Set Suite Variable    ${UNIX_SOCKET}    ${socket_path}
+
 '${socket}' Permissions Are Read
      [Documentation]    Read permissions of given socket.
 
