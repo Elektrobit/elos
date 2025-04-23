@@ -1,5 +1,4 @@
 export IGNORE_SOURCES=" \
-  src/plugins/storagebackends/nosqlbackend/*/* \
   src/libelos_lite/private/* \
   src/libelos_lite/public/elos/libelos_lite.h \
   src/libelos_lite/public/elos/lite/event.h \
