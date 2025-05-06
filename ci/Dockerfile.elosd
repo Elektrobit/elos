@@ -1,15 +1,6 @@
 FROM ubuntu:jammy
-
-ARG USER=ci
-ARG UID=1000
-ARG GID=1000
-ARG TARGET_USER_NAME=target
-ARG TARGET_PASSWORD=target123
-ARG SOURCES_URI=https://github.com/emlix/
-ARG ELOS_DEPENDENCY_CONFIG="./ci/dependencies.json"
-ARG CMAKE_PARAM=""
 ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
-
+ARG SOURCES_URI=https://github.com/emlix/
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get reinstall ca-certificates -y
@@ -24,6 +15,9 @@ RUN apt-get update \
  libcurl4-openssl-dev \
  && rm -rf /var/lib/apt/lists/*
 
+ARG USER=ci
+ARG UID=1000
+ARG GID=1000
 RUN locale-gen en_US.UTF-8 \
  && locale-gen de_DE.UTF-8 \
  && groupadd -g $GID $USER \
@@ -38,6 +32,7 @@ RUN mkdir /etc/elos
 COPY ./src/elosd/config/elosd.json /etc/elos/elosd.json
 RUN chmod 644 /etc/elos/elosd.json
 
+ARG ELOS_DEPENDENCY_CONFIG="./ci/dependencies.json"
 ENV SOURCES_URI=$SOURCES_URI
 ENV ELOS_DEPENDENCY_CONFIG=$ELOS_DEPENDENCY_CONFIG
 RUN env
@@ -56,6 +51,8 @@ RUN sudo ninja -C /tmp/elos/build install
 RUN sudo ldconfig
 RUN sudo rm -rf /home/elos
 
+ARG TARGET_USER_NAME=target
+ARG TARGET_PASSWORD=target123
 RUN sudo mkdir /var/run/sshd \
  && sudo chmod 0755 /var/run/sshd \
  && sudo useradd -p $(openssl passwd -1 $TARGET_PASSWORD) --create-home --shell /bin/bash --groups sudo $TARGET_USER_NAME
