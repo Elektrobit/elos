@@ -10,16 +10,18 @@ IMAGE_NAME="${PROJECT}"
 TARGET_NAME="${PROJECT}-target"
 
 IT="-it"
+CONTAINER_USE_UID_GID="--build-arg UID=$(id -u) --build-arg GID=$(id -g)"
 if [ "${CI}" = true ]; then
     echo "Running in CI"
     . "$BASE_DIR/ci/ignored_sources.sh"
     IT=""
+    CONTAINER_USE_UID_GID=""
 fi
 
 echo "==> create docker image"
 cd $BASE_DIR
 docker build \
-    --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
+    ${CONTAINER_USE_UID_GID:+${CONTAINER_USE_UID_GID}} \
     --build-arg CMAKE_PARAM="${CMAKE_PARAM}" \
     --build-arg SOURCES_URI="${SOURCES_URI}" \
     ${ELOS_DEPENDENCY_CONFIG:+--build-arg ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
@@ -40,6 +42,7 @@ if [ "$SSH_AUTH_SOCK" ]; then
 fi
 
 mkdir -p "${RESULT_DIR}"
+chmod o+rw "${RESULT_DIR}"
 docker run --rm ${IT} \
     --name ${TARGET_NAME} \
     --privileged \
@@ -47,6 +50,6 @@ docker run --rm ${IT} \
     --security-opt apparmor=unconfined \
     $SSH_AGENT_OPTS \
     ${ENV_OPTIONS} \
-    -v "${RESULT_DIR}:/results:rw" \
+    -v "${RESULT_DIR}:/tmp/results:rw" \
     -w / \
     ${IMAGE_NAME} $@
