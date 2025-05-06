@@ -63,8 +63,8 @@ RUN apt-get update \
 
 RUN locale-gen en_US.UTF-8 \
  && locale-gen de_DE.UTF-8 \
- && groupadd -g $GID -o $USER \
- && useradd -m -u $UID -g $GID -o -s /bin/bash $USER \
+ && groupadd -g $GID $USER \
+ && useradd -m -u $UID -g $GID -s /bin/bash $USER \
  && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 RUN git clone --depth 1 --branch $CAPSTONE_VERSION https://github.com/aquynh/capstone.git
