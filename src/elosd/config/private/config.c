@@ -77,10 +77,6 @@ safuLogLevelE_t elosConfigGetElosdLogLevel(const samconfConfig_t *config) {
     return result;
 }
 
-const char *elosConfigGetElosdStorageBackendJsonFile(const samconfConfig_t *config) {
-    return samconfConfigGetStringOr(config, ELOS_CONFIG_STORAGEBACKEND "Json/File", STORAGE_LOCATION);
-}
-
 const char *elosConfigGetElosdScannerPath(const samconfConfig_t *config) {
     return samconfConfigGetStringOr(config, ELOS_CONFIG_SCANNER "PluginSearchPath", ELOSD_SCANNER_PATH);
 }
@@ -91,14 +87,6 @@ const char *elosConfigGetElosdClientPath(const samconfConfig_t *config) {
 
 const char *elosConfigGetElosdBackendPath(const samconfConfig_t *config) {
     return samconfConfigGetStringOr(config, ELOS_CONFIG_EVENTLOGGING "PluginSearchPath", ELOSD_BACKEND_PATH);
-}
-
-const char *elosConfigGetElosdScannerKmsgFile(const samconfConfig_t *config) {
-    return samconfConfigGetStringOr(config, ELOS_CONFIG_SCANNER "KmsgScanner/KmsgFile", ELOS_KMSG_FILE);
-}
-
-const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config) {
-    return samconfConfigGetStringOr(config, ELOS_CONFIG_SCANNER "SyslogScanner/SyslogPath", ELOS_SYSLOG_PATH);
 }
 
 const char *elosConfigGetElosdRunDir(const samconfConfig_t *config) {

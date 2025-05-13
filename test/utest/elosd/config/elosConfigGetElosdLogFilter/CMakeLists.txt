@@ -6,11 +6,12 @@ create_unit_test(
   NAME
     test_config_elosConfigGetElosdLogFilter_utest
   SOURCES
-    case_success_from_env.c
+    case_success_from_config.c
     case_success_from_default.c
     elosConfigGetElosdLogFilter_utest.c
   LIBRARIES
     config_static
     safu::mock_safu
     samconf::mock_samconf
+    samconf::samconf_test_utils
 )

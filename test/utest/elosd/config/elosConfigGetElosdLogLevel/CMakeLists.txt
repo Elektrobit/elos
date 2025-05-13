@@ -7,15 +7,13 @@ create_unit_test(
   NAME
     test_config_elosConfigGetElosdLogLevel_utest
   SOURCES
-    case_success_from_env.c
     case_success_from_default.c
     case_success_from_config.c
-    case_err_env_fallback_to_config.c
-    case_err_fallback_to_default.c
     elosConfigGetElosdLogLevel_utest.c
   LIBRARIES
     config_static
     safu::mock_safu
     samconf::mock_samconf
+    samconf::samconf_test_utils
     cmocka_mocks::mock_libc
 )

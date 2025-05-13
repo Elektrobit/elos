@@ -75,7 +75,7 @@ safuResultE_t elosUnixConfigGetSocketAddress(elosPlugin_t const *plugin, struct 
     } else if (errno == ENOENT) {
         result = _mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         if (result == SAFU_RESULT_FAILED) {
-            safuLogErr("Create directory for socket path failed");
+            safuLogErrF("Create directory for socket path '%s' failed", path);
         }
     } else {
         safuLogErrErrnoValue("access check failed", errno);

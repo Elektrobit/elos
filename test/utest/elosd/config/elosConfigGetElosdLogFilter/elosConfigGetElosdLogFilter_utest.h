@@ -10,7 +10,7 @@
 
 samconfConfig_t elosGetMockConfig();
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdLogFilterSuccessFromEnv)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdLogFilterSuccessFromConfig)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdLogFilterSuccessFromDefault)
 
 #endif /* ELOS_CONFIG_GET_ELOSD_LOGFILTER_UTEST_H */

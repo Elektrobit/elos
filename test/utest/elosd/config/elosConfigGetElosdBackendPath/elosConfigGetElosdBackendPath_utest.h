@@ -10,7 +10,7 @@
 
 samconfConfig_t elosGetMockConfig();
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdBackendPathSuccessFromEnv)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdBackendPathSuccessFromConfig)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdBackendPathSuccessFromDefault)
 
 #endif /* ELOS_CONFIG_GET_ELOSD_BACKENDPATH_UTEST_H */

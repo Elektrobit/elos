@@ -6,7 +6,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdScannerPathUtest)
 int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosConfigGetElosdScannerPathSuccessFromDefault),
-        TEST_CASE(elosTestElosConfigGetElosdScannerPathSuccessFromEnv),
+        TEST_CASE(elosTestElosConfigGetElosdScannerPathSuccessFromConfig),
     };
 
     return RUN_TEST_SUITE(tests, elosTestElosConfigGetElosdScannerPathUtest);

@@ -8,7 +8,6 @@ create_unit_test(
   SOURCES
     case_success_from_env.c
     case_success_from_default.c
-    case_err_non_int_limit_in_env.c
     elosConfigGetElosdConnectionLimit_utest.c
   INCLUDES
     "${CMAKE_SOURCE_DIR}/src/plugins/clients/tcp/private"
