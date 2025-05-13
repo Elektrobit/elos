@@ -74,12 +74,12 @@ prepare_env() {
        fi
        log "Existing instance of elosd found ($ELOSD_PID), terminating..."
        kill -15 $ELOSD_PID
-       wait $ELOSD_PID > /dev/null
+       wait $ELOSD_PID 2> /dev/null
        log "done ($?)"
        sleep 2s
     done
 
-    export ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="${result_dir}/elosd_event_%count%.log"
+    export elos_EventLogging_Plugins_JsonBackend_Config_StoragePath="${result_dir}/elosd_event_%count%.log"
 }
 
 run_in_source_tree() {
@@ -102,7 +102,8 @@ wait_for_file() {
 
 wait_for_elosd_socket() {
     local i=0
-    while ! is_listening_on "${1}" "${ELOSD_PORT}"
+    log "check if litening on ${elos_ClientInputs_Plugins_LocalTcp_Config_Port}"
+    while ! is_listening_on "${1}" "${elos_ClientInputs_Plugins_LocalTcp_Config_Port}"
     do
       i=$((i+1))
       sleep 0.1s
@@ -119,21 +120,21 @@ wait_for_elosd_claims_running() {
 }
 
 start_dlt_mock() {
-    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
-        rm -f "${ELOS_DLT_PIPE_PATH}"
+    if [ -e "${elos_EventLogging_Plugins_DLT_Config_Connection}" ]; then
+        rm -f "${elos_EventLogging_Plugins_DLT_Config_Connection}"
     fi
 
-    mkfifo "${ELOS_DLT_PIPE_PATH}"
+    mkfifo "${elos_EventLogging_Plugins_DLT_Config_Connection}"
 
-    tail -f "${ELOS_DLT_PIPE_PATH}" >> /tmp/dlt_dump &
+    tail -f "${elos_EventLogging_Plugins_DLT_Config_Connection}" >> /tmp/dlt_dump &
     DLT_MOCK_PID=$!
 }
 
 stop_dlt_mock() {
     kill "${DLT_MOCK_PID}"
 
-    if [ -e "${ELOS_DLT_PIPE_PATH}" ]; then
-        rm -f "${ELOS_DLT_PIPE_PATH}"
+    if [ -e "${elos_EventLogging_Plugins_DLT_Config_Connection}" ]; then
+        rm -f "${elos_EventLogging_Plugins_DLT_Config_Connection}"
     fi
 }
 
@@ -141,38 +142,39 @@ stop_dlt_mock() {
 smoketest_elosd() {
     prepare_env "elosd"
 
-    LOG_ELOSD="$RESULT_DIR/elosd.log"
+    LOG_ELOSD="${RESULT_DIR}/elosd.log"
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
-    export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
+    export ELOS_CONFIG_PATH="${RESULT_DIR}/test_config.json"
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
 
-    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
-    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+    export elos_EventLogging_Plugins_DLT_Config_Connection="${RESULT_DIR}/dlt"
+    sed -i "s,/tmp/dlt,${elos_EventLogging_Plugins_DLT_Config_Connection}," "${ELOS_CONFIG_PATH}"
     start_dlt_mock
 
     log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
-    elosd > $LOG_ELOSD 2>&1 &
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
     wait_for_elosd_socket "${ELOSD_PID}"
-    wait_for_file "${ELOS_DLT_PIPE_PATH}"
+    wait_for_file "${elos_EventLogging_Plugins_DLT_Config_Connection}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
-    find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \;
-    wait $ELOSD_PID || true
+    log "elosd claims running ${LOG_ELOSD}"
+    find /proc -maxdepth 1 -name "${ELOSD_PID}" -exec kill -15 "${ELOSD_PID}" \;
+    wait "${ELOSD_PID}" || true
     log "stopped Elosd"
 
     stop_dlt_mock
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    STRINGS="listen on: ${ELOSD_INTERFACE-"127.0.0.1"}:${ELOSD_PORT-"54323"}
+    STRINGS="listen on: ${ELOSD_INTERFACE-"127.0.0.1"}:${elos_ClientInputs_Plugins_LocalTcp_Config_Port-"54323"}
 hardwareid: $(cat /etc/machine-id)
 log level: ${ELOS_LOG_LEVEL}
 log filter: ${ELOS_LOG_FILTER-""}
-scanner path: ${ELOS_SCANNER_PATH-"(null)"}
+scanner path: ${elos_Scanner_PluginSearchPath-"(null)"}
 Running...
 Shutting down..."
-    echo "${STRINGS}" >> ${SMOKETEST_TMP_DIR}/expected_elosd_logs.txt
+    echo "${STRINGS}" >> "${SMOKETEST_TMP_DIR}/expected_elosd_logs.txt"
 
     local FAIL=0
     while IFS= read -r str; do
@@ -193,7 +195,7 @@ Shutting down..."
                 break
             ;;
         esac
-    done < ${SMOKETEST_TMP_DIR}/expected_elosd_logs.txt
+    done < "${SMOKETEST_TMP_DIR}/expected_elosd_logs.txt"
 
     grep -e "WARNING\|ERROR" "${LOG_ELOSD}" > /dev/null 2>&1
     if [ $? -ne 1 ]; then
@@ -212,25 +214,24 @@ smoketest_elosd_config_not_found() {
     ELOS_CONFIG_PATH=/dev
 
     log "Starting Elosd"
-    elosd > $RESULT_DIR/elosd_config_not_set.txt 2>&1 &
+    elosd > "${RESULT_DIR}/elosd_config_not_set.txt" 2>&1 &
     ELOSD_PID=$!
     log "Elosd has PID ${ELOSD_PID}"
     sleep 1s
-    find /proc -maxdepth 1 -name $ELOSD_PID -exec kill -15 $ELOSD_PID \; &&
-    wait $ELOSD_PID || true
+    find /proc -maxdepth 1 -name "${ELOSD_PID}" -exec kill -15 "${ELOSD_PID}" \;
+    wait "${ELOSD_PID}" || true
     log "Killed Elosd"
 
     FAIL=0
     str="ERROR: samconfLoad"
-    grep -q "$str" $RESULT_DIR/elosd_config_not_set.txt
-
-    if [ $? -ne 0 ]; then
+    if ! grep -q "${str}" "${RESULT_DIR}/elosd_config_not_set.txt"
+    then
         log_err "$str"
         FAIL=1
     fi
 
-    export ELOS_CONFIG_PATH=${REAL_ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
-    return $FAIL
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}"
+    return "${FAIL}"
 }
 
 smoketest_client_uds() {
@@ -252,10 +253,10 @@ smoketest_client_uds() {
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Publish Message via unix socket"
-    elosc -U "$ELOSD_SOCKET_PATH" -p "$MESSAGE" >> "$RESULT_DIR/elosc_unix_publish.txt" 2>&1
+    elosc -U "${elos_ClientInputs_Plugins_unixClient_Config_path}" -p "$MESSAGE" >> "$RESULT_DIR/elosc_unix_publish.txt" 2>&1
 
     log "Find message published via unix socket"
-    elosc -U "$ELOSD_SOCKET_PATH" -f ".event.messageCode 1001 EQ" > "$RESULT_DIR/elosc_unix_publish_event.log" 2>&1
+    elosc -U "${elos_ClientInputs_Plugins_unixClient_Config_path}" -f ".event.messageCode 1001 EQ" > "$RESULT_DIR/elosc_unix_publish_event.log" 2>&1
 
     if grep -q "\"messageCode\":1001" "$RESULT_DIR/elosc_unix_publish_event.log"; then
         log "Connection established, message logged as expected"
@@ -282,15 +283,15 @@ smoketest_coredump() {
     LOG_ELOSD="$RESULT_DIR/elosd.log"
 
 
-    REAL_COREDUMP_CONFIG_FILE=$ELOS_COREDUMP_CONFIG_FILE
+    REAL_COREDUMP_CONFIG_FILE="${ELOS_COREDUMP_CONFIG_FILE}"
     export ELOS_COREDUMP_CONFIG_FILE=${RESULT_DIR}/test_config_coredump.json
 
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
 
-    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
-    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+    elos_EventLogging_Plugins_DLT_Config_Connection="${RESULT_DIR}/dlt"
+    sed -i "s,/tmp/dlt,${elos_EventLogging_Plugins_DLT_Config_Connection}," "${ELOS_CONFIG_PATH}"
     start_dlt_mock
 
     log "Starting elosd"
@@ -307,15 +308,15 @@ smoketest_coredump() {
         log "Using socket: $SOCKET"
 
         if [ "$SOCKET" = "TCP" ]; then
-            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"127.0.0.1:$ELOSD_PORT\"#" "$REAL_COREDUMP_CONFIG_FILE" > "$ELOS_COREDUMP_CONFIG_FILE"
+            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"127.0.0.1:${elos_ClientInputs_Plugins_LocalTcp_Config_Port}\"#" "$REAL_COREDUMP_CONFIG_FILE" > "${ELOS_COREDUMP_CONFIG_FILE}"
             echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger_$SOCKET.log 2>&1
-            elosc -P $ELOSD_PORT -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
+            elosc -P "${elos_ClientInputs_Plugins_LocalTcp_Config_Port}" -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
         fi
 
         if [ "$SOCKET" = "UNIX" ]; then
-            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"${SMOKETEST_TMP_DIR}/elosd.socket\"#" "$REAL_COREDUMP_CONFIG_FILE" > "$ELOS_COREDUMP_CONFIG_FILE"
+            sed "s#\"networkAddress\": *\"[^\"]*\"#\"networkAddress\": \"${elos_ClientInputs_Plugins_unixClient_Config_path}\"#" "$REAL_COREDUMP_CONFIG_FILE" > "${ELOS_COREDUMP_CONFIG_FILE}"
             echo $TEST_MESSAGE | elos-coredump 1 /usr/bin/example 2 3 11 333333 exampletest > $RESULT_DIR/coredump_trigger_$SOCKET.log 2>&1
-            elosc -U ${SMOKETEST_TMP_DIR}/elosd.socket -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
+            elosc -U "${elos_ClientInputs_Plugins_unixClient_Config_path}" -f ".event.messageCode 5100 EQ" > $RESULT_DIR/coredump_event_$SOCKET.log 2>&1
         fi
 
         if grep -q "\"messageCode\":5100" $RESULT_DIR/coredump_event_$SOCKET.log; then
@@ -334,7 +335,7 @@ smoketest_coredump() {
 
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
-    export ELOS_COREDUMP_CONFIG_FILE="${REAL_COREDUMP_CONFIG_FILE}"
+    export elos_coredump_coredumppath="${REAL_COREDUMP_CONFIG_FILE}"
 
     return $RESULT
 }
@@ -350,11 +351,12 @@ smoketest_syslog() {
     ELOSD_PID=$!
 
     wait_for_elosd_socket "${ELOSD_PID}"
-    wait_for_file $ELOS_SYSLOG_PATH
+    wait_for_file "${elos_Scanner_Plugins_SyslogScanner_Config_SyslogPath}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
     log "Starting syslog test"
-    syslog_example -m "$TEST_MESSAGE" -P $ELOSD_PORT > $RESULT_DIR/syslog_example.log 2>&1 &
+    ELOS_SYSLOG_PATH="${elos_Scanner_Plugins_SyslogScanner_Config_SyslogPath}" \
+    syslog_example -m "$TEST_MESSAGE" -P "${elos_ClientInputs_Plugins_LocalTcp_Config_Port}" > $RESULT_DIR/syslog_example.log 2>&1 &
     SYSLOG_EXAMPLE_PID=$!
 
     log "wait for syslog_example to finish ..."
@@ -408,19 +410,21 @@ smoketest_syslog_systemd() {
 
     # word splitting of the env command is intentional, each env entry is intended to be passed as a separate argument, with the leading "-E" also being a separate arg.
     # shellcheck disable=SC2046
-    systemd-socket-activate -d -l "$ELOS_SYSLOG_PATH" -E ELOS_SYSLOG_USE_SYSTEMD_SOCKET=1 -E LD_LIBRARY_PATH $(env | grep ^ELOS | awk '{ print "-E"; print $1 }') \
+    systemd-socket-activate -d -l "${elos_Scanner_Plugins_SyslogScanner_Config_SyslogPath}" \
+        -E ELOS_SYSLOG_USE_SYSTEMD_SOCKET=1 -E LD_LIBRARY_PATH $(env | grep ^ELOS | awk '{ print "-E"; print $1 }') \
         -E ELOS_SYSLOG_PATH=/invalid/path \
         elosd > "$LOG_ELOSD" 2>&1 &
     ELOSD_PID=$!
     log "Starting syslog socket activation test"
 
-    wait_for_file "$ELOS_SYSLOG_PATH"
+    wait_for_file "${elos_Scanner_Plugins_SyslogScanner_Config_SyslogPath}"
     # let systemd-socket-activate start elosd by writing to the syslog socket
-    echo "" | socat "unix-sendto:${ELOS_SYSLOG_PATH}" -
+    echo "" | socat "unix-sendto:${elos_Scanner_Plugins_SyslogScanner_Config_SyslogPath}" -
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
-    syslog_example -m "$TEST_MESSAGE" -P "$ELOSD_PORT" > "$RESULT_DIR/syslog_example.log" 2>&1 &
+    ELOS_SYSLOG_PATH="${elos_Scanner_Plugins_SyslogScanner_Config_SyslogPath}" \
+    syslog_example -m "$TEST_MESSAGE" -P "${elos_ClientInputs_Plugins_LocalTcp_Config_Port}" > $RESULT_DIR/syslog_example.log 2>&1 &
     SYSLOG_EXAMPLE_PID=$!
 
     log "wait for syslog_example to finish ..."
@@ -449,23 +453,24 @@ smoketest_kmsg() {
     LOG_ELOSC_FIND="$RESULT_DIR/elosc_find.log"
     LOG_KMSG="$RESULT_DIR/kmsg_example.log"
     TEST_MESSAGE="12,1234,12345678901,-;smoketest: kernel message"
-    FILTERSTRING=".event.source.fileName '${ELOS_KMSG_FILE}' STRCMP"
+    FILTERSTRING=".event.source.fileName '${elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile}' STRCMP"
 
     log "Starting elosd"
     elosd > $LOG_ELOSD 2>&1 &
     ELOSD_PID=$!
 
     wait_for_elosd_socket "${ELOSD_PID}"
-    wait_for_file $ELOS_KMSG_FILE
+    wait_for_file "${elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
+    local ELOSD_PORT="${elos_ClientInputs_Plugins_LocalTcp_Config_Port}"
     log "Polling KMSG"
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $LOG_ELOSCL 2>&1 &
     POLL_CLIENT_PID=$!
     sleep 1s
 
     log "Writing kernel message"
-    echo $TEST_MESSAGE > $ELOS_KMSG_FILE 2> $LOG_KMSG
+    echo $TEST_MESSAGE > "${elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile}" 2> $LOG_KMSG
     sleep 1s
 
     elosc -P $ELOSD_PORT -f "$FILTERSTRING" > $LOG_ELOSC_FIND 2>&1 
@@ -476,8 +481,8 @@ smoketest_kmsg() {
     wait $ELOSD_PID > /dev/null
 
     log "Stop elosc ($POLL_CLIENT_PID)"
-    kill $POLL_CLIENT_PID > /dev/null
-    wait $POLL_CLIENT_PID > /dev/null
+    kill $POLL_CLIENT_PID 2> /dev/null # should exit when elosd is stopped
+    wait $POLL_CLIENT_PID 2> /dev/null
 
     TEST_RESULT=0
     if ! message_count=$(grep -c "${TEST_MESSAGE}" "${LOG_ELOSCL}") \
@@ -535,6 +540,7 @@ smoketest_publish_poll() {
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
+    local ELOSD_PORT="${elos_ClientInputs_Plugins_LocalTcp_Config_Port}"
     log "Polling client 1 ..."
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" > $RESULT_DIR/elosc_poll_1.log 2>&1 &
     POLL_CLIENT_1_PID=$!
@@ -586,8 +592,7 @@ smoketest_locale() {
 
     LOG_ELOSD="$RESULT_DIR/elosd.log"
 
-#start elos and client
-
+    #start elos and client
     log "Starting elosd"
     elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
@@ -596,10 +601,10 @@ smoketest_locale() {
 
     sleep 0.5s
 
+    local ELOSD_PORT="${elos_ClientInputs_Plugins_LocalTcp_Config_Port}"
     log "Start listening client"
     elosc -P $ELOSD_PORT -s "1 1 EQ" -r 100 >> $RESULT_DIR/event.log 2>&1 &
     CLIENT_PID=$!
-
 
     #send valid messages
     tinyElosc -P $ELOSD_PORT -v >> $RESULT_DIR/event.log 2>&1
@@ -722,11 +727,13 @@ smoketest_find_event() {
 
     # Setup environment
     log "Start elosd..."
-    ELOS_STORAGE_BACKEND_JSONBACKEND_FILE="$RESULT_DIR/elosd_event_%count%.log" elosd > "${LOG_ELOSD}" 2>&1 &
+    elos_EventLogging_Plugins_JsonBackend_Config_StoragePath="${RESULT_DIR}/elosd_event_%count%.log" \
+    elosd > "${LOG_ELOSD}" 2>&1 &
     ELOSD_PID=$!
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
+    local ELOSD_PORT="${elos_ClientInputs_Plugins_LocalTcp_Config_Port}"
     log "Start subscriber client ..."
     elosc -P $ELOSD_PORT -s "$FILTERSTRING" -r 100 > $LOG_ELOSC_SUBSCRIBE 2>&1 &
     ELOSC_SUBSCRIBE_PID=$!
@@ -784,7 +791,7 @@ smoketest_plugins() {
     export ELOS_CONFIG_PATH=${RESULT_DIR}/test_config.json
     cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
 
-    ELOS_DLT_PIPE_PATH="${RESULT_DIR}/dlt"
+    elos_EventLogging_Plugins_DLT_Config_Connection="${RESULT_DIR}/dlt"
     sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
 
     start_dlt_mock
@@ -795,15 +802,15 @@ smoketest_plugins() {
     wait_for_elosd_socket "${ELOSD_PID}"
     wait_for_elosd_claims_running "${LOG_ELOSD}"
     log "Stop elosd ($ELOSD_PID)"
-    kill $ELOSD_PID #> /dev/null
-    wait $ELOSD_PID #> /dev/null
+    kill $ELOSD_PID &> /dev/null
+    wait $ELOSD_PID &> /dev/null
 
     stop_dlt_mock
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
     PLUGINS="Dummy ScannerDummy"
-    if [ -n "$(find "$ELOS_BACKEND_PATH" -name backend_dlt_logger.so)" ]; then
+    if [ -n "$(find "${elos_EventLogging_PluginSearchPath}" -name backend_dlt_logger.so)" ]; then
         PLUGINS="$PLUGINS DLT"
     else
         log "DLT plugin not installed, not checking for it."
@@ -826,11 +833,20 @@ smoketest_dual_json_plugin() {
 
     local LOG_ELOSD="$RESULT_DIR/elosd.log"
 
+    local DLT_CON="${elos_EventLogging_Plugins_DLT_Config_Connection}"
+    unset elos_EventLogging_Plugins_DLT_Config_Connection
+    local UNIX_CLIENT="${elos_ClientInputs_Plugins_unixClient_Config_path}"
+    unset elos_ClientInputs_Plugins_unixClient_Config_path
+    local PUBLIC_TCP="${elos_ClientInputs_Plugins_PublicTcpClient_Config_Port}"
+    unset elos_ClientInputs_Plugins_PublicTcpClient_Config_Port
+    local KMSG_SCAN="${elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile}"
+    unset elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile
+
     export ELOS_CONFIG_PATH=$SMOKETEST_DIR/config_dual.json
-    export ELOS_STORAGE_BACKEND_COREDUMP_FILE=$RESULT_DIR/elos_coredump_%count%.log
-    COREDUMP_FILE=$RESULT_DIR/elos_coredump_0.log
-    export ELOS_STORAGE_BACKEND_JSONBACKEND_FILE=$RESULT_DIR/elos_jsonbackend_%count%.log
-    JSONBACKEND_FILE=$RESULT_DIR/elos_jsonbackend_0.log
+    export elos_EventLogging_Plugins_Coredump_Config_StoragePath="${RESULT_DIR}/elos_coredump_%count%.log"
+    COREDUMP_FILE="${RESULT_DIR}/elos_coredump_0.log"
+    export elos_EventLogging_Plugins_JsonBackend_Config_StoragePath="${RESULT_DIR}/elos_jsonbackend_%count%.log"
+    JSONBACKEND_FILE="${RESULT_DIR}/elos_jsonbackend_0.log"
     TEST_RESULT=0
 
     log "Starting elosd"
@@ -842,8 +858,8 @@ smoketest_dual_json_plugin() {
     wait_for_file $JSONBACKEND_FILE
     wait_for_elosd_claims_running "${LOG_ELOSD}"
 
-    elosc -P $ELOSD_PORT -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
-    elosc -P $ELOSD_PORT -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
+    elosc -P "${elos_ClientInputs_Plugins_LocalTcp_Config_Port}" -p "{\"payload\":\"coredump\", \"messageCode\":5005}" >> $RESULT_DIR/event.log 2>&1
+    elosc -P "${elos_ClientInputs_Plugins_LocalTcp_Config_Port}" -p "{\"payload\":\"not coredump\", \"messageCode\":5004}" >> $RESULT_DIR/event.log 2>&1
 
     log "Stop elosd ($ELOSD_PID)"
     kill $ELOSD_PID > /dev/null
@@ -860,6 +876,11 @@ smoketest_dual_json_plugin() {
         log_err "unexpected amount of regular logs: $jsonbackend_number"
         TEST_RESULT=1
     fi
+
+    export elos_EventLogging_Plugins_DLT_Config_Connection="${DLT_CON}"
+    export elos_ClientInputs_Plugins_unixClient_Config_path="${UNIX_CLIENT}"
+    export elos_ClientInputs_Plugins_PublicTcpClient_Config_Port="${PUBLIC_TCP}"
+    export elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile="${KMSG_SCAN}"
 
     return $TEST_RESULT
 }

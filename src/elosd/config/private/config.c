@@ -2,11 +2,10 @@
 
 #include "elos/config/config.h"
 
+#include <safu/defines.h>
+#include <safu/result.h>
 #include <samconf/samconf.h>
 #include <samconf/samconf_types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include "safu/common.h"
@@ -29,130 +28,81 @@
 #endif
 
 safuResultE_t elosConfigLoad(samconfConfig_t **config) {
-    const char *location = NULL;
+    char *location = NULL;
     samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
     safuResultE_t result = SAFU_RESULT_FAILED;
+    bool enforceSignature = false;
 
-    location = safuGetEnvOr("ELOS_CONFIG_PATH", ELOSD_CONFIG_FILE);
+    location = (char *)safuGetEnvOr("ELOS_CONFIG_PATH", ELOSD_CONFIG_FILE);
     safuLogInfoF("Use elosd config %s", location);
 
-    status = samconfLoad(location, false, config);
+    samconfConfigLocation_t configs[] = {
+        CONF_PATH(location, enforceSignature),
+        CONF_PATH("/etc/elos/elos.d/", enforceSignature),
+        CONF_PATH("/etc/elos/client.d/", enforceSignature),
+        CONF_PATH("/etc/elos/eventlogging.d/", enforceSignature),
+        CONF_PATH("/etc/elos/scanner.d/", enforceSignature),
+    };
+    status = samconfLoadAndMerge(configs, ARRAY_SIZE(configs), config);
     if (status == SAMCONF_CONFIG_OK) {
         result = SAFU_RESULT_OK;
-    }
-
-    return result;
-}
-
-static inline int32_t elosConfigGetElosdOptionInt(const samconfConfig_t *config, const char *pathToConfigOption,
-                                                  const char *envVarName, int32_t defaultValue) {
-    bool validValNotPresent = true;
-    bool useEnv = false;
-    int32_t optionsFromFile = 0;
-    int32_t result = defaultValue;
-    samconfConfigStatusE_t exists = {0};
-
-    samconfConfigGetBool(config, ELOS_CONFIG_ROOT "UseEnv", &useEnv);
-
-    if (useEnv) {
-        const char *getEnvValue = safuGetEnvOr(envVarName, NULL);
-        char *endPtr;
-        if (getEnvValue) {
-            errno = 0;
-            result = strtol(getEnvValue, &endPtr, 10);
-            validValNotPresent = endPtr == getEnvValue || errno == ERANGE || errno == EINVAL;
-        }
-    }
-
-    if (validValNotPresent) {
-        exists = samconfConfigGetInt32(config, pathToConfigOption, &optionsFromFile);
-        result = exists == SAMCONF_CONFIG_OK ? optionsFromFile : defaultValue;
-    }
-    return result;
-}
-
-static inline const char *elosConfigGetElosdOptionString(const samconfConfig_t *config, const char *pathToConfigOption,
-                                                         const char *envVarName, const char *defaultValue) {
-    bool useEnv = false;
-    const char *optionsFromFile = NULL;
-    const char *result = NULL;
-
-    samconfConfigGetBool(config, ELOS_CONFIG_ROOT "UseEnv", &useEnv);
-    samconfConfigGetString(config, pathToConfigOption, &optionsFromFile);
-
-    if (useEnv) {
-        result = safuGetEnvOr(envVarName, optionsFromFile ? optionsFromFile : defaultValue);
     } else {
-        result = optionsFromFile ? optionsFromFile : defaultValue;
+        safuLogErr("in config load and merge");
+    }
+
+    if (result == SAFU_RESULT_OK) {
+        if (elosConfigGetElosdUseEnv(*config)) {
+            samconfConfigLocation_t conf = CONF_PATH("env://?envPrefix=elos&", enforceSignature);
+            status = samconfLoadAndMerge(&conf, 1, config);
+            if (status != SAMCONF_CONFIG_OK) {
+                result = SAFU_RESULT_FAILED;
+            }
+        }
     }
     return result;
 }
 
 const char *elosConfigGetElosdLogFilter(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_ROOT "LogFilter", "ELOS_LOG_FILTER", ELOSD_LOG_FILTER);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_ROOT "LogFilter", ELOSD_LOG_FILTER);
 }
 
 safuLogLevelE_t elosConfigGetElosdLogLevel(const samconfConfig_t *config) {
-    bool useEnv = false;
-    const char *logLevelString = NULL;
     safuLogLevelE_t result = SAFU_LOG_LEVEL_INVALID;
-    samconfConfigStatusE_t status = SAMCONF_CONFIG_NOT_FOUND;
 
-    samconfConfigGetBool(config, ELOS_CONFIG_ROOT "UseEnv", &useEnv);
-    if (useEnv) {
-        logLevelString = getenv("ELOS_LOG_LEVEL");
-        if (logLevelString != NULL) {
-            result = safuLogLevelFromString(logLevelString);
-            if (result == SAFU_LOG_LEVEL_INVALID) {
-                safuLogErrF("reading from env failed! \"%s\" is not a valid log level", logLevelString);
-            }
-        }
-    }
+    const char *logLevelString = samconfConfigGetStringOr(config, ELOS_CONFIG_ROOT "LogLevel", ELOSD_LOG_LEVEL);
+    result = safuLogLevelFromString(logLevelString);
     if (result == SAFU_LOG_LEVEL_INVALID) {
-        status = samconfConfigGetString(config, ELOS_CONFIG_ROOT "LogLevel", &logLevelString);
-        result = safuLogLevelFromString(logLevelString);
-        if (result == SAFU_LOG_LEVEL_INVALID && status == SAMCONF_CONFIG_OK) {
-            safuLogErrF("reading from config failed! \"%s\" is not a valid log level", logLevelString);
-        }
-    }
-    if (result == SAFU_LOG_LEVEL_INVALID) {
-        result = safuLogLevelFromString(ELOSD_LOG_LEVEL);
+        safuLogErrF("reading from config failed! \"%s\" is not a valid log level", logLevelString);
     }
     return result;
 }
 
 const char *elosConfigGetElosdStorageBackendJsonFile(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_STORAGEBACKEND "Json/File",
-                                          "ELOS_STORAGE_BACKEND_JSON_FILE", STORAGE_LOCATION);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_STORAGEBACKEND "Json/File", STORAGE_LOCATION);
 }
 
 const char *elosConfigGetElosdScannerPath(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "PluginSearchPath", "ELOS_SCANNER_PATH",
-                                          ELOSD_SCANNER_PATH);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_SCANNER "PluginSearchPath", ELOSD_SCANNER_PATH);
 }
 
 const char *elosConfigGetElosdClientPath(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_CLIENTINPUTS "PluginSearchPath", "ELOS_CLIENT_PATH",
-                                          ELOSD_CLIENT_PATH);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_CLIENTINPUTS "PluginSearchPath", ELOSD_CLIENT_PATH);
 }
 
 const char *elosConfigGetElosdBackendPath(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_EVENTLOGGING "PluginSearchPath", "ELOS_BACKEND_PATH",
-                                          ELOSD_BACKEND_PATH);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_EVENTLOGGING "PluginSearchPath", ELOSD_BACKEND_PATH);
 }
 
 const char *elosConfigGetElosdScannerKmsgFile(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "KmsgScanner/KmsgFile", "ELOS_KMSG_FILE",
-                                          ELOS_KMSG_FILE);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_SCANNER "KmsgScanner/KmsgFile", ELOS_KMSG_FILE);
 }
 
 const char *elosConfigGetElosdSyslogSocketPath(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_SCANNER "SyslogScanner/SyslogPath", "ELOS_SYSLOG_PATH",
-                                          ELOS_SYSLOG_PATH);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_SCANNER "SyslogScanner/SyslogPath", ELOS_SYSLOG_PATH);
 }
 
 const char *elosConfigGetElosdRunDir(const samconfConfig_t *config) {
-    return elosConfigGetElosdOptionString(config, ELOS_CONFIG_ROOT "RunDir", "ELOS_RUNDIR", ELOS_RUN_DIR);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_ROOT "RunDir", ELOS_RUN_DIR);
 }
 
 bool elosConfigGetElosdUseEnv(const samconfConfig_t *config) {
