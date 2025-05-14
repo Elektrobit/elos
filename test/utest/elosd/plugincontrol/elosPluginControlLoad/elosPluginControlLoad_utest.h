@@ -41,3 +41,4 @@ extern elosPluginConfig_t const elosPluginConfig;
 
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadErrParam)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadSuccessLocal)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosPluginControlLoadSuccessName)
