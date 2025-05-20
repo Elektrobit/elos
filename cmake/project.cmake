@@ -19,6 +19,7 @@ macro(project_set_environment)
 
   add_compile_options(
     -Wshadow -Wall -Wextra -pedantic -D_DEFAULT_SOURCE
+    -fmacro-prefix-map=${PROJECT_SOURCE_DIR}=.
   )
 
   if(NOT CMAKE_BUILD_TYPE)
