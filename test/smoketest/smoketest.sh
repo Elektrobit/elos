@@ -146,11 +146,11 @@ smoketest_elosd() {
 
     LOG_ELOSD="${RESULT_DIR}/elosd.log"
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
-    export ELOS_CONFIG_PATH="${RESULT_DIR}/test_config.json"
-    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    export ELOS_CONFIG_PATH="${RESULT_DIR}"
+    cp "${REAL_ELOS_CONFIG_PATH}/elosd.json" "${ELOS_CONFIG_PATH}"
 
     export elos_EventLogging_Plugins_DLT_Config_Connection="${RESULT_DIR}/dlt"
-    sed -i "s,/tmp/dlt,${elos_EventLogging_Plugins_DLT_Config_Connection}," "${ELOS_CONFIG_PATH}"
+    sed -i "s,/tmp/dlt,${elos_EventLogging_Plugins_DLT_Config_Connection}," "${ELOS_CONFIG_PATH}/elosd.json"
     start_dlt_mock
 
     log "Starting Elosd with config ${ELOS_CONFIG_PATH}"
@@ -244,8 +244,8 @@ smoketest_client_uds() {
     RESULT=0
     LOG_ELOSD="$RESULT_DIR/elosd.log"
     REAL_ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH}
-    export ELOS_CONFIG_PATH="${RESULT_DIR}/test_config.json"
-    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    export ELOS_CONFIG_PATH="${RESULT_DIR}"
+    cp "${REAL_ELOS_CONFIG_PATH}/elosd.json" "${ELOS_CONFIG_PATH}"
 
     log "Starting elosd"
     elosd > "$LOG_ELOSD" 2>&1 &
@@ -289,11 +289,11 @@ smoketest_coredump() {
     export ELOS_COREDUMP_CONFIG_FILE="${RESULT_DIR}/test_config_coredump.json"
 
     REAL_ELOS_CONFIG_PATH="${ELOS_CONFIG_PATH}"
-    export ELOS_CONFIG_PATH="${RESULT_DIR}/test_config.json"
-    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    export ELOS_CONFIG_PATH="${RESULT_DIR}"
+    cp "${REAL_ELOS_CONFIG_PATH}/elosd.json" "${ELOS_CONFIG_PATH}"
 
     elos_EventLogging_Plugins_DLT_Config_Connection="${RESULT_DIR}/dlt"
-    sed -i "s,/tmp/dlt,${elos_EventLogging_Plugins_DLT_Config_Connection}," "${ELOS_CONFIG_PATH}"
+    sed -i "s,/tmp/dlt,${elos_EventLogging_Plugins_DLT_Config_Connection}," "${ELOS_CONFIG_PATH}/elosd.json"
     start_dlt_mock
 
     log "Starting elosd"
@@ -806,11 +806,11 @@ smoketest_plugins() {
     TEST_RESULT=0
 
     REAL_ELOS_CONFIG_PATH="${ELOS_CONFIG_PATH}"
-    export ELOS_CONFIG_PATH="${RESULT_DIR}/test_config.json"
-    cp "${REAL_ELOS_CONFIG_PATH}" "${ELOS_CONFIG_PATH}"
+    export ELOS_CONFIG_PATH="${RESULT_DIR}"
+    cp "${REAL_ELOS_CONFIG_PATH}/elosd.json" "${ELOS_CONFIG_PATH}"
 
     elos_EventLogging_Plugins_DLT_Config_Connection="${RESULT_DIR}/dlt"
-    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}"
+    sed -i "s,/tmp/dlt,${ELOS_DLT_PIPE_PATH}," "${ELOS_CONFIG_PATH}/elosd.json"
 
     start_dlt_mock
 
@@ -861,7 +861,9 @@ smoketest_dual_json_plugin() {
     KMSG_SCAN="${elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile}"
     unset elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile
 
-    export ELOS_CONFIG_PATH="${SMOKETEST_DIR}/config_dual.json"
+    REAL_ELOS_CONFIG_PATH="${ELOS_CONFIG_PATH}"
+    export ELOS_CONFIG_PATH="${RESULT_DIR}"
+    cp "${REAL_ELOS_CONFIG_PATH}/config_dual.json" "${ELOS_CONFIG_PATH}/elosd.json"
     export elos_EventLogging_Plugins_Coredump_Config_StoragePath="${RESULT_DIR}/elos_coredump_%count%.log"
     COREDUMP_FILE="${RESULT_DIR}/elos_coredump_0.log"
     export elos_EventLogging_Plugins_JsonBackend_Config_StoragePath="${RESULT_DIR}/elos_jsonbackend_%count%.log"
@@ -896,6 +898,7 @@ smoketest_dual_json_plugin() {
         TEST_RESULT=1
     fi
 
+    export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
     export elos_EventLogging_Plugins_DLT_Config_Connection="${DLT_CON}"
     export elos_ClientInputs_Plugins_unixClient_Config_path="${UNIX_CLIENT}"
     export elos_ClientInputs_Plugins_PublicTcpClient_Config_Port="${PUBLIC_TCP}"

@@ -21,12 +21,11 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/private
 )
 
-add_compile_definitions(ELOSD_CONFIG_PATH="${ELOSD_CONFIG_PATH}")
-add_compile_definitions(ELOSD_CONFIG_FILE="${ELOSD_CONFIG_FILE}")
+add_compile_definitions(ELOSD_CONFIG_PATH="${ELOSD_FULL_CONFIG_PATH}")
+
 add_compile_definitions(ELOSD_SCANNER_PATH="${ELOSD_SCANNER_PATH}")
 add_compile_definitions(ELOSD_CLIENT_PATH="${ELOSD_CLIENT_PATH}")
 add_compile_definitions(ELOSD_BACKEND_PATH="${ELOSD_BACKEND_PATH}")
-add_compile_definitions(ELOSD_LOG_PREFIX="${ELOSD_LOG_PREFIX}")
 add_compile_definitions(ELOSD_LOG_FILTER="${ELOSD_LOG_FILTER}")
 add_compile_definitions(ELOSD_LOG_LEVEL="${ELOSD_LOG_LEVEL}")
 add_compile_definitions(ELOSD_RUN_DIR="${ELOSD_RUN_DIR}")
@@ -51,5 +50,5 @@ install(
   FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/elosd.json
   DESTINATION
-    ${CMAKE_INSTALL_SYSCONFDIR}/elos/
+    ${ELOSD_CONFIG_PATH}
 )

@@ -39,7 +39,11 @@ Remove Config File
     ...    so that elosd does have a config file and fails to start.
 
     ${rc}=    Execute And Log Based On User Permissions
-    ...    sh -c 'mkdir -p ${INVALID_CONFIG_DIR} && mount --bind ${INVALID_CONFIG_DIR} /etc/elos'
+    ...    sh -c 'mkdir -p ${INVALID_CONFIG_DIR}'
+    ...    ${RETURN_RC}
+    Executable Returns No Errors    ${rc}
+    ${rc}=    Execute And Log Based On User Permissions
+    ...    sh -c 'mount --bind ${INVALID_CONFIG_DIR} $(dirname ${ELOS_DEFAULT_CONFIG_FILE})'
     ...    ${RETURN_RC}
     Executable Returns No Errors    ${rc}
 
@@ -54,6 +58,6 @@ Reset Config File
     [Documentation]    Reset Config file to default path and reset root file system
 
     ${rc}=    Execute And Log Based On User Permissions
-    ...    sh -c 'umount /etc/elos/ && rm -rf ${INVALID_CONFIG_DIR}'
+    ...    sh -c 'umount $(dirname ${ELOS_DEFAULT_CONFIG_FILE}) && rm -rf ${INVALID_CONFIG_DIR}'
     ...    ${RETURN_RC}
     Executable Returns No Errors    ${rc}

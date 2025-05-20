@@ -81,7 +81,7 @@ else
 fi
 
 # Overwrite the elosd config file path.
-export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
+export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR"}
 
 # Overwrite the log4crc file path for the log4c demo.
 export LOG4C_RCPATH="${SYSCONF_DIR}/elos/elos_log4c_demo"

@@ -2,56 +2,91 @@
 
 #include "elos/config/config.h"
 
+#include <libgen.h>
 #include <safu/defines.h>
 #include <safu/result.h>
 #include <samconf/samconf.h>
 #include <samconf/samconf_types.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "safu/common.h"
 #include "safu/log.h"
 
-#ifndef STORAGE_LOCATION
-#define STORAGE_LOCATION "/var/log/elosd.log"
+#ifndef ELOSD_RUN_DIR
+#define ELOSD_RUN_DIR "/run/elosd"
 #endif
 
-#ifndef ELOS_KMSG_FILE
-#define ELOS_KMSG_FILE "/dev/kmsg"
-#endif
-
-#ifndef ELOS_SYSLOG_PATH
-#define ELOS_SYSLOG_PATH "/dev/log"
-#endif
-
-#ifndef ELOS_RUN_DIR
-#define ELOS_RUN_DIR "/run/elosd"
-#endif
+static char *_concatPath(const char *prefix, const char *name) {
+    char *configPath = malloc(strlen(prefix) + strlen(name) + 1);
+    if (configPath == NULL) {
+        return NULL;
+    }
+    configPath[0] = 0;
+    strcat(configPath, prefix);
+    strcat(configPath, name);
+    return configPath;
+}
 
 safuResultE_t elosConfigLoad(samconfConfig_t **config) {
-    char *location = NULL;
+    char *configPath = NULL;
     samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
     safuResultE_t result = SAFU_RESULT_FAILED;
     bool enforceSignature = false;
+    bool useEnv = false;
 
-    location = (char *)safuGetEnvOr("ELOS_CONFIG_PATH", ELOSD_CONFIG_FILE);
-    safuLogInfoF("Use elosd config %s", location);
-
+    configPath = (char *)safuGetEnvOr("ELOS_CONFIG_PATH", ELOSD_CONFIG_PATH);
+    struct stat configPathStat;
+    if (stat(configPath, &configPathStat) != 0) {
+        safuLogErrF("failed stat on %s", configPath);
+        return SAFU_RESULT_FAILED;
+    }
+    const char *location = NULL;
+    switch (configPathStat.st_mode & S_IFMT) {
+        case S_IFREG:
+            status = samconfLoad(configPath, enforceSignature, config);
+            safuLogInfoF("Base config %s", configPath);
+            configPath = dirname(configPath);
+            safuLogWarn("deprecated: use ELOS_CONFIG_PATH=\"%s\" and \"elosd.json\" as config file name");
+            break;
+        case S_IFDIR:
+            location = _concatPath(configPath, "/elosd.json");
+            status = samconfLoad(location, enforceSignature, config);
+            safuLogInfoF("Base config %s", location);
+            free((void *)location);
+            break;
+        default:
+            safuLogErrF("config %s is neigther a config file nor a directory where to find configs", configPath);
+            return SAFU_RESULT_FAILED;
+    }
+    if (status == SAMCONF_CONFIG_OK) {
+        result = SAFU_RESULT_OK;
+    } else {
+        safuLogErr("in loading base config file");
+    }
+    useEnv = elosConfigGetElosdUseEnv(*config);
     samconfConfigLocation_t configs[] = {
-        CONF_PATH(location, enforceSignature),
-        CONF_PATH("/etc/elos/elos.d/", enforceSignature),
-        CONF_PATH("/etc/elos/client.d/", enforceSignature),
-        CONF_PATH("/etc/elos/eventlogging.d/", enforceSignature),
-        CONF_PATH("/etc/elos/scanner.d/", enforceSignature),
+        CONF_PATH(_concatPath(configPath, "/elos.d/"), enforceSignature),
+        CONF_PATH(_concatPath(configPath, "/client.d/"), enforceSignature),
+        CONF_PATH(_concatPath(configPath, "/scanner.d/"), enforceSignature),
+        CONF_PATH(_concatPath(configPath, "/eventlogging.d/"), enforceSignature),
     };
+    for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
+        safuLogInfoF("+ %s", configs[i].path);
+    }
     status = samconfLoadAndMerge(configs, ARRAY_SIZE(configs), config);
     if (status == SAMCONF_CONFIG_OK) {
         result = SAFU_RESULT_OK;
     } else {
-        safuLogErr("in config load and merge");
+        safuLogDebug("Nothing loaded from additional configs");
+    }
+    for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
+        free(configs[i].path);
     }
 
     if (result == SAFU_RESULT_OK) {
-        if (elosConfigGetElosdUseEnv(*config)) {
+        if (useEnv) {
             samconfConfigLocation_t conf = CONF_PATH("env://?envPrefix=elos&", enforceSignature);
             status = samconfLoadAndMerge(&conf, 1, config);
             if (status != SAMCONF_CONFIG_OK) {
@@ -90,7 +125,7 @@ const char *elosConfigGetElosdBackendPath(const samconfConfig_t *config) {
 }
 
 const char *elosConfigGetElosdRunDir(const samconfConfig_t *config) {
-    return samconfConfigGetStringOr(config, ELOS_CONFIG_ROOT "RunDir", ELOS_RUN_DIR);
+    return samconfConfigGetStringOr(config, ELOS_CONFIG_ROOT "RunDir", ELOSD_RUN_DIR);
 }
 
 bool elosConfigGetElosdUseEnv(const samconfConfig_t *config) {
