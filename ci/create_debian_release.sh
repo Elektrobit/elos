@@ -125,12 +125,6 @@ echo "Create release: ${NEW_VERSION}"
 
 setup_env
 
-# workaround: the docker container already contains a working libmongoc build
-# from source, because the one from the official repositories is broken.
-# Remove this when nosql-plugin and dependency to libmongoc is removed.
-sudo apt-get update
-sudo apt-get install -y libmongoc-dev
-
 if [ $UPDATE_ALL -eq 1 ] || [ $UPDATE_RELEASE -eq 1 ]; then
   create_and_publish_debian_main
 fi

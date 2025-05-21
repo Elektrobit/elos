@@ -12,7 +12,6 @@ Build-Depends:
  libesmtp-dev,
  libsqlite3-dev,
  libcurl-dev,
- libmongoc-dev,
  pkg-config,
  libcmocka-dev,
  libsafu-dev,
@@ -46,7 +45,6 @@ Recommends:
  elos-plugin-scanner-oomkiller (= ${binary:Version}),
 Suggests:
  elos-plugin-backend-influxdb (= ${binary:Version}),
- elos-plugin-backend-nosql (= ${binary:Version}),
  elos-plugin-backend-dummy (= ${binary:Version}),
  elos-plugin-scanner-dummy (= ${binary:Version}),
  elos-plugin-client-dummy (= ${binary:Version}),
@@ -119,19 +117,6 @@ Description: Event logging and management with normalized output-format (JSON pl
  while providing easy access to the collected data.
  .
  JSON backend plugin.
-
-Package: elos-plugin-backend-nosql
-Section: libs
-Architecture: any
-Depends:
- ${misc:Depends},
- ${shlibs:Depends},
-Description: Event logging and management with normalized output-format (NoSQL plugin)
- elos is a tool to collect, store and publish various system events (i.e.
- syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
- while providing easy access to the collected data.
- .
- NoSQL backend plugin.
 
 Package: elos-plugin-backend-sql
 Section: libs

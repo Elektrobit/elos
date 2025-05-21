@@ -24,7 +24,7 @@ Make sure to install all dependencies
    cmake -B build/ .
    make -C build/
 
-Builds everything except for the NoSQL and InfluxDB backend.
+Builds everything except for the InfluxDB backend.
 Everything is build in Debug mode.
 
 .. code-block::
@@ -136,7 +136,7 @@ Intended for easier building of different configurations while developing and in
 
    ci/build.sh [BUILD_TARGET]
 
-Builds everything except for the NoSQL and InfluxDB backend.
+Builds everything except for the InfluxDB backend.
 By default the BUILD_TARGET is Debug.
 The build folder is set to `build/BUILD_TARGET/cmake` and everything is also directly installed into `build/BUILD_TARGET/dist/` (except for `mock_libelos`).
 
@@ -225,7 +225,7 @@ Dependencies
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
 | asan [#f1]_       | ✅    | ✅      | ✅           | ✅            | ✅      | ✅        | ✅      | ✅        | ✅         |
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
-| esmtp             |       |         |              |               |         |           |         | ✅ [#f5]_ |            |
+| esmtp             |       |         |              |               |         |           |         | ✅ [#f4]_ |            |
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
 | jason-c           | ✅    | ✅      | ✅           | ✅            | ✅      | ✅        |         |           | ✅         |
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
@@ -233,19 +233,16 @@ Dependencies
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
 | libmnl            | ✅    |         |              |               |         |           |         |           | ✅         |
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
-| log4c             |       |         |              |               |         |           |         | ✅ [#f6]_ |            |
+| log4c             |       |         |              |               |         |           |         | ✅ [#f5]_ |            |
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
-| mongoc_shared     |       |         |              |               |         | ✅ [#f3]_ |         |           |            |
-+-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
-| sqlite3           |       |         |              |               |         | ✅ [#f4]_ |         |           |            |
+| sqlite3           |       |         |              |               |         | ✅ [#f3]_ |         |           |            |
 +-------------------+-------+---------+--------------+---------------+---------+-----------+---------+-----------+------------+
 
 .. [#f1] only for all Debug builds
 .. [#f2] for the InfluxDB backend
-.. [#f3] for the NoSQL backend
-.. [#f4] for the SQL backend
-.. [#f5] for elosMon
-.. [#f6] for libeloslog4c and elos_log4c_demo
+.. [#f3] for the SQL backend
+.. [#f4] for elosMon
+.. [#f5] for libeloslog4c and elos_log4c_demo
 
 
 Options
@@ -260,7 +257,6 @@ cmake options
 - UNIT_TESTS: (default ON) Build the unit tests
 - INSTALL_UNIT_TESTS: (default ON) install the unit tests
 - ELOSD_EVENTLOGGING_BACKEND_SQL: (default ON) Build the sqlite3 backend plugin
-- ELOSD_EVENTLOGGING_BACKEND_NOSQL: (default OFF) Build the NoSQL backend plugin
 - ELOSD_EVENTLOGGING_BACKEND_INFLUXDB: (default OFF) Build the InfluxDB backend plugin
 
 .. _buildsh-options:

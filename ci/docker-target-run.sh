@@ -46,7 +46,6 @@ docker run --rm ${IT} \
     --cap-add=SYS_ADMIN \
     --security-opt apparmor=unconfined \
     $SSH_AGENT_OPTS \
-    ${LINK_NOSQL:+ --link elos-mongo} \
     ${ENV_OPTIONS} \
     -v "${RESULT_DIR}:/results:rw" \
     -w / \
