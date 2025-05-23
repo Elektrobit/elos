@@ -9,6 +9,7 @@ create_unit_test(
   SOURCES
     case_err_param.c
     case_success_local.c
+    case_success_name.c
     createMockConfigUtil.c
     elosPluginControlLoad_functions.c
     elosPluginControlLoad_utest.c

@@ -5,7 +5,6 @@ ARG UID=1000
 ARG GID=1000
 ARG ASMCOV_URI="not available"
 ARG CAPSTONE_VERSION=4.0.2
-ARG MONGOC_VERSION=1.30.2
 ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -72,11 +71,6 @@ RUN git clone --depth 1 --branch $CAPSTONE_VERSION https://github.com/aquynh/cap
 RUN cd capstone/ \
  && ./make.sh \
  &&  sudo ./make.sh install
-
-RUN git clone https://github.com/mongodb/mongo-c-driver.git --branch ${MONGOC_VERSION} --depth 1 \
- && cd mongo-c-driver/build \
- && cmake .. -DCMAKE_INSTALL_PREFIX=/usr \
- && make && sudo make install
 
 RUN if [ "${ASMCOV_URI}" != "not available" ]; then git clone --depth 1 ${ASMCOV_URI} -b 'integration' \
  && cmake -B build asmcov \
