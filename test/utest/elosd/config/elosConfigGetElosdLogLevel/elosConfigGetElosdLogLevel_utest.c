@@ -6,10 +6,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdLogLevelUtest)
 int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosConfigGetElosdLogLevelSuccessFromDefault),
-        TEST_CASE(elosTestElosConfigGetElosdLogLevelSuccessFromEnv),
         TEST_CASE(elosTestElosConfigGetElosdLogLevelSuccessFromConfig),
-        TEST_CASE(elosTestElosConfigGetElosdLogLevelErrEnvFallbackToConfig),
-        TEST_CASE(elosTestElosConfigGetElosdLogLevelErrFallbackToDefault),
     };
 
     return RUN_TEST_SUITE(tests, elosTestElosConfigGetElosdLogLevelUtest);

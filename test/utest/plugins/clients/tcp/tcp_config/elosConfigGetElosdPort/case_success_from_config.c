@@ -3,15 +3,15 @@
 #include <samconf/samconf.h>
 #include <samconf/test_utils.h>
 
-#include "elosConfigGetElosdConnectionLimit_utest.h"
+#include "elosConfigGetElosdPort_utest.h"
 
-int elosTestElosConfigGetElosdConnectionLimitSuccessFromConfigSetup(void **state) {
+int elosTestElosConfigGetElosdPortSuccessFromConfigSetup(void **state) {
     samconfConfig_t *config = NULL;
     samconfConfigNew(&config);
     samconfUtilCreateMockConfigFromStr(
         "{"
         "  \"Config\": {"
-        "    \"ConnectionLimit\": 42"
+        "    \"Port\": 42"
         "  }"
         "}",
         true, config);
@@ -20,21 +20,21 @@ int elosTestElosConfigGetElosdConnectionLimitSuccessFromConfigSetup(void **state
     return 0;
 }
 
-int elosTestElosConfigGetElosdConnectionLimitSuccessFromConfigTeardown(void **state) {
+int elosTestElosConfigGetElosdPortSuccessFromConfigTeardown(void **state) {
     samconfConfig_t *config = *(samconfConfig_t **)state;
     samconfConfigDelete(config);
     *state = NULL;
     return 0;
 }
 
-void elosTestElosConfigGetElosdConnectionLimitSuccessFromConfig(void **state) {
+void elosTestElosConfigGetElosdPortSuccessFromConfig(void **state) {
     samconfConfig_t *config = *(samconfConfig_t **)state;
 
-    TEST("elosTcpConfigGetConnectionLimit");
-    SHOULD("%s", "get the elos connection limit environment option");
+    TEST("elosTcpConfigGetPort");
+    SHOULD("%s", "get the elos port from the config");
 
     elosPlugin_t plugin = {.useEnv = true, .config = config};
 
-    int32_t limit = elosTcpConfigGetConnectionLimit(&plugin);
-    assert_int_equal(42, limit);
+    int port = elosTcpConfigGetPort(&plugin);
+    assert_int_equal(42, port);
 }

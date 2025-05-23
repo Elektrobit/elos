@@ -29,31 +29,49 @@ export SMOKETEST_RESULT_DIR=${SMOKETEST_RESULT_DIR-"./results/smoketest"}
 export SMOKETEST_TMP_DIR="${SMOKETEST_TMP_DIR-"$(mktemp -d /tmp/elos_smoketest_XXXXXX)"}"
 
 # Overwrite the path to the elos runtime directory.
-export ELOS_RUNDIR=${ELOS_RUNDIR-"${SMOKETEST_TMP_DIR}/"}
-
-# Overwrite the path to the elos unix socket to be used for the unix plugin.
-export ELOSD_SOCKET_PATH=${ELOSD_SOCKET_PATH-"${SMOKETEST_TMP_DIR}/elosd.socket"}
-
-# Overwrite the path to the syslog socket to be used for the syslog scanner.
-export ELOS_SYSLOG_PATH=${ELOS_SYSLOG_PATH-"${SMOKETEST_TMP_DIR}/elosd.syslog.socket"}
-
-# Overwrite the path to read the kernel log buffer, used by the kmsg scanner.
-export ELOS_KMSG_FILE=${ELOS_KMSG_FILE-"${SMOKETEST_TMP_DIR}/elosd.kmsg"}
-
-# Overwrite the file-path used for the DLT fifo for the DLT backend.
-export ELOS_DLT_PIPE_PATH=${ELOS_DLT_PIPE_PATH-"${SMOKETEST_TMP_DIR}/dlt"}
-
-# Overwrite the client plugin search path to look for client plugins.
-export ELOS_CLIENT_PATH=${ELOS_CLIENT_PATH-"${PREFIX_PATH}/lib/elos/client"}
-
-# Overwrite the scanner plugin search path to look for scanner plugins.
-export ELOS_SCANNER_PATH=${ELOS_SCANNER_PATH-"${PREFIX_PATH}/lib/elos/scanner"}
-
-# Overwrite the backend plugin search path to look for backend plugins.
-export ELOS_BACKEND_PATH=${ELOS_BACKEND_PATH-"${PREFIX_PATH}/lib/elos/backend"}
+export elos_RunDir="${SMOKETEST_TMP_DIR}/"
 
 # Overwrite the elosd log level, be verbose for the smoketest.
-export ELOS_LOG_LEVEL=DEBUG
+export elos_LogLevel=DEBUG
+
+# Overwrite the coredump config file path.
+export ELOS_COREDUMP_CONFIG_FILE=${ELOS_COREDUMP_CONFIG_FILE:-"${SMOKETEST_DIR}/coredump.json"}
+
+
+## ======= ClientInput Configurations =======
+
+# Overwrite the client plugin search path to look for client plugins.
+export elos_ClientInputs_PluginSearchPath="${PREFIX_PATH}/lib/elos/client"
+
+# Overwrite the path to the elos unix socket to be used for the unix plugin.
+export elos_ClientInputs_Plugins_unixClient_Config_path="${SMOKETEST_TMP_DIR}/elosd.socket"
+
+# Overwrite the TCP port to be used for the smoketest
+#export ELOSD_PORT=${ELOSD_PORT-54323}
+export elos_ClientInputs_Plugins_PublicTcpClient_Config_Port=${ELOSD_PORT-54323}
+export elos_ClientInputs_Plugins_LocalTcp_Config_Port=${ELOSD_PORT-54322}
+
+
+## ======= Scanner Configurations =======
+
+# Overwrite the path to the syslog socket to be used for the syslog scanner.
+export elos_Scanner_Plugins_SyslogScanner_Config_SyslogPath="${SMOKETEST_TMP_DIR}/elosd.syslog.socket"
+
+# Overwrite the path to read the kernel log buffer, used by the kmsg scanner.
+export elos_Scanner_Plugins_ScannerKmsg_Config_KmsgFile="${SMOKETEST_TMP_DIR}/elosd.kmsg"
+
+# Overwrite the scanner plugin search path to look for scanner plugins.
+export elos_Scanner_PluginSearchPath="${PREFIX_PATH}/lib/elos/scanner"
+
+
+## ======= Backend Configurations =======
+
+# Overwrite the backend plugin search path to look for backend plugins.
+export elos_EventLogging_PluginSearchPath="${PREFIX_PATH}/lib/elos/backend"
+
+# Overwrite the file-path used for the DLT fifo for the DLT backend.
+export elos_EventLogging_Plugins_DLT_Config_Connection="${SMOKETEST_TMP_DIR}/dlt"
+
 
 # Take care of special sysconfdir cases
 if [ "${PREFIX_PATH}" = "/usr" ] || [ "${PREFIX_PATH}" = "/" ]; then
@@ -63,16 +81,10 @@ else
 fi
 
 # Overwrite the elosd config file path.
-export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR/config.json"}
+export ELOS_CONFIG_PATH=${ELOS_CONFIG_PATH-"$SMOKETEST_DIR"}
 
 # Overwrite the log4crc file path for the log4c demo.
 export LOG4C_RCPATH="${SYSCONF_DIR}/elos/elos_log4c_demo"
-
-# Overwrite the coredump config file path.
-export ELOS_COREDUMP_CONFIG_FILE=${ELOS_COREDUMP_CONFIG_FILE:-"${SMOKETEST_DIR}/coredump.json"}
-
-# Overwrite the TCP port to be used for the smoketest
-export ELOSD_PORT=${ELOSD_PORT-54323}
 
 # Use SMOKETEST_ENABLE_COMPILE_TESTS to enable complie test. This
 # tests if all necessary header and library files are packet for

@@ -7,7 +7,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosTestelosUnixConfigGetPathUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosTestelosUnixConfigGetPathSuccessFromEnv),
+        TEST_CASE(elosTestelosUnixConfigGetPathSuccessFromConfig),
         TEST_CASE(elosTestelosUnixConfigGetPathSuccessFromDefault),
     };
 

@@ -2,7 +2,4 @@
 add_subdirectory(elosConfigGetElosdBackendPath)
 add_subdirectory(elosConfigGetElosdLogFilter)
 add_subdirectory(elosConfigGetElosdLogLevel)
-add_subdirectory(elosConfigGetElosdStorageBackendJsonFile)
 add_subdirectory(elosConfigGetElosdScannerPath)
-add_subdirectory(elosConfigGetElosdScannerKmsgFile)
-add_subdirectory(elosConfigGetElosdSyslogSocketPath)
