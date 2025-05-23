@@ -9,5 +9,5 @@
 
 samconfConfig_t elosGetMockConfig();
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestelosUnixConfigGetPathSuccessFromEnv)
+TEST_CASE_FUNC_PROTOTYPES(elosTestelosUnixConfigGetPathSuccessFromConfig)
 TEST_CASE_FUNC_PROTOTYPES(elosTestelosUnixConfigGetPathSuccessFromDefault)

@@ -6,7 +6,7 @@ create_unit_test(
   NAME
     test_config_elosUnixConfigGetPath_utest
   SOURCES
-    case_success_from_env.c
+    case_success_from_config.c
     case_success_from_default.c
     elosUnixConfigGetPath_utest.c
   LIBRARIES

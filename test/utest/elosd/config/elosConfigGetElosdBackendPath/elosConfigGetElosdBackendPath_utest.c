@@ -6,7 +6,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdBackendPathUtest)
 int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosConfigGetElosdBackendPathSuccessFromDefault),
-        TEST_CASE(elosTestElosConfigGetElosdBackendPathSuccessFromEnv),
+        TEST_CASE(elosTestElosConfigGetElosdBackendPathSuccessFromConfig),
     };
 
     return RUN_TEST_SUITE(tests, elosTestElosConfigGetElosdBackendPathUtest);

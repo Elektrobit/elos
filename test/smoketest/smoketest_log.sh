@@ -11,9 +11,9 @@ setup_log() {
 }
 
 log() {
-	printf '%s\n' "$1" >> "$FILE"
+	printf '%s\n' "$*" >> "$FILE"
 }
 
 log_err() {
-	printf '[ERROR] %s\n' "$1" >> "$FILE"
+	printf '[ERROR] %s\n' "$*" >> "$FILE"
 }

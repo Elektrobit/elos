@@ -7,7 +7,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosTestElosConfigGetElosdPortSuccessFromEnv),
+        TEST_CASE(elosTestElosConfigGetElosdPortSuccessFromConfig),
         TEST_CASE(elosTestElosConfigGetElosdPortSuccessFromDefault),
     };
 

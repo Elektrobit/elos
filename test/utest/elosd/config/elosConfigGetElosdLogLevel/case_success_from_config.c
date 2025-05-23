@@ -1,63 +1,45 @@
 // SPDX-License-Identifier: MIT
 
 #include <cmocka_extensions/mock_extensions.h>
+#include <safu/common.h>
 #include <safu/log.h>
+#include <samconf/samconf.h>
+#include <samconf/samconf_types.h>
+#include <samconf/test_utils.h>
 
-#include "cmocka_mocks/mock_libc.h"
 #include "elosConfigGetElosdLogLevel_utest.h"
 
-int elosTestElosConfigGetElosdLogLevelSuccessFromConfigSetup(UNUSED void **state) {
+#define MOCK_CONFIG \
+    "{                                    \
+        \"root\": {                       \
+            \"elos\": {                   \
+                \"UseEnv\": false,        \
+                \"LogLevel\": \"Verbose\" \
+            }                             \
+        }                                 \
+    }"
+
+int elosTestElosConfigGetElosdLogLevelSuccessFromConfigSetup(void **state) {
+    samconfConfig_t *config = NULL;
+    samconfConfigNew(&config);
+    samconfUtilCreateMockConfigFromStr(MOCK_CONFIG, true, config);
+    *state = config;
     return 0;
 }
 
-int elosTestElosConfigGetElosdLogLevelSuccessFromConfigTeardown(UNUSED void **state) {
+int elosTestElosConfigGetElosdLogLevelSuccessFromConfigTeardown(void **state) {
+    samconfConfig_t *config = *(samconfConfig_t **)state;
+    samconfConfigDelete(config);
+    *state = NULL;
     return 0;
 }
 
-void elosTestElosConfigGetElosdLogLevelSuccessFromConfig(UNUSED void **state) {
-    const char *mockKey = "ELOS_LOG_LEVEL";
-    const char *expectedString = "Verbose";
+void elosTestElosConfigGetElosdLogLevelSuccessFromConfig(void **state) {
     safuLogLevelE_t expectedValue = SAFU_LOG_LEVEL_ALL;
-    samconfConfig_t mockConfig = elosGetMockConfig();
+    samconfConfig_t *mockConfig = *(samconfConfig_t **)state;
 
     TEST("elosConfigGetElosdLogLevel");
     SHOULD("%s", "get the elos LogLevel from the configuration");
-
-    MOCK_FUNC_ENABLE(samconfConfigGetBool);
-    expect_value(__wrap_samconfConfigGetBool, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetBool, path, ELOS_CONFIG_ROOT "UseEnv");
-    expect_any(__wrap_samconfConfigGetBool, result);
-    will_set_parameter(__wrap_samconfConfigGetBool, result, false);
-    will_return(__wrap_samconfConfigGetBool, SAMCONF_CONFIG_OK);
-
-    MOCK_FUNC_ENABLE(samconfConfigGetString);
-    expect_value(__wrap_samconfConfigGetString, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetString, path, ELOS_CONFIG_ROOT "LogLevel");
-    expect_any(__wrap_samconfConfigGetString, result);
-    will_set_parameter(__wrap_samconfConfigGetString, result, expectedString);
-    will_return(__wrap_samconfConfigGetString, SAMCONF_CONFIG_OK);
-
-    safuLogLevelE_t returnValue = elosConfigGetElosdLogLevel(&mockConfig);
-    assert_int_equal(returnValue, expectedValue);
-
-    MOCK_FUNC_ENABLE(samconfConfigGetBool);
-    expect_value(__wrap_samconfConfigGetBool, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetBool, path, ELOS_CONFIG_ROOT "UseEnv");
-    expect_any(__wrap_samconfConfigGetBool, result);
-    will_set_parameter(__wrap_samconfConfigGetBool, result, true);
-    will_return(__wrap_samconfConfigGetBool, SAMCONF_CONFIG_OK);
-
-    MOCK_FUNC_ENABLE(getenv);
-    expect_string(__wrap_getenv, name, mockKey);
-    will_return(__wrap_getenv, NULL);
-
-    MOCK_FUNC_ENABLE(samconfConfigGetString);
-    expect_value(__wrap_samconfConfigGetString, root, &mockConfig);
-    expect_string(__wrap_samconfConfigGetString, path, ELOS_CONFIG_ROOT "LogLevel");
-    expect_any(__wrap_samconfConfigGetString, result);
-    will_set_parameter(__wrap_samconfConfigGetString, result, expectedString);
-    will_return(__wrap_samconfConfigGetString, SAMCONF_CONFIG_OK);
-
-    returnValue = elosConfigGetElosdLogLevel(&mockConfig);
+    safuLogLevelE_t returnValue = elosConfigGetElosdLogLevel(mockConfig);
     assert_int_equal(returnValue, expectedValue);
 }

@@ -5,9 +5,8 @@ TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdConnectionLimitUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosTestElosConfigGetElosdConnectionLimitSuccessFromEnv),
+        TEST_CASE(elosTestElosConfigGetElosdConnectionLimitSuccessFromConfig),
         TEST_CASE(elosTestElosConfigGetElosdConnectionLimitSuccessFromDefault),
-        TEST_CASE(elosTestElosConfigGetElosdConnectionLimitErrorLimitNotIntInEnv),
     };
 
     return RUN_TEST_SUITE(tests, elosTestElosConfigGetElosdConnectionLimitUtest);
