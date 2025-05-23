@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-set(ELOS_VERSION 1.22.6)
+set(ELOS_VERSION 1.25.4)
 
 # Attention: Aside from the version, as many things as possible in this file
 #   should be put into functions, as this solves potential issues with commands
@@ -19,6 +19,7 @@ macro(project_set_environment)
 
   add_compile_options(
     -Wshadow -Wall -Wextra -pedantic -D_DEFAULT_SOURCE
+    -fmacro-prefix-map=${PROJECT_SOURCE_DIR}=.
   )
 
   if(NOT CMAKE_BUILD_TYPE)

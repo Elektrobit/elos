@@ -72,11 +72,6 @@ RUN cd capstone/ \
  && ./make.sh \
  &&  sudo ./make.sh install
 
-RUN git clone https://github.com/mongodb/mongo-c-driver.git \
- && cd mongo-c-driver/build \
- && cmake .. -DCMAKE_INSTALL_PREFIX=/usr \
- && make && sudo make install
-
 RUN if [ "${ASMCOV_URI}" != "not available" ]; then git clone --depth 1 ${ASMCOV_URI} -b 'integration' \
  && cmake -B build asmcov \
  && make -C build \

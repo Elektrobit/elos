@@ -4,7 +4,7 @@
 
 #include "elosPluginControlLoad_utest.h"
 
-int elosTestElosPluginControlLoadSuccessLocalSetup(void **state) {
+int elosTestElosPluginControlLoadSuccessNameSetup(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     samconfConfigStatusE_t ret = SAMCONF_CONFIG_OK;
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -15,7 +15,7 @@ int elosTestElosPluginControlLoadSuccessLocalSetup(void **state) {
     ret = elosGetMockConfig(test->mockRootConfig);
     assert_int_equal(ret, SAMCONF_CONFIG_OK);
 
-    ret = samconfConfigGet(test->mockRootConfig, "root/elos/ClientInputs/Plugins/LocalTcpClient",
+    ret = samconfConfigGet(test->mockRootConfig, "root/elos/ClientInputs/Plugins/Pluginwithtoolongname",
                            &test->mockPluginConfig);
     assert_int_equal(ret, SAMCONF_CONFIG_OK);
 
@@ -31,7 +31,7 @@ int elosTestElosPluginControlLoadSuccessLocalSetup(void **state) {
     return 0;
 }
 
-int elosTestElosPluginControlLoadSuccessLocalTeardown(void **state) {
+int elosTestElosPluginControlLoadSuccessNameTeardown(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     safuResultE_t result;
 
@@ -75,12 +75,13 @@ static int _customPthreadCreate(UNUSED pthread_t *__restrict__ __newthread,
     return 0;
 }
 
-void elosTestElosPluginControlLoadSuccessLocal(void **state) {
+void elosTestElosPluginControlLoadSuccessName(void **state) {
     elosUnitTestState_t *test = *(elosUnitTestState_t **)state;
     safuResultE_t result;
 
     TEST("elosPluginControlLoad");
-    SHOULD("%s", "test correct behaviour of elosPluginControlLoad when loading from self (filename=NULL)");
+    SHOULD("%s",
+           "test correct behaviour of thread naming in elosPluginControlLoad in case the plugin name is too long");
 
     MOCK_FUNC_ALWAYS(eventfd_read);
     expect_any_always(__wrap_eventfd_read, __fd);
@@ -91,7 +92,7 @@ void elosTestElosPluginControlLoadSuccessLocal(void **state) {
 
     MOCK_FUNC_ALWAYS(pthread_setname_np);
     expect_any_always(__wrap_pthread_setname_np, thread);
-    expect_string(__wrap_pthread_setname_np, name, "LocalTcpClient");
+    expect_string(__wrap_pthread_setname_np, name, "Pluginwi-0000");
     will_return_always(__wrap_pthread_setname_np, 0);
 
     result = elosPluginControlLoad(&test->pluginControl);

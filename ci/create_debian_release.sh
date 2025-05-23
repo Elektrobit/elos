@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+OUTDIR=/base/debianbuild
+
 function print_help() {
   echo "$0 [-r|-p|-a|-h] <x.y.z>"
   echo -e "-r\tonly do the debian/main release"
@@ -9,17 +11,37 @@ function print_help() {
 }
 
 function setup_env() {
-  export GIT_AUTHOR_NAME="Wolfgang Gehrhardt"
-  export GIT_COMMITTER_NAME="${GIT_AUTHOR_NAME}"
-  export DEBNAME="${GIT_AUTHOR_NAME}"
+  GLOBMAIL=$(git config --global user.email || true)
+  GLOBNAME=$(git config --global user.name || true)
 
-  export EMAIL=${EMAIL-"wolfgang.gehrhardt@emlix.com"}
-  export GIT_AUTHOR_EMAIL="${EMAIL}"
-  export GIT_COMMITTER_EMAIL="${EMAIL}"
+  LOCMAIL=$(git config --local user.email || true)
+  LOCNAME=$(git config --local user.name || true)
+
+  TMPNAME="${GIT_AUTHOR_NAME:-${LOCNAME:-${GLOBNAME:-}}}"
+
+  if [ -z "${TMPNAME}" ]; then
+    echo "Invalid environment. Could not determine author name for git"
+    exit 1
+  fi
+
+  TMPMAIL="${GIT_AUTHOR_EMAIL:-${LOCMAIL:-${GLOBMAIL:-}}}"
+
+  if [ -z "${TMPMAIL}" ]; then
+    echo "Invalid environment. Could not determine author e-mail for git"
+    exit 1
+  fi
+
+  export GIT_AUTHOR_EMAIL="${TMPMAIL}"
+  export GIT_COMMITTER_EMAIL="${TMPMAIL}"
+  export EMAIL="${TMPMAIL}"
+  export GIT_AUTHOR_NAME="${TMPNAME}"
+  export GIT_COMMITTER_NAME="${TMPNAME}"
+  export NAME="${TMPNAME}"
+
+  export DEBNAME="${NAME}"
   export DEBMAIL="${EMAIL}"
 
-  git config --local user.name "${GIT_AUTHOR_NAME}"
-  git config --local user.email "${GIT_AUTHOR_EMAIL}"
+  export DEBIAN_FRONTEND=noninteractive
 
   export ELOS_DEPENDENCY_CONFIG=./ci/dependencies_emlix.json
 }
@@ -69,7 +91,7 @@ function install_dependencies() {
 
 function create_and_publish_pristine_tar() {
   install_dependencies
-  sudo gbp buildpackage --git-ignore-branch --git-compression=xz --git-ignore-new -uc -us
+  gbp buildpackage --git-ignore-branch --git-compression=xz --git-ignore-new -uc -us --git-export-dir="${OUTDIR}" --git-ignore-branch
 }
 
 UPDATE_RELEASE=0
@@ -102,12 +124,6 @@ fi
 echo "Create release: ${NEW_VERSION}"
 
 setup_env
-
-# workaround: the docker container already contains a working libmongoc build
-# from source, because the one from the official repositories is broken.
-# Remove this when nosql-plugin and dependency to libmongoc is removed.
-sudo apt-get update
-sudo apt-get install -y libmongoc-dev
 
 if [ $UPDATE_ALL -eq 1 ] || [ $UPDATE_RELEASE -eq 1 ]; then
   create_and_publish_debian_main

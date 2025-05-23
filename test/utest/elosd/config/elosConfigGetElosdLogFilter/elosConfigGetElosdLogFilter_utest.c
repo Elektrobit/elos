@@ -5,7 +5,7 @@ TEST_SUITE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdLogFilterUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosTestElosConfigGetElosdLogFilterSuccessFromEnv),
+        TEST_CASE(elosTestElosConfigGetElosdLogFilterSuccessFromConfig),
         TEST_CASE(elosTestElosConfigGetElosdLogFilterSuccessFromDefault),
     };
 

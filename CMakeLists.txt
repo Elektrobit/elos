@@ -51,7 +51,6 @@ option(INSTALL_ELOS_PLUGINS "install the elos plugins" ON)
 option(ELOSD_SYSTEMD "Enable systemd features (startup notification and socket-based activation for the syslog scanner)" OFF)
 
 option(ELOSD_EVENTLOGGING_BACKEND_SQL "Build sqlite3 bakend plugin" ${ELOS_BUILD_DEFAULTS})
-option(ELOSD_EVENTLOGGING_BACKEND_NOSQL "Build NoSQL backend plugin" OFF)
 option(ELOSD_EVENTLOGGING_BACKEND_INFLUXDB "Build InfluxDB backend plugin" OFF)
 option(ELOSD_EVENTLOGGING_BACKEND_DLT "Build DLT backend plugin" ${ELOS_BUILD_DEFAULTS})
 option(ELOSD_LIBDLT "Build libelosdlt, a dlt protocol implementation." ${ELOSD_EVENTLOGGING_BACKEND_DLT})

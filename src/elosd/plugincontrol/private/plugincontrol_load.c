@@ -24,6 +24,8 @@
 #include "elos/plugincontrol/thread.h"
 #include "plugincontrol_private.h"
 
+#define THREAD_NAME_MAX_LEN 16
+
 // Note: Helper functions are meant to be called only internally, due to that we don't need value validity checks.
 //       These normally would be marked 'static', but are not to make unit testing easier.
 
@@ -158,8 +160,13 @@ safuResultE_t elosPluginControlLoad(elosPluginControl_t *control) {
                         atomic_fetch_and(&control->flags, ~ELOS_PLUGINCONTROL_FLAG_WORKER_BIT);
                         result = SAFU_RESULT_FAILED;
                     } else {
-                        char threadName[20] = {0};
-                        strncpy(threadName, control->context.config->key, ARRAY_SIZE(threadName) - 1);
+                        char threadName[THREAD_NAME_MAX_LEN] = {0};
+                        const char *key = control->context.config->key;
+                        if (strlen(key) < THREAD_NAME_MAX_LEN) {
+                            strncpy(threadName, key, ARRAY_SIZE(threadName) - 1);
+                        } else {
+                            snprintf(threadName, ARRAY_SIZE(threadName), "%.8s-%04u", key, control->context.id);
+                        }
                         retVal = pthread_setname_np(control->workerThread, threadName);
                         if (retVal != 0) {
                             safuLogErr("Failed to set thread name for plugin control");

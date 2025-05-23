@@ -10,7 +10,7 @@
 
 samconfConfig_t elosGetMockConfig();
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdScannerPathSuccessFromEnv)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdScannerPathSuccessFromConfig)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdScannerPathSuccessFromDefault)
 
 #endif /* ELOS_CONFIG_GET_ELOSD_SCANNERPATH_UTEST_H */

@@ -37,6 +37,20 @@
                             \"EventBlacklist\": \".event.messageCode 2000 EQ\",\
                             \"authorizedProcesses\": []\
                         }\
+                    },\
+                    \"Pluginwithtoolongname\": {\
+                        \"File\": \"client_dummy.so\",\
+                        \"Run\": \"always\",\
+                        \"Config\": {\
+                            \"Port\": 54321,\
+                            \"Interface\": \"127.0.0.1\",\
+                            \"EventBlacklist\": \".event.messageCode 2000 EQ\",\
+                            \"authorizedProcesses\": [\
+                                \".process.uid 0 EQ .process.gid 0 EQ .process.exec '/bin/elosc' STRCMP AND\",\
+                                \".process.gid 200 EQ .process.exec '/bin/elosc' STRCMP AND\",\
+                                \".process.pid 1 EQ\"\
+                            ]\
+                        }\
                     }\
                 }\
             }\
@@ -50,6 +64,7 @@ int main() {
     const struct CMUnitTest tests[] = {
         TEST_CASE(elosTestElosPluginControlLoadErrParam),
         TEST_CASE(elosTestElosPluginControlLoadSuccessLocal),
+        TEST_CASE(elosTestElosPluginControlLoadSuccessName),
     };
 
     return RUN_TEST_SUITE(tests, _testSuite);

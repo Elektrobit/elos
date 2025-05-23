@@ -9,5 +9,5 @@
 
 samconfConfig_t elosGetMockConfig();
 
-TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortSuccessFromEnv)
+TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortSuccessFromConfig)
 TEST_CASE_FUNC_PROTOTYPES(elosTestElosConfigGetElosdPortSuccessFromDefault)

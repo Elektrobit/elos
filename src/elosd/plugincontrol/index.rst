@@ -75,3 +75,8 @@ Notes:
    Start, Stop) will also result in a Plugin call of the function of the same
    name (.load, .unload, .start, .stop). Leaving functions out is not supported
    and will result in errors when it is loaded.
+
+- For each Plugin, PluginControl spawns its own worker thread. 
+  POSIX pthread names are limited to 16 bytes, including the terminating null. 
+  If a Plugin's name exceeds that length, PluginControl shortens it to 
+  the first eight bytes and appends a four-digit sequence that reflects the current number of loaded plugins.

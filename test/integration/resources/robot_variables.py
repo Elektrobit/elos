@@ -11,6 +11,6 @@ ELOSD_LOG = "/tmp/elosd.log"
 ELOS_INSTALL_PREFIX = "/usr/local/bin"
 ELOSD_DEFAULT_PORT_FORWARD = 54321
 
-ELOS_DEFAULT_CONFIG_FILE = "/etc/elos/elosd.json"
+ELOS_DEFAULT_CONFIG_FILE = "/usr/local/etc/elos/elosd.json"
 
 ELOS_CONFIG_PATH = "/usr/lib/test/baseos-elos/integration/"
