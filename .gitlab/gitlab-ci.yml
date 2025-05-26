@@ -1,7 +1,6 @@
 variables:
   SOURCES_URI: "https://github.com/Elektrobit/"
   ELOS_DEPENDENCY_CONFIG: "ci/dependencies_emlix.json"
-  DOCKER_IMAGE: elos-ci:$CI_COMMIT_REF_SLUG
   ASMCOV_URI: "not available"
   DOCKER_HOST: "tcp://docker:2375"
 
@@ -15,7 +14,7 @@ stages:
   - test
 
 default:
-  image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   services:
     - name: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:dind
       alias: docker
@@ -32,13 +31,18 @@ build-docker-image:
   stage: docker-image
   image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:latest
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker build -t $DOCKER_IMAGE -f ci/Dockerfile
-             --build-arg UID=$(id -u) --build-arg GID=$(id -g)
-             --build-arg ASMCOV_URI="$ASMCOV_URI"
-             ci/
-    - docker tag $DOCKER_IMAGE $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
-    - docker push $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - echo "$CI_DEPENDENCY_PROXY_PASSWORD" | docker login $CI_DEPENDENCY_PROXY_SERVER -u $CI_DEPENDENCY_PROXY_USER --password-stdin
+
+    - docker build
+      --pull
+      --push
+      --cache-from $CI_REGISTRY_IMAGE:buildcache
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --build-arg ASMCOV_URI="$ASMCOV_URI"
+      --tag $CI_REGISTRY_IMAGE:buildcache
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      -f ci/Dockerfile ci/
 
 build-dependencies:
   stage: build
