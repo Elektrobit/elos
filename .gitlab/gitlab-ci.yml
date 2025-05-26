@@ -8,11 +8,6 @@ workflow:
   auto_cancel:
     on_new_commit: interruptible
 
-stages:
-  - docker-image
-  - build
-  - test
-
 default:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   services:
@@ -28,7 +23,7 @@ before_script:
   - env
 
 build-docker-image:
-  stage: docker-image
+  stage: .pre
   image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:latest
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
@@ -46,8 +41,6 @@ build-docker-image:
 
 build-dependencies:
   stage: build
-  needs:
-    - build-docker-image
   script:
     - ci/install_deps.py -c ci/dependencies_emlix.json
   artifacts:
@@ -61,7 +54,6 @@ build-dependencies:
 build-release:
   stage: build
   needs:
-    - build-docker-image
     - build-dependencies
   script:
     - ci/build.sh --ci Release
@@ -74,7 +66,6 @@ build-release:
 build-debug:
   stage: build
   needs:
-    - build-docker-image
     - build-dependencies
   script:
     - ci/build.sh --ci Debug
@@ -121,7 +112,6 @@ baseos-lab-tests:
 unit-test-release:
   stage: test
   needs:
-    - build-docker-image
     - build-dependencies
     - build-release
   script:
@@ -136,7 +126,6 @@ unit-test-release:
 unit-test-debug:
   stage: test
   needs:
-    - build-docker-image
     - build-dependencies
     - build-debug
   script:
@@ -151,7 +140,6 @@ unit-test-debug:
 smoke-test-release:
   stage: test
   needs:
-    - build-docker-image
     - build-dependencies
     - build-release
   script:
@@ -166,7 +154,6 @@ smoke-test-release:
 smoke-test-debug:
   stage: test
   needs:
-    - build-docker-image
     - build-dependencies
     - build-debug
   script:
@@ -208,7 +195,6 @@ smoke-test-installed:
 code-lint:
   stage: test
   needs:
-    - build-docker-image
     - build-dependencies
     - build-release
   script:
@@ -227,7 +213,6 @@ code-lint:
 benchmark:
   stage: test
   needs:
-    - build-docker-image
     - build-dependencies
     - build-release
   script:
@@ -243,7 +228,6 @@ code-coverage:
     - "docker"
   stage: test
   needs:
-    - build-docker-image
     - build-dependencies
     - build-release
   script:
@@ -258,7 +242,6 @@ code-coverage:
 publish-kpis:
   stage: test
   needs:
-    - build-docker-image
     - build-release
     - benchmark
     - code-coverage
@@ -270,7 +253,6 @@ publish-kpis:
 documentation:
   stage: build
   needs:
-    - build-docker-image
     - build-dependencies
     - build-debug
   script:
