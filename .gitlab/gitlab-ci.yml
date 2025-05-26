@@ -17,7 +17,7 @@ stages:
 default:
   image: $CI_REGISTRY_IMAGE/$DOCKER_IMAGE
   services:
-    - name: docker:24-dind
+    - name: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:dind
       alias: docker
       variables:
         DOCKER_TLS_CERTDIR: ""
@@ -30,10 +30,7 @@ before_script:
 
 build-docker-image:
   stage: docker-image
-  image: ubuntu:jammy
-  before_script:
-    - apt-get update
-    - apt-get install -y docker.io
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:latest
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker build -t $DOCKER_IMAGE -f ci/Dockerfile
@@ -86,7 +83,7 @@ build-debug:
 integration-tests:
   stage: test
   needs: []
-  image: ubuntu:jammy
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
     DOCKER_BUILDKIT: 0
@@ -107,7 +104,7 @@ integration-tests:
 baseos-lab-tests:
   stage: test
   needs: []
-  image: ubuntu:jammy
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   allow_failure: true
   before_script:
     - apt-get update
@@ -180,7 +177,7 @@ smoke-test-debug:
 smoke-test-installed:
   stage: test
   needs: []
-  image: ubuntu:jammy
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
     DOCKER_BUILDKIT: 0
@@ -289,7 +286,7 @@ build-deb-packages:
   before_script: ""
   needs: []
   stage: build
-  image: ${OS}:${CODENAME}
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/${OS}:${CODENAME}
   script:
     - ci/build_debs.sh ${CODENAME}
   artifacts:
