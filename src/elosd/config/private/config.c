@@ -31,6 +31,7 @@ static char *_concatPath(const char *prefix, const char *name) {
 
 safuResultE_t elosConfigLoad(samconfConfig_t **config) {
     char *configPath = NULL;
+    char *pathBuffer = NULL;
     samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
     safuResultE_t result = SAFU_RESULT_FAILED;
     bool enforceSignature = false;
@@ -47,8 +48,19 @@ safuResultE_t elosConfigLoad(samconfConfig_t **config) {
         case S_IFREG:
             status = samconfLoad(configPath, enforceSignature, config);
             safuLogInfoF("Base config %s", configPath);
-            configPath = dirname(configPath);
-            safuLogWarn("deprecated: use ELOS_CONFIG_PATH=\"%s\" and \"elosd.json\" as config file name");
+            pathBuffer = strdup(configPath);
+            if (pathBuffer != NULL) {
+                configPath = dirname(pathBuffer);
+                safuLogWarnF("deprecated: use ELOS_CONFIG_PATH=\"%s\" and \"elosd.json\" as config file name",
+                             configPath);
+            } else {
+                safuLogErr("strdup failed");
+                if (status == SAMCONF_CONFIG_OK) {
+                    samconfConfigDelete(*config);
+                }
+                status = SAMCONF_CONFIG_ERROR;
+                result = SAFU_RESULT_FAILED;
+            }
             break;
         case S_IFDIR:
             location = _concatPath(configPath, "/elosd.json");
@@ -94,6 +106,8 @@ safuResultE_t elosConfigLoad(samconfConfig_t **config) {
             }
         }
     }
+
+    free(pathBuffer);
     return result;
 }
 
