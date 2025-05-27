@@ -72,39 +72,41 @@ safuResultE_t elosConfigLoad(samconfConfig_t **config) {
             safuLogErrF("config %s is neigther a config file nor a directory where to find configs", configPath);
             return SAFU_RESULT_FAILED;
     }
-    if (status == SAMCONF_CONFIG_OK) {
-        result = SAFU_RESULT_OK;
-    } else {
-        safuLogErr("in loading base config file");
-    }
-    useEnv = elosConfigGetElosdUseEnv(*config);
-    samconfConfigLocation_t configs[] = {
-        CONF_PATH(_concatPath(configPath, "/elos.d/"), enforceSignature),
-        CONF_PATH(_concatPath(configPath, "/client.d/"), enforceSignature),
-        CONF_PATH(_concatPath(configPath, "/scanner.d/"), enforceSignature),
-        CONF_PATH(_concatPath(configPath, "/eventlogging.d/"), enforceSignature),
-    };
-    for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
-        safuLogInfoF("+ %s", configs[i].path);
-    }
-    status = samconfLoadAndMerge(configs, ARRAY_SIZE(configs), config);
-    if (status == SAMCONF_CONFIG_OK) {
-        result = SAFU_RESULT_OK;
-    } else {
-        safuLogDebug("Nothing loaded from additional configs");
-    }
-    for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
-        free(configs[i].path);
-    }
 
-    if (result == SAFU_RESULT_OK) {
-        if (useEnv) {
-            samconfConfigLocation_t conf = CONF_PATH("env://?envPrefix=elos&", enforceSignature);
-            status = samconfLoadAndMerge(&conf, 1, config);
-            if (status != SAMCONF_CONFIG_OK) {
-                result = SAFU_RESULT_FAILED;
+    if (status == SAMCONF_CONFIG_OK) {
+        result = SAFU_RESULT_OK;
+        useEnv = elosConfigGetElosdUseEnv(*config);
+        samconfConfigLocation_t configs[] = {
+            CONF_PATH(_concatPath(configPath, "/elos.d/"), enforceSignature),
+            CONF_PATH(_concatPath(configPath, "/client.d/"), enforceSignature),
+            CONF_PATH(_concatPath(configPath, "/scanner.d/"), enforceSignature),
+            CONF_PATH(_concatPath(configPath, "/eventlogging.d/"), enforceSignature),
+        };
+        for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
+            safuLogInfoF("+ %s", configs[i].path);
+        }
+
+        status = samconfLoadAndMerge(configs, ARRAY_SIZE(configs), config);
+        if (status == SAMCONF_CONFIG_OK) {
+            result = SAFU_RESULT_OK;
+        } else {
+            safuLogDebug("Nothing loaded from additional configs");
+        }
+        for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
+            free(configs[i].path);
+        }
+
+        if (result == SAFU_RESULT_OK) {
+            if (useEnv) {
+                samconfConfigLocation_t conf = CONF_PATH("env://?envPrefix=elos&", enforceSignature);
+                status = samconfLoadAndMerge(&conf, 1, config);
+                if (status != SAMCONF_CONFIG_OK) {
+                    result = SAFU_RESULT_FAILED;
+                }
             }
         }
+    } else {
+        safuLogErr("in loading base config file");
     }
 
     free(pathBuffer);
