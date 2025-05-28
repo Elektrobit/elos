@@ -2,7 +2,6 @@ variables:
   SOURCES_URI: "https://github.com/Elektrobit/"
   ELOS_DEPENDENCY_CONFIG: "ci/dependencies_emlix.json"
   ASMCOV_URI: "not available"
-  DOCKER_HOST: "tcp://docker:2375"
 
 workflow:
   auto_cancel:
@@ -10,11 +9,6 @@ workflow:
 
 default:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-  services:
-    - name: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:dind
-      alias: docker
-      variables:
-        DOCKER_TLS_CERTDIR: ""
   tags:
       - "docker"
   interruptible: true
@@ -24,6 +18,12 @@ before_script:
 
 build-docker-image:
   stage: .pre
+  services:
+    - name: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:dind
+      variables:
+        DOCKER_TLS_CERTDIR: ""
+      # hostname of dind container inside the private network has to be "docker"
+      alias: docker
   image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:latest
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
@@ -78,10 +78,17 @@ build-debug:
 integration-tests:
   stage: test
   needs: []
+  services:
+    - name: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:dind
+      variables:
+        DOCKER_TLS_CERTDIR: ""
+      # hostname of dind container inside the private network has to be "docker"
+      alias: docker
   image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
     DOCKER_BUILDKIT: 0
+    DOCKER_HOST: "tcp://docker:2375"
     BUILD_ID: $CI_JOB_ID
     GIT_COMMIT: $CI_COMMIT_SHORT_SHA
   before_script:
@@ -168,10 +175,17 @@ smoke-test-debug:
 smoke-test-installed:
   stage: test
   needs: []
+  services:
+    - name: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:dind
+      variables:
+        DOCKER_TLS_CERTDIR: ""
+      # hostname of dind container inside the private network has to be "docker"
+      alias: docker
   image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
     DOCKER_BUILDKIT: 0
+    DOCKER_HOST: "tcp://docker:2375"
     BUILD_ID: $CI_JOB_ID
     GIT_COMMIT: $CI_COMMIT_SHORT_SHA
     ENV_OPTIONS: |
