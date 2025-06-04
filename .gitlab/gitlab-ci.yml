@@ -106,15 +106,14 @@ integration-tests:
 baseos-lab-tests:
   stage: test
   needs: []
-  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   allow_failure: true
-  before_script:
-    - apt-get update
-    - apt-get install -y curl jq
   variables:
-    BRANCH_NAME: $CI_COMMIT_REF_NAME
-  script:
-    - ci/trigger_jenkins_ci.sh
+    # git branch to used in bitbake recipe for elos (default: integration)
+    ELOS_DEV_BRANCH: $CI_COMMIT_REF_NAME
+    # BASEOS_LAB_TEST_TARGETS: "qemu-ext4-ro-verity-target,qemu-ext4-rw-integrity-hmac-target"
+  trigger:
+    project: elektrobit/base-os/eb-baseos-lab
+    branch: integration
 
 unit-test-release:
   stage: test
