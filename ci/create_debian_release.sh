@@ -78,7 +78,8 @@ function install_dependencies() {
           sudo find ../ -type f -name "libmock-safu*_*.deb" -exec dpkg -i {} \;
           ;;
       samconf)
-          sudo dpkg -i /base/build/deps/src/libsamconf*.deb /base/build/deps/src/libmock-samconf*.deb
+          sudo find ../ -type f -name "libsamconf*_*.deb" -exec dpkg -i {} \;
+          sudo find ../ -type f -name "libmock-samconf*_*.deb" -exec dpkg -i {} \;
           ;;
     esac
     sudo find ../ -type f -name "*$(echo "${dependency}"| tr '_' '-')*-dev_*.deb" -exec dpkg -i {} \;

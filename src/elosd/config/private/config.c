@@ -29,87 +29,115 @@ static char *_concatPath(const char *prefix, const char *name) {
     return configPath;
 }
 
+static safuResultE_t elosGetConfigPaths(char **baseConfig, char *elosConfigPath) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    if (elosConfigPath == NULL) {
+        safuLogErr("missing Config path");
+        result = SAFU_RESULT_FAILED;
+    }
+    struct stat configPathStat;
+    if (result == SAFU_RESULT_OK) {
+        if (stat(elosConfigPath, &configPathStat) != 0) {
+            safuLogErrF("failed stat on %s", elosConfigPath);
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+    if (result == SAFU_RESULT_OK) {
+        switch (configPathStat.st_mode & S_IFMT) {
+            case S_IFREG:
+                *baseConfig = strdup(elosConfigPath);
+                if (*baseConfig != NULL) {
+                    elosConfigPath = dirname(elosConfigPath);
+                    safuLogWarnF("DEPRECATED: use ELOS_CONFIG_PATH=\"%s\" and \"elosd.json\" as config file name",
+                                 elosConfigPath);
+                } else {
+                    safuLogErr("strdup failed");
+                    result = SAFU_RESULT_FAILED;
+                }
+                break;
+            case S_IFDIR:
+                *baseConfig = _concatPath(elosConfigPath, "/elosd.json");
+                break;
+            default:
+                safuLogErrF("config %s is neither a config file nor a directory where configuration files exist",
+                            elosConfigPath);
+                result = SAFU_RESULT_NOT_FOUND;
+        }
+    }
+    return result;
+}
+
+static safuResultE_t elosLoadSystemConfigs(samconfConfig_t **config, const char *elosConfigPath,
+                                           bool enforceSignature) {
+    safuResultE_t result = SAFU_RESULT_OK;
+
+    samconfConfigLocation_t configs[] = {
+        CONF_PATH(_concatPath(elosConfigPath, "/elos.d/"), enforceSignature),
+        CONF_PATH(_concatPath(elosConfigPath, "/client.d/"), enforceSignature),
+        CONF_PATH(_concatPath(elosConfigPath, "/scanner.d/"), enforceSignature),
+        CONF_PATH(_concatPath(elosConfigPath, "/eventlogging.d/"), enforceSignature),
+    };
+    for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
+        safuLogInfoF("+ %s", configs[i].path);
+    }
+    samconfConfigStatusE_t status = samconfLoadAndMerge(configs, ARRAY_SIZE(configs), config);
+    if (status == SAMCONF_CONFIG_INVALID_SIGNATURE) {
+        result = SAFU_RESULT_FAILED;
+        safuLogErr("at least one config has an invalid signature");
+    } else if (status == SAMCONF_CONFIG_ERROR) {
+        result = SAFU_RESULT_FAILED;
+        safuLogErr("failed loading additional configurations");
+    }
+    for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
+        free(configs[i].path);
+    }
+
+    return result;
+}
+
+static safuResultE_t elosLoadEnvironmentVariableConfig(samconfConfig_t **config, bool enforceSignature) {
+    safuResultE_t result = SAFU_RESULT_OK;
+    safuLogInfo("Using configuration from environment variables");
+    samconfConfigLocation_t conf = CONF_PATH("env://?envPrefix=elos&", enforceSignature);
+    samconfConfigStatusE_t status = samconfLoadAndMerge(&conf, 1, config);
+    if (status != SAMCONF_CONFIG_OK) {
+        result = SAFU_RESULT_FAILED;
+    }
+    return result;
+}
+
 safuResultE_t elosConfigLoad(samconfConfig_t **config) {
-    char *configPath = NULL;
-    char *pathBuffer = NULL;
-    samconfConfigStatusE_t status = SAMCONF_CONFIG_ERROR;
-    safuResultE_t result = SAFU_RESULT_FAILED;
+    samconfConfigStatusE_t status = SAMCONF_CONFIG_OK;
+
     bool enforceSignature = false;
     bool useEnv = false;
 
-    configPath = (char *)safuGetEnvOr("ELOS_CONFIG_PATH", ELOSD_CONFIG_PATH);
-    struct stat configPathStat;
-    if (stat(configPath, &configPathStat) != 0) {
-        safuLogErrF("failed stat on %s", configPath);
-        return SAFU_RESULT_FAILED;
-    }
-    const char *location = NULL;
-    switch (configPathStat.st_mode & S_IFMT) {
-        case S_IFREG:
-            status = samconfLoad(configPath, enforceSignature, config);
-            safuLogInfoF("Base config %s", configPath);
-            pathBuffer = strdup(configPath);
-            if (pathBuffer != NULL) {
-                configPath = dirname(pathBuffer);
-                safuLogWarnF("deprecated: use ELOS_CONFIG_PATH=\"%s\" and \"elosd.json\" as config file name",
-                             configPath);
-            } else {
-                safuLogErr("strdup failed");
-                if (status == SAMCONF_CONFIG_OK) {
-                    samconfConfigDelete(*config);
-                }
-                status = SAMCONF_CONFIG_ERROR;
-                result = SAFU_RESULT_FAILED;
-            }
-            break;
-        case S_IFDIR:
-            location = _concatPath(configPath, "/elosd.json");
-            status = samconfLoad(location, enforceSignature, config);
-            safuLogInfoF("Base config %s", location);
-            free((void *)location);
-            break;
-        default:
-            safuLogErrF("config %s is neigther a config file nor a directory where to find configs", configPath);
-            return SAFU_RESULT_FAILED;
+    char *baseConfigPath = NULL;
+    char *configPath = (char *)safuGetEnvOr("ELOS_CONFIG_PATH", ELOSD_CONFIG_PATH);
+    safuResultE_t result = elosGetConfigPaths(&baseConfigPath, configPath);
+
+    if (result == SAFU_RESULT_OK) {
+        safuLogInfoF("Base config: %s", baseConfigPath);
+        status = samconfLoad(baseConfigPath, enforceSignature, config);
+        if (status != SAMCONF_CONFIG_OK) {
+            result = SAFU_RESULT_FAILED;
+        }
     }
 
-    if (status == SAMCONF_CONFIG_OK) {
-        result = SAFU_RESULT_OK;
+    if (result == SAFU_RESULT_OK) {
         useEnv = elosConfigGetElosdUseEnv(*config);
-        samconfConfigLocation_t configs[] = {
-            CONF_PATH(_concatPath(configPath, "/elos.d/"), enforceSignature),
-            CONF_PATH(_concatPath(configPath, "/client.d/"), enforceSignature),
-            CONF_PATH(_concatPath(configPath, "/scanner.d/"), enforceSignature),
-            CONF_PATH(_concatPath(configPath, "/eventlogging.d/"), enforceSignature),
-        };
-        for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
-            safuLogInfoF("+ %s", configs[i].path);
-        }
-
-        status = samconfLoadAndMerge(configs, ARRAY_SIZE(configs), config);
-        if (status == SAMCONF_CONFIG_OK) {
-            result = SAFU_RESULT_OK;
-        } else {
-            safuLogDebug("Nothing loaded from additional configs");
-        }
-        for (size_t i = 0; i < ARRAY_SIZE(configs); i++) {
-            free(configs[i].path);
-        }
-
-        if (result == SAFU_RESULT_OK) {
-            if (useEnv) {
-                samconfConfigLocation_t conf = CONF_PATH("env://?envPrefix=elos&", enforceSignature);
-                status = samconfLoadAndMerge(&conf, 1, config);
-                if (status != SAMCONF_CONFIG_OK) {
-                    result = SAFU_RESULT_FAILED;
-                }
-            }
-        }
-    } else {
-        safuLogErr("in loading base config file");
+        result = elosLoadSystemConfigs(config, configPath, enforceSignature);
     }
 
-    free(pathBuffer);
+    if (result == SAFU_RESULT_OK && useEnv) {
+        result = elosLoadEnvironmentVariableConfig(config, enforceSignature);
+    }
+
+    free(baseConfigPath);
+    if (result != SAFU_RESULT_OK) {
+        samconfConfigDelete(*config);
+    }
     return result;
 }
 
