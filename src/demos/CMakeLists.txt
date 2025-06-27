@@ -21,6 +21,7 @@ endif (ELOS_TOOLS)
 if (ELOS_DEMOS)
   add_subdirectory(elos_log4c_demo)
   add_subdirectory(elosc-cpp)
+  add_subdirectory(elos_dlt_bin_log_parser)
 
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(LIBESMTP REQUIRED libesmtp-1.0 )
