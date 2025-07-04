@@ -274,11 +274,3 @@ CI-Helper scripts
 The `ci` folder contains a bunch of helper scripts to do different CI task.
 Keeping them separated from a specific CI solution enables us to reuse the code
 and additionally use them locally during development.
-
-ci/trigger_jenkins_ci.sh
-------------------------
-
-This script can be used to trigger and monitor Jenkins pipelines. We use it to
-trigger Yocto build jobs on a Jenkins instance.
-
-.. program-output:: ./ci/trigger_jenkins_ci.sh --help
