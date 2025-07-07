@@ -54,10 +54,16 @@ options. The second one logs all coredump events to /tmp/coredump.log
 using the ``O_SYNC`` and ``O_DIRECT`` options.
 
 The first logger additionally uses variables for its logs name, as well
-as log rotation. The ``%*%`` macros get replaced by following values: -
-host: the host machines name as registered by safu - date: the date of
-creation of the file - count: a counter numbering files with, besides
-the counter, exactly the same filename.
+as log rotation. The ``%*%`` macros get replaced by following values:
+
+host:
+   the host machines hardware id as registered by safu
+date:
+   the time/date of creation of the file.
+count:
+   a counter numbering files with, besides the counter, exactly the same filename.
+
+   count can only be used in the name of the log file not the directory/path to it.
 
 The DateFormat field, which the first logger has defined is an optional
 field that defines the format of the date which replaces ``%date%``.
