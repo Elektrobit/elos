@@ -2,3 +2,4 @@
 
 add_subdirectory(syslog)
 add_subdirectory(kmsg)
+add_subdirectory(nightwatch)

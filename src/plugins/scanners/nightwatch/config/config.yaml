@@ -1,0 +1,9 @@
+systemmonitoring:
+    monitoring:
+        monitoring1:
+            testinterval: 10000
+            applications:
+                # for running nightwatch an application needs to be set here
+                test_application_does_nothing:
+                    maxmemusage: 10
+                    maxcpuload: 10

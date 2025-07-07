@@ -1,0 +1,28 @@
+systemmonitoring:
+# Overwrites default values if set here
+    testinterval: ... # default is 600 needed in miliseconds (optional)
+    memthreshold1: ... # default is 1.0 (optional)
+    memthreshold2: ... # default is 1.5 (optional)
+    memthreshold3: ... # default is 2.0 (optional)
+    cputhreshold1: ... # default is 1.0 (optional)
+    cputhreshold2: ... # default is 1.5 (optional)
+    cputhreshold3: ... # default is 2.0 (optional)
+    monitoring:
+        monitoringname1:
+            testinterval: ... # default is 600 needed in miliseconds (optional)
+            memthreshold1: ... # default is 1.0 (optional)
+            memthreshold2: ... # default is 1.5 (optional)
+            memthreshold3: ... # default is 2.0 (optional)
+            cputhreshold1: ... # default is 1.0 (optional)
+            cputhreshold2: ... # default is 1.5 (optional)
+            cputhreshold3: ... # default is 2.0 (optional)
+            applications:
+                appname1:
+                    maxmemusage: ... # needed in KB
+                    maxcpuload: ... # needed in %
+                    memthreshold1: ... # default is 1.0 (optional)
+                    memthreshold2: ... # default is 1.5 (optional)
+                    memthreshold3: ... # default is 2.0 (optional)
+                    cputhreshold1: ... # default is 1.0 (optional)
+                    cputhreshold2: ... # default is 1.5 (optional)
+                    cputhreshold3: ... # default is 2.0 (optional)
