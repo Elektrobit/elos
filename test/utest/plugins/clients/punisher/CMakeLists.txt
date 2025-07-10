@@ -1,24 +1,17 @@
 # SPDX-License-Identifier: MIT
 
+project(punisher_unit_tests LANGUAGES CXX)
+
 find_package(GTest REQUIRED)
+find_package(safu 0.56.2 REQUIRED)
 
-add_executable(punisher_unit_tests
-  test_punisher.cpp
-)
-
-target_link_libraries(
-  punisher_unit_tests
-  PRIVATE
+create_unit_test(
+  NAME
+    punisher_unit_tests
+  SOURCES
+    test_punisher.cpp
+  LIBRARIES
     client_punisher
-)
-
-target_link_libraries(punisher_unit_tests
-  PRIVATE
-    GTest::gtest_main
-    elos::libelosplugin
-    elos::libelos
-    samconf::samconf
     safu::safu
-    yaml-cpp
+    GTest::gtest_main
 )
-

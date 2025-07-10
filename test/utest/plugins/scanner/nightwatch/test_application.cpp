@@ -1,3 +1,5 @@
+#include <safu/log.h>
+
 #include "application.h"
 #include "night_watch_test.h"
 
@@ -8,7 +10,7 @@ class ApplicationTest : public NightWatchTest {
 
         safuLogSetCallbackFunc(nullptr);
 
-        plugin->publish = [](struct elosPublisher *publisher, const elosEvent_t *event) {
+        plugin->publish = [](auto, const elosEvent_t *event) {
             const auto eventMessage = event->payload;
 
             correctMessageIsFound = messageEndsWith(eventMessage, expectedMessage);
@@ -75,8 +77,8 @@ TEST_F(ApplicationTest, reach_threshold_3) {
 // Expect that checkUsages() causes the plugin to publish an event specifying that threshold 2 is reached
 // if (memUsage > maxMemUsage * memThreshold2)
 TEST_F(ApplicationTest, reach_threshold_2) {
-    Thresholds thresholds{
-        .memThreshold3 = 0xFFFFFF,
+    elosThresholds thresholds{
+        0, 0, 0xFFFFFF, 0, 0, 0,
     };
 
     expectedMessage = ";message:Threshold 2 was reached!";
@@ -95,9 +97,8 @@ TEST_F(ApplicationTest, reach_threshold_2) {
 // Expect that checkUsages() causes the plugin to publish an event specifying that threshold 1 is reached
 // if (memUsage > maxMemUsage * memThreshold1)
 TEST_F(ApplicationTest, reach_threshold_1) {
-    Thresholds thresholds{
-        .memThreshold2 = 0xFFFFFF,
-        .memThreshold3 = 0xFFFFFF,
+    elosThresholds thresholds{
+        0, 0xFFFFFF, 0xFFFFFF, 0, 0, 0,
     };
 
     expectedMessage = ";message:Threshold 1 was reached!";
@@ -117,10 +118,8 @@ TEST_F(ApplicationTest, reach_threshold_1) {
 // Expect that checkUsages() causes the plugin to publish an event specifying that the process
 // is withn thresholdT
 TEST_F(ApplicationTest, within_thresholds) {
-    Thresholds thresholds{
-        .memThreshold1 = 0xFFFFFF,
-        .memThreshold2 = 0xFFFFFF,
-        .memThreshold3 = 0xFFFFFF,
+    elosThresholds thresholds{
+        0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0, 0, 0,
     };
 
     expectedMessage = "Process is in Threshold";

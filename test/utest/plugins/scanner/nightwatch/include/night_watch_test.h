@@ -7,9 +7,9 @@
 class NightWatchTest : public ::testing::Test {
    public:
     void SetUp() override {
-        plugin->createSubscriber = [](auto, elosSubscriber **subscriber) { return SAFU_RESULT_OK; };
+        plugin->createSubscriber = [](auto, auto) { return SAFU_RESULT_OK; };
 
-        plugin->publish = [](struct elosPublisher *publisher, auto event) { return SAFU_RESULT_OK; };
+        plugin->publish = [](auto, auto) { return SAFU_RESULT_OK; };
     }
 
     virtual void TearDown() override {

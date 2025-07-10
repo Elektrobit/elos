@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
+#include <safu/log.h>
 
 #include <condition_variable>
+#include <fstream>
 #include <mutex>
 
 #include "night_watch_test.h"
@@ -14,7 +16,7 @@ class SystemMonitoringTest : public NightWatchTest {
         createConfigFileWithRunningProcess();
     }
 
-    void TearDown() {
+    void TearDown() override {
         NightWatchTest::TearDown();
 
         std::remove(confPath);

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <safu/log.h>
 
 #include "monitoringUnit.h"
 #include "night_watch_test.h"
@@ -21,7 +22,7 @@ TEST_F(MonitoringUnitTest, missing_maxmemusage_and_maxcpuload) {
     });
 
     // Create MonitoringUnit using empty thresholds
-    MonitoringUnit monitoringUnit{1, Thresholds{}};
+    MonitoringUnit monitoringUnit{1, elosThresholds{}};
 
     // Create an appsData yaml config object with one app but without the keys maxmemusage and maxcpuload
     YAML::Node appsData;
@@ -51,7 +52,7 @@ TEST_F(MonitoringUnitTest, add_null_app_data) {
     });
 
     // Create MonitoringUnit using empty thresholds
-    MonitoringUnit monitoringUnit{10, Thresholds{}};
+    MonitoringUnit monitoringUnit{10, elosThresholds{}};
 
     // Create an appsData yaml config object without any keys
     YAML::Node appsData;
@@ -80,7 +81,7 @@ TEST_F(MonitoringUnitTest, add_app_for_existing_process) {
     });
 
     // Create MonitoringUnit using empty thresholds
-    MonitoringUnit monitoringUnit{10, Thresholds{}};
+    MonitoringUnit monitoringUnit{10, elosThresholds{}};
 
     YAML::Node app;
     app["memthreshold1"] = 100;
@@ -106,7 +107,7 @@ TEST_F(MonitoringUnitTest, add_app_for_existing_process) {
 // Test that getTestInterval() returns the correct value
 TEST_F(MonitoringUnitTest, get_test_interval) {
     // Create MonitoringUnit
-    MonitoringUnit monitoringUnit{10, Thresholds{}};
+    MonitoringUnit monitoringUnit{10, elosThresholds{}};
 
     // Call getTestInterval()
     // Verify that calling getTestInterval() returns the correct value

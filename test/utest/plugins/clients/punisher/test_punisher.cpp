@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <safu/log.h>
 
 #include <condition_variable>
 
@@ -9,10 +10,7 @@ class PunisherTest : public ::testing::Test {
     void SetUp() override {
         eventPayload = "pid:1234;name:hello;";
 
-        plugin->createSubscriber = [](auto, elosSubscriber **subscriber) {
-            *subscriber = (elosSubscriber *)malloc(10);
-            return SAFU_RESULT_OK;
-        };
+        plugin->createSubscriber = [](auto, auto) { return SAFU_RESULT_OK; };
 
         plugin->subscribe = [](auto, auto, auto, auto) { return SAFU_RESULT_OK; };
 
@@ -22,10 +20,10 @@ class PunisherTest : public ::testing::Test {
             *events = (safuVec_t *)malloc(sizeof(safuVec_t));
 
             *events[0] = safuVec{
-                .memorySize = sizeof(elosEvent_t),
-                .elementSize = sizeof(elosEvent_t),
-                .elementCount = 1,
-                .data = createEvent(),
+                sizeof(elosEvent_t),
+                sizeof(elosEvent_t),
+                1,
+                createEvent(),
             };
 
             return SAFU_RESULT_OK;
@@ -37,7 +35,6 @@ class PunisherTest : public ::testing::Test {
 
     virtual void TearDown() override {
         delete plugin;
-        free(subscriber);
     }
 
     elosPlugin_t *plugin = new elosPlugin_t;
@@ -49,21 +46,17 @@ class PunisherTest : public ::testing::Test {
 
     static elosEvent *createEvent() {
         auto eventSource = std::make_unique<elosEventSource_t>(elosEventSource_t{
-            .appName = (char *)malloc(sizeof(char)),
-            .fileName = (char *)malloc(sizeof(char)),
-            .pid = 1234,
+            (char *)malloc(sizeof(char)),
+            (char *)malloc(sizeof(char)),
+            1234,
         });
 
         char *payload = (char *)malloc(eventPayload.size() + 1);
         std::copy(eventPayload.begin(), eventPayload.end() + 1, payload);
 
         elosEvent *event = (elosEvent_t *)malloc(sizeof(elosEvent_t));
-        *event = {
-            .source = std::move(*eventSource),
-            .severity = severity,
-            .hardwareid = (char *)malloc(sizeof(char)),
-            .messageCode = messageCode,
-            .payload = payload,
+        *event = elosEvent_t{
+            {}, std::move(*eventSource), severity, (char *)malloc(sizeof(char)), 0, messageCode, payload,
         };
 
         return event;
@@ -350,7 +343,7 @@ TEST_F(PunisherTest, process_pid_not_found) {
     static bool processPidNotFound = false;
 
     // Set the logging callback
-    safuLogSetCallbackFunc([](auto msg) {
+    safuLogSetCallbackFunc([](auto msg) -> safuLogStatusE_t {
         const std::string &logMessage = msg.fmt;
 
         {
@@ -394,7 +387,7 @@ TEST_F(PunisherTest, cannot_read_event) {
     static bool expectedMessageFound = false;
 
     // Set the logging callback
-    safuLogSetCallbackFunc([](auto msg) {
+    safuLogSetCallbackFunc([](auto msg) -> safuLogStatusE_t {
         const std::string &logMessage = msg.fmt;
 
         {
@@ -441,7 +434,7 @@ TEST_F(PunisherTest, event_does_not_match_format) {
     static bool expectedMessageFound = false;
 
     // Set the logging callback
-    safuLogSetCallbackFunc([](auto msg) {
+    safuLogSetCallbackFunc([](auto msg) -> safuLogStatusE_t {
         const std::string &logMessage = msg.fmt;
 
         {
