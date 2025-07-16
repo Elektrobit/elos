@@ -294,8 +294,8 @@ In order to manually run the integration tests in the local repository
 ::
 
    cd elos
-   ./ci/docker-integration-run.sh    # start test container in a separate terminal
-   PROJECT="elos" ./scripts/run_integration_tests.sh    # inside the container set project variable and run the test runner script
+   ./ci/docker-integration-run.sh -l elos-target          # start test container in a separate terminal
+   ./test/integration/scripts/run_integration_tests.sh -h # inside the container run the test runner script
 
 When doing this, the result storage path can be configured by setting
 the enviroment variable ``TEST_OUTPUT`` for the

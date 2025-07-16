@@ -6,7 +6,9 @@ print_info() {
 
     Usage: ${0} [-h|--help] [parameter forwarded to container run]
 
-    -h|--help:        print this help
+    -h|--help:               print this help
+    -l|--link <name>:        link container with <name>, can be used multiple
+                             times
 
     Environment variables:
 
@@ -37,6 +39,9 @@ while [ $# -gt 0 ]; do
         -h|--help)
             print_info
             exit 0 ;;
+        -l|--link)
+            LINK_CONTAINERS="${LINK_CONTAINERS:-} --link ${2}"
+            shift;;
         *)
             PARAM="$PARAM ${1}" ;;
     esac
@@ -81,6 +86,7 @@ fi
 docker run --rm ${IT} \
     -v $BASE_DIR:/base \
     -w /base \
+    ${LINK_CONTAINERS:+${LINK_CONTAINERS}}  \
     ${SSH_AGENT_OPTS:+${SSH_AGENT_OPTS}}  \
     ${GIT_USER_TOKEN:+-e GIT_USER_TOKEN="${GIT_USER_TOKEN}"} \
     ${ELOS_DEPENDENCY_CONFIG:+-e ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
