@@ -329,6 +329,40 @@ class ElosKeywords(object):
             raise Exception("No newest log file is set!")
         self.ssh.file_should_exist(current)
 
+    @keyword("change time to '${timestamp}' from now on")
+    def update_time(self, timestamp):
+        if timestamp is None:
+            timestamp = "+0"
+        stdout, stderr, rc = self._exec_on_target(f"echo '{timestamp}' > /tmp/elos_faketime.rc")
+        if rc != 0:
+            raise Exception(stderr)
+
+    @keyword("using faketime starting at '${timestamp}'")
+    def enable_faketime(self, timestamp=None):
+        self.update_time(timestamp)
+        stdout, stderr, rc = self._exec_on_target(f"echo 'export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1' > /tmp/elos_faketime.env")
+        if rc != 0:
+            raise Exception(stderr)
+        stdout, stderr, rc = self._exec_on_target(f"echo 'export FAKETIME_NO_CACHE=1' >> /tmp/elos_faketime.env")
+        if rc != 0:
+            raise Exception(stderr)
+        stdout, stderr, rc = self._exec_on_target(f"echo 'export FAKETIME_TIMESTAMP_FILE=/tmp/elos_faketime.rc' >> /tmp/elos_faketime.env")
+        if rc != 0:
+            raise Exception(stderr)
+
+        stdout, stderr, rc = self._exec_on_target(f"sed -i  s/^USE_FAKETIME=.$/USE_FAKETIME=1/ /etc/init.d/elosd")
+        if rc != 0:
+            raise Exception(stderr)
+
+    @keyword("disabling faketime")
+    def disable_faketime(self):
+        stdout, stderr, rc = self._exec_on_target(f"echo '+0' > /tmp/elos_faketime.rc")
+        if rc != 0:
+            raise Exception(stderr)
+        stdout, stderr, rc = self._exec_on_target(f"sed -i  s/^USE_FAKETIME=.$/USE_FAKETIME=0/ /etc/init.d/elosd")
+        if rc != 0:
+            raise Exception(stderr)
+
     def _get_elosd_pid(self):
         pid = -1
         stdout, stderr, rc = self._exec_on_target("pgrep elosd")
