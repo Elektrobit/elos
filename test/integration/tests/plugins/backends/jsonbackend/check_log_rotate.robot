@@ -63,11 +63,34 @@ Test JSON Backend Continues With The Last Log File When Restarted
 
     [Teardown]    Reset Elosd Config
 
+Test JSON Backend Roates The Log File When The Date Changes
+    [Documentation]    See that the json backend continues writing
+    ...                into a new log file starting with count 0 again
+    ...                when the date changes
+
+    ${config_template}      Set Variable        /tmp/elosd_%date%_change_itest_%count%.log
+    Given Config Option '$..JsonBackend.Config.StoragePath' Gets Set To "${config_template}"
+    And Config Option '$.EventLogging.Plugins.JsonBackend.Config.DateFormat' Gets Set To "%Y"
+    And Config Option '$..EventLogging.Plugins.SQLBackend.Run' Gets Set To 'never'
+    And Using Faketime Starting At '@2011-01-01 0:0:01'
+    And Elosd Is Running With New Config
+    And A Few Log Files Are Filled Already
+    When Change Time To '@2020-12-15 4:8:30' From Now On
+    And Another Event Gets Stored
+    Then Files Should Exist       /tmp/elosd_2011_change_itest_0.log
+    ...                           /tmp/elosd_2020_change_itest_0.log
+
+    [Teardown]    Run Keywords      Disabling Faketime
+    ...           AND               Reset Elosd Config
+
 
 *** Keywords ***
-Elosd is restarted
-    restart elosd
-    ensure elosd is started
+Files Should Exist
+    [Documentation]     check a list of files that all exist
+    [Arguments]    @{files}
+    FOR     ${file}     IN      @{files}
+        File '${file}' Should Exist On Target
+    END
 
 Elosd Is Restarted
     [Documentation]     ensure elosd is restarted
