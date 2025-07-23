@@ -15,6 +15,10 @@ add_library(
   libelosdlt
   SHARED
     private/libelosdlt.c
+    private/extheader.c
+    private/storageheader.c
+    private/stdheader.c
+    private/payload.c
 )
 
 target_include_directories(
