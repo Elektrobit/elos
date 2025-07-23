@@ -189,13 +189,12 @@ smoke-test-installed:
     GIT_COMMIT: $CI_COMMIT_SHORT_SHA
     ENV_OPTIONS: |
       -e PREFIX_PATH=/usr/local/
-      -e SMOKETEST_RESULT_DIR=/results/smoketest
+      -e SMOKETEST_RESULT_DIR=/tmp/results
       -e SMOKETEST_ENABLE_COMPILE_TESTS=yes
   before_script:
     - apt-get update
     - apt-get install -y docker.io
   script: |
-      mkdir -p build/docker/result 
       ci/docker-target-run.sh /usr/local/lib/test/elos/smoketest/smoketest.sh
   artifacts:
     when: always

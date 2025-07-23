@@ -1,12 +1,7 @@
 FROM ubuntu:jammy
-
-ARG USER=ci
-ARG UID=1000
-ARG GID=1000
-ARG ASMCOV_URI="not available"
-ARG CAPSTONE_VERSION=4.0.2
 ARG UBUNTU_MIRROR="https://ftp.gwdg.de/pub/linux/debian/ubuntu/"
 ENV DEBIAN_FRONTEND=noninteractive
+
 
 RUN apt-get update && apt-get reinstall ca-certificates -y
 RUN sed -i "s,http://archive.ubuntu.com/ubuntu/,$UBUNTU_MIRROR," /etc/apt/sources.list \
@@ -61,17 +56,22 @@ RUN apt-get update \
  && rm /usr/bin/perf \
  && find /usr/lib/linux-tools -name "perf" -executable -exec ln -s {} /usr/bin/perf \;
 
+ARG USER=ci
+ARG UID=1000
+ARG GID=1000
 RUN locale-gen en_US.UTF-8 \
  && locale-gen de_DE.UTF-8 \
- && groupadd -g $GID -o $USER \
- && useradd -m -u $UID -g $GID -o -s /bin/bash $USER \
+ && groupadd -g $GID $USER \
+ && useradd -m -u $UID -g $GID -s /bin/bash $USER \
  && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+ARG CAPSTONE_VERSION=4.0.2
 RUN git clone --depth 1 --branch $CAPSTONE_VERSION https://github.com/aquynh/capstone.git
 RUN cd capstone/ \
  && ./make.sh \
  &&  sudo ./make.sh install
 
+ARG ASMCOV_URI="not available"
 RUN if [ "${ASMCOV_URI}" != "not available" ]; then git clone --depth 1 ${ASMCOV_URI} -b 'integration' \
  && cmake -B build asmcov \
  && make -C build \
