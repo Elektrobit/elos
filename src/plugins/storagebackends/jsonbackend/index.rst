@@ -81,7 +81,7 @@ size. When the file reaches the size limit, and ``%count%`` is defined,
 the logfile will rotate. It is necessary to make this rotation dependend
 on ``%count%`` to ensure the uniqueness of the new filename after the
 rotation. If MaxSize is not set, it will default to a maximum size of
-10000 bytes. This default value can be overwritten by setting the define
+100 000 bytes. This default value can be overwritten by setting the define
 ``ELOS_JSON_LOGGER_MAX_FILE_SIZE`` during compile time.
 
 The PathSizeLimit field is another optional field, which limits the size
