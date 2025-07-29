@@ -3,7 +3,7 @@
 #define __ELOS_EVENTLOGGING_PLUGIN_JSONBACKEND_H__
 
 #include "elos/libelosplugin/StorageBackend_types.h"
-#include "safu/common.h"
+#include "safu/result.h"
 
 #ifndef STORAGE_LOCATION
 #define STORAGE_LOCATION "/var/log/elosd_event_%count%.log"
@@ -66,6 +66,22 @@ safuResultE_t elosJsonBackendStart(elosStorageBackend_t *backend);
  */
 safuResultE_t elosJsonBackendShutdown(elosStorageBackend_t *backend);
 
+/**
+ * Assembles the complete storage path replacing "%date%", "%host%" and "%count%"
+ *
+ * Parameters:
+ *     path (const char* const): The path template to assemble
+ *     sizelimit (size_t): The maximum length for the assembled path
+ *     countStr (const char*): The string that should replace "%count%" in the assembled path
+ *     date (const char* const): The string that should replace "%date%" in the assembled path
+ *     hasCount (bool*): Return parameter to tell if the path template
+ *                       or count was appendend to the end of the assembled path
+ *
+ * Returns:
+ *     char*: The fully assembled path string
+ *            defaulting to STORAGE_LOCATION when allocation for the path fails,
+ *            or when NULL was passed as path template
+ */
 char *elosCompleteStoragePath(const char *const path, size_t sizelimit, const char *countStr, const char *const date,
                               bool *hasCount);
 
