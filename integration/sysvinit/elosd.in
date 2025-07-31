@@ -3,6 +3,8 @@ SCRIPT_NAME=${0##*/}
 ELOSD_LOG_FILE="/tmp/elosd.log"
 ELOSD_PID_FILE="/run/elosd.pid"
 
+USE_FAKETIME=0
+
 check_for_elos() {
     ELOS_PID="-1"
     if [ -e "${ELOSD_PID_FILE}" ]
@@ -19,6 +21,9 @@ check_for_elos() {
 }
 
 start() {
+    if [ "${USE_FAKETIME}" -eq 1 ] && [ -f "/tmp/elos_faketime.env" ]; then
+        . /tmp/elos_faketime.env
+    fi
     if check_for_elos
     then
         echo "elos already running"
