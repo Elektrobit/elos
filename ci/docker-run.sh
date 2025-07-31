@@ -1,14 +1,57 @@
-#!/bin/sh -e
-#
-# create and run docker build env
-#
+#!/bin/bash
+###############################################################################
+print_info() {
+    echo "
+    Build and run a docker image providing a ready to use build environment.
+
+    Usage: ${0} [-h|--help] [parameter forwarded to container run]
+
+    -h|--help:               print this help
+    -l|--link <name>:        link container with <name>, can be used multiple
+                             times
+
+    Environment variables:
+
+    CI                     - set to true enable CI specific options like supress
+                             '-ti' on running the container and sourcing
+                             ignored_sources.sh
+    GIT_USER_TOKEN         - token to be used to authenticate on http git request
+    SOURCES_URI            - overwrite the default source URI
+                             https://github.com/Elektrobit/
+    ELOS_DEPENDENCY_CONFIG - overwrite dependency config file to use 
+    SSH_AUTH_SOCK          - if set, the container is startet using the hosts
+                             ssh-agent.
+
+    Examples:
+    ${0} # build and run container with build environment
+    "
+}
+###############################################################################
+set -e -u -o pipefail
 CMD_PATH="$(realpath "$(dirname "$0")")"
 BASE_DIR="$(realpath "$CMD_PATH/..")"
 . "$BASE_DIR/ci/common_names.sh"
 IMAGE_NAME="${PROJECT}-build"
 
+PARAM=""
+while [ $# -gt 0 ]; do
+    case ${1} in
+        -h|--help)
+            print_info
+            exit 0 ;;
+        -l|--link)
+            LINK_CONTAINERS="${LINK_CONTAINERS:-} --link ${2}"
+            shift;;
+        *)
+            PARAM="$PARAM ${1}" ;;
+    esac
+    shift
+done
+set -- $PARAM
+
 IT="-it"
-if [ "${CI}" = true ]; then
+CONTAINER_USE_UID_GID="--build-arg UID=$(id -u) --build-arg GID=$(id -g)"
+if [ "${CI:-false}" = true ]; then
     echo "Running in CI"
     . "$BASE_DIR/ci/ignored_sources.sh"
     IT=""
@@ -35,14 +78,16 @@ if ! [ -e "$BASE_DIR"/ci/sshconfig ]; then
     } > "$BASE_DIR"/ci/sshconfig
 fi
 
-if [ "$SSH_AUTH_SOCK" ]; then
+if [ -n "${SSH_AUTH_SOCK:-}" ]; then
     SSH_AGENT_SOCK=$(readlink -f $SSH_AUTH_SOCK)
     SSH_AGENT_OPTS="-v $SSH_AGENT_SOCK:/run/ssh-agent -e SSH_AUTH_SOCK=/run/ssh-agent"
 fi
 
-docker run --rm ${IT} $SSH_AGENT_OPTS \
+docker run --rm ${IT} \
     -v $BASE_DIR:/base \
     -w /base \
+    ${LINK_CONTAINERS:+${LINK_CONTAINERS}}  \
+    ${SSH_AGENT_OPTS:+${SSH_AGENT_OPTS}}  \
     ${GIT_USER_TOKEN:+-e GIT_USER_TOKEN="${GIT_USER_TOKEN}"} \
     ${ELOS_DEPENDENCY_CONFIG:+-e ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
     ${SOURCES_URI:+-e SOURCES_URI="${SOURCES_URI}"} \

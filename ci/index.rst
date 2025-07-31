@@ -274,3 +274,5 @@ CI-Helper scripts
 The `ci` folder contains a bunch of helper scripts to do different CI task.
 Keeping them separated from a specific CI solution enables us to reuse the code
 and additionally use them locally during development.
+
+All shell scripts in the `ci` folder shall use the `bash` unless specifically justified.

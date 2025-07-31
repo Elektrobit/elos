@@ -44,6 +44,7 @@ class TemplateConfig(object):
             BuiltIn().get_variable_value("${USER_IS_ROOT}"))
         password = BuiltIn().get_variable_value("${PASSWORD}")
         self.password = "" if password is None else password
+        self.config = None
 
     def default_config(self):
         """Get the default configuration from the Target."""
@@ -112,6 +113,7 @@ class TemplateConfig(object):
         ssh = BuiltIn().get_library_instance('SSHLibrary')
         res = ssh.execute_command(f"mount | grep {self.config_path}",
                                   return_rc=True)
+        self.config = None
         if res[-1] == 0:
             res = ssh.execute_command(f"umount {self.config_path}",
                                       sudo=not self.root,
@@ -153,3 +155,69 @@ class TemplateConfig(object):
             value = None
 
         return value
+
+    @keyword("Subconfig under '${option_path}' gets set to")
+    def set_config_part(self, option_path, *param, **parameter):
+        par = {}
+        for p in param:
+            if type(p) is dict:
+                par.update(p)
+
+        values = self.default_config_core() | par | parameter
+
+        jsonpath_exp = parse(option_path)
+        if self.config is None:
+            self.config = self.target_config()
+
+        self.config = jsonpath_exp.update(self.config, values)
+
+    @keyword("Config option '${option_path}' gets set to '${option_value}'")
+    def set_config_value(self, option_path, option_value):
+        jsonpath_exp = parse(option_path)
+        if self.config is None:
+            self.config = self.default_config_core()
+
+        self.config = jsonpath_exp.update_or_create(self.config, option_value)
+
+    @keyword("Config option '${option_path}' gets set to ${option_value}")
+    def set_config_value_number(self, option_path, option_value):
+        """Updates or adds a value in the elosd configuration
+
+        the updated config is not send to the target to be used directly `Set assembled config` is needet for that
+
+        When setting new values the json path needs to be an absolute path
+
+        Examples:
+        | *Config option '$..SQLBackend.Run' gets set to "never"` |
+        | `Config option '$.EventLogging.Plugins.JsonBackend.Config.Bool' gets set to true` |
+        | `Config option '$.EventLogging.Plugins.JsonBackend.Config.Boolean' gets set to false` |
+        | `Config option '$.EventLogging.Plugins.JsonBackend.Config.Null' gets set to null` |
+        | `Config option '$.EventLogging.Plugins.JsonBackend.Config.array' gets set to [ "foo", 1, 0.5, false, { "bar": true, "batz": 12 }, 4]` |
+        | `Config option '$.root.elos.EventLogging.Plugins.JsonBackend.Config.object' gets set to { "a":"foo", "b":1, "c": 0.5, "d": false, "nop": { "bar": true, "batz": 12 }, "5": 4 }` |
+        """
+        if option_value == "true":
+            value = True
+        elif option_value == "false":
+            value = False
+        elif option_value == "null":
+            value = None
+        elif option_value.startswith('"') and option_value.endswith('"'):
+            value = option_value[1:-1]
+        elif (option_value.startswith("[") and option_value.endswith("]")) or (option_value.startswith("{") and option_value.endswith("}")):
+            value = self.json(option_value)
+        elif "." in option_value:
+            value = float(option_value)
+        else:
+            value = int(option_value)
+
+        self.set_config_value(option_path, value)
+
+
+    def set_assembled_config(self):
+        """Sets the updated elosd configuration to be the active config on the target
+        """
+        if self.config is None:
+            raise Exception("No config was assembled before")
+
+        self.set_new_config_core(**self.config)
+
