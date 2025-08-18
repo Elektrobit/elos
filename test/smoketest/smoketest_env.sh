@@ -91,3 +91,5 @@ export LOG4C_RCPATH="${SYSCONF_DIR}/elos/elos_log4c_demo"
 # installation. Set SMOKETEST_ENABLE_COMPILE_TESTS to any value
 # other then empty to activate the tests.
 export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
+
+export elso_Scanner_Plugins_DLT_HV_Config_DeviceFile="test_dlt_shmem"
