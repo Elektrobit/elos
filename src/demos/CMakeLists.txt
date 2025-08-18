@@ -129,6 +129,21 @@ if (ELOS_DEMOS)
   endif()
 
   add_executable(
+    mng_dlt_buffer
+    mng_dlt_buffer.c
+  )
+
+  target_link_libraries(
+    mng_dlt_buffer
+    PRIVATE
+      scanner_dlt_hv_interface
+  )
+
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS mng_dlt_buffer DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
+
+  add_executable(
     demo_eventbuffer
     demo_eventbuffer.c
   )
