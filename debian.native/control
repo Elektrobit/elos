@@ -234,6 +234,19 @@ Description: Event logging and management with normalized output-format (syslog 
  .
  Syslog scanner plugin.
 
+Package: elos-plugin-scanner-dlt-hv
+Section: libs
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: Event logging and management with normalized output-format (dlt scanner plugin)
+ elos is a tool to collect, store and publish various system events (i.e.
+ syslogs, core dumps, measurements obtained from proc- and sys-fs, ...)
+ while providing easy access to the collected data.
+ .
+ DLT-HV scanner plugin.
+
 Package: elosd
 Section: utils
 Architecture: any
