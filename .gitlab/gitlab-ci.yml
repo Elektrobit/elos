@@ -14,7 +14,8 @@ default:
   interruptible: true
 
 before_script:
-  - env
+  - pwd
+  - env | sort
 
 build-docker-image:
   stage: .pre
