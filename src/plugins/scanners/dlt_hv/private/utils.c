@@ -2,6 +2,7 @@
 
 #include <elos/event/event.h>
 #include <elos/libelosplugin/libelosplugin.h>
+#include <safu/common.h>
 #include <safu/log.h>
 #include <safu/result.h>
 #include <stdlib.h>
@@ -23,6 +24,40 @@ static elosSeverityE_t _logLevelTranslate(elosDltLogLevelE_t level) {
     return log;
 }
 
+static const char *elosUnicodeSub[] = {
+    "⋄", "␁", "␂", "␃", "␄",  "␅", "␆", "␇", "␈", "␉", "␊", "␋", "␌",  "␍", "␎", "␏", "␐", "␑", "␒", "␓", "␔", "␕",
+    "␖", "␗", "␘", "␙", "␚",  "␛", "␜", "␝", "␞", "␟", " ", "!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+",
+    ",", "-", ".", "/", "0",  "1", "2", "3", "4", "5", "6", "7", "8",  "9", ":", ";", "<", "=", ">", "?", "@", "A",
+    "B", "C", "D", "E", "F",  "G", "H", "I", "J", "K", "L", "M", "N",  "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+    "X", "Y", "Z", "[", "\\", "]", "^", "_", "`", "a", "b", "c", "d",  "e", "f", "g", "h", "i", "j", "k", "l", "m",
+    "n", "o", "p", "q", "r",  "s", "t", "u", "v", "w", "x", "y", "z",  "{", "|", "}", "~", "␡", "x", "x", "x", "x",
+    "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x", "x",
+    "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x", "x",
+    "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x", "x",
+    "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x", "x",
+    "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x", "x",
+    "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x",  "ﬀ",
+};
+
+static size_t _neededPayloadSize(const uint8_t *buffer) {
+    size_t res = 0;
+    for (size_t i = 0; i < ELOS_EB_LOG_STRING_SIZE; ++i) {
+        res += strlen(elosUnicodeSub[buffer[i]]);
+    }
+    return res;
+}
+static void _shmemBufferToStr(char **res, const uint8_t *buffer) {
+    size_t idx = 0;
+    size_t needed = _neededPayloadSize(buffer);
+    char *buf = safuAllocMem(NULL, needed + 1);
+    for (size_t i = 0; i < ELOS_EB_LOG_STRING_SIZE; ++i) {
+        int off = snprintf(&buf[idx], ELOS_EB_LOG_STRING_SIZE, "%s", elosUnicodeSub[buffer[i]]);
+        idx += off;
+    }
+    buf[idx] = 0;
+    *res = buf;
+}
+
 safuResultE_t elosEventFromLogEntry(elosEbLogEntry_t *entry, elosEvent_t *event) {
     safuResultE_t result = SAFU_RESULT_OK;
     if (entry == NULL || event == NULL) {
@@ -30,8 +65,7 @@ safuResultE_t elosEventFromLogEntry(elosEbLogEntry_t *entry, elosEvent_t *event)
     } else {
         // NOTE:  parse entry if possible
         event->date.tv_sec = entry->creationTime;
-        event->payload = entry->logString;
-        event->payload[ELOS_EB_LOG_STRING_SIZE - 1] = 0;  // make sure its 0 terminated
+        _shmemBufferToStr(&event->payload, (uint8_t *)entry->logString);
         event->severity = _logLevelTranslate(entry->logLevel);
         safuLogDebugF("Payload: %s", event->payload);
     }

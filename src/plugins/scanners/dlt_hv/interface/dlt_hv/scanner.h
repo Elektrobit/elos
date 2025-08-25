@@ -2,20 +2,23 @@
 
 #pragma once
 
-#include <bits/pthreadtypes.h>
+#include <pthread.h>
+#include <safu/ringbuffer_types.h>
 #include <stddef.h>
 #include <time.h>
 
-#define NUM_BUFFER 3
+#include "dlt_hv/types.h"
+
+#define ELOS_DLT_MESSAGE_CODE 2042
 
 typedef struct elosDltScanner {
     int shmemFd;
     char *shmemFile;
     size_t shmemLogEntries;
-    size_t shmemOffset;
     void *shmemData;
-    void *localData[NUM_BUFFER];
-    size_t bufferIdx;
+    elosEbLogRingBuffer_t *localBufferCopy;
+    uint16_t idxRead;
+    safuRingBuffer_t parserQueue;
     size_t shmemDataSize;
     struct elosPublisher *publisher;
     pthread_t scannerThread;
