@@ -140,18 +140,22 @@ int _createShmemBuffer(char *shmemFileName, off_t offset, size_t size, size_t bu
         printf("Size will be %lu\n", shmemDataSize);
     }
 
+    if (strncmp("/dev/shm/", shmemFileName, strlen("/dev/shm/")) != 0) {
+        fprintf(stderr, "not a path to \"/dev/shm/\" can't create shmem file\n");
+    }
+
     mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
     int oflag = O_RDWR | O_CREAT | O_TRUNC;
 
     char *fileName = basename(shmemFileName);
     int shmemFd = shm_open(fileName, oflag, mode);
     if (shmemFd < 0) {
-        fprintf(stderr, "failed to open shared memory!");
+        fprintf(stderr, "failed to open shared memory!\n");
         result = 2;
     } else {
         int retVal = ftruncate(shmemFd, shmemDataSize + offset);
         if (retVal != 0) {
-            fprintf(stderr, "Error resizing shared memory!");
+            fprintf(stderr, "Error resizing shared memory!\n");
             result = 3;
         } else {
             void *shmp = mmap(NULL, shmemDataSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
@@ -184,7 +188,7 @@ int _createShmemBuffer(char *shmemFileName, off_t offset, size_t size, size_t bu
 int _insertIntoShmemBuffer(const char *shmemFile, off_t offset, size_t size, const char *msg) {
     int result = 0;
     int oflag = O_RDWR;
-    int shmemFd = shm_open(shmemFile, oflag, 0);
+    int shmemFd = open(shmemFile, oflag, 0);
     if (shmemFd < 0) {
         fprintf(stderr, "failed to open shared memory file %s for reading\n", shmemFile);
         result = 4;
@@ -350,7 +354,8 @@ int main(int argc, char *argv[]) {
         res = _dumpShmemBuffer(config.shmemFile, config.offset, config.bufferSize);
     }
     if (config.unlinkBuffer) {
-        int unRes = shm_unlink(config.shmemFile);
+        char *fileName = basename(config.shmemFile);
+        int unRes = shm_unlink(fileName);
         if (unRes != 0 && errno != ENOENT) {
             printf("failed to unlink shared memory file %s: %s\n", config.shmemFile, strerror(errno));
             res |= 8;

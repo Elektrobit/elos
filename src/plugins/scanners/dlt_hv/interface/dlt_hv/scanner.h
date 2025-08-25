@@ -13,6 +13,8 @@
 
 typedef struct elosDltScanner {
     int shmemFd;
+    size_t offsetAddress;
+    size_t bufferSize;
     char *shmemFile;
     size_t shmemLogEntries;
     void *shmemData;

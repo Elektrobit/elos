@@ -7,10 +7,51 @@
 #include <safu/common.h>
 #include <safu/log.h>
 #include <safu/result.h>
+#include <samconf/samconf_types.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include "dlt_hv/types.h"
+
+samconfConfigStatusE_t elosConfigGetGenericInt64(const samconfConfig_t *root, const char *path, int64_t *result) {
+    const samconfConfig_t *node = NULL;
+    samconfConfigStatusE_t status = SAMCONF_CONFIG_NOT_FOUND;
+
+    if (!root || !path || !result) {
+        return SAMCONF_CONFIG_ERROR;
+    }
+
+    status = samconfConfigGet(root, path, &node);
+    if (SAMCONF_CONFIG_OK != status) {
+        return status;
+    }
+
+    if (node->type == SAMCONF_CONFIG_VALUE_INT) {
+        safuLogDebugF("%ld is an integer that can just be used!!!", node->value.integer);
+        *result = node->value.integer;
+    } else if (node->type == SAMCONF_CONFIG_VALUE_REAL) {
+        int64_t v = (int64_t)node->value.real;
+        safuLogDebugF("%f is a double that will be transfomred into %ld!!!", node->value.real, v);
+        if (node->value.real - (double)v != 0.0) {
+            safuLogWarnF("Precision lost when converting %f from double to int64_t %ld", node->value.real, v);
+        }
+        *result = v;
+    } else if (node->type == SAMCONF_CONFIG_VALUE_STRING) {
+        safuLogDebugF("\"%s\" is a string that will be parsed", node->value.string);
+        char *endPtr = NULL;
+        int64_t v = strtoll(node->value.string, &endPtr, 0);
+        if (*endPtr == '\0') {
+            *result = v;
+        } else {
+            status = SAMCONF_CONFIG_INVALID_TYPE;
+        }
+    } else {
+        status = SAMCONF_CONFIG_INVALID_TYPE;
+    }
+
+    return status;
+}
 
 static const elosSeverityE_t elosLogLevelTranslate[] = {
     [ELOS_DLT_LOGLEVEL_OFF] = ELOS_SEVERITY_OFF,     [ELOS_DLT_LOGLEVEL_FATAL] = ELOS_SEVERITY_FATAL,

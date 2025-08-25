@@ -8,16 +8,19 @@
 #include <safu/log.h>
 #include <safu/result.h>
 #include <safu/ringbuffer.h>
+#include <samconf/samconf_types.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/eventfd.h>
 #include <sys/mman.h>
 #include <sys/poll.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "dlt_hv/scanner.h"
-#include "dlt_hv/types.h"
 #include "dlt_hv/shmem_ring_buffer.h"
+#include "dlt_hv/types.h"
+#include "dlt_hv/utils.h"
 
 safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -32,17 +35,45 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
             safuLogErrF("missing shared memory file in configuration for \"%s\"", plugin->config->key);
             result = SAFU_RESULT_FAILED;
         } else {
-            result = elosPluginCreatePublisher(plugin, &dlt->publisher);
-            if (result != SAFU_RESULT_OK) {
-                safuLogErrF("failed to create publisher for \"%s\"", plugin->config->key);
+            dlt->offsetAddress = 0;
+            configResult =
+                elosConfigGetGenericInt64(plugin->config, "Config/OffsetAddress", (int64_t *)&dlt->offsetAddress);
+            if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
+                dlt->offsetAddress = 0;
+            } else if (configResult != SAMCONF_CONFIG_OK) {
+                safuLogErrF("no offset address in configuration for \"%s\"", plugin->config->key);
+                result = SAFU_RESULT_FAILED;
             } else {
-                // NOTE:  the time diffrence in the example are between 14.36598s and 0.000439s
-                dlt->sleepInterval.tv_sec = 0;
-                dlt->sleepInterval.tv_nsec = 439000;
-                dlt->moreToRead = eventfd(0, 0);
-                dlt->stopCmd = eventfd(0, 0);
+                long pageSize = sysconf(_SC_PAGE_SIZE);
+                if (dlt->offsetAddress % pageSize != 0) {
+                    safuLogErrF("offset address %lu is not a multiple of page size (%ld)\n", dlt->offsetAddress,
+                                pageSize);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+            if (result == SAFU_RESULT_OK) {
+                configResult =
+                    elosConfigGetGenericInt64(plugin->config, "Config/BufferSize", (int64_t *)&dlt->bufferSize);
+                if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
+                    dlt->bufferSize = 0;
+                } else if (configResult != SAMCONF_CONFIG_OK) {
+                    safuLogErrF("no buffer size in configuration for \"%s\"", plugin->config->key);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+            if (result == SAFU_RESULT_OK) {
+                result = elosPluginCreatePublisher(plugin, &dlt->publisher);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErrF("failed to create publisher for \"%s\"", plugin->config->key);
+                } else {
+                    // NOTE:  the time diffrence in the example are between 14.36598s and 0.000439s
+                    dlt->sleepInterval.tv_sec = 0;
+                    dlt->sleepInterval.tv_nsec = 439000;
+                    dlt->moreToRead = eventfd(0, 0);
+                    dlt->stopCmd = eventfd(0, 0);
 
-                plugin->data = dlt;
+                    plugin->data = dlt;
+                }
             }
         }
     }
@@ -59,18 +90,34 @@ static safuResultE_t _deleteEbLogEntry(void *entry) {
 
 safuResultE_t elosDltScannerOpenBuffer(elosDltScanner_t *dlt) {
     safuResultE_t result = SAFU_RESULT_OK;
-    dlt->shmemFd = shm_open(dlt->shmemFile, O_RDONLY, 0);
+    dlt->shmemFd = open(dlt->shmemFile, O_RDONLY | O_SYNC);
     if (dlt->shmemFd == -1) {
         result = SAFU_RESULT_FAILED;
+    } else {
+        safuLogDebugF("Opend dlt log ring buffer %s", dlt->shmemFile);
     }
     if (result == SAFU_RESULT_OK) {
         elosEbLogRingBuffer_t *head;
-        dlt->shmemData = mmap(NULL, sizeof(elosEbLogRingBuffer_t), PROT_READ, MAP_SHARED, dlt->shmemFd, 0);
+        safuLogDebugF("offset: 0x%lx", dlt->offsetAddress);
+        dlt->shmemData =
+            mmap(NULL, sizeof(elosEbLogRingBuffer_t), PROT_READ, MAP_SHARED, dlt->shmemFd, dlt->offsetAddress);
         head = dlt->shmemData;
         dlt->shmemLogEntries = (size_t)head->entryCount;
         dlt->shmemDataSize = ((size_t)head->entryCount * sizeof(elosEbLogEntry_t)) + sizeof(elosEbLogRingBuffer_t);
         dlt->idxRead = head->idxRead;
-        dlt->shmemData = mmap(NULL, dlt->shmemDataSize, PROT_READ, MAP_SHARED, dlt->shmemFd, 0);
+        if (dlt->idxRead >= dlt->shmemLogEntries) {
+            safuLogErrF("Read pointer %u for dlt ring buffer outside of buffer[%lu]", dlt->idxRead,
+                        dlt->shmemLogEntries);
+            result = SAFU_RESULT_FAILED;
+        } else if (dlt->bufferSize != 0 && dlt->shmemDataSize > dlt->bufferSize) {
+            safuLogErrF("dlt log buffer size is bigger thant the shmem file (%lu/%ld)", dlt->shmemDataSize,
+                        dlt->bufferSize);
+            result = SAFU_RESULT_FAILED;
+        }
+        munmap(dlt->shmemData, sizeof(elosEbLogRingBuffer_t));
+    }
+    if (result == SAFU_RESULT_OK) {
+        dlt->shmemData = mmap(NULL, dlt->shmemDataSize, PROT_READ, MAP_SHARED, dlt->shmemFd, dlt->offsetAddress);
         close(dlt->shmemFd);
         dlt->localBufferCopy = safuAllocMem(NULL, dlt->shmemDataSize);
         safuLogDebug("created memory for local copy");

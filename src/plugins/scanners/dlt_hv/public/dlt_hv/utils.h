@@ -8,6 +8,8 @@
 
 #include "dlt_hv/types.h"
 
+samconfConfigStatusE_t elosConfigGetGenericInt64(const samconfConfig_t *root, const char *path, int64_t *result);
+
 /*************************************************
  * transform a `elosEbLogEntry_t` into an `elosEvent_t`
  *
