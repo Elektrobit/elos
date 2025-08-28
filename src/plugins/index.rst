@@ -11,6 +11,7 @@ Plugins
    scanners/oomkiller/index
    scanners/syslog/index
    scanners/shmem/index
+   scanners/dlt_hv/index
    storagebackends/dlt/index
    storagebackends/index
    storagebackends/dummy/index
