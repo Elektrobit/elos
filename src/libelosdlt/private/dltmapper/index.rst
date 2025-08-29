@@ -148,11 +148,8 @@ The mapping of  `Elos Event Attributes <../../../components/event/index.html>`_ 
              - DLT_LOG_INFO    <->  ELOS_MESG_CODE_INFO_LOG
              - DLT_LOG_DEBUG   <->  ELOS_MSG_CODE_DEBUG_LOG
              - DLT_LOG_VERBOSE <->  ELOS_MSG_CODE_VERBOSE_LOG (should be added to elos)
-        - DLT_TYPE_APP_TRACE : ELOS_MSG_CODE_TRACE_LOG as general purpose application trace message code.
-        - DLT_TYPE_NW_TRACE : 
-             - if the message type info is DLT_NW_TRACE_IPC then use message codes from 4000 - 4006
-             - For DLT_NW_TRACE_* use messge codes from 7200 - 7205
-        - DLT_TYPE_CONTROL : use ELOS_MSG_CODE_KMSG and treat them as kernel message logs
+        - DLT_TYPE_APP_TRACE/DLT_TYPE_NW_TRACE/DLT_TYPE_CONTROL : ELOS_MSG_CODE_TRACE_LOG as general purpose trace log message code.
+        
     
     b. If stdHeader.ueh flag is not set but when a unique MessageId with its external description is available, then parse the message type and message type info from message id, and map it to elos event severity as given in `a`.
 

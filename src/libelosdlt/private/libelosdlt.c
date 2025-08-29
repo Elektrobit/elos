@@ -7,9 +7,12 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <safu/common.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
+#include <sys/sysinfo.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
