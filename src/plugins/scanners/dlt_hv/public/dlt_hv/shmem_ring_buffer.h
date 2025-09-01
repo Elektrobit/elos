@@ -11,6 +11,11 @@
 /*************************************************
  * Read the `elosEbLogRingBuffer_t` and write all new entries into the readQueue
  *
+ * Parameters:
+ *   buff: The DLT ring buffer to check for new entries
+ *   idxRead: The read index to start reading from (will be updated if new entries are read)
+ *   readQueue: The queue to write them to for further processing
+ *
  * Returns:
  *   - SAFU_RESULT_OK: on success
  *   - SAFU_RESULT_NOT_FOUND: when nothing new was in the `elosEbLogRingBuffer_t`

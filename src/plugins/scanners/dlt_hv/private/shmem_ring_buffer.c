@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "shmem_ring_buffer.h"
+#include "dlt_hv/shmem_ring_buffer.h"
 
 #include <elos/event/event.h>
 #include <safu/common.h>
@@ -9,10 +9,10 @@
 #include <safu/ringbuffer.h>
 #include <stdlib.h>
 
+#include "dlt_hv/scanner.h"
 #include "dlt_hv/types.h"
-#include "dlt_scanner.h"
+#include "dlt_hv/utils.h"
 #include "elos/event/event_types.h"
-#include "utils.h"
 
 static safuResultE_t _queueEntry(elosEbLogRingBuffer_t *buff, uint16_t idxRead, safuRingBuffer_t *readQueue) {
     elosEbLogEntry_t *entry = safuAllocMem(NULL, sizeof(elosEbLogEntry_t));

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "dlt_scanner.h"
+#include "dlt_hv/dlt_scanner.h"
 
 #include <elos/libelosplugin/libelosplugin.h>
 #include <fcntl.h>
@@ -17,8 +17,7 @@
 
 #include "dlt_hv/scanner.h"
 #include "dlt_hv/types.h"
-#include "shmem_ring_buffer.h"
-#include "utils.h"
+#include "dlt_hv/shmem_ring_buffer.h"
 
 safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;

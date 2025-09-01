@@ -7,8 +7,8 @@
 #include <safu/result.h>
 #include <stdlib.h>
 
+#include "dlt_hv/dlt_scanner.h"
 #include "dlt_hv/scanner.h"
-#include "dlt_scanner.h"
 
 static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;

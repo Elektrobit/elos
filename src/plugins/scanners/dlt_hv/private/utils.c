@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+#include "dlt_hv/utils.h"
+
 #include <elos/event/event.h>
 #include <elos/libelosplugin/libelosplugin.h>
 #include <safu/common.h>

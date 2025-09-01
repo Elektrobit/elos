@@ -32,6 +32,7 @@ target_include_directories(
   scanner_dlt_hv
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/public/
 )
 
 if (INSTALL_ELOS_PLUGINS)
