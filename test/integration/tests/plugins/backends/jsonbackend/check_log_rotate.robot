@@ -120,8 +120,3 @@ A Few Log Files Are Filled Already
 Another Event Gets Stored
     [Documentation]     Publish another event
     Publish '{ "payload": "another event" }'
-
-The Last Json Log Should Not Exist
-    [Documentation]     Check that the file saved as the last log file
-    ...                 doesn't exist
-    File Should Not Exist       ${NEWEST_LOG_FILE}
