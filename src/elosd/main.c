@@ -142,6 +142,16 @@ safuResultE_t _createRunDirectory(struct elosServerContext *ctx) {
     return result;
 }
 
+bool elosIsConfigDumpRequested(const char *const *const argv, int argc) {
+    for (int i = 0; i < argc; i++) {
+        if (strncmp(argv[i], "-d", sizeof("-d")) == 0 ||
+            strncmp(argv[i], "--dump-config", sizeof("--dump-config")) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int main(int argc, char **argv) {
     int retval;
     struct elosServerContext context = {0};
@@ -175,6 +185,10 @@ int main(int argc, char **argv) {
         safuLogErr("samconfLoad");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
+    }
+
+    if (elosIsConfigDumpRequested((const char **)argv, argc)) {
+        samconfDumpConfigTree(context.config);
     }
 
     safuLogLevelE_t logLevel = elosConfigGetElosdLogLevel(context.config);
