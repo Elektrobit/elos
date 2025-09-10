@@ -74,6 +74,7 @@ void elosTestElosMessageEventPublishPublishFailed(void **state) {
     data->msg = safuAllocMem(NULL, sizeof(elosMessage_t *) + strlen(msg) + 1);
     assert_non_null(data->msg);
     memcpy(data->msg->json, msg, strlen(msg) + 1);
+    data->msg->length = strlen(msg);
 
     data->conn->sharedData->plugin->publish = _mockElosPluginPublish;
     data->conn->sharedData->plugin->store = _mockElosPluginStore;
