@@ -67,6 +67,7 @@ Test JSON Backend Roates The Log File When The Date Changes
     [Documentation]    See that the json backend continues writing
     ...                into a new log file starting with count 0 again
     ...                when the date changes
+    [Tags]    faketime
 
     ${config_template}      Set Variable        /tmp/elosd_%date%_change_itest_%count%.log
     Given Config Option '$..JsonBackend.Config.StoragePath' Gets Set To "${config_template}"
@@ -119,8 +120,3 @@ A Few Log Files Are Filled Already
 Another Event Gets Stored
     [Documentation]     Publish another event
     Publish '{ "payload": "another event" }'
-
-The Last Json Log Should Not Exist
-    [Documentation]     Check that the file saved as the last log file
-    ...                 doesn't exist
-    File Should Not Exist       ${NEWEST_LOG_FILE}

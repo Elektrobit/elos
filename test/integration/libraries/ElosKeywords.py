@@ -288,17 +288,30 @@ class ElosKeywords(object):
         match = re.match(file_pattern, file)
         return int(match.group(1))
 
+    def _file_should_exist(self, file):
+        stdout, stderr, rc = self._exec_on_target(f"test -f {file}")
+        logger.debug(f"stdout: {stdout}")
+        logger.debug(f"stderr: {stderr}")
+        if rc != 0:
+            robot.utils.asserts.fail(f"expected {file} doesn't exist")
+
+    def _file_should_not_exist(self, file):
+        stdout, stderr, rc = self._exec_on_target(f"test ! -f {file}")
+        logger.debug(f"stdout: {stdout}")
+        logger.debug(f"stderr: {stderr}")
+        if rc != 0:
+            robot.utils.asserts.fail(f"expected {file} exist")
+
     @keyword("the json backend continues with the next '${pattern}' log file")
     def check_next_log_rotation(self, pattern):
         file = BuiltIn().get_variable_value('${NEWEST_LOG_FILE}')
         if file is None:
             raise Exception("No newest log file is set!")
         logger.info(f"checking file pattern {pattern}")
-        file_pattern = pattern.replace("%count%", "([0-9]+)")
         count = self._get_count(file, pattern)
         count += 1
         current_file = pattern.replace("%count%", f"{count}")
-        self.ssh.file_should_exist(current_file)
+        self._file_should_exist(current_file)
 
     @keyword("some of the older '${pattern}' log files are deleted")
     def delete_some_older_logs(self, pattern):
@@ -318,16 +331,26 @@ class ElosKeywords(object):
         BuiltIn().set_test_variable('${REMOVED_LOG_FILES}', removed)
         BuiltIn().set_test_variable('${NEWEST_LOG_FILE}', f"{directory}/{files[-1][6]}")
 
+    @keyword("The Last Json Log Should Not Exist")
+    def last_log_file_should_not_exist(self):
+        """
+        Check that the file saved as the last log file doesn't exist
+        """
+        file = BuiltIn().get_variable_value('${NEWEST_LOG_FILE}')
+        if file is None:
+            raise Exception("No newest log file is set!")
+        self._file_should_not_exist(file)
+
     @keyword("the json backend continues logging to the last log file")
     def continue_in_last(self):
         removed = BuiltIn().get_variable_value('${REMOVED_LOG_FILES}')
         for file in removed:
-            self.ssh.file_should_not_exist(file)
+            self._file_should_not_exist(file)
 
         current = BuiltIn().get_variable_value('${NEWEST_LOG_FILE}')
         if file is None:
             raise Exception("No newest log file is set!")
-        self.ssh.file_should_exist(current)
+        self._file_should_exist(current)
 
     @keyword("change time to '${timestamp}' from now on")
     def update_time(self, timestamp):
