@@ -19,7 +19,8 @@ Under `root/elos/Scanner/Plugins` add:
       "Config": {
          "DeviceFile": "/dev/shm/test_dlt_shmem",
          "OffsetAddress": "0x1000",
-         "BufferSize": 1448
+         "BufferSize": 1448,
+         "ScanFrequency": 2277
       }
    }
 
@@ -32,6 +33,8 @@ Under `root/elos/Scanner/Plugins` add:
   This is only used to check that the size stated in the buffer header is correct.
   If a size of 0 is given the check is skiped, this is the default if nothing is configured.
   Can be a string encoding the size or a number.
+- ``ScanFrequency``: The Frequency (in hz) with wich the scanner should wake up and check for new log entries.
+  Default is 2277 hz
 
 
 Configuration structure

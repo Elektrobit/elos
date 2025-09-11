@@ -8,6 +8,7 @@
 #include <safu/log.h>
 #include <safu/result.h>
 #include <safu/ringbuffer.h>
+#include <samconf/samconf.h>
 #include <samconf/samconf_types.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -21,6 +22,14 @@
 #include "dlt_hv/shmem_ring_buffer.h"
 #include "dlt_hv/types.h"
 #include "dlt_hv/utils.h"
+
+static struct timespec _hzToTime(int32_t hz) {
+    struct timespec ts = {0};
+    ts.tv_nsec = 1000000000 / hz;
+    ts.tv_sec = ts.tv_nsec / 1000000000;
+    ts.tv_nsec = ts.tv_nsec % 1000000000;
+    return ts;
+}
 
 safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -66,9 +75,9 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
                 if (result != SAFU_RESULT_OK) {
                     safuLogErrF("failed to create publisher for \"%s\"", plugin->config->key);
                 } else {
-                    // NOTE:  the time diffrence in the example are between 14.36598s and 0.000439s
-                    dlt->sleepInterval.tv_sec = 0;
-                    dlt->sleepInterval.tv_nsec = 439000;
+                    // NOTE:  the mesured time diffrences in the provided example are between 14.36598s and 0.000439s
+                    dlt->sleepInterval = _hzToTime(
+                        samconfConfigGetInt32Or(plugin->config, "Config/ScanFrequency", ELOS_DLT_SCAN_FREQUENCY));
                     dlt->moreToRead = eventfd(0, 0);
                     dlt->stopCmd = eventfd(0, 0);
 

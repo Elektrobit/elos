@@ -9,7 +9,8 @@
 
 #include "dlt_hv/types.h"
 
-#define ELOS_DLT_MESSAGE_CODE 2042
+#define ELOS_DLT_MESSAGE_CODE   2042
+#define ELOS_DLT_SCAN_FREQUENCY 2277
 
 /******************************
  * The Scanner plugin instance
