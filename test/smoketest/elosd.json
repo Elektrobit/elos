@@ -116,6 +116,13 @@
                         "File": "scanner_oomkiller.so",
                         "Run": "always"
                     },
+                    "DLT_HV": {
+                        "File": "scanner_dlt_hv.so",
+                        "Run": "always",
+                        "Config": {
+                            "DeviceFile": "test_dlt_shmem"
+                        }
+                    },
                     "SyslogScanner": {
                         "File": "scanner_syslog.so",
                         "Run": "always",
