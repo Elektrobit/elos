@@ -1,7 +1,7 @@
 DLT HV - Scanner
 ================
 
-Reads the provided DLT HV log ring buffer and publishes every event.
+Reads the provided DLT HV log ring buffer and publishes all events as they come in.
 
 Configuration
 -------------
@@ -17,12 +17,25 @@ Under `root/elos/Scanner/Plugins` add:
       "File": "scanner_dlt_hv.so",
       "Run": "always",
       "Config": {
-         "DeviceFile": "<shared memory file name>"
+         "DeviceFile": "/dev/shm/test_dlt_shmem",
+         "OffsetAddress": "0x1000",
+         "BufferSize": 1448,
+         "ScanFrequency": 2277
       }
    }
 
-- ``DeviceFile``: The shared memory file in to open for the DLT ring buffer.
-  Only the file name has to be provided not the full path.
+
+- ``DeviceFile``: The (memory mapped) file to open for the DLT ring buffer.
+- ``OffsetAddress``: The offset address where the buffer starts in the file (default if not provided is 0)
+  Has to be a multiple of the page size of the system its running on.
+  Can be a string encoding the address or a number
+- ``BufferSize``: The memory size of the buffer.
+  This is only used to check that the size stated in the buffer header is correct.
+  If a size of 0 is given the check is skiped, this is the default if nothing is configured.
+  Can be a string encoding the size or a number.
+- ``ScanFrequency``: The Frequency (in hz) with wich the scanner should wake up and check for new log entries.
+  Default is 2277 hz
+
 
 Configuration structure
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,5 +46,7 @@ Configuration structure
    ├── File
    ├── Run
    └── Config
-       └── DeviceFile
+       ├── DeviceFile
+       ├── OffsetAddress
+       └── BufferSize
 

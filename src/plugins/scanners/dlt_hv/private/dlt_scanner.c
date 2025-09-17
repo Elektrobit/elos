@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "dlt_scanner.h"
+#include "dlt_hv/dlt_scanner.h"
 
 #include <elos/libelosplugin/libelosplugin.h>
 #include <fcntl.h>
@@ -8,16 +8,28 @@
 #include <safu/log.h>
 #include <safu/result.h>
 #include <safu/ringbuffer.h>
+#include <samconf/samconf.h>
+#include <samconf/samconf_types.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/eventfd.h>
 #include <sys/mman.h>
 #include <sys/poll.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "dlt_hv/scanner.h"
+#include "dlt_hv/shmem_ring_buffer.h"
 #include "dlt_hv/types.h"
-#include "utils.h"
+#include "dlt_hv/utils.h"
+
+static struct timespec _hzToTime(int32_t hz) {
+    struct timespec ts = {0};
+    ts.tv_nsec = 1000000000 / hz;
+    ts.tv_sec = ts.tv_nsec / 1000000000;
+    ts.tv_nsec = ts.tv_nsec % 1000000000;
+    return ts;
+}
 
 safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
@@ -32,16 +44,45 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
             safuLogErrF("missing shared memory file in configuration for \"%s\"", plugin->config->key);
             result = SAFU_RESULT_FAILED;
         } else {
-            result = elosPluginCreatePublisher(plugin, &dlt->publisher);
-            if (result != SAFU_RESULT_OK) {
-                safuLogErrF("failed to create publisher for \"%s\"", plugin->config->key);
+            dlt->offsetAddress = 0;
+            configResult =
+                elosConfigGetGenericInt64(plugin->config, "Config/OffsetAddress", (int64_t *)&dlt->offsetAddress);
+            if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
+                dlt->offsetAddress = 0;
+            } else if (configResult != SAMCONF_CONFIG_OK) {
+                safuLogErrF("no offset address in configuration for \"%s\"", plugin->config->key);
+                result = SAFU_RESULT_FAILED;
             } else {
-                dlt->sleepInterval.tv_sec = 5;
-                dlt->sleepInterval.tv_nsec = 0;
-                dlt->moreToRead = eventfd(0, 0);
-                dlt->stopCmd = eventfd(0, 0);
-                dlt->bufferIdx = 0;
-                plugin->data = dlt;
+                long pageSize = sysconf(_SC_PAGE_SIZE);
+                if (dlt->offsetAddress % pageSize != 0) {
+                    safuLogErrF("offset address %lu is not a multiple of page size (%ld)\n", dlt->offsetAddress,
+                                pageSize);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+            if (result == SAFU_RESULT_OK) {
+                configResult =
+                    elosConfigGetGenericInt64(plugin->config, "Config/BufferSize", (int64_t *)&dlt->bufferSize);
+                if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
+                    dlt->bufferSize = 0;
+                } else if (configResult != SAMCONF_CONFIG_OK) {
+                    safuLogErrF("no buffer size in configuration for \"%s\"", plugin->config->key);
+                    result = SAFU_RESULT_FAILED;
+                }
+            }
+            if (result == SAFU_RESULT_OK) {
+                result = elosPluginCreatePublisher(plugin, &dlt->publisher);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogErrF("failed to create publisher for \"%s\"", plugin->config->key);
+                } else {
+                    // NOTE:  the mesured time diffrences in the provided example are between 14.36598s and 0.000439s
+                    dlt->sleepInterval = _hzToTime(
+                        samconfConfigGetInt32Or(plugin->config, "Config/ScanFrequency", ELOS_DLT_SCAN_FREQUENCY));
+                    dlt->moreToRead = eventfd(0, 0);
+                    dlt->stopCmd = eventfd(0, 0);
+
+                    plugin->data = dlt;
+                }
             }
         }
     }
@@ -52,27 +93,47 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
     return result;
 }
 
+static safuResultE_t _deleteEbLogEntry(void *entry) {
+    return elosFreeEbLogEntry((elosEbLogEntry_t *)entry);
+}
+
 safuResultE_t elosDltScannerOpenBuffer(elosDltScanner_t *dlt) {
     safuResultE_t result = SAFU_RESULT_OK;
-    dlt->shmemFd = shm_open(dlt->shmemFile, O_RDONLY, 0);
+    dlt->shmemFd = open(dlt->shmemFile, O_RDONLY | O_SYNC);
     if (dlt->shmemFd == -1) {
         result = SAFU_RESULT_FAILED;
+    } else {
+        safuLogDebugF("Opend dlt log ring buffer %s", dlt->shmemFile);
     }
     if (result == SAFU_RESULT_OK) {
         elosEbLogRingBuffer_t *head;
-        dlt->shmemData = mmap(NULL, sizeof(elosEbLogRingBuffer_t), PROT_READ, MAP_SHARED, dlt->shmemFd, 0);
+        safuLogDebugF("offset: 0x%lx", dlt->offsetAddress);
+        dlt->shmemData =
+            mmap(NULL, sizeof(elosEbLogRingBuffer_t), PROT_READ, MAP_SHARED, dlt->shmemFd, dlt->offsetAddress);
         head = dlt->shmemData;
+        dlt->shmemLogEntries = (size_t)head->entryCount;
         dlt->shmemDataSize = ((size_t)head->entryCount * sizeof(elosEbLogEntry_t)) + sizeof(elosEbLogRingBuffer_t);
-        safuLogDebugF("buffer: %lu (header) %u (entry count) * %lu (entry size) = %lu", sizeof(elosEbLogRingBuffer_t),
-                      head->entryCount, sizeof(elosEbLogEntry_t), dlt->shmemDataSize);
-        safuLogDebugF("DLT buffer \"%s\" size: %lu (%u) => %lu", dlt->shmemFile, dlt->shmemDataSize, head->entryCount,
-                      dlt->shmemDataSize);
-        dlt->shmemData = mmap(NULL, dlt->shmemDataSize, PROT_READ, MAP_SHARED, dlt->shmemFd, 0);
-        close(dlt->shmemFd);
-        for (size_t i = 0; i < NUM_BUFFER; i += 1) {
-            dlt->localData[i] = safuAllocMem(NULL, dlt->shmemDataSize);
-            safuLogDebugF("Allocating local buffer %lu with size %lu => %p", i, dlt->shmemDataSize, dlt->localData[i]);
+        dlt->idxRead = head->idxRead;
+        if (dlt->idxRead >= dlt->shmemLogEntries) {
+            safuLogErrF("Read pointer %u for dlt ring buffer outside of buffer[%lu]", dlt->idxRead,
+                        dlt->shmemLogEntries);
+            result = SAFU_RESULT_FAILED;
+        } else if (dlt->bufferSize != 0 && dlt->shmemDataSize > dlt->bufferSize) {
+            safuLogErrF("dlt log buffer size is bigger thant the shmem file (%lu/%ld)", dlt->shmemDataSize,
+                        dlt->bufferSize);
+            result = SAFU_RESULT_FAILED;
         }
+        munmap(dlt->shmemData, sizeof(elosEbLogRingBuffer_t));
+    }
+    if (result == SAFU_RESULT_OK) {
+        dlt->shmemData = mmap(NULL, dlt->shmemDataSize, PROT_READ, MAP_SHARED, dlt->shmemFd, dlt->offsetAddress);
+        close(dlt->shmemFd);
+        dlt->localBufferCopy = safuAllocMem(NULL, dlt->shmemDataSize);
+        safuLogDebug("created memory for local copy");
+        safuRingBufferParam_t rPar = {
+            .deleteEntries = true, .deleteFunc = _deleteEbLogEntry, .elements = dlt->shmemLogEntries};
+        safuRingBufferInitialize(&dlt->parserQueue, &rPar);
+        safuLogDebug("created the parser queue");
     }
     return result;
 }
@@ -93,14 +154,17 @@ void *elosDltScannerLoop(elosDltScanner_t *dlt) {
             safuLogErrErrno("pthread_setcancelstate");
             break;
         }
-        size_t idx = dlt->bufferIdx;
-        safuLogDebugF("copying %lu bytes from shmem to local buffer %lu", dlt->shmemDataSize, idx);
-        memcpy(dlt->localData[idx], dlt->shmemData, dlt->shmemDataSize);
-        uint64_t elosBufferWritten = 1;
-        dlt->bufferIdx = (idx + 1) % NUM_BUFFER;
-        ssize_t res = write(dlt->moreToRead, &elosBufferWritten, sizeof(elosBufferWritten));
-        if (res != sizeof(elosBufferWritten)) {
-            safuLogErr("failed to sync to publish thread");
+        memcpy(dlt->localBufferCopy, dlt->shmemData, dlt->shmemDataSize);
+        safuResultE_t pubRes = elosQueueNextLogEntries(dlt->localBufferCopy, &dlt->idxRead, &dlt->parserQueue);
+        if (pubRes == SAFU_RESULT_OK) {
+            uint64_t elosBufferWritten = 1;
+            ssize_t res = write(dlt->moreToRead, &elosBufferWritten, sizeof(elosBufferWritten));
+            if (res != sizeof(elosBufferWritten)) {
+                safuLogErr("failed to sync to publish thread");
+                break;
+            }
+        } else if (pubRes != SAFU_RESULT_NOT_FOUND) {
+            safuLogErr("failed to queue the next dlt entries");
             break;
         }
         s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
@@ -114,56 +178,10 @@ void *elosDltScannerLoop(elosDltScanner_t *dlt) {
     return NULL;
 }
 
-static safuResultE_t _publishDltBuffer(elosPlugin_t *plugin, size_t idx) {
-    safuResultE_t result = SAFU_RESULT_OK;
-    elosDltScanner_t *dlt = plugin->data;
-
-    elosEbLogRingBuffer_t *logBuffer = dlt->localData[idx];
-    elosEvent_t event = {0};
-    event.source.fileName = dlt->shmemFile;
-    event.source.appName = plugin->config->key;
-    char buffer[200];
-    snprintf(buffer, 200, "DLT Buffer: { .idxWrite = %u, .idxRead = %u, .entryCount = %u }", logBuffer->idxWrite,
-             logBuffer->idxRead, logBuffer->entryCount);
-    event.payload = buffer;
-    event.messageCode = 2042;
-    event.severity = ELOS_SEVERITY_DEBUG;
-    result = elosPublishAndStore(plugin, dlt->publisher, &event);
-    for (size_t i = 0; i < logBuffer->entryCount && result == SAFU_RESULT_OK; ++i) {
-        elosEbLogEntry_t *logEntry = &logBuffer->entries[i];
-        elosEventFromLogEntry(logEntry, &event);
-        result = elosPublishAndStore(plugin, dlt->publisher, &event);
-    }
-    return result;
-}
-
-static long elosPublishCounter = 0;
-
-static safuResultE_t _publishNextDltBuffer(elosPlugin_t *plugin, uint64_t behind) {
-    elosPublishCounter += 1;
-    safuResultE_t result = SAFU_RESULT_OK;
-    elosDltScanner_t *dlt = plugin->data;
-    size_t idx;
-    if (behind >= NUM_BUFFER) {
-        idx = (dlt->bufferIdx + 1) % NUM_BUFFER;
-        behind = NUM_BUFFER;
-    } else {
-        idx = (dlt->bufferIdx + NUM_BUFFER - behind) % NUM_BUFFER;
-    }
-    for (size_t i = 0; i < behind; i += 1) {
-        safuLogDebugF("publishing (%ld)", elosPublishCounter);
-        safuResultE_t res = _publishDltBuffer(plugin, idx);
-        if (res != SAFU_RESULT_OK) {
-            result = res;
-        }
-        idx = (idx + 1) % NUM_BUFFER;
-    }
-    return result;
-}
-
 safuResultE_t elosDltPublisherLoop(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosDltScanner_t *dlt = plugin->data;
+
     struct pollfd fds[] = {
         {.fd = dlt->moreToRead, .events = POLLIN},
         {.fd = dlt->stopCmd, .events = POLLIN},
@@ -182,9 +200,9 @@ safuResultE_t elosDltPublisherLoop(elosPlugin_t *plugin) {
                     result = SAFU_RESULT_FAILED;
                     break;
                 }
-                _publishNextDltBuffer(plugin, elosBufferWritten);
+                elosPublishEntriesFromQueue(&dlt->parserQueue, plugin, dlt->publisher);
             } else if (fds[1].revents & POLLIN) {
-                safuLogDebug("received Stop Command");
+                safuLogDebug("got Stop Command");
                 running = false;
                 break;
             } else {
@@ -231,10 +249,9 @@ safuResultE_t elosDltScannerFree(elosPlugin_t *plugin) {
     munmap(dlt->shmemData, dlt->shmemDataSize);
     close(dlt->moreToRead);
     close(dlt->stopCmd);
-    for (size_t i = 0; i < NUM_BUFFER; i += 1) {
-        free(dlt->localData[i]);
-        dlt->localData[i] = NULL;
-    }
+    free(dlt->localBufferCopy);
+    safuRingBufferDeleteMembers(&dlt->parserQueue);
+    dlt->localBufferCopy = NULL;
     result = elosPluginDeletePublisher(plugin, dlt->publisher);
 
     return result;

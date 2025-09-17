@@ -92,4 +92,9 @@ export LOG4C_RCPATH="${SYSCONF_DIR}/elos/elos_log4c_demo"
 # other then empty to activate the tests.
 export SMOKETEST_ENABLE_COMPILE_TESTS="${SMOKETEST_ENABLE_COMPILE_TESTS-""}"
 
-export elso_Scanner_Plugins_DLT_HV_Config_DeviceFile="test_dlt_shmem"
+export elos_Scanner_Plugins_DltHv_Config_DeviceFile="${elso_Scanner_Plugins_DltHv_Config_DeviceFile:-"/dev/shm/test_dlt_shmem"}"
+export elos_Scanner_Plugins_DltHv_Config_OffsetAddress="${elso_Scanner_Plugins_DltHv_Config_OffsetAddress:-0x1000}" # page size
+export elos_Scanner_Plugins_DltHv_Config_BufferSize="${elso_Scanner_Plugins_DltHv_Config_BufferSize:-1448}" # size of 10 entries
+
+
+

@@ -4,6 +4,7 @@ find_package(samconf 0.56.3 REQUIRED)
 add_library(
   scanner_dlt_hv SHARED
   private/dlt_hv.c
+  private/shmem_ring_buffer.c
   private/utils.c
   private/dlt_scanner.c
 )
@@ -31,6 +32,7 @@ target_include_directories(
   scanner_dlt_hv
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/public/
 )
 
 if (INSTALL_ELOS_PLUGINS)

@@ -7,8 +7,8 @@
 #include <safu/result.h>
 #include <stdlib.h>
 
+#include "dlt_hv/dlt_scanner.h"
 #include "dlt_hv/scanner.h"
-#include "dlt_scanner.h"
 
 static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_FAILED;
@@ -28,7 +28,6 @@ static safuResultE_t _pluginLoad(elosPlugin_t *plugin) {
             }
         }
     }
-
     return result;
 }
 
@@ -76,7 +75,6 @@ static safuResultE_t _pluginStart(elosPlugin_t *plugin) {
             }
         }
     }
-
     return result;
 }
 
@@ -101,7 +99,6 @@ static safuResultE_t _pluginStop(elosPlugin_t *plugin) {
             result = res;
         }
     }
-
     return result;
 }
 
@@ -114,8 +111,8 @@ static safuResultE_t _pluginUnload(elosPlugin_t *plugin) {
         safuLogDebugF("Unloading Scanner DLT Plugin '%s'", plugin->config->key);
         result = elosDltScannerFree(plugin);
         free(plugin->data);
+        plugin->data = NULL;
     }
-
     return result;
 }
 
