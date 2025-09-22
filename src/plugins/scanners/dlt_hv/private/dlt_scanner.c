@@ -22,6 +22,7 @@
 #include "dlt_hv/shmem_ring_buffer.h"
 #include "dlt_hv/types.h"
 #include "dlt_hv/utils.h"
+#include "elos/libelosdlt/dltmapper.h"
 
 static struct timespec _hzToTime(int32_t hz) {
     struct timespec ts = {0};
@@ -83,6 +84,13 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
 
                     plugin->data = dlt;
                 }
+            }
+            if (result == SAFU_RESULT_OK) {
+                const char *hardwareId =
+                    samconfConfigGetStringOr(plugin->config, "Config/HardwareId", safuGetHardwareId());
+                pid_t dltPid = samconfConfigGetInt32Or(plugin->config, "Config/Pid", 0);
+                const char *dltAppId = samconfConfigGetStringOr(plugin->config, "Config/AppId", plugin->config->key);
+                result = elosDltMapperInit(&dlt->mapper, dlt->shmemFile, (char *)dltAppId, (char *)hardwareId, dltPid);
             }
         }
     }
@@ -250,8 +258,9 @@ safuResultE_t elosDltScannerFree(elosPlugin_t *plugin) {
     close(dlt->moreToRead);
     close(dlt->stopCmd);
     free(dlt->localBufferCopy);
-    safuRingBufferDeleteMembers(&dlt->parserQueue);
     dlt->localBufferCopy = NULL;
+    elosDltMapperDeleteMembers(&dlt->mapper);
+    safuRingBufferDeleteMembers(&dlt->parserQueue);
     result = elosPluginDeletePublisher(plugin, dlt->publisher);
 
     return result;
