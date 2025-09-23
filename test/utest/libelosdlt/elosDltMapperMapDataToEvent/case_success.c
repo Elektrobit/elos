@@ -16,7 +16,6 @@ int elosTestElosDltMapperMapDataToEventSuccessTeardown(UNUSED void **state) {
 
 void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
     safuResultE_t result;
-    elosEvent_t testEvent = {0};
     unsigned char testpayload[] = "testpayload";
 
     elosDltMapper_t testMapper = {.fileName = "testFile",
@@ -40,7 +39,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
         testDltData[] =
             {
                 {.stdHeader = {.headerType = {.wtms = true}, .timestamp = 1},
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.wtms = false}},
                  .storageHeader =
@@ -48,7 +47,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .seconds = 1,
                          .microseconds = 1,
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -60,7 +59,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -72,7 +71,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -84,7 +83,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -96,7 +95,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -108,7 +107,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -120,7 +119,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -132,7 +131,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -144,7 +143,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .wtms = true}, .timestamp = 1},
                  .extHeader =
@@ -156,7 +155,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .applicationId = {'A', 'P', 'P'},
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
                 {.stdHeader = {.headerType = {.ueh = true, .weid = true, .wtms = true},
                                .ecuID = {'C', '0', '0', '2'},
@@ -169,7 +168,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
                          .noOfArguments = 0,
                          .contextId = {'C', 'O', 'N'},
                      },
-                 .payload = {.data = testpayload},
+                 .payload = {.data = testpayload, .size = 11},
                  .dltDataSize = {.dataSize = 11}},
             };
 
@@ -266,6 +265,7 @@ void elosTestElosDltMapperMapDataToEventSuccess(UNUSED void **state) {
 
     for (size_t i = 0; i < ARRAY_SIZE(testDltData); i++) {
         PARAM("%s", testParam[i]);
+        elosEvent_t testEvent = {0};
 
         result = elosDltMapperMapDataToEvent(&testMapper, &testDltData[i], &testEvent);
         assert_int_equal(result, SAFU_RESULT_OK);

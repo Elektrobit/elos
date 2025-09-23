@@ -198,12 +198,12 @@ static safuResultE_t _mapAppIdToEvent(elosDltMapper_t *mapper, elosDltData_t *dl
 
     if (dltData->stdHeader.headerType.ueh) {
         if (!_isIdEmpty(dltData->extHeader.applicationId)) {
-            event->source.appName = safuAllocMem(NULL, dltData->dltDataSize.dataSize + 1);
+            event->source.appName = safuAllocMem(NULL, 5);
             if (event->source.appName == NULL) {
                 safuLogErr("allocation failed");
             } else {
-                memcpy(event->source.appName, dltData->extHeader.applicationId, dltData->dltDataSize.dataSize);
-                event->source.appName[dltData->dltDataSize.dataSize] = '\0';
+                memcpy(event->source.appName, dltData->extHeader.applicationId, 4);
+                event->source.appName[4] = '\0';
                 result = SAFU_RESULT_OK;
             }
         } else if (dltData->stdHeader.headerType.weid && (!_isIdEmpty(dltData->stdHeader.ecuID))) {
@@ -255,15 +255,15 @@ safuResultE_t _mapPayloadToEvent(elosDltData_t *dltData, elosEvent_t *event, boo
 
     if (*isControlPayload) {
         size_t psize = 0;
-        result = safuBase64Encode(dltData->payload.data, dltData->dltDataSize.dataSize, &event->payload, &psize);
+        result = safuBase64Encode(dltData->payload.data, dltData->payload.size, &event->payload, &psize);
         if (result == SAFU_RESULT_FAILED || psize == 0) {
             safuLogWarnF("Base64 Encoding of : %s Failed\n", dltData->payload.data);
         }
     } else {
-        event->payload = safuAllocMem(NULL, dltData->dltDataSize.dataSize + 1);
+        event->payload = safuAllocMem(NULL, dltData->payload.size + 1);
         if (event->payload != NULL) {
-            memcpy(event->payload, dltData->payload.data, dltData->dltDataSize.dataSize);
-            event->payload[dltData->dltDataSize.dataSize] = '\0';
+            memcpy(event->payload, dltData->payload.data, dltData->payload.size);
+            event->payload[dltData->payload.size] = '\0';
             result = SAFU_RESULT_OK;
         } else {
             safuLogWarn("alloc error, payload setting failed");
