@@ -128,10 +128,10 @@ safuResultE_t elosEventFromLogEntry(elosDltMapper_t *mapper, elosEbLogEntry_t *e
         }
         if (result != SAFU_RESULT_OK) {
             event->date.tv_sec = entry->creationTime;
-            event->source.appName = strdup(mapper->appId);
-            event->source.fileName = strdup(mapper->fileName);
+            event->source.appName = mapper->appId != NULL ? strdup(mapper->appId) : NULL;
+            event->source.fileName = mapper->fileName != NULL ? strdup(mapper->fileName) : NULL;
             event->source.pid = mapper->pid;
-            event->hardwareid = strdup(mapper->hardwareid);
+            event->hardwareid = mapper->hardwareid != NULL ? strdup(mapper->hardwareid) : NULL;
             event->messageCode = ELOS_MSG_CODE_FORWARDED_LOG;
             event->classification = ELOS_CLASSIFICATION_IPC | ELOS_CLASSIFICATION_LOG;
             _shmemBufferToStr(&event->payload, (uint8_t *)entry->logString);

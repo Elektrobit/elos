@@ -13,6 +13,7 @@
 #include "dlt_hv/scanner.h"
 #include "dlt_hv/types.h"
 #include "elos/event/event.h"
+#include "elos/libelosdlt/dltmapper.h"
 #include "elosPublishEntriesFromQueue_utets.h"
 
 TEST_SUITE_FUNC_PROTOTYPES(elosPublishEntriesFromQueueUtest)
@@ -51,7 +52,9 @@ int elosPublishEntriesFromQueueUtestSetup(void **state) {
     testData->plugin = malloc(sizeof(elosPlugin_t));
     testData->plugin->store = elosTestStoreEvent;
     testData->plugin->publish = elosTestPublishEvent;
-    testData->plugin->data = malloc(sizeof(elosDltScanner_t));
+    elosDltScanner_t *dlt = malloc(sizeof(elosDltScanner_t));
+    elosDltMapperInit(&dlt->mapper, "DLT_FILE", "DLT-APP-ID", "DLT-HARDWARE-ID", 0);
+    testData->plugin->data = dlt;
     const char *jstr =
         "{"
         "	\"File\": \"scanner_dlt_hv.so\","
@@ -76,11 +79,11 @@ int elosPublishEntriesFromQueueUtestTeardown(void **state) {
 
     safuRingBufferDelete(&testData->readQueue);
     testData->readQueue = NULL;
-    free(testData->plugin->data);
-    testData->plugin->data = NULL;
+    elosDltScanner_t *dlt = testData->plugin->data;
+    elosDltMapperDeleteMembers(&dlt->mapper);
+    free(dlt);
     samconfConfigDelete((samconfConfig_t *)testData->plugin->config);
     free(testData->plugin);
-    testData->plugin = NULL;
     free(testData);
     testData = NULL;
     return 0;
