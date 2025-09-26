@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include "dlt_hv/types.h"
+#include "elos/libelosdlt/dltmapper_types.h"
 
 #define ELOS_DLT_MESSAGE_CODE   2042
 #define ELOS_DLT_SCAN_FREQUENCY 2277
@@ -43,6 +44,7 @@ typedef struct elosDltScanner {
     uint16_t idxRead;
     safuRingBuffer_t parserQueue;
     size_t shmemDataSize;
+    elosDltMapper_t mapper;
     struct elosPublisher *publisher;
     pthread_t scannerThread;
     int stopCmd;

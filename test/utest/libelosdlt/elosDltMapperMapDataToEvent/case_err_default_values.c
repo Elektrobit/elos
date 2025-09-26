@@ -19,8 +19,8 @@ void elosTestElosDltMapperMapDataToEventErrorDefaultValues(UNUSED void **state) 
     safuResultE_t result;
     unsigned char testpayload[] = "testpayload";
     elosDltData_t testDltData = {.stdHeader = {.headerType = {.wtms = true}, .timestamp = 1},
-                                 .payload = {.data = testpayload},
-                                 .dltDataSize = {.dataSize = 11}};
+                                 .payload = {.data = testpayload, .size = 11},
+                                 .dltDataSize = {.dataSize = 23}};
     elosDltMapper_t testMapper = {.fileName = "testFile",
                                   .appId = "testApp",
                                   .hardwareid = "testhwid",

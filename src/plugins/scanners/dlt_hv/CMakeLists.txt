@@ -25,6 +25,7 @@ target_link_libraries(
     scanner_dlt_hv_interface
     elos_common_interface
     libelosplugin
+    libelosdlt
     samconf::samconf
 )
 

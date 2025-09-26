@@ -56,16 +56,11 @@ safuResultE_t elosPublishEntriesFromQueue(safuRingBuffer_t *readQueue, elosPlugi
         elosEbLogEntry_t **entry = safuVecGet(&elemVec, i);
         elosEvent_t event = {0};
 
-        event.source.fileName = dlt->shmemFile;
-        event.source.appName = plugin->config->key;
-        event.messageCode = ELOS_DLT_MESSAGE_CODE;
-        event.severity = ELOS_SEVERITY_DEBUG;
-        elosEventFromLogEntry(*entry, &event);
+        elosEventFromLogEntry(&dlt->mapper, *entry, &event);
         elosPublishAndStore(plugin, publisher, &event);
 
         readQueue->callback.deleteFunc((void *)*entry);
-        free(event.payload);
-        event.payload = NULL;
+        elosEventDeleteMembers(&event);
     }
     safuVecFree(&elemVec);
     return result;

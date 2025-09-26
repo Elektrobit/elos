@@ -389,3 +389,19 @@ safuResultE_t elosDltReadData(unsigned char *dltBuffer, size_t dltBufferSize, el
 
     return result;
 }
+
+safuResultE_t elosDltDataDeleteMembers(elosDltData_t *dltData) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    if (dltData != NULL) {
+        free(dltData->payload.data);
+        dltData->payload.data = NULL;
+        result = SAFU_RESULT_OK;
+    }
+    return result;
+}
+
+safuResultE_t elosDltDataDelete(elosDltData_t *dltData) {
+    safuResultE_t result = elosDltDataDeleteMembers(dltData);
+    free(dltData);
+    return result;
+}

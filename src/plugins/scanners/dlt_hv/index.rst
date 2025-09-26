@@ -20,7 +20,10 @@ Under `root/elos/Scanner/Plugins` add:
          "DeviceFile": "/dev/shm/test_dlt_shmem",
          "OffsetAddress": "0x1000",
          "BufferSize": 1448,
-         "ScanFrequency": 2277
+         "ScanFrequency": 2277,
+         "HardwareId": "The machine publishing DLT",
+         "Pid": 3,
+         "AppId": "The DLT aplication"
       }
    }
 
@@ -35,6 +38,10 @@ Under `root/elos/Scanner/Plugins` add:
   Can be a string encoding the size or a number.
 - ``ScanFrequency``: The Frequency (in hz) with wich the scanner should wake up and check for new log entries.
   Default is 2277 hz
+- ``HardwareId``: An identifier for the machine publishing the DLT events. Default is the content of "/etc/machine-id".
+- ``Pid``: The pid of the proccess publishing the DLT events. Default is 0 wich disables it.
+- ``AppId``: An identifier for the proccess publishing the DLT events.
+   Default is the <DltHvScanner Instance name>.
 
 
 Configuration structure
@@ -48,5 +55,8 @@ Configuration structure
    └── Config
        ├── DeviceFile
        ├── OffsetAddress
-       └── BufferSize
+       ├── BufferSize
+       ├── HardwareId
+       ├── Pid
+       └── AppId
 

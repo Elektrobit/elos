@@ -20,6 +20,8 @@ typedef struct {
     bool showUsage;
     bool dumpBuffer;
     bool unlinkBuffer;
+    bool testDltLog;
+    bool empty;
     size_t bufferCount;
     size_t bufferSize;
     off_t offset;
@@ -35,7 +37,9 @@ void _printUsage(FILE *stream, const char *const elosProgramName) {
             "Usage: %s [OPTION]...\n"
             "  -d         dump the buffer\n"
             "  -c <SIZE>  create a buffer with SIZE entries\n"
+            "  -e         create the buffer as empty (readIdx = writeIdx)\n"
             "  -i <MSG>   insert a message into the buffer\n"
+            "  -t         insert a predefined \"real\" dlt message into the buffer\n"
             "  -o <OFF>   the offset address the file\n"
             "  -s <SIZE>  the size of the memory reagion\n"
             "  -u         unlink the buffer\n"
@@ -51,6 +55,8 @@ int elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
     config->showUsage = false;
     config->dumpBuffer = false;
     config->unlinkBuffer = false;
+    config->testDltLog = false;
+    config->empty = false;
     config->shmemFile = NULL;
     config->bufferCount = 0;
     config->bufferSize = 0;
@@ -59,7 +65,7 @@ int elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
     config->insertMessage = NULL;
 
     while (true) {
-        c = getopt(argc, argv, "dc:i:o:s:uf:h");
+        c = getopt(argc, argv, "dc:ei:to:s:uf:h");
         if (c == -1) {
             break;
         }
@@ -70,23 +76,21 @@ int elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
             case 'c':
                 config->bufferCount = strtoul(optarg, NULL, 10);
                 break;
+            case 'e':
+                config->empty = true;
+                break;
             case 'i':
                 free(config->insertMessage);
                 config->insertMessage = strdup(optarg);
                 break;
+            case 't':
+                config->testDltLog = true;
+                break;
             case 'o':
-                if (strncmp("0x", optarg, 2) == 0 || strncmp("-0x", optarg, 3) == 0) {
-                    config->offset = strtoul(optarg, NULL, 16);
-                } else {
-                    config->offset = strtoul(optarg, NULL, 10);
-                }
+                config->offset = strtoul(optarg, NULL, 0);
                 break;
             case 's':
-                if (strncmp("0x", optarg, 2) == 0 || strncmp("-0x", optarg, 3) == 0) {
-                    config->bufferSize = strtoul(optarg, NULL, 16);
-                } else {
-                    config->bufferSize = strtoul(optarg, NULL, 10);
-                }
+                config->bufferSize = strtoul(optarg, NULL, 0);
                 break;
             case 'u':
                 config->unlinkBuffer = true;
@@ -127,7 +131,7 @@ void _insertEntry(elosEbLogEntry_t *entry, struct timespec *ts, uint8_t id, elos
     memcpy(entry->logString, message, ELOS_EB_LOG_STRING_SIZE);
 }
 
-int _createShmemBuffer(char *shmemFileName, off_t offset, size_t size, size_t bufferCount) {
+int _createShmemBuffer(char *shmemFileName, off_t offset, size_t size, size_t bufferCount, bool empty) {
     int result = 0;
     size_t headerBytes = sizeof(elosEbLogRingBuffer_t);
     size_t bufferBytes = sizeof(elosEbLogEntry_t) * bufferCount;
@@ -162,8 +166,8 @@ int _createShmemBuffer(char *shmemFileName, off_t offset, size_t size, size_t bu
             elosEbLogRingBuffer_t *buffer = shmp;
             buffer->entryCount = bufferCount;
             buffer->pad = 0xffff;
-            buffer->idxRead = 2;
-            buffer->idxWrite = bufferCount - 1;
+            buffer->idxRead = 2 % bufferCount;
+            buffer->idxWrite = empty ? buffer->idxRead : bufferCount - 1;
 
             for (size_t i = 0; i < bufferCount; ++i) {
                 struct timespec ts;
@@ -216,6 +220,67 @@ int _insertIntoShmemBuffer(const char *shmemFile, off_t offset, size_t size, con
 #pragma GCC diagnostic pop
         elementBuffer[ELOS_EB_LOG_STRING_SIZE - 1] = 3;  // end of text
         _insertEntry(&buffer->entries[buffer->idxWrite], &ts, 0x16, 0x06, (uint8_t *)elementBuffer);
+        buffer->idxWrite = (buffer->idxWrite + 1) % buffer->entryCount;
+        munmap(shmp, shmemDataSize);
+    }
+    return result;
+}
+
+int _testDataInsert(const char *shmemFile, off_t offset, size_t size) {
+    int result = 0;
+    int oflag = O_RDWR;
+    int shmemFd = open(shmemFile, oflag, 0);
+    if (shmemFd < 0) {
+        fprintf(stderr, "failed to open shared memory file %s for reading\n", shmemFile);
+        result = 4;
+    } else {
+        size_t headerBytes = sizeof(elosEbLogRingBuffer_t);
+        void *shmp = mmap(NULL, headerBytes, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
+        elosEbLogRingBuffer_t *buffer = shmp;
+        size_t bufferSize = buffer->entryCount;
+        size_t bufferBytes = sizeof(elosEbLogEntry_t) * bufferSize;
+        size_t shmemDataSize = headerBytes + bufferBytes;
+        if (size != 0 && shmemDataSize > size) {
+            fprintf(stderr, "the speified size of %lu is smaller then the buffer (%lu) found\n", size, shmemDataSize);
+        }
+        munmap(shmp, headerBytes);
+        shmp = mmap(NULL, shmemDataSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
+        close(shmemFd);
+        buffer = shmp;
+
+        struct timespec ts;
+        timespec_get(&ts, TIME_UTC);
+
+        // clang-format off
+        unsigned char testBuffer[] = {
+            0x44, 0x4c, 0x54, 0x01, 0x9f, 0xf1, 0xec, 0x67, 0xb8, 0x2e, 0x04, 0x00, 0x45, 0x43, 0x55, 0x00, // storageHeader
+            // stdHeader
+            0x3e, // version and flags
+            0x01, // message counter
+            0x00, 0x70, // length
+            0x43, 0x30, 0x30, 0x32, // ECU ID
+            0x00, 0x00, 0x00, 0x5a, // Session ID
+            0x3b, 0xaa, 0x06, 0xb5, // Timestamp
+            // payload
+            0xa0, 0x03, 0xbf, 0xA1, // payload message ID
+            0x5b, 0x4c, 0x4f, 0x47, 0x5d, 0x20, 0x41, 0x20, 0x73, 0x69,
+            0x6d, 0x70, 0x6c, 0x65, 0x20, 0x44, 0x4c, 0x54, 0x20, 0x6c,
+            0x6f, 0x67, 0x20, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+            0x20, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x20, 0x74,
+            0x68, 0x61, 0x74, 0x27, 0x73, 0x20, 0x65, 0x78, 0x61, 0x63,
+            0x74, 0x6c, 0x79, 0x20, 0x39, 0x32, 0x20, 0x62, 0x79, 0x74,
+            0x65, 0x73, 0x20, 0x6c, 0x6f, 0x6e, 0x67, 0x20, 0x62, 0x65,
+            0x63, 0x61, 0x75, 0x73, 0x65, 0x20, 0x74, 0x68, 0x61, 0x74,
+            0x27, 0x73, 0x20, 0x77, 0x68, 0x61, 0x74, 0x20, 0x66, 0x69,
+            0x74, 0x73, 0x0a,
+        };
+        // clang-format on
+        printf("TestBuffer: \"");
+        for (size_t i = 0; i < ELOS_EB_LOG_STRING_SIZE; i++) {
+            printf("%c", testBuffer[i]);
+        }
+        printf("\"\n");
+        _insertEntry(&buffer->entries[buffer->idxWrite], &ts, 0x16, 0x06, (uint8_t *)testBuffer);
         buffer->idxWrite = (buffer->idxWrite + 1) % buffer->entryCount;
         munmap(shmp, shmemDataSize);
     }
@@ -344,10 +409,13 @@ int main(int argc, char *argv[]) {
         res = 1;
     }
     if (config.bufferCount > 0 && res == 0) {
-        res = _createShmemBuffer(config.shmemFile, config.offset, config.bufferSize, config.bufferCount);
+        res = _createShmemBuffer(config.shmemFile, config.offset, config.bufferSize, config.bufferCount, config.empty);
     }
     if (config.insertMessage != NULL && res == 0) {
         res = _insertIntoShmemBuffer(config.shmemFile, config.offset, config.bufferSize, config.insertMessage);
+    }
+    if (config.testDltLog == true && res == 0) {
+        res = _testDataInsert(config.shmemFile, config.offset, config.bufferSize);
     }
     if (config.dumpBuffer && res == 0) {
         printf("# dump Config\n");

@@ -13,6 +13,12 @@
 #include <time.h>
 
 #include "dlt_hv/types.h"
+#include "elos/event/event_classification.h"
+#include "elos/event/event_message_codes.h"
+#include "elos/libelosdlt/dltmapper.h"
+#include "elos/libelosdlt/dltresult.h"
+#include "elos/libelosdlt/libelosdlt.h"
+#include "elos/libelosdlt/types.h"
 
 samconfConfigStatusE_t elosConfigGetGenericInt64(const samconfConfig_t *root, const char *path, int64_t *result) {
     const samconfConfig_t *node = NULL;
@@ -101,16 +107,38 @@ static void _shmemBufferToStr(char **res, const uint8_t *buffer) {
     *res = buf;
 }
 
-safuResultE_t elosEventFromLogEntry(elosEbLogEntry_t *entry, elosEvent_t *event) {
-    safuResultE_t result = SAFU_RESULT_OK;
-    if (entry == NULL || event == NULL) {
+safuResultE_t elosEventFromLogEntry(elosDltMapper_t *mapper, elosEbLogEntry_t *entry, elosEvent_t *event) {
+    safuResultE_t result = SAFU_RESULT_NOT_FOUND;
+    if (entry == NULL || event == NULL || mapper == NULL) {
         result = SAFU_RESULT_FAILED;
     } else {
-        // NOTE:  parse entry if possible
-        event->date.tv_sec = entry->creationTime;
-        _shmemBufferToStr(&event->payload, (uint8_t *)entry->logString);
-        event->severity = _logLevelTranslate(entry->logLevel);
-        safuLogDebugF("Payload: %s", event->payload);
+        if (result != SAFU_RESULT_OK) {
+            elosDltParseResultE_t parResult = ELOS_DLT_RESULT_OK;
+            elosDltData_t dltData = {0};
+            result = elosDltReadData((unsigned char *)entry->logString, ELOS_EB_LOG_STRING_SIZE, &parResult, &dltData);
+            if (result == SAFU_RESULT_OK) {
+                result = elosDltMapperMapDataToEvent(mapper, &dltData, event);
+                if (result != SAFU_RESULT_OK) {
+                    safuLogDebug("could not map the dlt data");
+                }
+            } else {
+                safuLogDebug("could not read the dlt data");
+            }
+            elosDltDataDeleteMembers(&dltData);
+        }
+        if (result != SAFU_RESULT_OK) {
+            event->date.tv_sec = entry->creationTime;
+            event->source.appName = mapper->appId != NULL ? strdup(mapper->appId) : NULL;
+            event->source.fileName = mapper->fileName != NULL ? strdup(mapper->fileName) : NULL;
+            event->source.pid = mapper->pid;
+            event->hardwareid = mapper->hardwareid != NULL ? strdup(mapper->hardwareid) : NULL;
+            event->messageCode = ELOS_MSG_CODE_FORWARDED_LOG;
+            event->classification = ELOS_CLASSIFICATION_IPC | ELOS_CLASSIFICATION_LOG;
+            _shmemBufferToStr(&event->payload, (uint8_t *)entry->logString);
+            event->severity = _logLevelTranslate(entry->logLevel);
+            safuLogDebugF("Payload: %s", event->payload);
+            result = SAFU_RESULT_OK;
+        }
     }
     return result;
 }
