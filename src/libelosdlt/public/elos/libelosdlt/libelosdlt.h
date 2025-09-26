@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <safu/result.h>
-
-#include "elos/libelosdlt/types.h"
+#include "elos/libelosdlt/extheader.h"
+#include "elos/libelosdlt/payload.h"
+#include "elos/libelosdlt/stdheader.h"
+#include "elos/libelosdlt/storageheader.h"
 
 __BEGIN_DECLS
 
 /*******************************************************************
  * Connect to DLT daemon using connection info defined in `param`.
- * Lookup order is :
+ * Lookup order is:
  * 1. param.pipePath
  * 2. param.socketPath
  * 3. param.connectionString
@@ -25,6 +26,7 @@ __BEGIN_DECLS
  *      - `SAFU_RESULT_FAILED` on failure
  ******************************************************************/
 safuResultE_t elosDltConnect(elosDltConnection_t *dlt, elosDltConnectionParam_t *param);
+
 /*******************************************************************
  * Connect to DLT daemon, the `elosDltConnection_t` must have set `port` and
  * `host`.
@@ -136,4 +138,23 @@ safuResultE_t elosDltSendUserLog(elosDltConnection_t *dlt, char *payload);
  ******************************************************************/
 safuResultE_t elosDltSendControlMessage(elosDltConnection_t *dlt, const char *payload, size_t payloadLength);
 
+/*******************************************************************
+ * Read dlt buffer and unpack its contents into dltData.
+ *
+ * Parameters:
+ *       dltBuffer: a buffer containing dlt data as bytes
+ *       dltBufferSize: size of dltBuffer.
+ *       parResult: result got from dlt header parsing.
+ *       dltData: dlt struct into which the buffer data is parsed
+ *
+ * Returns:
+ *      - `ELOS_DLT_RESULT_OK` as parResult on success
+ *      - `ELOS_DLT_INCOMPLETE_HDR` as parResult on failure with dltBufferSize < Min. dltHeader size
+ *      - `ELOS_DLT_INCOMPLETE_MSG` as parResult on failure with dltBufferSize < dltMessage Length
+ *      - `ELOS_DLT_INVALID_MSG` as parResult on failure with not DLT magic bytes
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` on failure
+ ******************************************************************/
+safuResultE_t elosDltReadData(unsigned char *dltBuffer, size_t dltBufferSize, elosDltParseResultE_t *parResult,
+                              elosDltData_t *dltData);
 __END_DECLS

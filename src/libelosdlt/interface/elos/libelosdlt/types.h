@@ -1,9 +1,23 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <safu/common.h>
+#include <safu/log.h>
+#include <safu/result.h>
+#include <safu/types.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/cdefs.h>
 #include <time.h>
+
+#include "elos/libelosdlt/dltresult.h"
+#include "elos/libelosdlt/extheader_types.h"
+#include "elos/libelosdlt/payload_types.h"
+#include "elos/libelosdlt/stdheader_types.h"
+#include "elos/libelosdlt/storageheader_types.h"
 
 #define DLT_ID_SIZE 4
 
@@ -47,6 +61,44 @@ typedef struct elosDltMessage {
     char appId[DLT_ID_SIZE];
     char contextId[DLT_ID_SIZE];
 } __attribute__((aligned(1), packed)) elosDltMessage_t;
+
+/*******************************************************************
+ * Size of a dlt data packet.
+ *
+ * Note : dltDataSize is the sum of all header sizes plus the payload size
+ *
+ * Members:
+ *     storageHeaderSize :  dlt Data's storageHeader size
+ *     standardHeaderSize: dlt Data's stdHeader size
+ *     extHeaderSize: dlt Data's extHeader size
+ *     payloadSize:  dlt Data's payload size
+ *     dataSize:  dlt Data's size
+ ******************************************************************/
+typedef struct elosDltDataSize {
+    size_t storageHeaderSize;
+    size_t standardHeaderSize;
+    size_t extHeaderSize;
+    size_t payloadSize;
+    size_t dataSize;
+} elosDltDataSize_t;
+
+/*******************************************************************
+ * Typical dlt data packet.
+ *
+ * Members:
+ *     storageHeader : header data when using non-verbose data
+ *     stdHeader: metadata describing the dltData
+ *     extHeader: optional metadata about dltData payload
+ *     payload: dltData message
+ *     dltDataSize: struct containing dltData and corresponding header sizes
+ ******************************************************************/
+typedef struct elosDltData {
+    elosDltStorageHeader_t storageHeader;
+    elosDltStdHeader_t stdHeader;
+    elosDltExtHeader_t extHeader;
+    elosDltPayload_t payload;
+    elosDltDataSize_t dltDataSize;
+} elosDltData_t;
 
 /*******************************************************************
  * Types of DLT user messages currently supported.
