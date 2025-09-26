@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <fcntl.h> /* For O_* constants */
+#include <libgen.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,21 +14,34 @@
 
 #include "dlt_hv/types.h"
 
-#define SHMEM_FILE_NAME "dlt_shmem_demo"
+#define SHMEM_FILE_NAME "/dev/shm/dlt_shmem_demo"
 
 typedef struct {
     bool showUsage;
     bool dumpBuffer;
     bool unlinkBuffer;
+    bool testDltLog;
+    bool empty;
     size_t bufferCount;
+    size_t bufferSize;
+    off_t offset;
+    char *insertMessage;
     char *shmemFile;
 } elosConfig_t;
 
 void _printUsage(FILE *stream, const char *const elosProgramName) {
     fprintf(stream,
+            "a simple tool to view and manipulate the DLT ring buffer\n"
+            "mainly intended for testing\n"
+            "\n"
             "Usage: %s [OPTION]...\n"
             "  -d         dump the buffer\n"
             "  -c <SIZE>  create a buffer with SIZE entries\n"
+            "  -e         create the buffer as empty (readIdx = writeIdx)\n"
+            "  -i <MSG>   insert a message into the buffer\n"
+            "  -t         insert a predefined \"real\" dlt message into the buffer\n"
+            "  -o <OFF>   the offset address the file\n"
+            "  -s <SIZE>  the size of the memory reagion\n"
             "  -u         unlink the buffer\n"
             "  -f <FILE>  shared memory file name\n"
             "  -h         print this help\n",
@@ -41,12 +55,17 @@ int elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
     config->showUsage = false;
     config->dumpBuffer = false;
     config->unlinkBuffer = false;
+    config->testDltLog = false;
+    config->empty = false;
     config->shmemFile = NULL;
     config->bufferCount = 0;
+    config->bufferSize = 0;
+    config->offset = 0;
     config->shmemFile = strdup(SHMEM_FILE_NAME);
+    config->insertMessage = NULL;
 
     while (true) {
-        c = getopt(argc, argv, "dc:uf:h");
+        c = getopt(argc, argv, "dc:ei:to:s:uf:h");
         if (c == -1) {
             break;
         }
@@ -56,6 +75,22 @@ int elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
                 break;
             case 'c':
                 config->bufferCount = strtoul(optarg, NULL, 10);
+                break;
+            case 'e':
+                config->empty = true;
+                break;
+            case 'i':
+                free(config->insertMessage);
+                config->insertMessage = strdup(optarg);
+                break;
+            case 't':
+                config->testDltLog = true;
+                break;
+            case 'o':
+                config->offset = strtoul(optarg, NULL, 0);
+                break;
+            case 's':
+                config->bufferSize = strtoul(optarg, NULL, 0);
                 break;
             case 'u':
                 config->unlinkBuffer = true;
@@ -79,58 +114,176 @@ int elosInitConfig(int argc, char *argv[], elosConfig_t *config) {
 
 void elosDeleteConfig(elosConfig_t *config) {
     free(config->shmemFile);
+    free(config->insertMessage);
 }
 
-int _createShmemBuffer(size_t bufferSize, const char *shmemFileName) {
+void _insertEntry(elosEbLogEntry_t *entry, struct timespec *ts, uint8_t id, elosDltLogLevelE_t level,
+                  const uint8_t message[ELOS_EB_LOG_STRING_SIZE]) {
+    entry->creationTime = ts->tv_sec;
+    entry->producerId = id;
+    entry->logLevel = level;
+    entry->pad[0] = 'P';
+    entry->pad[1] = 'A';
+    entry->pad[2] = 'D';
+    entry->pad[3] = 'I';
+    entry->pad[4] = 'N';
+    entry->pad[5] = 'G';
+    memcpy(entry->logString, message, ELOS_EB_LOG_STRING_SIZE);
+}
+
+int _createShmemBuffer(char *shmemFileName, off_t offset, size_t size, size_t bufferCount, bool empty) {
     int result = 0;
     size_t headerBytes = sizeof(elosEbLogRingBuffer_t);
-    size_t bufferBytes = sizeof(elosEbLogEntry_t) * bufferSize;
+    size_t bufferBytes = sizeof(elosEbLogEntry_t) * bufferCount;
     size_t shmemDataSize = headerBytes + bufferBytes;
+    if (size != 0 && shmemDataSize > size) {
+        fprintf(stderr, "Size %lu is to small to fit a buffer of %lu elements\n", size, bufferCount);
+        return 1;
+    }
+    if (size != shmemDataSize) {
+        printf("Size will be %lu\n", shmemDataSize);
+    }
+
+    if (strncmp("/dev/shm/", shmemFileName, strlen("/dev/shm/")) != 0) {
+        fprintf(stderr, "not a path to \"/dev/shm/\" can't create shmem file\n");
+    }
 
     mode_t const mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
     int oflag = O_RDWR | O_CREAT | O_TRUNC;
-    int shmemFd = shm_open(shmemFileName, oflag, mode);
+
+    char *fileName = basename(shmemFileName);
+    int shmemFd = shm_open(fileName, oflag, mode);
     if (shmemFd < 0) {
-        fprintf(stderr, "failed to open shared memory!");
+        fprintf(stderr, "failed to open shared memory!\n");
         result = 2;
     } else {
-        int retVal = ftruncate(shmemFd, shmemDataSize);
+        int retVal = ftruncate(shmemFd, shmemDataSize + offset);
         if (retVal != 0) {
-            fprintf(stderr, "Error resizing shared memory!");
+            fprintf(stderr, "Error resizing shared memory!\n");
             result = 3;
         } else {
-            void *shmp = mmap(NULL, shmemDataSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, 0);
+            void *shmp = mmap(NULL, shmemDataSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
             elosEbLogRingBuffer_t *buffer = shmp;
-            buffer->entryCount = bufferSize;
+            buffer->entryCount = bufferCount;
             buffer->pad = 0xffff;
-            buffer->idxRead = 1;
-            buffer->idxWrite = bufferSize - 1;
+            buffer->idxRead = 2 % bufferCount;
+            buffer->idxWrite = empty ? buffer->idxRead : bufferCount - 1;
 
-            for (size_t i = 0; i < bufferSize; ++i) {
+            for (size_t i = 0; i < bufferCount; ++i) {
                 struct timespec ts;
                 timespec_get(&ts, TIME_UTC);
-                elosEbLogEntry_t *entry = &buffer->entries[i];
-                entry->creationTime = ts.tv_sec;
-                entry->producerId = 0x16;
-                entry->logLevel = 0x06;
-                entry->pad[0] = 'P';
-                entry->pad[1] = 'A';
-                entry->pad[2] = 'D';
-                entry->pad[3] = 'I';
-                entry->pad[4] = 'N';
-                entry->pad[5] = 'G';
                 char creationTimeStr[100];
+                char elementBuffer[ELOS_EB_LOG_STRING_SIZE];
                 strftime(creationTimeStr, sizeof creationTimeStr, "%d.%m.%Y %T", localtime(&ts.tv_sec));
 #pragma GCC diagnostic ignored "-Wformat-truncation"
-                snprintf(entry->logString, ELOS_EB_LOG_STRING_SIZE, "%c|0x%04lX log string text stuff %s|",
+                snprintf(elementBuffer, ELOS_EB_LOG_STRING_SIZE, "%c|0x%04lX log string text stuff %s|",
                          2 /*start of text*/, i, creationTimeStr);
 #pragma GCC diagnostic pop
-                entry->logString[ELOS_EB_LOG_STRING_SIZE - 1] = 3;  // end of text
+                elementBuffer[ELOS_EB_LOG_STRING_SIZE - 1] = 3;  // end of text
+                _insertEntry(&buffer->entries[i], &ts, 0x16, 0x06, (uint8_t *)elementBuffer);
             }
             munmap(shmp, shmemDataSize);
         }
     }
     close(shmemFd);
+    return result;
+}
+
+int _insertIntoShmemBuffer(const char *shmemFile, off_t offset, size_t size, const char *msg) {
+    int result = 0;
+    int oflag = O_RDWR;
+    int shmemFd = open(shmemFile, oflag, 0);
+    if (shmemFd < 0) {
+        fprintf(stderr, "failed to open shared memory file %s for reading\n", shmemFile);
+        result = 4;
+    } else {
+        size_t headerBytes = sizeof(elosEbLogRingBuffer_t);
+        void *shmp = mmap(NULL, headerBytes, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
+        elosEbLogRingBuffer_t *buffer = shmp;
+        size_t bufferSize = buffer->entryCount;
+        size_t bufferBytes = sizeof(elosEbLogEntry_t) * bufferSize;
+        size_t shmemDataSize = headerBytes + bufferBytes;
+        if (size != 0 && shmemDataSize > size) {
+            fprintf(stderr, "the speified size of %lu is smaller then the buffer (%lu) found\n", size, shmemDataSize);
+        }
+        munmap(shmp, headerBytes);
+        shmp = mmap(NULL, shmemDataSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
+        close(shmemFd);
+        buffer = shmp;
+
+        struct timespec ts;
+        timespec_get(&ts, TIME_UTC);
+
+        char elementBuffer[ELOS_EB_LOG_STRING_SIZE];
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+        snprintf(elementBuffer, ELOS_EB_LOG_STRING_SIZE, "%c|%s|", 2 /*start of text*/, msg);
+#pragma GCC diagnostic pop
+        elementBuffer[ELOS_EB_LOG_STRING_SIZE - 1] = 3;  // end of text
+        _insertEntry(&buffer->entries[buffer->idxWrite], &ts, 0x16, 0x06, (uint8_t *)elementBuffer);
+        buffer->idxWrite = (buffer->idxWrite + 1) % buffer->entryCount;
+        munmap(shmp, shmemDataSize);
+    }
+    return result;
+}
+
+int _testDataInsert(const char *shmemFile, off_t offset, size_t size) {
+    int result = 0;
+    int oflag = O_RDWR;
+    int shmemFd = open(shmemFile, oflag, 0);
+    if (shmemFd < 0) {
+        fprintf(stderr, "failed to open shared memory file %s for reading\n", shmemFile);
+        result = 4;
+    } else {
+        size_t headerBytes = sizeof(elosEbLogRingBuffer_t);
+        void *shmp = mmap(NULL, headerBytes, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
+        elosEbLogRingBuffer_t *buffer = shmp;
+        size_t bufferSize = buffer->entryCount;
+        size_t bufferBytes = sizeof(elosEbLogEntry_t) * bufferSize;
+        size_t shmemDataSize = headerBytes + bufferBytes;
+        if (size != 0 && shmemDataSize > size) {
+            fprintf(stderr, "the speified size of %lu is smaller then the buffer (%lu) found\n", size, shmemDataSize);
+        }
+        munmap(shmp, headerBytes);
+        shmp = mmap(NULL, shmemDataSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, offset);
+        close(shmemFd);
+        buffer = shmp;
+
+        struct timespec ts;
+        timespec_get(&ts, TIME_UTC);
+
+        // clang-format off
+        unsigned char testBuffer[] = {
+            0x44, 0x4c, 0x54, 0x01, 0x9f, 0xf1, 0xec, 0x67, 0xb8, 0x2e, 0x04, 0x00, 0x45, 0x43, 0x55, 0x00, // storageHeader
+            // stdHeader
+            0x3e, // version and flags
+            0x01, // message counter
+            0x00, 0x70, // length
+            0x43, 0x30, 0x30, 0x32, // ECU ID
+            0x00, 0x00, 0x00, 0x5a, // Session ID
+            0x3b, 0xaa, 0x06, 0xb5, // Timestamp
+            // payload
+            0xa0, 0x03, 0xbf, 0xA1, // payload message ID
+            0x5b, 0x4c, 0x4f, 0x47, 0x5d, 0x20, 0x41, 0x20, 0x73, 0x69,
+            0x6d, 0x70, 0x6c, 0x65, 0x20, 0x44, 0x4c, 0x54, 0x20, 0x6c,
+            0x6f, 0x67, 0x20, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+            0x20, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x20, 0x74,
+            0x68, 0x61, 0x74, 0x27, 0x73, 0x20, 0x65, 0x78, 0x61, 0x63,
+            0x74, 0x6c, 0x79, 0x20, 0x39, 0x32, 0x20, 0x62, 0x79, 0x74,
+            0x65, 0x73, 0x20, 0x6c, 0x6f, 0x6e, 0x67, 0x20, 0x62, 0x65,
+            0x63, 0x61, 0x75, 0x73, 0x65, 0x20, 0x74, 0x68, 0x61, 0x74,
+            0x27, 0x73, 0x20, 0x77, 0x68, 0x61, 0x74, 0x20, 0x66, 0x69,
+            0x74, 0x73, 0x0a,
+        };
+        // clang-format on
+        printf("TestBuffer: \"");
+        for (size_t i = 0; i < ELOS_EB_LOG_STRING_SIZE; i++) {
+            printf("%c", testBuffer[i]);
+        }
+        printf("\"\n");
+        _insertEntry(&buffer->entries[buffer->idxWrite], &ts, 0x16, 0x06, (uint8_t *)testBuffer);
+        buffer->idxWrite = (buffer->idxWrite + 1) % buffer->entryCount;
+        munmap(shmp, shmemDataSize);
+    }
     return result;
 }
 
@@ -187,16 +340,16 @@ void elosPrintHexBuffer(const char *prefix, const uint8_t *buffer, size_t len) {
     printf("\n");
 }
 
-int _dumpShmemBuffer(const char *shmemFile) {
+int _dumpShmemBuffer(const char *shmemFile, off_t offset, size_t size) {
     int result = 0;
     int oflag = O_RDONLY;
-    int shmemFd = shm_open(shmemFile, oflag, 0);
+    int shmemFd = open(shmemFile, oflag, 0);
     if (shmemFd < 0) {
         fprintf(stderr, "failed to open shared memory file %s for reading\n", shmemFile);
         result = 4;
     } else {
         size_t headerBytes = sizeof(elosEbLogRingBuffer_t);
-        void *shmp = mmap(NULL, headerBytes, PROT_READ, MAP_SHARED, shmemFd, 0);
+        void *shmp = mmap(NULL, headerBytes, PROT_READ, MAP_SHARED, shmemFd, offset);
         elosEbLogRingBuffer_t *buffer = shmp;
         size_t bufferSize = buffer->entryCount;
         size_t bufferBytes = sizeof(elosEbLogEntry_t) * bufferSize;
@@ -206,7 +359,10 @@ int _dumpShmemBuffer(const char *shmemFile) {
         printf("   entryCount = %u;\n", buffer->entryCount);
         printf("   entries[] = ");
         size_t shmemDataSize = headerBytes + bufferBytes;
-        shmp = mmap(NULL, shmemDataSize, PROT_READ, MAP_SHARED, shmemFd, 0);
+        if (size != 0 && shmemDataSize > size) {
+            fprintf(stderr, "the speified size of %lu is smaller then the buffer (%lu) found\n", size, shmemDataSize);
+        }
+        shmp = mmap(NULL, shmemDataSize, PROT_READ, MAP_SHARED, shmemFd, offset);
         close(shmemFd);
         buffer = shmp;
 
@@ -216,7 +372,7 @@ int _dumpShmemBuffer(const char *shmemFile) {
             char creationTimeStr[100];
             struct timespec ts = {.tv_sec = entry->creationTime};
             strftime(creationTimeStr, sizeof creationTimeStr, "%d.%m.%Y %T", localtime(&ts.tv_sec));
-            printf("      [%lu] = Entry {\n", i);
+            printf("  %s [%lu] = Entry {\n", i == buffer->idxWrite ? "==>" : "   ", i);
             printf("         creationTime = %s;\n", creationTimeStr);
             printf("         producerId = %x;\n", entry->producerId);
             printf("         logLevel = %s;\n", elosMapLogLevel(entry->logLevel));
@@ -247,15 +403,27 @@ int main(int argc, char *argv[]) {
     if (config.showUsage || res != 0) {
         _printUsage(res == 0 ? stdout : stderr, argv[0]);
     }
+    long pageSize = sysconf(_SC_PAGE_SIZE);
+    if (config.offset % pageSize != 0) {
+        fprintf(stderr, "%lu is not a multiple of page size (%ld)\n", config.offset, pageSize);
+        res = 1;
+    }
     if (config.bufferCount > 0 && res == 0) {
-        res = _createShmemBuffer(config.bufferCount, config.shmemFile);
+        res = _createShmemBuffer(config.shmemFile, config.offset, config.bufferSize, config.bufferCount, config.empty);
+    }
+    if (config.insertMessage != NULL && res == 0) {
+        res = _insertIntoShmemBuffer(config.shmemFile, config.offset, config.bufferSize, config.insertMessage);
+    }
+    if (config.testDltLog == true && res == 0) {
+        res = _testDataInsert(config.shmemFile, config.offset, config.bufferSize);
     }
     if (config.dumpBuffer && res == 0) {
         printf("# dump Config\n");
-        res = _dumpShmemBuffer(config.shmemFile);
+        res = _dumpShmemBuffer(config.shmemFile, config.offset, config.bufferSize);
     }
     if (config.unlinkBuffer) {
-        int unRes = shm_unlink(config.shmemFile);
+        char *fileName = basename(config.shmemFile);
+        int unRes = shm_unlink(fileName);
         if (unRes != 0 && errno != ENOENT) {
             printf("failed to unlink shared memory file %s: %s\n", config.shmemFile, strerror(errno));
             res |= 8;

@@ -157,4 +157,29 @@ safuResultE_t elosDltSendControlMessage(elosDltConnection_t *dlt, const char *pa
  ******************************************************************/
 safuResultE_t elosDltReadData(unsigned char *dltBuffer, size_t dltBufferSize, elosDltParseResultE_t *parResult,
                               elosDltData_t *dltData);
+
+/*******************************************************************
+ * Deletes the data pointed to by a dltData struct
+ *
+ * Parameters:
+ *       dltData: dlt struct to free the data of
+ *
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` when dltData == NULL
+ ******************************************************************/
+safuResultE_t elosDltDataDeleteMembers(elosDltData_t *dltData);
+
+/*******************************************************************
+ * Deletes the all the data of a dltData struct
+ *
+ * Parameters:
+ *       dltData: dlt struct to free the data of
+ *
+ * Returns:
+ *      - `SAFU_RESULT_OK` on success
+ *      - `SAFU_RESULT_FAILED` when dltData == NULL
+ ******************************************************************/
+safuResultE_t elosDltDataDelete(elosDltData_t *dltData);
+
 __END_DECLS

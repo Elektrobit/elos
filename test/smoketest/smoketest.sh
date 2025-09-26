@@ -61,7 +61,10 @@ prepare_env() {
     fi
     mkdir -p "${SMOKETEST_TMP_DIR}"
 
-    mng_dlt_buffer -c 10 -f "${elso_Scanner_Plugins_DLT_HV_Config_DeviceFile:-"test_dlt_shmem"}"
+    mng_dlt_buffer -c 10 \
+        -f "${elos_Scanner_Plugins_DltHv_Config_DeviceFile}" \
+        -o "${elos_Scanner_Plugins_DltHv_Config_OffsetAddress}" \
+        -s "${elos_Scanner_Plugins_DltHv_Config_BufferSize}"
 
     export RESULT_DIR="${result_dir}"
 
@@ -829,7 +832,7 @@ smoketest_plugins() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    PLUGINS="Dummy ScannerDummy DLT_HV fetchapi"
+    PLUGINS="Dummy ScannerDummy DltHv fetchapi"
     # shellcheck disable=SC2154
     if [ -n "$(find "${elos_EventLogging_PluginSearchPath}" -name backend_dlt_logger.so)" ]; then
         PLUGINS="$PLUGINS DLT"
@@ -1200,6 +1203,6 @@ if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
 fi
 
 create_junit_report "${SMOKETEST_RESULT_DIR}"
-mng_dlt_buffer -u -f "${elso_Scanner_Plugins_DLT_HV_Config_DeviceFile:+"test_dlt_shmem"}"
+mng_dlt_buffer -u -f "${elos_Scanner_Plugins_DltHv_Config_DeviceFile}"
 
 exit ${FAILED_TESTS}

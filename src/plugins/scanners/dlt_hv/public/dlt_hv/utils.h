@@ -7,11 +7,15 @@
 #include <safu/result.h>
 
 #include "dlt_hv/types.h"
+#include "elos/libelosdlt/dltmapper_types.h"
+
+samconfConfigStatusE_t elosConfigGetGenericInt64(const samconfConfig_t *root, const char *path, int64_t *result);
 
 /*************************************************
  * transform a `elosEbLogEntry_t` into an `elosEvent_t`
  *
  * Parameters:
+ *   mapper: a mapper holding default values and state to generate the event
  *   entry: the dlt log entry to transform
  *   event: the elos event to write the parsed log entry to
  *          filds not set by the log entry arn't touch
@@ -21,7 +25,7 @@
  *   - SAFU_RESULT_OK: on success
  *   - SAFU_RESULT_FAILED: when entry or event arn't set propperly
  *************************************************/
-safuResultE_t elosEventFromLogEntry(elosEbLogEntry_t *entry, elosEvent_t *event);
+safuResultE_t elosEventFromLogEntry(elosDltMapper_t *mapper, elosEbLogEntry_t *entry, elosEvent_t *event);
 
 /*************************************************
  * publish an `elosEvent_t` and also store it to the storage backends

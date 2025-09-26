@@ -5,7 +5,7 @@ libelosdlt
    :maxdepth: 2
    :caption: Contents:
 
-   private/dlttoelosConverter/index
+   private/dltmapper/index
 
 
 This library aims to implement the *Diagnostic Log and Trace* (DLT) protocol. The
