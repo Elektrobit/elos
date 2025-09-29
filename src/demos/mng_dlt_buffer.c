@@ -275,11 +275,6 @@ int _testDataInsert(const char *shmemFile, off_t offset, size_t size) {
             0x74, 0x73, 0x0a,
         };
         // clang-format on
-        printf("TestBuffer: \"");
-        for (size_t i = 0; i < ELOS_EB_LOG_STRING_SIZE; i++) {
-            printf("%c", testBuffer[i]);
-        }
-        printf("\"\n");
         _insertEntry(&buffer->entries[buffer->idxWrite], &ts, 0x16, 0x06, (uint8_t *)testBuffer);
         buffer->idxWrite = (buffer->idxWrite + 1) % buffer->entryCount;
         munmap(shmp, shmemDataSize);
