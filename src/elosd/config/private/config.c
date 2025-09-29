@@ -29,39 +29,39 @@ static char *_concatPath(const char *prefix, const char *name) {
     return configPath;
 }
 
-static safuResultE_t elosGetConfigPaths(char **baseConfig, char *elosConfigPath) {
+static safuResultE_t elosGetConfigPaths(char **baseConfig, char **elosConfigPath) {
     safuResultE_t result = SAFU_RESULT_OK;
 
-    if (elosConfigPath == NULL) {
+    if (*elosConfigPath == NULL) {
         safuLogErr("missing Config path");
         result = SAFU_RESULT_FAILED;
     }
     struct stat configPathStat;
     if (result == SAFU_RESULT_OK) {
-        if (stat(elosConfigPath, &configPathStat) != 0) {
-            safuLogErrF("failed stat on %s", elosConfigPath);
+        if (stat(*elosConfigPath, &configPathStat) != 0) {
+            safuLogErrF("failed stat on %s", *elosConfigPath);
             result = SAFU_RESULT_FAILED;
         }
     }
     if (result == SAFU_RESULT_OK) {
         switch (configPathStat.st_mode & S_IFMT) {
             case S_IFREG:
-                *baseConfig = strdup(elosConfigPath);
+                *baseConfig = strdup(*elosConfigPath);
                 if (*baseConfig != NULL) {
-                    elosConfigPath = dirname(elosConfigPath);
+                    *elosConfigPath = dirname(*elosConfigPath);
                     safuLogWarnF("DEPRECATED: use ELOS_CONFIG_PATH=\"%s\" and \"elosd.json\" as config file name",
-                                 elosConfigPath);
+                                 *elosConfigPath);
                 } else {
                     safuLogErr("strdup failed");
                     result = SAFU_RESULT_FAILED;
                 }
                 break;
             case S_IFDIR:
-                *baseConfig = _concatPath(elosConfigPath, "/elosd.json");
+                *baseConfig = _concatPath(*elosConfigPath, "/elosd.json");
                 break;
             default:
                 safuLogErrF("config %s is neither a config file nor a directory where configuration files exist",
-                            elosConfigPath);
+                            *elosConfigPath);
                 result = SAFU_RESULT_NOT_FOUND;
         }
     }
@@ -115,7 +115,7 @@ safuResultE_t elosConfigLoad(samconfConfig_t **config) {
 
     char *baseConfigPath = NULL;
     char *configPath = (char *)safuGetEnvOr("ELOS_CONFIG_PATH", ELOSD_CONFIG_PATH);
-    safuResultE_t result = elosGetConfigPaths(&baseConfigPath, configPath);
+    safuResultE_t result = elosGetConfigPaths(&baseConfigPath, &configPath);
 
     if (result == SAFU_RESULT_OK) {
         safuLogInfoF("Base config: %s", baseConfigPath);

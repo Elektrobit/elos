@@ -61,6 +61,11 @@ prepare_env() {
     fi
     mkdir -p "${SMOKETEST_TMP_DIR}"
 
+    mng_dlt_buffer -c 10 \
+        -f "${elos_Scanner_Plugins_DltHv_Config_DeviceFile}" \
+        -o "${elos_Scanner_Plugins_DltHv_Config_OffsetAddress}" \
+        -s "${elos_Scanner_Plugins_DltHv_Config_BufferSize}"
+
     export RESULT_DIR="${result_dir}"
 
     setup_log "${result_dir}"
@@ -827,7 +832,7 @@ smoketest_plugins() {
 
     export ELOS_CONFIG_PATH="${REAL_ELOS_CONFIG_PATH}"
 
-    PLUGINS="Dummy ScannerDummy"
+    PLUGINS="Dummy ScannerDummy DltHv fetchapi"
     # shellcheck disable=SC2154
     if [ -n "$(find "${elos_EventLogging_PluginSearchPath}" -name backend_dlt_logger.so)" ]; then
         PLUGINS="$PLUGINS DLT"
@@ -836,7 +841,7 @@ smoketest_plugins() {
     fi
 
     for plugin in ${PLUGINS}; do
-        TEST_MATCH="/Plugin\s.${plugin}/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
+        TEST_MATCH="/Plugin\s.${plugin}.\s/!d; /loaded/p; /started/p; /Stopping/p; /Unloading/p;"
         TEST_COUNT=$(sed -n -e "${TEST_MATCH}" "${LOG_ELOSD}" | wc -l)
         if [ "${TEST_COUNT}" != "4" ]; then
             log_err "Missing messages for Plugin '${plugin}' ($TEST_COUNT of 4 lines found)"
@@ -1198,5 +1203,6 @@ if [ "${SMOKETEST_ENABLE_COMPILE_TESTS}" != "" ]; then
 fi
 
 create_junit_report "${SMOKETEST_RESULT_DIR}"
+mng_dlt_buffer -u -f "${elos_Scanner_Plugins_DltHv_Config_DeviceFile}"
 
 exit ${FAILED_TESTS}

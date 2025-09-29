@@ -84,6 +84,8 @@ if [ -n "${CI}" ]; then
     ELOSD_DOCKER_NAME="${ELOSD_DOCKER_NAME}-${BUILD_ID}-${GIT_COMMIT}"
     TEST_IMAGE_NAME="${TEST_IMAGE_NAME}-${BUILD_ID}-${GIT_COMMIT}"
     TEST_DOCKER_NAME="${TEST_DOCKER_NAME}-${BUILD_ID}-${GIT_COMMIT}"
+else
+    CONTAINER_USE_UID_GID="--build-arg UID=$(id -u) --build-arg GID=$(id -g)"
 fi
 
 function tearDown {
@@ -93,10 +95,11 @@ function tearDown {
 
 rm -rf $BUILD_DIR/result/integration
 mkdir -p $BUILD_DIR/result/integration
+chmod -R ago+rw $BUILD_DIR/result/integration
 
 docker build \
     $BUILD_ARG \
-    --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
+    ${CONTAINER_USE_UID_GID:+${CONTAINER_USE_UID_GID}} \
     --build-arg SOURCES_URI="${SOURCES_URI}" \
     ${ELOS_DEPENDENCY_CONFIG:+--build-arg ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
     --tag ${ELOSD_IMAGE_NAME} -f $BASE_DIR/ci/Dockerfile.elosd .
@@ -109,7 +112,7 @@ fi
 
 docker build \
     $BUILD_ARG \
-    --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
+    ${CONTAINER_USE_UID_GID:+${CONTAINER_USE_UID_GID}} \
     --build-arg SOURCES_URI="${SOURCES_URI}" \
     ${ELOS_DEPENDENCY_CONFIG:+--build-arg ELOS_DEPENDENCY_CONFIG="${ELOS_DEPENDENCY_CONFIG}"} \
     --tag ${TEST_IMAGE_NAME} -f $BASE_DIR/ci/Dockerfile .

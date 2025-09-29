@@ -22,6 +22,10 @@ if (ELOS_DEMOS)
   add_subdirectory(elos_log4c_demo)
   add_subdirectory(elosc-cpp)
 
+  if (ELOSD_LIBDLT)
+    add_subdirectory(elos_dlt_bin_log_parser)
+  endif (ELOSD_LIBDLT)
+
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(LIBESMTP REQUIRED libesmtp-1.0 )
 
@@ -125,6 +129,21 @@ if (ELOS_DEMOS)
 
   if (INSTALL_ELOS_DEMOS)
     install(TARGETS demo_eloslog DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
+
+  add_executable(
+    mng_dlt_buffer
+    mng_dlt_buffer.c
+  )
+
+  target_link_libraries(
+    mng_dlt_buffer
+    PRIVATE
+      scanner_dlt_hv_interface
+  )
+
+  if (INSTALL_ELOS_DEMOS)
+    install(TARGETS mng_dlt_buffer DESTINATION ${CMAKE_INSTALL_BINDIR})
   endif()
 
   add_executable(

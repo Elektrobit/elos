@@ -30,7 +30,7 @@
 
 #define MAIN_SLEEP_TIME_USEC (100 * 1000)
 
-struct serverContext {
+struct elosServerContext {
     samconfConfig_t *config;
     elosClientManager_t clientManagerContext;
     elosScannerManager_t scannerManager;
@@ -62,7 +62,7 @@ void elosSignalHandler(int signalno) {
     }
 }
 
-int elosServerShutdown(struct serverContext *ctx) {
+int elosServerShutdown(struct elosServerContext *ctx) {
     if (ctx == NULL) {
         safuLogErr("invalid parameter");
         return EXIT_FAILURE;
@@ -71,6 +71,13 @@ int elosServerShutdown(struct serverContext *ctx) {
     safuLogInfo("Shutting down...");
     int result = EXIT_SUCCESS;
 
+    if (elosScannerManagerStop(&ctx->scannerManager) != SAFU_RESULT_OK) {
+        safuLogErr("Stopping scanner manager failed!");
+        result = EXIT_FAILURE;
+    } else if (elosScannerManagerDeleteMembers(&ctx->scannerManager) != SAFU_RESULT_OK) {
+        safuLogErr("Deleting scanner manager failed!");
+        result = EXIT_FAILURE;
+    }
     if (elosLogAggregatorShutdown(&ctx->logAggregator) != SAFU_RESULT_OK) {
         safuLogErr("Shutting down log aggregator failed!");
         result = EXIT_FAILURE;
@@ -88,13 +95,6 @@ int elosServerShutdown(struct serverContext *ctx) {
         result = EXIT_FAILURE;
     } else if (elosStorageManagerDeleteMembers(&ctx->storageManager) != SAFU_RESULT_OK) {
         safuLogErr("Deleting storage manager failed!");
-        result = EXIT_FAILURE;
-    }
-    if (elosScannerManagerStop(&ctx->scannerManager) != SAFU_RESULT_OK) {
-        safuLogErr("Stopping scanner manager failed!");
-        result = EXIT_FAILURE;
-    } else if (elosScannerManagerDeleteMembers(&ctx->scannerManager) != SAFU_RESULT_OK) {
-        safuLogErr("Deleting scanner manager failed!");
         result = EXIT_FAILURE;
     }
 
@@ -124,7 +124,7 @@ int elosServerShutdown(struct serverContext *ctx) {
     return result;
 }
 
-safuResultE_t _createRunDirectory(struct serverContext *ctx) {
+safuResultE_t _createRunDirectory(struct elosServerContext *ctx) {
     safuResultE_t result = SAFU_RESULT_OK;
 
     const char *runDir = elosConfigGetElosdRunDir(ctx->config);
@@ -142,9 +142,19 @@ safuResultE_t _createRunDirectory(struct serverContext *ctx) {
     return result;
 }
 
+bool elosIsConfigDumpRequested(const char *const *const argv, int argc) {
+    for (int i = 0; i < argc; i++) {
+        if (strncmp(argv[i], "-d", sizeof("-d")) == 0 ||
+            strncmp(argv[i], "--dump-config", sizeof("--dump-config")) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int main(int argc, char **argv) {
     int retval;
-    struct serverContext context = {0};
+    struct elosServerContext context = {0};
     const char *verstr = elosGetVersionString();
 
     setlocale(LC_ALL, "C");
@@ -175,6 +185,10 @@ int main(int argc, char **argv) {
         safuLogErr("samconfLoad");
         elosServerShutdown(&context);
         return EXIT_FAILURE;
+    }
+
+    if (elosIsConfigDumpRequested((const char **)argv, argc)) {
+        samconfDumpConfigTree(context.config);
     }
 
     safuLogLevelE_t logLevel = elosConfigGetElosdLogLevel(context.config);

@@ -1,6 +1,13 @@
 libelosdlt
 =============
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   private/dltmapper/index
+
+
 This library aims to implement the *Diagnostic Log and Trace* (DLT) protocol. The
 implementation is tested using the https://github.com/COVESA/dlt-daemon.
 

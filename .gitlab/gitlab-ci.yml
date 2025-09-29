@@ -14,7 +14,8 @@ default:
   interruptible: true
 
 before_script:
-  - env
+  - pwd
+  - env | sort
 
 build-docker-image:
   stage: .pre
@@ -106,15 +107,14 @@ integration-tests:
 baseos-lab-tests:
   stage: test
   needs: []
-  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   allow_failure: true
-  before_script:
-    - apt-get update
-    - apt-get install -y curl jq
   variables:
-    BRANCH_NAME: $CI_COMMIT_REF_NAME
-  script:
-    - ci/trigger_jenkins_ci.sh
+    # git branch to used in bitbake recipe for elos (default: integration)
+    ELOS_DEV_BRANCH: $CI_COMMIT_REF_NAME
+    # BASEOS_LAB_TEST_TARGETS: "qemu-ext4-ro-verity-target,qemu-ext4-rw-integrity-hmac-target"
+  trigger:
+    project: elektrobit/base-os/eb-baseos-lab
+    branch: integration
 
 unit-test-release:
   stage: test
@@ -190,13 +190,12 @@ smoke-test-installed:
     GIT_COMMIT: $CI_COMMIT_SHORT_SHA
     ENV_OPTIONS: |
       -e PREFIX_PATH=/usr/local/
-      -e SMOKETEST_RESULT_DIR=/results/smoketest
+      -e SMOKETEST_RESULT_DIR=/tmp/results
       -e SMOKETEST_ENABLE_COMPILE_TESTS=yes
   before_script:
     - apt-get update
     - apt-get install -y docker.io
   script: |
-      mkdir -p build/docker/result 
       ci/docker-target-run.sh /usr/local/lib/test/elos/smoketest/smoketest.sh
   artifacts:
     when: always

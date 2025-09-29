@@ -2,13 +2,16 @@
 
 #define _GNU_SOURCE
 #include <ctype.h>
+#include <dirent.h>
 #include <elos/libelosplugin/libelosplugin.h>
 #include <fcntl.h>
-#include <glob.h>
+#include <libgen.h>
+#include <regex.h>
 #include <safu/log.h>
 #include <safu/mutex.h>
 #include <safu/time.h>
 #include <samconf/samconf.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/eventfd.h>
 #include <unistd.h>
@@ -85,6 +88,28 @@ static inline int _getFlags(const elosPlugin_t *plugin) {
     return flags;
 }
 
+static inline size_t _countFromStr(const char *str, size_t len) {
+    size_t ret = 0;
+    if (str == NULL) {
+        safuLogErr("NULL is not a valid string to convert");
+        return SIZE_MAX;
+    }
+    for (size_t i = 0; i < len; i++) {
+        char digit = str[i];
+        if (digit == 0) {
+            safuLogErrF("\"%s\" is shorter then the expected %lu bytes", str, len);
+            ret = SIZE_MAX;
+            break;
+        } else if (digit < '0' || digit > '9') {
+            safuLogErrF("\"%.*s\" isn't only digits to convert to a number", (int)len, str);
+            ret = SIZE_MAX;
+            break;
+        }
+        ret = ret * 10 + (digit - '0');
+    }
+    return ret;
+}
+
 static inline size_t _initializeCount(elosJsonBackend_t *jsonBackend) {
     size_t prevCounts = 0;
     char *currentDate = safuGetCurrentDateString(jsonBackend->dateFormat);
@@ -93,31 +118,38 @@ static inline size_t _initializeCount(elosJsonBackend_t *jsonBackend) {
         currentDate[0] = '\0';
     }
     bool pathHasCount = false;
-    char *pattern = elosCompleteStoragePath(jsonBackend->storageFilePattern, jsonBackend->pathSizeLimit, "%i+",
-                                            currentDate, &pathHasCount);
-    if (!pathHasCount) {
-        return 0;
+    char *fullPattern = elosCompleteStoragePath(jsonBackend->storageFilePattern, jsonBackend->pathSizeLimit, "([0-9]+)",
+                                                currentDate, &pathHasCount);
+    if (pathHasCount) {
+        char *pattern = basename(fullPattern);
+        char *logPath = dirname(fullPattern);
+        regex_t regex;
+
+        if (regcomp(&regex, pattern, REG_EXTENDED)) {
+            safuLogErr("Failed to build regex for checking log file counter using 0 instead");
+        } else {
+            DIR *logDir = opendir(logPath);
+            struct dirent *ep;
+            while ((ep = readdir(logDir))) {
+                if (ep->d_type == DT_REG) {
+                    char *logs = ep->d_name;
+                    regmatch_t matches[2];
+                    if (regexec(&regex, logs, ARRAY_SIZE(matches), matches, 0)) {
+                        continue;
+                    }
+                    regoff_t len = matches[1].rm_eo - matches[1].rm_so;
+                    size_t count = _countFromStr(logs + matches[1].rm_so, len);
+                    count = count == SIZE_MAX ? 0 : count;  // set to 0 on parse error
+                    prevCounts = prevCounts < count ? count : prevCounts;
+                }
+            }
+            closedir(logDir);
+            regfree(&regex);
+        }
     }
-    glob_t fileVector;
-    int retVal = glob(pattern, 0, NULL, &fileVector);
-    free(pattern);
+    free(fullPattern);
     free(currentDate);
-    switch (retVal) {
-        case 0:
-            prevCounts = fileVector.gl_pathc;
-            break;
-        case GLOB_NOSPACE:
-            safuLogWarn("Failed to search for preexisting logs, due to insufficient memory. Defaulting to count 0");
-            break;
-        case GLOB_ABORTED:
-            safuLogWarn("Failed to search for preexisting logs, defaulting to count 0");
-            break;
-        case GLOB_NOMATCH:
-            break;
-        default:
-            safuLogWarn("glob returned invalid code, defaulting to 0");
-            break;
-    }
+
     return prevCounts;
 }
 

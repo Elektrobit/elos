@@ -49,6 +49,9 @@
             },
             "Scanner": {
                 "Plugins": {
+                    "DltHv": {
+                        "Run": "never"
+                    },
                     "ScannerDummy": {
                         "File": "scanner_dummy.so",
                         "Run": "always"

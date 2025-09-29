@@ -8,7 +8,8 @@ import robot.utils.asserts
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
 from robot.api.deco import keyword
-
+import os
+import dateutil
 
 def string_start_with(string, pattern):
     match = re.match(pattern, string)
@@ -210,6 +211,180 @@ class ElosKeywords(object):
             logger.debug(f"exec on target: {err_msg} ({rc})")
 
         return stdout, stderr, rc
+
+    def _get_dirlist(self, directory):
+        stdout, stderr, rc = self._exec_on_target(f"ls -lt1p --time-style=full-iso {directory}")
+        if rc != 0:
+            raise Exception(stderr)
+
+        files = []
+        for entry in stdout.splitlines()[1:]:
+            parts = entry.split()
+            permissions = parts[0]
+            links = int(parts[1])
+            user = parts[2]
+            group = parts[3]
+            size = int(parts[4])
+            time = dateutil.parser.parse(" ".join(parts[5:7]))
+            name = " ".join(parts[8:])
+            files.append((permissions, links, user, group, size, time, name))
+
+        return files
+
+
+    def _get_dirlist_pattern(self, directory, pattern):
+        files = self._get_dirlist(directory)
+        res = []
+        for file in files:
+            if re.search(pattern, file[6]) is not None:
+                res.append(file)
+
+        return res
+
+    @keyword("Logs '${pattern}' are all smaller than the '${limit}' limit")
+    def files_with_pattern_under_limit(self, pattern, limit):
+        limit = int(limit)
+
+        directory = os.path.dirname(pattern)
+        file_pattern = os.path.basename(pattern).replace("%count%", "([0-9]+)")
+        files = self._get_dirlist(directory)
+        failures = []
+        for _, _, _, _, size, _, file in files:
+            if re.search(file_pattern, file) is not None:
+                if size > limit:
+                    logger.info(f"{size} > {limit}")
+                    failures.append(file)
+
+        if len(failures) > 0:
+            raise Exception(f"The log files {failures} are bigger than {limit}")
+
+    def _get_newest_pattern_file(self, pattern):
+        directory = os.path.dirname(pattern)
+        file_pattern = os.path.basename(pattern).replace("%count%", "([0-9]+)")
+        files = self._get_dirlist(directory)
+        failures = []
+        newest = files[0]
+        for file in files:
+            if re.search(file_pattern, file[6]) is not None:
+                logger.info(f"timestamp is of type {type(file[5])}")
+                logger.info(f"{file[5]} {file[6]}")
+                if file[5] < newest[5]:
+                    newest = file
+
+        newest = (newest[0], newest[1], newest[2], newest[3], newest[4], newest[5], f"{directory}/{newest[6]}")
+        return newest
+
+    @keyword("the current json log file '${pattern}' gets deleted")
+    def delete_newest_logfile(self, pattern):
+        file = self._get_newest_pattern_file(pattern);
+        logger.info(f"deleting: {file[6]}")
+        BuiltIn().set_test_variable('${NEWEST_LOG_FILE}', file[6])
+        stdout, stderr, rc = self._exec_on_target(f"rm {file[6]}")
+        if rc != 0:
+            raise Exception(stderr)
+
+    def _get_count(self, file, pattern):
+        file_pattern = pattern.replace("%count%", "([0-9]+)")
+        match = re.match(file_pattern, file)
+        return int(match.group(1))
+
+    def _file_should_exist(self, file):
+        stdout, stderr, rc = self._exec_on_target(f"test -f {file}")
+        logger.debug(f"stdout: {stdout}")
+        logger.debug(f"stderr: {stderr}")
+        if rc != 0:
+            robot.utils.asserts.fail(f"expected {file} doesn't exist")
+
+    def _file_should_not_exist(self, file):
+        stdout, stderr, rc = self._exec_on_target(f"test ! -f {file}")
+        logger.debug(f"stdout: {stdout}")
+        logger.debug(f"stderr: {stderr}")
+        if rc != 0:
+            robot.utils.asserts.fail(f"expected {file} exist")
+
+    @keyword("the json backend continues with the next '${pattern}' log file")
+    def check_next_log_rotation(self, pattern):
+        file = BuiltIn().get_variable_value('${NEWEST_LOG_FILE}')
+        if file is None:
+            raise Exception("No newest log file is set!")
+        logger.info(f"checking file pattern {pattern}")
+        count = self._get_count(file, pattern)
+        count += 1
+        current_file = pattern.replace("%count%", f"{count}")
+        self._file_should_exist(current_file)
+
+    @keyword("some of the older '${pattern}' log files are deleted")
+    def delete_some_older_logs(self, pattern):
+        directory = os.path.dirname(pattern)
+        file_pattern = os.path.basename(pattern).replace("%count%", "([0-9]+)")
+        files = self._get_dirlist_pattern(directory, file_pattern)
+        files.sort(key=lambda x: self._get_count(x[6], os.path.basename(pattern)))
+        removed = []
+
+        for i in [0, -2, len(files)//2]:
+            stdout, stderr, rc = self._exec_on_target(f"rm {directory}/{files[i][6]}")
+            if rc != 0:
+                raise Exception(stderr)
+
+            removed.append(f"{directory}/{files[i][6]}")
+
+        BuiltIn().set_test_variable('${REMOVED_LOG_FILES}', removed)
+        BuiltIn().set_test_variable('${NEWEST_LOG_FILE}', f"{directory}/{files[-1][6]}")
+
+    @keyword("The Last Json Log Should Not Exist")
+    def last_log_file_should_not_exist(self):
+        """
+        Check that the file saved as the last log file doesn't exist
+        """
+        file = BuiltIn().get_variable_value('${NEWEST_LOG_FILE}')
+        if file is None:
+            raise Exception("No newest log file is set!")
+        self._file_should_not_exist(file)
+
+    @keyword("the json backend continues logging to the last log file")
+    def continue_in_last(self):
+        removed = BuiltIn().get_variable_value('${REMOVED_LOG_FILES}')
+        for file in removed:
+            self._file_should_not_exist(file)
+
+        current = BuiltIn().get_variable_value('${NEWEST_LOG_FILE}')
+        if file is None:
+            raise Exception("No newest log file is set!")
+        self._file_should_exist(current)
+
+    @keyword("change time to '${timestamp}' from now on")
+    def update_time(self, timestamp):
+        if timestamp is None:
+            timestamp = "+0"
+        stdout, stderr, rc = self._exec_on_target(f"echo '{timestamp}' > /tmp/elos_faketime.rc")
+        if rc != 0:
+            raise Exception(stderr)
+
+    @keyword("using faketime starting at '${timestamp}'")
+    def enable_faketime(self, timestamp=None):
+        self.update_time(timestamp)
+        stdout, stderr, rc = self._exec_on_target(f"echo 'export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1' > /tmp/elos_faketime.env")
+        if rc != 0:
+            raise Exception(stderr)
+        stdout, stderr, rc = self._exec_on_target(f"echo 'export FAKETIME_NO_CACHE=1' >> /tmp/elos_faketime.env")
+        if rc != 0:
+            raise Exception(stderr)
+        stdout, stderr, rc = self._exec_on_target(f"echo 'export FAKETIME_TIMESTAMP_FILE=/tmp/elos_faketime.rc' >> /tmp/elos_faketime.env")
+        if rc != 0:
+            raise Exception(stderr)
+
+        stdout, stderr, rc = self._exec_on_target(f"sed -i  s/^USE_FAKETIME=.$/USE_FAKETIME=1/ /etc/init.d/elosd")
+        if rc != 0:
+            raise Exception(stderr)
+
+    @keyword("disabling faketime")
+    def disable_faketime(self):
+        stdout, stderr, rc = self._exec_on_target(f"echo '+0' > /tmp/elos_faketime.rc")
+        if rc != 0:
+            raise Exception(stderr)
+        stdout, stderr, rc = self._exec_on_target(f"sed -i  s/^USE_FAKETIME=.$/USE_FAKETIME=0/ /etc/init.d/elosd")
+        if rc != 0:
+            raise Exception(stderr)
 
     def _get_elosd_pid(self):
         pid = -1
@@ -593,7 +768,15 @@ class ElosKeywords(object):
 
     @keyword("File '${path}' Should Exist On Target")
     def file_exists_on_target(self, path):
-        stdout, stderr, rc = self._exec_on_target(f"test -f {path}")
+        max_retry = 5
+        for retry_count in range(1, max_retry):
+            stdout, stderr, rc = self._exec_on_target(f"test -f {path}")
+            if rc == 0:
+                break
+            else:
+                logger.info(f"{retry_count}. try {path} not found retrynig")
+            time.sleep(0.2)
+
         if rc != 0:
             robot.utils.asserts.fail(f"File {path} does not exist")
 

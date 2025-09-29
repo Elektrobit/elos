@@ -116,6 +116,15 @@
                         "File": "scanner_oomkiller.so",
                         "Run": "always"
                     },
+                    "DltHv": {
+                        "File": "scanner_dlt_hv.so",
+                        "Run": "always",
+                        "Config": {
+                            "DeviceFile": "/dev/shm/test_dlt_shmem",
+                            "OffsetAddress": "0x1000",
+                            "BufferSize": "1448"
+                        }
+                    },
                     "SyslogScanner": {
                         "File": "scanner_syslog.so",
                         "Run": "always",

@@ -2,21 +2,20 @@
 
 #include "elos/libelosdlt/libelosdlt.h"
 
+#include <bits/types/struct_iovec.h>
+#include <complex.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <safu/common.h>
-#include <safu/log.h>
-#include <safu/result.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/sysinfo.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
-
-#include "elos/libelosdlt/types.h"
 
 #define ELOS_DLT_DEBUG 0
 
@@ -345,5 +344,64 @@ safuResultE_t elosDltSendUserLog(elosDltConnection_t *dlt, char *payload) {
         free(buffer);
     }
 
+    return result;
+}
+
+safuResultE_t elosDltReadData(unsigned char *dltBuffer, size_t dltBufferSize, elosDltParseResultE_t *parResult,
+                              elosDltData_t *dltData) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    safuResultE_t status = SAFU_RESULT_FAILED;
+    size_t seekPos = 0;
+    size_t dltDataSize = 0;
+
+    if (dltBuffer == NULL || dltBufferSize == 0 || parResult == NULL || dltData == NULL) {
+        safuLogErr("Invalid Parameter");
+    } else {
+        status = elosDltStorageHeaderParse(dltBuffer, dltBufferSize, dltData, parResult);
+        if (status == SAFU_RESULT_OK) {
+            seekPos += dltData->dltDataSize.storageHeaderSize;
+            status = elosDltStdHeaderParse(&dltBuffer[seekPos], dltBufferSize - seekPos, dltData, parResult);
+            if (status == SAFU_RESULT_OK) {
+                seekPos += dltData->dltDataSize.standardHeaderSize;
+
+                dltDataSize = (STO_H_DATA_LENGTH + dltData->stdHeader.length);
+                if (dltBufferSize >= dltDataSize) {
+                    if (dltData->stdHeader.headerType.ueh) {
+                        status = elosDltExtHeaderParse(&dltBuffer[seekPos], dltDataSize - seekPos, dltData, parResult);
+                        if (status == SAFU_RESULT_OK) {
+                            seekPos += dltData->dltDataSize.extHeaderSize;
+                        }
+                    }
+                    if (status == SAFU_RESULT_OK) {
+                        status = elosDltPayloadParse(&dltBuffer[seekPos], dltDataSize - seekPos, dltData, parResult);
+                    }
+                } else {
+                    status = SAFU_RESULT_FAILED;
+                    *parResult = ELOS_DLT_INCOMPLETE_DLT_MSG;
+                }
+            }
+        }
+    }
+
+    if (status == SAFU_RESULT_OK) {
+        result = SAFU_RESULT_OK;
+    }
+
+    return result;
+}
+
+safuResultE_t elosDltDataDeleteMembers(elosDltData_t *dltData) {
+    safuResultE_t result = SAFU_RESULT_FAILED;
+    if (dltData != NULL) {
+        free(dltData->payload.data);
+        dltData->payload.data = NULL;
+        result = SAFU_RESULT_OK;
+    }
+    return result;
+}
+
+safuResultE_t elosDltDataDelete(elosDltData_t *dltData) {
+    safuResultE_t result = elosDltDataDeleteMembers(dltData);
+    free(dltData);
     return result;
 }

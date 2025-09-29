@@ -208,6 +208,7 @@ bool elosJsonBackendCheckRotate(elosStorageBackend_t *backend, size_t nextWrite)
             if (currentDate != NULL) {
                 if (strcmp(currentDate, jsonBackend->storageDate) != 0) {
                     shouldRotate = true;
+                    jsonBackend->count = 0;
                 }
                 free(currentDate);
             }
@@ -218,6 +219,8 @@ bool elosJsonBackendCheckRotate(elosStorageBackend_t *backend, size_t nextWrite)
             int retVal = stat(jsonBackend->filePath, &buf);
             if (retVal != 0) {
                 safuLogErrF("Failed to get size of file %s", jsonBackend->filePath);
+                jsonBackend->count++;
+                shouldRotate = true;  // if the file cant be read i probbably cant be written to either
             } else if (buf.st_size + nextWrite >= jsonBackend->maxFileSize) {
                 // rotate without date change, so increase count to make filename unique
                 jsonBackend->count++;
