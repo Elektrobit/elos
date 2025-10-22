@@ -3,7 +3,7 @@
 
 
 *** Settings ***
-Documentation       A test suite to verfiy kmsg-scanner behaviour.
+Documentation       A test suite to verfiy dlt-scanner behaviour.
 
 Library             SSHLibrary
 Library             JSONLibrary
