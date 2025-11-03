@@ -9,6 +9,8 @@ Library             SSHLibrary
 Library             JSONLibrary
 Library             libraries/ElosKeywords.py
 Library             libraries/TemplateConfig.py
+Library             ./DltTestBuffer.py
+...                 dlt_size=10     dlt_path=/dev/shm/test_dlt_shmem  dlt_offset=0x1000
 Resource            resources/config.resource
 Resource            resources/elosd-keywords.resource
 Resource            resources/keywords.resource
@@ -30,33 +32,17 @@ New Entries In DLT Ring Buffer
     [Documentation]    Check if the dlt scanner finds and stores new dlt events
 
     Given Elosd Is Started With Dlt Scanner
-    And Some Dlt Events Are Queued
-    Then Those Events Can Be Fetched
+    And '${DLT_EVENT_NUMBER}' Dlt Events Are Queued
+    Then Those '${DLT_EVENT_NUMBER}' Events Can Be Fetched
 
     [Teardown]  Reset Elosd Config
 
 
 *** Keywords ***
-Those Events Can Be Fetched
+Those '${number}' Events Can Be Fetched
     [Documentation]    Check if the correct number of dlt events can be fetched
 
-    '${DLT_EVENT_NUMBER}' Latest Events Matching '.e.source.appName "DltHv" STRCMP' Found
-
-Create Dlt Test Buffer
-    [Documentation]    Create a dlt ring buffer to use for testing the dlt scanner
-
-    Execute And Log Based On User Permissions
-    ...     mng_dlt_buffer -c 10 -f "${DLT_PATH}" -o "${DLT_OFFSET}" -s "${DLT_SIZE}" -e
-    ...     ${RETURN_STDOUT}
-
-Some Dlt Events Are Queued
-    [Documentation]    Add some dlt events into the shared ring buffer
-
-    FOR    ${idx}    IN RANGE    ${DLT_EVENT_NUMBER}
-        Execute And Log Based On User Permissions
-        ...     mng_dlt_buffer -t -f "${DLT_PATH}" -o "${DLT_OFFSET}"
-        ...     ${RETURN_STDOUT}
-    END
+    '${number}' Latest Events Matching '.e.source.appName "DltHv" STRCMP' Found
 
 Enable Dlt Scanner In Elosd Config
     [Documentation]    Add a configuration for the dlt scanner plugin and restart elosd
