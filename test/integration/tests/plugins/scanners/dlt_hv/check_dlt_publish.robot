@@ -42,14 +42,6 @@ Those Events Can Be Fetched
 
     '${DLT_EVENT_NUMBER}' Latest Events Matching '.e.source.appName "DltHv" STRCMP' Found
 
-Ensure Elosd Is Running With New Config
-    [Documentation]    Set a new Config and restart Elosd
-    [Arguments]    &{config}
-
-    Ensure Elosd Is Stopped
-    Set New Config Core    &{config}
-    Ensure Elosd Is Started
-
 Create Dlt Test Buffer
     [Documentation]    Create a dlt ring buffer to use for testing the dlt scanner
 
