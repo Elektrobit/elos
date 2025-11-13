@@ -25,6 +25,7 @@ build-docker-image:
         DOCKER_TLS_CERTDIR: ""
       # hostname of dind container inside the private network has to be "docker"
       alias: docker
+      command: ["--tls=false"]
   image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker:latest
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
@@ -85,6 +86,7 @@ integration-tests:
         DOCKER_TLS_CERTDIR: ""
       # hostname of dind container inside the private network has to be "docker"
       alias: docker
+      command: ["--tls=false"]
   image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/ubuntu:jammy
   variables:
     BUILD_ARG: "--build-arg USER=gitlab-runner"
