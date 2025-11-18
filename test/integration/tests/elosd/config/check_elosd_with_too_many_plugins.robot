@@ -108,11 +108,3 @@ Add Many Backend Dummies To Config
         ${config}=    Add Backend Dummy To Config    BackendDummy${num}    ${config}
     END
     RETURN    ${config}
-
-Ensure Elosd Is Running With New Config
-    [Documentation]    Set a new Config and restart Elosd
-    [Arguments]    &{Config}
-
-    Ensure Elosd Is Stopped
-    Set New Config Core    &{Config}
-    Ensure Elosd Is Started
