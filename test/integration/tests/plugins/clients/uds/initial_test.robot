@@ -42,11 +42,3 @@ Add Unix Client To Config
     ${config}=    Add Object To Json    ${config}
     ...    $.ClientInputs.Plugins.unixClient    ${ClientDummy}
     RETURN    ${config}
-
-Ensure Elosd Is Running With New Config
-    [Documentation]    Set a new Config and restart Elosd
-    [Arguments]    &{Config}
-
-    Ensure Elosd Is Stopped
-    Set New Config Core    &{Config}
-    Ensure Elosd Is Started

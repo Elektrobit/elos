@@ -189,11 +189,3 @@ Fails To Start Elosd With New Config
     Set New Config Core    &{Config}
     Start Elosd
     Wait For Elosd To Stop
-
-Ensure Elosd Is Running With New Config
-    [Documentation]    Set a new Config and restart Elosd
-    [Arguments]    &{Config}
-
-    Ensure Elosd Is Stopped
-    Set New Config Core    &{Config}
-    Ensure Elosd Is Started

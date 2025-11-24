@@ -81,6 +81,14 @@ Elosd Is Stopped
 
     RETURN    ${is_stopped}
 
+Ensure Elosd Is Running With New Config
+    [Documentation]    Set a new Config and restart Elosd
+    [Arguments]    &{config}
+
+    Ensure Elosd Is Stopped
+    Set New Config Core    &{config}
+    Ensure Elosd Is Started
+
 Reset Elosd Config
     [Documentation]    reset elosd config to default during test teardown.
 
