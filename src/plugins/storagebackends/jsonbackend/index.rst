@@ -93,4 +93,9 @@ If PathSizeLimit itself is not set, it will default to 1024. This value
 can be changed by defining ``ELOS_JSON_LOGGING_PATH_LIMIT_DEFAULT`` at
 compile time.
 
+Log Cleanup
+-----------
 
+To help with cleaning up old log files a small helper program is provided that deletes all but the newest few log files.
+
+.. program-output:: elos_log_cleanup --help

@@ -38,6 +38,11 @@ target_link_libraries(
 
 if (INSTALL_ELOS_PLUGINS)
   install(TARGETS backend_json DESTINATION ${ELOSD_BACKEND_PATH})
+  install(
+    PROGRAMS elos_log_cleanup.sh
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    RENAME elos_log_cleanup
+  )
 endif()
 
 create_static_library_from_shared(
