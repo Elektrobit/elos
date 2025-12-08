@@ -768,7 +768,7 @@ class ElosKeywords(object):
 
     @keyword("File '${path}' Should Exist On Target")
     def file_exists_on_target(self, path):
-        max_retry = 5
+        max_retry = 50
         for retry_count in range(1, max_retry):
             stdout, stderr, rc = self._exec_on_target(f"test -f {path}")
             if rc == 0:

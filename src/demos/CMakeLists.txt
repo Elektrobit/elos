@@ -131,20 +131,22 @@ if (ELOS_DEMOS)
     install(TARGETS demo_eloslog DESTINATION ${CMAKE_INSTALL_BINDIR})
   endif()
 
-  add_executable(
-    mng_dlt_buffer
-    mng_dlt_buffer.c
-  )
+  if (ELOSD_LIBDLT)
+    add_executable(
+      mng_dlt_buffer
+      mng_dlt_buffer.c
+    )
 
-  target_link_libraries(
-    mng_dlt_buffer
-    PRIVATE
-      scanner_dlt_hv_interface
-  )
+    target_link_libraries(
+      mng_dlt_buffer
+      PRIVATE
+        scanner_dlt_hv_interface
+    )
 
-  if (INSTALL_ELOS_DEMOS)
-    install(TARGETS mng_dlt_buffer DESTINATION ${CMAKE_INSTALL_BINDIR})
-  endif()
+    if (INSTALL_ELOS_DEMOS)
+      install(TARGETS mng_dlt_buffer DESTINATION ${CMAKE_INSTALL_BINDIR})
+    endif()
+  endif (ELOSD_LIBDLT)
 
   add_executable(
     demo_eventbuffer
