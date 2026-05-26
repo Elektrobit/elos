@@ -116,8 +116,8 @@ safuResultE_t elosDltScannerOpenBuffer(elosDltScanner_t *dlt) {
     if (result == SAFU_RESULT_OK) {
         elosEbLogRingBuffer_t *head;
         safuLogDebugF("offset: 0x%lx", dlt->offsetAddress);
-        dlt->shmemData =
-            mmap(NULL, sizeof(elosEbLogRingBuffer_t), PROT_READ, MAP_SHARED, dlt->shmemFd, dlt->offsetAddress);
+        dlt->shmemData = mmap(NULL, dlt->bufferSize, PROT_READ, MAP_SHARED, dlt->shmemFd, (off_t)dlt->offsetAddress);
+        close(dlt->shmemFd);
         head = dlt->shmemData;
         dlt->shmemLogEntries = (size_t)head->entryCount;
         dlt->shmemDataSize = ((size_t)head->entryCount * sizeof(elosEbLogEntry_t)) + sizeof(elosEbLogRingBuffer_t);
@@ -131,12 +131,7 @@ safuResultE_t elosDltScannerOpenBuffer(elosDltScanner_t *dlt) {
                         dlt->bufferSize);
             result = SAFU_RESULT_FAILED;
         }
-        munmap(dlt->shmemData, sizeof(elosEbLogRingBuffer_t));
-    }
-    if (result == SAFU_RESULT_OK) {
-        dlt->shmemData = mmap(NULL, dlt->shmemDataSize, PROT_READ, MAP_SHARED, dlt->shmemFd, dlt->offsetAddress);
-        close(dlt->shmemFd);
-        dlt->localBufferCopy = safuAllocMem(NULL, dlt->shmemDataSize);
+        dlt->localBufferCopy = safuAllocMem(NULL, dlt->bufferSize);
         safuLogDebug("created memory for local copy");
         safuRingBufferParam_t rPar = {
             .deleteEntries = true, .deleteFunc = _deleteEbLogEntry, .elements = dlt->shmemLogEntries};
@@ -162,7 +157,7 @@ void *elosDltScannerLoop(elosDltScanner_t *dlt) {
             safuLogErrErrno("pthread_setcancelstate");
             break;
         }
-        memcpy(dlt->localBufferCopy, dlt->shmemData, dlt->shmemDataSize);
+        memcpy(dlt->localBufferCopy, dlt->shmemData, dlt->bufferSize);
         safuResultE_t pubRes = elosQueueNextLogEntries(dlt->localBufferCopy, &dlt->idxRead, &dlt->parserQueue);
         if (pubRes == SAFU_RESULT_OK) {
             uint64_t elosBufferWritten = 1;
@@ -254,7 +249,7 @@ safuResultE_t elosDltScannerFree(elosPlugin_t *plugin) {
     safuResultE_t result = SAFU_RESULT_OK;
     elosDltScanner_t *dlt = plugin->data;
 
-    munmap(dlt->shmemData, dlt->shmemDataSize);
+    munmap(dlt->shmemData, dlt->bufferSize);
     close(dlt->moreToRead);
     close(dlt->stopCmd);
     free(dlt->localBufferCopy);
