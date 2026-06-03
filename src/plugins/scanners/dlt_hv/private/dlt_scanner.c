@@ -38,61 +38,60 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
     if (dlt == NULL) {
         safuLogErr("failed to allocate memory for dlt scanner");
         result = SAFU_RESULT_FAILED;
-    } else {
-        samconfConfigStatusE_t configResult =
-            samconfConfigGetString(plugin->config, "Config/DeviceFile", (const char **)&dlt->shmemFile);
+    }
+    samconfConfigStatusE_t configResult = SAMCONF_CONFIG_ERROR;
+    if (result == SAFU_RESULT_OK) {
+        configResult = samconfConfigGetString(plugin->config, "Config/DeviceFile", (const char **)&dlt->shmemFile);
         if (configResult != SAMCONF_CONFIG_OK) {
             safuLogErrF("missing shared memory file in configuration for \"%s\"", plugin->config->key);
             result = SAFU_RESULT_FAILED;
-        } else {
+        }
+    }
+    if (result == SAFU_RESULT_OK) {
+        dlt->offsetAddress = 0;
+        configResult =
+            elosConfigGetGenericInt64(plugin->config, "Config/OffsetAddress", (int64_t *)&dlt->offsetAddress);
+        if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
             dlt->offsetAddress = 0;
-            configResult =
-                elosConfigGetGenericInt64(plugin->config, "Config/OffsetAddress", (int64_t *)&dlt->offsetAddress);
-            if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
-                dlt->offsetAddress = 0;
-            } else if (configResult != SAMCONF_CONFIG_OK) {
-                safuLogErrF("no offset address in configuration for \"%s\"", plugin->config->key);
+        } else if (configResult != SAMCONF_CONFIG_OK) {
+            safuLogErrF("no offset address in configuration for \"%s\"", plugin->config->key);
+            result = SAFU_RESULT_FAILED;
+        } else {
+            long pageSize = sysconf(_SC_PAGE_SIZE);
+            if (dlt->offsetAddress % pageSize != 0) {
+                safuLogErrF("offset address %lu is not a multiple of page size (%ld)\n", dlt->offsetAddress, pageSize);
                 result = SAFU_RESULT_FAILED;
-            } else {
-                long pageSize = sysconf(_SC_PAGE_SIZE);
-                if (dlt->offsetAddress % pageSize != 0) {
-                    safuLogErrF("offset address %lu is not a multiple of page size (%ld)\n", dlt->offsetAddress,
-                                pageSize);
-                    result = SAFU_RESULT_FAILED;
-                }
-            }
-            if (result == SAFU_RESULT_OK) {
-                configResult =
-                    elosConfigGetGenericInt64(plugin->config, "Config/BufferSize", (int64_t *)&dlt->bufferSize);
-                if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
-                    dlt->bufferSize = 0;
-                } else if (configResult != SAMCONF_CONFIG_OK) {
-                    safuLogErrF("no buffer size in configuration for \"%s\"", plugin->config->key);
-                    result = SAFU_RESULT_FAILED;
-                }
-            }
-            if (result == SAFU_RESULT_OK) {
-                result = elosPluginCreatePublisher(plugin, &dlt->publisher);
-                if (result != SAFU_RESULT_OK) {
-                    safuLogErrF("failed to create publisher for \"%s\"", plugin->config->key);
-                } else {
-                    // NOTE:  the mesured time diffrences in the provided example are between 14.36598s and 0.000439s
-                    dlt->sleepInterval = _hzToTime(
-                        samconfConfigGetInt32Or(plugin->config, "Config/ScanFrequency", ELOS_DLT_SCAN_FREQUENCY));
-                    dlt->moreToRead = eventfd(0, 0);
-                    dlt->stopCmd = eventfd(0, 0);
-
-                    plugin->data = dlt;
-                }
-            }
-            if (result == SAFU_RESULT_OK) {
-                const char *hardwareId =
-                    samconfConfigGetStringOr(plugin->config, "Config/HardwareId", safuGetHardwareId());
-                pid_t dltPid = samconfConfigGetInt32Or(plugin->config, "Config/Pid", 0);
-                const char *dltAppId = samconfConfigGetStringOr(plugin->config, "Config/AppId", plugin->config->key);
-                result = elosDltMapperInit(&dlt->mapper, dlt->shmemFile, (char *)dltAppId, (char *)hardwareId, dltPid);
             }
         }
+    }
+    if (result == SAFU_RESULT_OK) {
+        configResult = elosConfigGetGenericInt64(plugin->config, "Config/BufferSize", (int64_t *)&dlt->bufferSize);
+        if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
+            dlt->bufferSize = 0;
+        } else if (configResult != SAMCONF_CONFIG_OK) {
+            safuLogErrF("no buffer size in configuration for \"%s\"", plugin->config->key);
+            result = SAFU_RESULT_FAILED;
+        }
+    }
+    if (result == SAFU_RESULT_OK) {
+        result = elosPluginCreatePublisher(plugin, &dlt->publisher);
+        if (result != SAFU_RESULT_OK) {
+            safuLogErrF("failed to create publisher for \"%s\"", plugin->config->key);
+        } else {
+            // NOTE:  the mesured time diffrences in the provided example are between 14.36598s and 0.000439s
+            dlt->sleepInterval =
+                _hzToTime(samconfConfigGetInt32Or(plugin->config, "Config/ScanFrequency", ELOS_DLT_SCAN_FREQUENCY));
+            dlt->moreToRead = eventfd(0, 0);
+            dlt->stopCmd = eventfd(0, 0);
+
+            plugin->data = dlt;
+        }
+    }
+    if (result == SAFU_RESULT_OK) {
+        const char *hardwareId = samconfConfigGetStringOr(plugin->config, "Config/HardwareId", safuGetHardwareId());
+        pid_t dltPid = samconfConfigGetInt32Or(plugin->config, "Config/Pid", 0);
+        const char *dltAppId = samconfConfigGetStringOr(plugin->config, "Config/AppId", plugin->config->key);
+        result = elosDltMapperInit(&dlt->mapper, dlt->shmemFile, (char *)dltAppId, (char *)hardwareId, dltPid);
     }
     if (result != SAFU_RESULT_OK) {
         free(dlt);
