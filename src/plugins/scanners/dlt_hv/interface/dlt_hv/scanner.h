@@ -26,7 +26,6 @@
  *      localBufferCopy: A local copy of the dlt shared memory buffer
  *      idxRead: The read index for the dlt shared memory buffer
  *      parserQueue: The ring buffer to queue log entries for parsing
- *      shmemDataSize: The size of the shared memory buffer
  *      publisher: The publisher to use for publishing events
  *      scannerThread: The thread with the scanner that looks for new dlt entries
  *      stopCmd: The evntfd to tell the plugin to stop
@@ -43,7 +42,6 @@ typedef struct elosDltScanner {
     elosEbLogRingBuffer_t *localBufferCopy;
     uint16_t idxRead;
     safuRingBuffer_t parserQueue;
-    size_t shmemDataSize;
     elosDltMapper_t mapper;
     struct elosPublisher *publisher;
     pthread_t scannerThread;

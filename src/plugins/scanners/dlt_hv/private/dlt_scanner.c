@@ -114,14 +114,14 @@ safuResultE_t elosDltScannerOpenBuffer(elosDltScanner_t *dlt) {
         close(dlt->shmemFd);
         head = dlt->shmemData;
         dlt->shmemLogEntries = (size_t)head->entryCount;
-        dlt->shmemDataSize = ((size_t)head->entryCount * sizeof(elosEbLogEntry_t)) + sizeof(elosEbLogRingBuffer_t);
+        size_t neededDataSize = ((size_t)head->entryCount * sizeof(elosEbLogEntry_t)) + sizeof(elosEbLogRingBuffer_t);
         dlt->idxRead = head->idxRead;
         if (dlt->idxRead >= dlt->shmemLogEntries) {
             safuLogErrF("Read pointer %u for dlt ring buffer outside of buffer[%lu]", dlt->idxRead,
                         dlt->shmemLogEntries);
             result = SAFU_RESULT_FAILED;
-        } else if (dlt->shmemDataSize > dlt->bufferSize) {
-            safuLogErrF("dlt log buffer size is bigger thant the shmem file (%lu/%ld)", dlt->shmemDataSize,
+        } else if (neededDataSize > dlt->bufferSize) {
+            safuLogErrF("reported size of dlt log buffer is bigger than the configured size(%lu/%ld)", neededDataSize,
                         dlt->bufferSize);
             result = SAFU_RESULT_FAILED;
         }
