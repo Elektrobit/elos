@@ -48,12 +48,9 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
         }
     }
     if (result == SAFU_RESULT_OK) {
-        dlt->offsetAddress = 0;
         configResult =
             elosConfigGetGenericInt64(plugin->config, "Config/OffsetAddress", (int64_t *)&dlt->offsetAddress);
-        if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
-            dlt->offsetAddress = 0;
-        } else if (configResult != SAMCONF_CONFIG_OK) {
+        if (configResult != SAMCONF_CONFIG_OK) {
             safuLogErrF("no offset address in configuration for \"%s\"", plugin->config->key);
             result = SAFU_RESULT_FAILED;
         } else {
@@ -66,9 +63,7 @@ safuResultE_t elosDltScannerInit(elosPlugin_t *plugin) {
     }
     if (result == SAFU_RESULT_OK) {
         configResult = elosConfigGetGenericInt64(plugin->config, "Config/BufferSize", (int64_t *)&dlt->bufferSize);
-        if (configResult == SAMCONF_CONFIG_NOT_FOUND) {
-            dlt->bufferSize = 0;
-        } else if (configResult != SAMCONF_CONFIG_OK) {
+        if (configResult != SAMCONF_CONFIG_OK) {
             safuLogErrF("no buffer size in configuration for \"%s\"", plugin->config->key);
             result = SAFU_RESULT_FAILED;
         }
@@ -125,7 +120,7 @@ safuResultE_t elosDltScannerOpenBuffer(elosDltScanner_t *dlt) {
             safuLogErrF("Read pointer %u for dlt ring buffer outside of buffer[%lu]", dlt->idxRead,
                         dlt->shmemLogEntries);
             result = SAFU_RESULT_FAILED;
-        } else if (dlt->bufferSize != 0 && dlt->shmemDataSize > dlt->bufferSize) {
+        } else if (dlt->shmemDataSize > dlt->bufferSize) {
             safuLogErrF("dlt log buffer size is bigger thant the shmem file (%lu/%ld)", dlt->shmemDataSize,
                         dlt->bufferSize);
             result = SAFU_RESULT_FAILED;
