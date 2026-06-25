@@ -88,18 +88,33 @@ static const char *elosUnicodeSub[] = {
     "x", "x", "x", "x", "x",  "x", "x", "x", "x", "x", "x", "x", "x",  "ﬀ",
 };
 
-static size_t _neededPayloadSize(const uint8_t *buffer) {
+static size_t _neededPayloadSize(const uint8_t *buffer, size_t size) {
     size_t res = 0;
-    for (size_t i = 0; i < ELOS_EB_LOG_STRING_SIZE; ++i) {
+    for (size_t i = 0; i < size; ++i) {
         res += strlen(elosUnicodeSub[buffer[i]]);
     }
     return res;
 }
+
+static size_t _zeroTailIdx(const uint8_t *buffer) {
+    size_t idx = 0;
+    for (size_t i = 1; i < ELOS_EB_LOG_STRING_SIZE; ++i) {
+        if (buffer[i] == 0 && buffer[i - 1] != 0) {
+            idx = i;
+        }
+    }
+    if (buffer[ELOS_EB_LOG_STRING_SIZE - 1] != 0) {
+        idx = ELOS_EB_LOG_STRING_SIZE;
+    }
+    return idx;
+}
+
 static void _shmemBufferToStr(char **res, const uint8_t *buffer) {
     size_t idx = 0;
-    size_t needed = _neededPayloadSize(buffer);
+    size_t len = _zeroTailIdx(buffer);
+    size_t needed = _neededPayloadSize(buffer, len);
     char *buf = safuAllocMem(NULL, needed + 1);
-    for (size_t i = 0; i < ELOS_EB_LOG_STRING_SIZE; ++i) {
+    for (size_t i = 0; i < len; ++i) {
         int off = snprintf(&buf[idx], ELOS_EB_LOG_STRING_SIZE, "%s", elosUnicodeSub[buffer[i]]);
         idx += off;
     }
