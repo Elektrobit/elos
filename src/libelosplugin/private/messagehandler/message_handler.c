@@ -4,7 +4,9 @@
 #include <safu/common.h>
 #include <safu/json.h>
 #include <safu/log.h>
+#include <safu/result.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "elos/common/message.h"
 #include "elos/libelosplugin/clientconnection_types.h"
@@ -67,19 +69,30 @@ safuResultE_t elosMessageHandlerSend(elosClientConnection_t const *const conn, u
 safuResultE_t elosMessageHandlerSendJson(elosClientConnection_t const *const conn, uint8_t messageId,
                                          json_object *jobj) {
     const char *jobjStr;
+    size_t jobjStrLen = 0;
     int retval;
 
-    jobjStr = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN);
+    jobjStr = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_NOSLASHESCAPE);
     if (jobjStr == NULL) {
         safuLogErr("json_object_to_json_string_ext failed");
         return SAFU_RESULT_FAILED;
     }
 
-    retval = elosMessageHandlerSend(conn, messageId, jobjStr);
-    if (retval < 0) {
-        safuLogErr("send_message failed");
+    jobjStrLen = strlen(jobjStr);
+    if (jobjStrLen + sizeof(elosMessage_t) > UINT16_MAX) {
+        safuLogErrF("Response size %ld, too large", jobjStrLen);
+        safuLogErrF("Sending error message, instead of\n %s", jobjStr);
+        retval = elosMessageHandlerSend(conn, messageId, "{\"error\": \"Response is too large\",}");
+        if (retval < 0) {
+            safuLogErr("send_message failed");
+        }
+        return SAFU_RESULT_FAILED;
+    } else {
+        retval = elosMessageHandlerSend(conn, messageId, jobjStr);
+        if (retval < 0) {
+            safuLogErr("send_message failed");
+        }
     }
-
     return retval;
 }
 

@@ -5,6 +5,7 @@
 #include <safu/json.h>
 #include <safu/log.h>
 #include <safu/result.h>
+#include <safu/types.h>
 #include <safu/vector.h>
 #include <safu/vector_types.h>
 #include <stdbool.h>
@@ -63,48 +64,89 @@ static size_t _countDigits(uint64_t number) {
     return digitCount;
 }
 
+static size_t _countCharactersToEscape(const char *escapeCharString) {
+    size_t count = 0;
+
+    for (; *escapeCharString; escapeCharString++) {
+        switch (*escapeCharString) {
+            case '"':
+            case '\\':
+            case '\b':
+            case '\f':
+            case '\n':
+            case '\r':
+            case '\t':
+                count++;
+                break;
+            default:;
+        }
+    }
+    return count;
+}
+
 static size_t _predictResponseSize(elosEventVector_t const *events) {
     size_t eventCount = safuVecElements(events);
     size_t totalSize = 0;
     size_t maxEvents = 0;
+    size_t eventSize;
+    size_t escapeCharCount = 0;
 
-    totalSize = (eventCount * sizeof("{\"date\":[,]}")) + sizeof("{\"eventArray\":[],\"isTruncated\": false}");
-    for (maxEvents = 0; maxEvents < eventCount; maxEvents++) {
+    totalSize = sizeof("{\"error\":null,\"eventArray\":[],\"isTruncated\":false}");
+    for (maxEvents = 0; maxEvents < eventCount && totalSize < MAX_PAYLOAD_SIZE; maxEvents++) {
+        eventSize = 0;
         elosEvent_t const *event = safuVecGet(events, maxEvents);
 
-        totalSize += _countDigits(event->date.tv_sec) + _countDigits(event->date.tv_nsec);
+        eventSize += sizeof("{},");
 
-        if (event->source.pid != 0) {
-            totalSize += _countDigits(event->source.pid) + sizeof("\"pid\":,");
-        }
-        if (event->messageCode != 0) {
-            totalSize += _countDigits(event->source.pid) + sizeof("\"messageCode\":,");
-        }
-        if (event->severity != 0) {
-            totalSize += _countDigits(event->severity) + sizeof("\"severity\":,");
-        }
-        if (event->classification != 0) {
-            totalSize += _countDigits(event->classification) + sizeof("\"classification\":,");
-        }
-        if (event->payload != NULL) {
-            totalSize += strlen(event->payload) + sizeof("\"payload\":\"\",");
-        }
-        if (event->hardwareid != NULL) {
-            totalSize += strlen(event->hardwareid) + sizeof("\"hardwareid\":\"\",");
-        }
+        eventSize += _countDigits(event->date.tv_sec) + _countDigits(event->date.tv_nsec) + sizeof("\"date\":[,],");
+
+        eventSize += sizeof("\"source\":{},");
         if (event->source.appName != NULL) {
-            totalSize += strlen(event->source.appName) + sizeof("\"appName\":\"\",");
+            escapeCharCount = _countCharactersToEscape(event->source.appName);
+            eventSize += strlen(event->source.appName) + sizeof("\"appName\":\"\",") + escapeCharCount;
         }
         if (event->source.fileName != NULL) {
-            totalSize += strlen(event->source.fileName) + sizeof("\"fileName\":\"\",");
+            escapeCharCount = _countCharactersToEscape(event->source.fileName);
+            eventSize += strlen(event->source.fileName) + sizeof("\"fileName\":\"\",") + escapeCharCount;
+        }
+        if (event->source.pid != 0) {
+            eventSize += _countDigits(event->source.pid) + sizeof("\"pid\":,");
         }
 
+        if (event->messageCode != 0) {
+            eventSize += _countDigits(event->messageCode) + sizeof("\"messageCode\":,");
+        }
+        if (event->severity != 0) {
+            eventSize += _countDigits(event->severity) + sizeof("\"severity\":,");
+        }
+        if (event->classification != 0) {
+            eventSize += _countDigits(event->classification) + sizeof("\"classification\":,");
+        }
+        if (event->hardwareid != NULL) {
+            escapeCharCount = _countCharactersToEscape(event->hardwareid);
+            eventSize += strlen(event->hardwareid) + sizeof("\"hardwareid\":\"\",") + escapeCharCount;
+        }
+        if (event->payload != NULL) {
+            escapeCharCount = _countCharactersToEscape(event->payload);
+            eventSize += strlen(event->payload) + sizeof("\"payload\":\"\",") + escapeCharCount;
+        }
+
+        totalSize += eventSize;
+    }
+
+    safuLogDebugF("%zu Events have a size of %zu, causing overflow", maxEvents, totalSize);
+
+    if (maxEvents == 0) {
+        safuLogWarnF("Either no matching event found : %zu or initial response event too large : %zu", eventCount,
+                     totalSize);
+    } else {
         if (totalSize > MAX_PAYLOAD_SIZE) {
-            break;
+            maxEvents--;
+            safuLogDebugF("Shrink maxEvents to %zu with totalSize %zu, to prevent overflow", maxEvents,
+                          totalSize - eventSize);
         }
     }
 
-    safuLogDebugF("predict repsonse size: totalSize %zu maxEvents %zu", totalSize, maxEvents);
     return maxEvents;
 }
 
