@@ -38,6 +38,7 @@ safuResultE_t elosDltLoggerBackendInit(elosDltLoggerBackend_t *dlt, elosDltLogge
         safuLogErr("Null parameter given");
     } else {
         memset(&dlt->dlt, 0, sizeof(dlt->dlt));
+        dlt->dlt.socketFd = -1;
 
         SAFU_PTHREAD_MUTEX_INIT_WITH_RESULT(&dlt->mutex, NULL, result)
         if (result != SAFU_RESULT_OK) {
