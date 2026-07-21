@@ -2,6 +2,6 @@
 
 #include <cmocka_extensions/cmocka_extensions.h>
 
-void elosliteConnectUnix_test_success(UNUSED void **state);
+void elosliteConnectUnixTestSuccess(UNUSED void **state);
 
-TEST_CASE_FUNC_PROTOTYPES(elosliteConnectUnix_test_success)
+TEST_CASE_FUNC_PROTOTYPES(elosliteConnectUnixTestSuccess)
