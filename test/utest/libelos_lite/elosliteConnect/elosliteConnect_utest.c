@@ -6,7 +6,7 @@ TEST_SUITE_FUNC_PROTOTYPES(connectUtest)
 
 int main() {
     const struct CMUnitTest tests[] = {
-        TEST_CASE(elosliteConnectUnix_test_success),
+        TEST_CASE(elosliteConnectUnixTestSuccess),
     };
 
     return RUN_TEST_SUITE(tests, connectUtest);
