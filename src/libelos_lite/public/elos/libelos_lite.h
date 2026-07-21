@@ -42,6 +42,18 @@ bool elosliteConnect(struct addrinfo addrInfo, elosliteSession_t *session);
 bool elosliteConnectTcpip(const char *host, uint16_t port, elosliteSession_t *session);
 
 /*******************************************************************
+ * Establishes connection to elos over unix domain socket.
+ *
+ * Parameters:
+ *      socketPath: complete path to the unix domain socket that shall be created
+ *      session: session data structure used to store the connection
+ *          for other functions
+ * Returns:
+ *      `true` for success or `false` on failure
+ ******************************************************************/
+bool elosliteConnectUnix(const char *socketPath, elosliteSession_t *session);
+
+/*******************************************************************
  * Closes a connection to elos.
  *
  * Parameters:
