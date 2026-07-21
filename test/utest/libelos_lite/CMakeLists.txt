@@ -1,3 +1,4 @@
 # SPDX-License-Identifier: MIT
 
-add_subdirectory(eloslitePublish)
+add_subdirectory(elosliteConnect)
+#add_subdirectory(eloslitePublish)

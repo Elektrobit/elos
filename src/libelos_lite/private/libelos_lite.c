@@ -4,7 +4,9 @@
 
 #include <arpa/inet.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 
 const char *elosliteGetLibraryVersion() {
@@ -37,6 +39,30 @@ bool elosliteConnectTcpip(const char *host, uint16_t port, elosliteSession_t *se
         return true;
     }
     return false;
+}
+
+bool elosliteConnectUnix(const char *socketPath, elosliteSession_t *session) {
+    if (socketPath == NULL) {
+        return false;
+    }
+    if (session == NULL) {
+        return false;
+    }
+
+    struct sockaddr_un address = {.sun_family = AF_UNIX, .sun_path = {0}};
+    if (strlen(socketPath) + 1 > sizeof(address.sun_path)) {
+        return false;
+    }
+
+    strncpy(address.sun_path, socketPath, strlen(socketPath));
+    struct addrinfo addrinfo = {
+        .ai_family = AF_UNIX,
+        .ai_socktype = SOCK_STREAM,
+        .ai_addr = (struct sockaddr *)&address,
+        .ai_addrlen = sizeof(struct sockaddr_un),
+    };
+
+    return elosliteConnect(addrinfo, session);
 }
 
 bool _connectTcpipv4(const char *host, uint16_t port, elosliteSession_t *session) {
