@@ -26,7 +26,7 @@ void elosTestElosMessageHandlerSendJsonExterrJsonObject(void **state) {
     assert_non_null(jobj);
 
     expect_value(__wrap_json_object_to_json_string_ext, obj, jobj);
-    expect_value(__wrap_json_object_to_json_string_ext, flags, JSON_C_TO_STRING_PLAIN);
+    expect_value(__wrap_json_object_to_json_string_ext, flags, JSON_C_TO_STRING_NOSLASHESCAPE);
     will_return(__wrap_json_object_to_json_string_ext, NULL);
     MOCK_FUNC_AFTER_CALL(json_object_to_json_string_ext, 0);
 
