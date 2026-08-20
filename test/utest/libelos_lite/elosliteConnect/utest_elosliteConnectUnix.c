@@ -21,9 +21,10 @@ int __wrap_socket(int domain, int type, int protocol) {
     return 0;
 }
 
-int __wrap_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+int __wrap_connect(UNUSED int sockfd, const struct sockaddr *addr, UNUSED socklen_t addrlen) {
     if (addr->sa_family == AF_UNIX) {
-        strncpy(elosliteUnixConnectRes.addrUnix.sun_path, addr->sa_data, sizeof(elosliteUnixConnectRes.addrUnix.sun_path));
+        strncpy(elosliteUnixConnectRes.addrUnix.sun_path, addr->sa_data,
+                sizeof(elosliteUnixConnectRes.addrUnix.sun_path));
     }
     return 0;
 }
