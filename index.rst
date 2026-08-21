@@ -34,6 +34,7 @@ Welcome to elos's documentation!
    Cmake options <cmake/index>
    Debian Packaging Scripts <debian.native/README.md>
    Init system integration <integration/README.md>
+   CODE_OF_CONDUCT.md
 
 
 Indices and tables
