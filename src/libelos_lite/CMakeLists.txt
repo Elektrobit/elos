@@ -26,6 +26,9 @@ set_target_properties(
     VERSION ${ELOS_VERSION_MAJOR}.${ELOS_VERSION_MINOR}.${ELOS_VERSION_MICRO}
 )
 target_compile_definitions(libelos-lite PRIVATE ELOS_VERSION="${ELOS_VERSION}")
+target_compile_definitions(libelos-lite PRIVATE ELOSD_HARDWAREID_FILE="${ELOSD_HARDWAREID_FILE}")
+target_compile_definitions(libelos-lite PRIVATE ELOSD_HARDWAREID_MAX_LENGTH=${ELOSD_HARDWAREID_MAX_LENGTH})
+target_compile_definitions(libelos-lite PRIVATE ELOSLITE_FMT_MAX_LOG_SIZE=${ELOSLITE_FMT_MAX_LOG_SIZE})
 
 if (DEFINED ELOSLITE_SEND_BUFFER_SIZE)
   target_compile_definitions(libelos-lite PRIVATE ELOSLITE_SEND_BUFFER_SIZE=${ELOSLITE_SEND_BUFFER_SIZE})
