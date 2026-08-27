@@ -30,6 +30,8 @@ set(ELOSD_LOG_PREFIX "[ELOSD] ")
 set(ELOSD_LOG_FILTER "")
 set(ELOSD_LOG_LEVEL "Debug")
 
+set(ELOSLITE_FMT_MAX_LOG_SIZE 2048)
+
 if (ELOS_TOOLS)
   add_subdirectory(clients)
 endif (ELOS_TOOLS)
