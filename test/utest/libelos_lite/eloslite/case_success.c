@@ -7,15 +7,15 @@
 
 #include "eloslite_utest.h"
 
-static const elosSeverityE_t severity = ELOS_SEVERITY_INFO;
-static const char *compareString = "This is a test. Param1: AA, Param2: 1234";
+static const elosSeverityE_t elosliteElosSeverity = ELOS_SEVERITY_INFO;
+static const char *elosliteElosCompareString = "This is a test. Param1: AA, Param2: 1234";
 
 bool __wrap_eloslitePublish(elosliteSession_t *session, elosliteEvent_t *event) {
     assert_non_null(session);
     assert_non_null(event);
 
-    assert_int_equal(event->severity, severity);
-    assert_string_equal(event->payload, compareString);
+    assert_int_equal(event->severity, elosliteElosSeverity);
+    assert_string_equal(event->payload, elosliteElosCompareString);
 
     return true;
 }
@@ -23,7 +23,8 @@ bool __wrap_eloslitePublish(elosliteSession_t *session, elosliteEvent_t *event) 
 void elosliteTestElosliteLogMessageFormatedSuccess(UNUSED void **state) {
     elosliteSession_t session = {0x00};
 
-    assert_true(elosliteLogMessageFormated(&session, severity, "This is a test. Param1: %s, Param2: %d", "AA", 1234));
+    assert_true(elosliteLogMessageFormated(&session, elosliteElosSeverity, "This is a test. Param1: %s, Param2: %d",
+                                           "AA", 1234));
 }
 
 int elosliteTestElosliteLogMessageFormatedSuccessSetup(UNUSED void **state) {
