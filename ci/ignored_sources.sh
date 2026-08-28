@@ -5,6 +5,7 @@ export IGNORE_SOURCES=" \
   src/demos/demo_eloslite.c \
   test/utest/libelos_lite/eloslitePublish/* \
   test/utest/libelos_lite/elosliteConnect/* \
+  test/utest/libelos_lite/eloslite/* \
   # temporary solution, should be removed if connectionmanager is reworked
   src/plugins/clients/connectionmanager/interface/connectionmanager/* \
   "
